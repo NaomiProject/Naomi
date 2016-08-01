@@ -26,8 +26,8 @@ def main(args=None):
     p_args = parser.parse_args(args)
 
     print("*******************************************************")
-    print("*             JASPER - THE TALKING JARVIS           *")
-    print("* (c) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis *")
+    print("*             JASPER - THE TALKING JARVIS             *")
+    print("*            (c) 2015 The Jasper community            *")
     print("*******************************************************")
 
     # Set up logging
