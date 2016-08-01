@@ -112,7 +112,7 @@ class Jasper(object):
         try:
             keyword = self.config['keyword']
         except KeyError:
-            keyword = 'Jasper'
+            keyword = 'JARVIS'
         self._logger.info("Using keyword '%s'", keyword)
 
         # Load plugins
@@ -247,5 +247,6 @@ class Jasper(object):
                 verbose=(self._logger.getEffectiveLevel() == logging.DEBUG))
 
     def run(self):
+        self.conversation.askName()
         self.conversation.greet()
         self.conversation.handleForever()

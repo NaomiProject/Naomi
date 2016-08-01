@@ -220,7 +220,7 @@ class WeatherPlugin(plugin.SpeechHandlerPlugin):
                                      'for the next %d days?') %
                         len(weather.forecast))
             mic.say(msg)
-            if any(self.gettext('YES').upper() in s.upper()
+            if any(self.gettext('YEAH').upper() in s.upper()
                    for s in mic.active_listen()):
                 if len(weather.forecast) == 1:
                     self._say_forecast_tomorrow(mic, weather)

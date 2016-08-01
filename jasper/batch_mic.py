@@ -18,7 +18,7 @@ def parse_batch_file(fp):
 
 class Mic(object):
     def __init__(self, passive_stt_engine, active_stt_engine,
-                 batch_file, keyword='JASPER'):
+                 batch_file, keyword='JARVIS'):
         self._logger = logging.getLogger(__name__)
         self._keyword = keyword
         self.passive_stt_engine = passive_stt_engine
@@ -41,8 +41,8 @@ class Mic(object):
             # handle it as text input
             transcribed = [command]
         return transcribed
-
-    def wait_for_keyword(self, keyword="JASPER"):
+    #def wait_for_keyword(self, keyword="JASPER"):
+    def wait_for_keyword(self, keyword="JARVIS"):
         return
 
     def active_listen(self, timeout=3):
@@ -60,4 +60,4 @@ class Mic(object):
         return self.active_listen()
 
     def say(self, phrase, OPTIONS=None):
-        print("JASPER: %s" % phrase)
+        print("JARVIS: %s" % phrase)

@@ -37,7 +37,7 @@ class Mic(object):
 
     def __init__(self, input_device, output_device,
                  passive_stt_engine, active_stt_engine,
-                 tts_engine, config, keyword='JASPER'):
+                 tts_engine, config, keyword='JARVIS'):
         self._logger = logging.getLogger(__name__)
         self._keyword = keyword
         self.tts_engine = tts_engine

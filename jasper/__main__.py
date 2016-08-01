@@ -26,7 +26,7 @@ def main(args=None):
     p_args = parser.parse_args(args)
 
     print("*******************************************************")
-    print("*             JASPER - THE TALKING COMPUTER           *")
+    print("*             JASPER - THE TALKING JARVIS           *")
     print("* (c) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis *")
     print("*******************************************************")
 
