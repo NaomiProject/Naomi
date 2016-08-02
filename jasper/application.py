@@ -112,7 +112,7 @@ class Jasper(object):
         try:
             keyword = self.config['keyword']
         except KeyError:
-            keyword = 'JARVIS'
+            keyword = 'JASPER'
         self._logger.info("Using keyword '%s'", keyword)
 
         # Load plugins

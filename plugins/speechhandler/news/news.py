@@ -6,7 +6,7 @@ import feedparser
 from jasper import plugin
 from jasper import app_utils
 
-FEED_URL = 'https://news.google.de/news/feeds'
+FEED_URL = 'https://news.google.com/news/feeds'
 
 Article = collections.namedtuple('Article', ['title', 'link'])
 

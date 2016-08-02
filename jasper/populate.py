@@ -25,7 +25,7 @@ def run():
     # name
     simple_request('first_name', 'First name')
     simple_request('last_name', 'Last name')
-    simple_request('My Name? This is what I will listen for.','TriggerName')
+    simple_request('What is my Name? This is what I will listen for.','keyword')
 
     # gmail
     print("\nJasper uses your Gmail to send notifications. Alternatively, " +
@@ -34,6 +34,7 @@ def run():
           "account, as at http://jasperproject.github.io/documentation/" +
           "software/#mailgun.\n")
     simple_request('gmail_address', 'Gmail address')
+    #FIXME This needs to be anything but plaintext.
     profile['gmail_password'] = getpass()
 
     # phone number

@@ -1,2 +1,2 @@
 # -*- coding: utf-8 -*-
-from .witai import WitAiSTTPlugin
+from .snowboy import snowboydecoder
