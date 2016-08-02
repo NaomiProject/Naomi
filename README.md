@@ -1,4 +1,5 @@
-Jasper2fork
+# Jasper2fork
+[![Build Status](https://travis-ci.org/chrobione/Jasper2fork.svg?branch=jasper-dev)](https://travis-ci.org/chrobione/Jasper2fork)
 =============
 The current plan is to use discord.gg
 Discord:  https://discord.gg/d4bK4 
