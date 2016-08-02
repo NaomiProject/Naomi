@@ -45,11 +45,12 @@ phone_number: 'xxxxxxxxxxx'
 # This sends alerts. false = text message. true = email message.
 prefers_email: false
 
-#
-#stt_engine: sphinx
-
 # Time zone so when you ask for the time it tells you correctly
 timezone: America/Denver
+
+# Passive engine configuration (keyword detection)
+#stt_passive_engine: x
+
 # Speech To Text engine with witai-stt example
 stt_engine: witai-stt
 witai-stt:
@@ -64,6 +65,16 @@ witai-stt:
 #  port: '59125'
 #  language: 'en_US'
 #  voice: 'cmu-slt-hsmm'
+
+# Audio configuration
+# uncomment to use
+#audio_engine: pyaudio
+
+#Mic configuration
+#input_device:
+
+#Speak out configuration
+#output_device:
 
 # Wolfram Alpha Integration
 #keys:
