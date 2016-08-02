@@ -1,7 +1,12 @@
-J2
+Jasper2fork
 =============
+Slack channel:jasper2fork
+appear: https://appear.in/jasper2fork
 
-So this is the J2 fork of thejasperproject, thank you for all the work to this point and hope to merge back up with yall.
+
+So this is the fork of the J2 fork of thejasperproject, thank you for all the work to this point and hope to merge back up with yall.
+
+
 
 Client code for the Jasper voice computing platform. Jasper is an open source platform for developing always-on, voice-controlled applications.
 
