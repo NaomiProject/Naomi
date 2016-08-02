@@ -22,15 +22,15 @@ class Conversation(i18n.GettextMixin):
     def askName(self):
         if 'keyword' in self.profile:
             salutation = (self.gettext("My name is, %s.")
-                         % self.profile['keyword'])
+                          % self.profile['keyword'])
         else:
             salutation = self.gettext("I do not have a name.")
         self.mic.say(salutation)
 
     def greet(self):
         if 'first_name' in self.profile:
-            salutation = (self.gettext("How can I be of service, %s?") 
-                         % self.profile["first_name"])
+            salutation = (self.gettext("How can I be of service, %s?")
+                          % self.profile["first_name"])
         else:
             salutation = self.gettext("How can I be of service?")
         self.mic.say(salutation)
