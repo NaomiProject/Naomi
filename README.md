@@ -1,6 +1,14 @@
 Jasper2fork
 =============
-Slack channel:jasper2fork
+The current plan is to use discord.gg
+Discord:  https://discord.gg/d4bK4 
+
+
+
+Slack channel: https://jasper2fork.slack.com 
+Email chrobione@gmail.com for access.
+
+
 appear: https://appear.in/jasper2fork
 
 
