@@ -24,7 +24,7 @@ There are more instructions coming for how to get multi-language going.
 
 
 Here is a sample of the ~/.jasper/profile.yml
-`
+```
 #J2 and jasper-dev branch profile.yml full example.
 # Celluar Carrier http://www.emailtextmessages.com for more info exampl is Verizon.
 carrier: vtext.com
@@ -68,4 +68,4 @@ witai-stt:
 # Wolfram Alpha Integration
 #keys:
   #WOLFRAMALPHA:   X
-`
+```
