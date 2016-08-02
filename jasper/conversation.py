@@ -18,12 +18,10 @@ class Conversation(i18n.GettextMixin):
         }
         #  self.notifier = Notifier(profile)
 
-    #Add way for the system to ask for name if is not found in the config
+    # Add way for the system to ask for name if is not found in the config
     def askName(self):
         if 'keyword' in self.profile:
-            salutation = (self.gettext("My name is, %s.")
-                         % self.profile['keyword'])
-
+            salutation = (self.gettext("My name is, %s.") % self.profile['keyword'])
         else:
             salutation = self.gettext("I do not have a name. Please fix your profile.yml.")
         self.mic.say(salutation)
@@ -31,8 +29,7 @@ class Conversation(i18n.GettextMixin):
 
     def greet(self):
         if 'first_name' in self.profile:
-            salutation = (self.gettext("How can I be of service, %s?")
-                          % self.profile["first_name"])
+            salutation = (self.gettext("How can I be of service, %s?") % self.profile["first_name"])
         else:
             salutation = self.gettext("How can I be of service?")
         self.mic.say(salutation)
