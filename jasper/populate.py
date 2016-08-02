@@ -25,7 +25,7 @@ def run():
     # name
     simple_request('first_name', 'First name')
     simple_request('last_name', 'Last name')
-    simple_request('What is my Name? This is what I will listen for.', 'keyword')
+    simple_request('What is my Name?', 'keyword')
 
     # gmail
     print("\nJasper uses your Gmail to send notifications. Alternatively, " +
