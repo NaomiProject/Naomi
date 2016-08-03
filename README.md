@@ -1,5 +1,6 @@
 # Jasper2fork
 [![Build Status](https://travis-ci.org/chrobione/Jasper2fork.svg?branch=jasper-dev)](https://travis-ci.org/chrobione/Jasper2fork)
+[![Coverage Status](https://img.shields.io/coveralls/chrobione/Jasper2fork.svg)](https://coveralls.io/r/chrobione/Jasper2fork) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec)](https://www.codacy.com/app/chrobione/Jasper2fork?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=chrobione/Jasper2fork&amp;utm_campaign=Badge_Grade)
 =============
 The current plan is to use discord.gg
 Discord:  https://discord.gg/d4bK4 
