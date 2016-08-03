@@ -1,19 +1,14 @@
 # Jasper2fork
 [![Build Status](https://travis-ci.org/chrobione/Jasper2fork.svg?branch=jasper-dev)](https://travis-ci.org/chrobione/Jasper2fork) [![Coverage Status](https://img.shields.io/coveralls/chrobione/Jasper2fork.svg)](https://coveralls.io/r/chrobione/Jasper2fork) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec)](https://www.codacy.com/app/chrobione/Jasper2fork?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=chrobione/Jasper2fork&amp;utm_campaign=Badge_Grade)
 =============
-The current plan is to use discord.gg
+The current plan is to use discord.gg  and github for the day to day comms.
+
 Discord:  https://discord.gg/d4bK4 
 
 
 
-Slack channel: https://jasper2fork.slack.com 
-Email chrobione@gmail.com for access.
 
-
-appear: https://appear.in/jasper2fork
-
-
-So this is the fork of the J2 fork of thejasperproject, thank you for all the work to this point and hope to merge back up with yall.
+So this is the fork of the J2 fork of thejasperproject, thank you for all the work to this point and hope to merge back up with yall on the main project.
 
 
 
