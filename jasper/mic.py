@@ -42,11 +42,7 @@ class Mic(object):
         self._keyword = keyword
         self.tts_engine = tts_engine
         self.passive_stt_engine = passive_stt_engine
-        self.passive_stt_samplerate = get_config_value(
-            config, 'passive_stt_samplerate', 16000)
         self.active_stt_engine = active_stt_engine
-        self.active_stt_samplerate = get_config_value(
-            config, 'active_stt_samplerate', 16000)
         self._input_device = input_device
         self._output_device = output_device
 
@@ -129,9 +125,8 @@ class Mic(object):
     def check_for_keyword(self, frame_queue, keyword_uttered, keyword):
         while True:
             frames = frame_queue.get()
-            with self._write_frames_to_file(frames,
-                                            self.passive_stt_samplerate)\
-                    as f:
+            with self._write_frames_to_file(
+                    frames, self.passive_stt_engine._samplerate) as f:
                 try:
                     transcribed = self.passive_stt_engine.transcribe(f)
                 except:
@@ -223,8 +218,8 @@ class Mic(object):
                     len(frames) > n and self._snr(frames[-n:]) <= 3):
                 break
         self.play_file(paths.data('audio', 'beep_lo.wav'))
-        with self._write_frames_to_file(frames, self.active_stt_samplerate)\
-                as f:
+        with self._write_frames_to_file(
+                frames, self.active_stt_engine._samplerate) as f:
             return self.active_stt_engine.transcribe(f)
 
     # Output methods
