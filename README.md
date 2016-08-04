@@ -3,7 +3,7 @@
 =============
 The current plan is to use discord.gg  and github for the day to day comms.
 
-Discord:  https://discord.gg/d4bK4 
+Discord:  https://discord.gg/kSnVC9C
 
 
 
