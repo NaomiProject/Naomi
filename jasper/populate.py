@@ -115,7 +115,7 @@ def run():
                          "implementations: %s. (Press Enter to default " +
                          "to PocketSphinx): " % stt_engines.keys())
     if (response in stt_engines):
-        profile["stt_engine"] = response
+        profile['active_stt'] = {'engine': response}
         api_key_name = stt_engines[response]
         if api_key_name:
             key = raw_input("\nPlease enter your API key: ")
@@ -123,7 +123,7 @@ def run():
     else:
         print("Unrecognized STT engine. Available implementations: %s"
               % stt_engines.keys())
-        profile["stt_engine"] = "sphinx"
+        profile['active_stt'] = {'engine': "sphinx"}
 
     # write to profile
     print("Writing to profile...")
