@@ -88,7 +88,7 @@ class Jasper(object):
         self._logger.debug("Using Audio engine '%s'", audio_engine_slug)
 
         try:
-            active_stt_slug = self.config['stt_engine']
+            active_stt_slug = self.config['active_stt']['engine']
         except KeyError:
             active_stt_slug = 'sphinx'
             self._logger.warning("stt_engine not specified in profile, " +
@@ -96,7 +96,7 @@ class Jasper(object):
         self._logger.debug("Using STT engine '%s'", active_stt_slug)
 
         try:
-            passive_stt_slug = self.config['stt_passive_engine']
+            passive_stt_slug = self.config['passive_stt']['engine']
         except KeyError:
             passive_stt_slug = active_stt_slug
         self._logger.debug("Using passive STT engine '%s'", passive_stt_slug)
@@ -132,7 +132,7 @@ class Jasper(object):
         devices = [device.slug for device in self.audio.get_devices(
             device_type=audioengine.DEVICE_TYPE_INPUT)]
         try:
-            device_slug = self.config['input_device']
+            device_slug = self.config['audio']['input_device']
         except KeyError:
             device_slug = self.audio.get_default_device(output=False).slug
             self._logger.warning("input_device not specified in profile, " +
@@ -154,7 +154,7 @@ class Jasper(object):
         devices = [device.slug for device in self.audio.get_devices(
             device_type=audioengine.DEVICE_TYPE_OUTPUT)]
         try:
-            device_slug = self.config['output_device']
+            device_slug = self.config['audio']['output_device']
         except KeyError:
             device_slug = self.audio.get_default_device(output=True).slug
             self._logger.warning("output_device not specified in profile, " +
@@ -201,6 +201,12 @@ class Jasper(object):
             'default', self.brain.get_plugin_phrases(), active_stt_plugin_info,
             self.config)
 
+        try:
+            active_stt_plugin._samplerate =\
+                self.config['active_stt']['samplerate']
+        except KeyError:
+            pass
+
         if passive_stt_slug != active_stt_slug:
             passive_stt_plugin_info = self.plugins.get_plugin(
                 passive_stt_slug, category='stt')
@@ -210,6 +216,12 @@ class Jasper(object):
         passive_stt_plugin = passive_stt_plugin_info.plugin_class(
             'keyword', self.brain.get_standard_phrases() + [keyword],
             passive_stt_plugin_info, self.config)
+
+        try:
+            passive_stt_plugin._samplerate =\
+                self.config['passive_stt']['samplerate']
+        except KeyError:
+            pass
 
         tts_plugin_info = self.plugins.get_plugin(tts_slug, category='tts')
         tts_plugin = tts_plugin_info.plugin_class(tts_plugin_info, self.config)
