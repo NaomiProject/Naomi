@@ -203,7 +203,7 @@ class Jasper(object):
 
         try:
             active_stt_plugin._samplerate =\
-                self.config['active_stt']['samplerate']
+                int(self.config['active_stt']['samplerate'])
         except KeyError:
             pass
 
@@ -219,7 +219,7 @@ class Jasper(object):
 
         try:
             passive_stt_plugin._samplerate =\
-                self.config['passive_stt']['samplerate']
+                int(self.config['passive_stt']['samplerate'])
         except KeyError:
             pass
 

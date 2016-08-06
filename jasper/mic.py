@@ -39,7 +39,7 @@ class Mic(object):
                  passive_stt_engine, active_stt_engine,
                  tts_engine, config, keyword='JASPER'):
         self._logger = logging.getLogger(__name__)
-        self._keyword = keyword
+        self.keyword = keyword
         self.tts_engine = tts_engine
         self.passive_stt_engine = passive_stt_engine
         self.active_stt_engine = active_stt_engine
@@ -141,7 +141,7 @@ class Mic(object):
 
     def wait_for_keyword(self, keyword=None):
         if not keyword:
-            keyword = self._keyword
+            keyword = self.keyword
         frame_queue = queue.Queue()
         keyword_uttered = threading.Event()
 
@@ -201,7 +201,7 @@ class Mic(object):
                             audioop.rms(b"".join(frames), 2))
 
     def listen(self):
-        self.wait_for_keyword(self._keyword)
+        self.wait_for_keyword(self.keyword)
         return self.active_listen()
 
     def active_listen(self, timeout=3):
