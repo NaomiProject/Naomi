@@ -21,10 +21,10 @@ msgstr ""
 
 #: clock.py:23
 #, python-format
-msgid "It is {t:%l} {t:%P} right now."
+msgid "It is {t:%l} {t:%p} right now."
 msgstr ""
 
 #: clock.py:25
 #, python-format
-msgid "It is {t:%l}:{t.minute} {t:%P} right now."
+msgid "It is {t:%l}:{t.%M} {t:%p} right now."
 msgstr ""
