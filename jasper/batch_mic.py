@@ -41,8 +41,9 @@ class Mic(object):
             # handle it as text input
             transcribed = [command]
         return transcribed
+
     def wait_for_keyword(self, keyword="JASPER"):
-    #def wait_for_keyword(self, keyword="JARVIS"):
+        # def wait_for_keyword(self, keyword="JARVIS"):
         return
 
     def active_listen(self, timeout=3):

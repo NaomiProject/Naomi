@@ -25,7 +25,7 @@ def run():
     # name
     simple_request('first_name', 'First name')
     simple_request('last_name', 'Last name')
-    simple_request('What is my Name? This is what I will listen for.','keyword')
+    simple_request('What is my Name?', 'keyword')
 
     # gmail
     print("\nJasper uses your Gmail to send notifications. Alternatively, " +
@@ -34,7 +34,7 @@ def run():
           "account, as at http://jasperproject.github.io/documentation/" +
           "software/#mailgun.\n")
     simple_request('gmail_address', 'Gmail address')
-    #FIXME This needs to be anything but plaintext.
+    # FIXME This needs to be anything but plaintext.
     profile['gmail_password'] = getpass()
 
     # phone number
@@ -115,7 +115,7 @@ def run():
                          "implementations: %s. (Press Enter to default " +
                          "to PocketSphinx): " % stt_engines.keys())
     if (response in stt_engines):
-        profile["stt_engine"] = response
+        profile['active_stt'] = {'engine': response}
         api_key_name = stt_engines[response]
         if api_key_name:
             key = raw_input("\nPlease enter your API key: ")
@@ -123,7 +123,7 @@ def run():
     else:
         print("Unrecognized STT engine. Available implementations: %s"
               % stt_engines.keys())
-        profile["stt_engine"] = "sphinx"
+        profile['active_stt'] = {'engine': "sphinx"}
 
     # write to profile
     print("Writing to profile...")

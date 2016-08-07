@@ -98,13 +98,26 @@ class Mic(object):
             return 0
 
     @contextlib.contextmanager
-    def _write_frames_to_file(self, frames):
+    def _write_frames_to_file(self, frames, framerate):
         with tempfile.NamedTemporaryFile(mode='w+b') as f:
             wav_fp = wave.open(f, 'wb')
             wav_fp.setnchannels(self._input_channels)
             wav_fp.setsampwidth(int(self._input_bits/8))
-            wav_fp.setframerate(self._input_rate)
-            wav_fp.writeframes(''.join(frames))
+            wav_fp.setframerate(framerate)
+            if self._input_rate == framerate:
+                fragment = ''.join(frames)
+            else:
+                fragment = audioop.ratecv(''.join(frames),
+                                          int(self._input_bits/8),
+                                          self._input_channels,
+                                          self._input_rate,
+                                          framerate, None)[0]
+            maxvolume = audioop.minmax(fragment, self._input_bits/8)[1]
+            fragment_norm = audioop.mul(
+                fragment, int(self._input_bits/8),
+                0.5 * (2.**15) / maxvolume)
+
+            wav_fp.writeframes(fragment_norm)
             wav_fp.close()
             f.seek(0)
             yield f
@@ -112,7 +125,8 @@ class Mic(object):
     def check_for_keyword(self, frame_queue, keyword_uttered, keyword):
         while True:
             frames = frame_queue.get()
-            with self._write_frames_to_file(frames) as f:
+            with self._write_frames_to_file(
+                    frames, self.passive_stt_engine._samplerate) as f:
                 try:
                     transcribed = self.passive_stt_engine.transcribe(f)
                 except:
@@ -204,7 +218,8 @@ class Mic(object):
                     len(frames) > n and self._snr(frames[-n:]) <= 3):
                 break
         self.play_file(paths.data('audio', 'beep_lo.wav'))
-        with self._write_frames_to_file(frames) as f:
+        with self._write_frames_to_file(
+                frames, self.active_stt_engine._samplerate) as f:
             return self.active_stt_engine.transcribe(f)
 
     # Output methods
