@@ -1,10 +1,8 @@
 [Plugin]
-Name = snowboy-stt
-Version = 0.0.1
-License = APACHE
-URL = https://github.com/kitt-ai/snowboy
-Description = Snowboy is a customizable hotword detection engine for you to create your own hotword like "OK Google" or "Alexa".
+Name = snowboy
+Version = 1.0.0
+License = MIT
+Description = Speech-To-Text implementation which relies on Snowboy.
 
 [Author]
-Name = Chrobi
-URL = http://github.com/chrobione/
+Name = KrawallKurt
