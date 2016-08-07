@@ -16,8 +16,8 @@ The documentation is the first thing.
 
 If you have a jasper working install then you should only need to do the following:
 
-sudo pip install --upgrade setuptools
-sudo pip install -r Jasper2fork/python_requirements.txt
+sudo pip install --upgrade setuptools .
+sudo pip install -r Jasper2fork/python_requirements.txt .
 
 For more information, see the [WIKI](https://github.com/chrobione/Jasper2fork/wiki)
 
