@@ -24,9 +24,8 @@ Documentation is the first thing.
 
 If you have a jasper working install then you should only need to do the following:
 
-`sudo pip install slugify mad`
-
-and for msgfmt - install do `sudo apt install gettext`
+sudo pip install --upgrade setuptools
+sudo pip install -r Jasper2fork/python_requirements.txt
 
 There are more instructions coming for how to get multi-language going.
 
