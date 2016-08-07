@@ -5,9 +5,6 @@
 # the SWIG interface file instead.
 
 
-
-
-
 from sys import version_info
 if version_info >= (2, 6, 0):
     def swig_import_helper():
@@ -15,13 +12,15 @@ if version_info >= (2, 6, 0):
         import imp
         fp = None
         try:
-            fp, pathname, description = imp.find_module('_snowboydetect', [dirname(__file__)])
+            fp, pathname, description = imp.find_module('_snowboydetect',
+                                                        [dirname(__file__)])
         except ImportError:
             import _snowboydetect
             return _snowboydetect
         if fp is not None:
             try:
-                _mod = imp.load_module('_snowboydetect', fp, pathname, description)
+                _mod = imp.load_module('_snowboydetect',
+                                       fp, pathname, description)
             finally:
                 fp.close()
             return _mod
@@ -70,6 +69,7 @@ def _swig_getattr_nondynamic(self, class_type, name, static=1):
     else:
         raise AttributeError(name)
 
+
 def _swig_getattr(self, class_type, name):
     return _swig_getattr_nondynamic(self, class_type, name, 0)
 
@@ -79,7 +79,9 @@ def _swig_repr(self):
         strthis = "proxy of " + self.this.__repr__()
     except:
         strthis = ""
-    return "<%s.%s; %s >" % (self.__class__.__module__, self.__class__.__name__, strthis,)
+    return "<%s.%s; %s >" % (self.__class__.__module__,
+                             self.__class__.__name__,
+                             strthis,)
 
 try:
     _object = object
@@ -92,7 +94,9 @@ except AttributeError:
 
 class SnowboyDetect(_object):
     __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, SnowboyDetect, name, value)
+    __setattr__ = lambda self, name, value: _swig_setattr(self,
+                                                          SnowboyDetect,
+                                                          name, value)
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, SnowboyDetect, name)
     __repr__ = _swig_repr
@@ -111,7 +115,8 @@ class SnowboyDetect(_object):
         return _snowboydetect.SnowboyDetect_RunDetection(self, data)
 
     def SetSensitivity(self, sensitivity_str):
-        return _snowboydetect.SnowboyDetect_SetSensitivity(self, sensitivity_str)
+        return _snowboydetect.SnowboyDetect_SetSensitivity(self,
+                                                           sensitivity_str)
 
     def GetSensitivity(self):
         return _snowboydetect.SnowboyDetect_GetSensitivity(self)
@@ -139,5 +144,3 @@ SnowboyDetect_swigregister = _snowboydetect.SnowboyDetect_swigregister
 SnowboyDetect_swigregister(SnowboyDetect)
 
 # This file is compatible with both classic and new-style classes.
-
-

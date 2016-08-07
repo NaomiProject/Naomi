@@ -1,6 +1,7 @@
 import snowboydetect
 from jasper import plugin
 
+
 class SnowboySTTPlugin(plugin.STTPlugin):
     """
     Hotword Detection which relies on Snowboy.
@@ -27,7 +28,7 @@ class SnowboySTTPlugin(plugin.STTPlugin):
             resource_filename=self.resource_file,
             model_str=self.model)
         self.detector.SetAudioGain(1)
-        self.detector.SetSensitivity(self.sensitivity);
+        self.detector.SetSensitivity(self.sensitivity)
 
     def transcribe(self, fp):
         fp.seek(44)
