@@ -11,8 +11,9 @@ import paths
 def run():
     profile = {}
 
-    print("Hi i'm Jasper and welcome to the profile populator. If, at any step, you'd prefer " +
-          "not to enter the requested information, just hit 'Enter' with a " +
+    print("Hi i'm Jasper and welcome to the profile populator." +
+            "If, at any step, you'd prefer " +
+          "not to enter the requested information," + "just hit 'Enter' with a " +
           "blank field to continue.")
 
     def simple_request(var, cleanVar, cleanInput=None):
