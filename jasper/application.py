@@ -209,7 +209,7 @@ class Jasper(object):
 
         try:
             active_stt_plugin._volume_normalization =\
-                int(self.config['active_stt']['volume_normalization'])
+                float(self.config['active_stt']['volume_normalization'])
         except KeyError:
             pass
 
@@ -231,7 +231,7 @@ class Jasper(object):
 
         try:
             passive_stt_plugin._volume_normalization =\
-                int(self.config['passive_stt']['volume_normalization'])
+                float(self.config['passive_stt']['volume_normalization'])
         except KeyError:
             pass
 
