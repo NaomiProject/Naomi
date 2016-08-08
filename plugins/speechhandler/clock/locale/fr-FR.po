@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Jasper 2.0\n"
 "Report-Msgid-Bugs-To: https://github.com/jasperproject/jasper-client/issues\n"
 "POT-Creation-Date: 2015-10-30 19:00+0100\n"
-"PO-Revision-Date: 2016-6-18 00:00+0100\n"
+"PO-Revision-Date: 2016-8-7 01:40+0100\n"
 "Last-Translator: Rocca Seb <se.rocca84@gmail.>\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
@@ -17,14 +17,14 @@ msgstr ""
 
 #: clock.py:9 clock.py:35
 msgid "TIME"
-msgstr "Temp"
+msgstr "HEURE"
 
 #: clock.py:23
 #, python-format
 msgid "It is {t:%l} {t:%p} right now."
-msgstr "Il est t:%l} {t:%p} "
+msgstr "Il est {t:%l} {t:%p}. "
 
 #: clock.py:25
 #, python-format
 msgid "It is {t:%l}:{t:%M} {t:%p} right now."
-msgstr "Il est {t:%l}:{t:%M} {t:%p}"
+msgstr "Il est {t:%l}:{t:%M} {t:%p}."
