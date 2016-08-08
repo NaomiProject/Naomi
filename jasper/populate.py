@@ -11,7 +11,7 @@ import paths
 def run():
     profile = {}
 
-    print("Welcome to the profile populator. If, at any step, you'd prefer " +
+    print("Hi, i'm Jasper, and welcome to the profile populator !. If, at any step, you'd prefer " +
           "not to enter the requested information, just hit 'Enter' with a " +
           "blank field to continue.")
 
@@ -25,9 +25,20 @@ def run():
     # name
     simple_request('first_name', 'First name')
     simple_request('last_name', 'Last name')
-    simple_request('What is my Name?', 'keyword')
+    simple_request('keyword', 'What is my Name?' )
 
+    # language
+
+    language = raw_input("\nWhat is your language ? available: en-US, fr-FR, de-DE :" )
+    while not language or (language != 'en-US' and language != 'fr-FR' and language != 'de-DE'):
+        print (language)
+        language = raw_input("Please choose your language, available: en-US, fr-FR, de-DE : ")
+    profile['language'] = language
+    
     # gmail
+    
+    
+    
     print("\nJasper uses your Gmail to send notifications. Alternatively, " +
           "you can skip this step (or just fill in the email address if you " +
           "want to receive email notifications) and setup a Mailgun " +
