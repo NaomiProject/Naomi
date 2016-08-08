@@ -98,7 +98,7 @@ class Mic(object):
             return 0
 
     @contextlib.contextmanager
-    def _write_frames_to_file(self, frames, framerate):
+    def _write_frames_to_file(self, frames, framerate, volume):
         with tempfile.NamedTemporaryFile(mode='w+b') as f:
             wav_fp = wave.open(f, 'wb')
             wav_fp.setnchannels(self._input_channels)
@@ -112,12 +112,13 @@ class Mic(object):
                                           self._input_channels,
                                           self._input_rate,
                                           framerate, None)[0]
-            maxvolume = audioop.minmax(fragment, self._input_bits/8)[1]
-            fragment_norm = audioop.mul(
-                fragment, int(self._input_bits/8),
-                0.5 * (2.**15) / maxvolume)
+            if volume != 1:
+                maxvolume = audioop.minmax(fragment, self._input_bits/8)[1]
+                fragment = audioop.mul(
+                    fragment, int(self._input_bits/8),
+                    volume * (2.**15) / maxvolume)
 
-            wav_fp.writeframes(fragment_norm)
+            wav_fp.writeframes(fragment)
             wav_fp.close()
             f.seek(0)
             yield f
@@ -126,7 +127,8 @@ class Mic(object):
         while True:
             frames = frame_queue.get()
             with self._write_frames_to_file(
-                    frames, self.passive_stt_engine._samplerate) as f:
+                    frames, self.passive_stt_engine._samplerate,
+                    self.passive_stt_engine._volume_normalization) as f:
                 try:
                     transcribed = self.passive_stt_engine.transcribe(f)
                 except:
@@ -219,7 +221,8 @@ class Mic(object):
                 break
         self.play_file(paths.data('audio', 'beep_lo.wav'))
         with self._write_frames_to_file(
-                frames, self.active_stt_engine._samplerate) as f:
+                frames, self.active_stt_engine._samplerate,
+                self.active_stt_engine._volume_normalization) as f:
             return self.active_stt_engine.transcribe(f)
 
     # Output methods

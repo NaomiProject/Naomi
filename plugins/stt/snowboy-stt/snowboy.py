@@ -1,5 +1,6 @@
 import snowboydetect
 from jasper import plugin
+from jasper import paths
 
 
 class SnowboySTTPlugin(plugin.STTPlugin):
@@ -17,7 +18,7 @@ class SnowboySTTPlugin(plugin.STTPlugin):
     def __init__(self, *args, **kwargs):
         plugin.STTPlugin.__init__(self, *args, **kwargs)
 
-        self.resource_file = "plugins/stt/snowboy-stt/common.res"
+        self.resource_file = paths.PLUGIN_PATH + "/stt/snowboy-stt/common.res"
         self.model = self.profile['snowboy']['model']
         try:
             self.sensitivity = self.profile['snowboy']['sensitivity']
