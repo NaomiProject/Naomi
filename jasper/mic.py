@@ -36,6 +36,7 @@ class Mic(object):
     """
 
     def __init__(self, input_device, output_device,
+                 active_stt_reply, active_stt_response,
                  passive_stt_engine, active_stt_engine,
                  tts_engine, config, keyword='JASPER'):
         self._logger = logging.getLogger(__name__)
@@ -45,7 +46,8 @@ class Mic(object):
         self.active_stt_engine = active_stt_engine
         self._input_device = input_device
         self._output_device = output_device
-
+        self._active_stt_reply = active_stt_reply
+        self._active_stt_response = active_stt_response
         self._input_rate = get_config_value(config, 'input_samplerate', 16000)
         self._input_bits = get_config_value(config, 'input_samplewidth', 16)
         self._input_channels = get_config_value(config, 'input_channels', 1)
@@ -209,7 +211,15 @@ class Mic(object):
     def active_listen(self, timeout=3):
         # record until <timeout> second of silence or double <timeout>.
         n = int(round((self._input_rate/self._input_chunksize)*timeout))
-        self.play_file(paths.data('audio', 'beep_hi.wav'))
+
+        #Going to try to solve this
+        try:
+            text_say = self._active_stt_reply
+            self.say(text_say)
+        except :
+            self._logger.info("No text to respond with using beep")
+            self.play_file(paths.data('audio', 'beep_hi.wav'))
+
         frames = []
         for frame in self._input_device.record(self._input_chunksize,
                                                self._input_bits,
@@ -219,7 +229,19 @@ class Mic(object):
             if len(frames) >= 2*n or (
                     len(frames) > n and self._snr(frames[-n:]) <= 3):
                 break
-        self.play_file(paths.data('audio', 'beep_lo.wav'))
+
+        #self.play_file(paths.data('audio', 'beep_lo.wav'))
+        #Going to try to solve this
+        try:
+            text_say = self._active_stt_response
+            self.say(text_say)
+            #self.say("Processing.")
+        except :
+            self._logger.info("No text to respond with using beep")
+            self.play_file(paths.data('audio', 'beep_lo.wav'))
+
+
+
         with self._write_frames_to_file(
                 frames, self.active_stt_engine._samplerate,
                 self.active_stt_engine._volume_normalization) as f:
