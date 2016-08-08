@@ -207,6 +207,12 @@ class Jasper(object):
         except KeyError:
             pass
 
+        try:
+            active_stt_plugin._volume_normalization =\
+                int(self.config['active_stt']['volume_normalization'])
+        except KeyError:
+            pass
+
         if passive_stt_slug != active_stt_slug:
             passive_stt_plugin_info = self.plugins.get_plugin(
                 passive_stt_slug, category='stt')
@@ -220,6 +226,12 @@ class Jasper(object):
         try:
             passive_stt_plugin._samplerate =\
                 int(self.config['passive_stt']['samplerate'])
+        except KeyError:
+            pass
+
+        try:
+            passive_stt_plugin._volume_normalization =\
+                int(self.config['passive_stt']['volume_normalization'])
         except KeyError:
             pass
 
