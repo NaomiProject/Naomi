@@ -41,11 +41,12 @@ def run():
     profile['language'] = language
     
     # gmail
-          print("\nJasper uses your Gmail to send notifications. Alternatively, " +
-          "you can skip this step (or just fill in the email address if you " +
-          "want to receive email notifications) and setup a Mailgun " +
-          "account, as at http://jasperproject.github.io/documentation/" +
-          "software/#mailgun.\n")
+          print("\nJasper uses your Gmail to send notifications." +
+                "Alternatively, " +
+                "you can skip this step (or just fill in the email address if you " +
+                "want to receive email notifications) and setup a Mailgun " +
+                "account, as at http://jasperproject.github.io/documentation/" +
+                "software/#mailgun.\n")
     simple_request('gmail_address', 'Gmail address')
     # FIXME This needs to be anything but plaintext.
     profile['gmail_password'] = getpass()
