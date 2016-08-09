@@ -34,15 +34,14 @@ def run():
     language = raw_input("\nWhat is your language ?" +
                          "available: en-US, fr-FR, de-DE : \n")
     while not language or (language != 'en-US' and language != 'fr-FR' 
-                            and language != 'de-DE'):
+                           and language != 'de-DE'):
         print (language)
         language = raw_input("\nPlease choose your language," +
                              "available: en-US, fr-FR, de-DE : \n")
     profile['language'] = language
     
-     # gmail
-    
-    print("\nJasper uses your Gmail to send notifications. Alternatively, " +
+    # gmail
+          print("\nJasper uses your Gmail to send notifications. Alternatively, " +
           "you can skip this step (or just fill in the email address if you " +
           "want to receive email notifications) and setup a Mailgun " +
           "account, as at http://jasperproject.github.io/documentation/" +
