@@ -98,14 +98,14 @@ class Jasper(object):
         try:
             active_stt_reply = self.config['active_stt']['reply']
             self._logger.warning("Using active STT voice reply '%s'",
-                                  active_stt_reply)
+                active_stt_reply)
         except KeyError:
             pass
 
         try:
             active_stt_response = self.config['active_stt']['response']
             self._logger.warning("Using active STT voice response '%s'",
-                                 active_stt_response)
+                active_stt_response)
         except KeyError:
             pass
 

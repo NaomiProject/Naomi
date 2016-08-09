@@ -140,7 +140,7 @@ def run():
             while not areplyRespon or (areplyRespon != 'Y' and
                                        areplyRespon != 'N'):
                 areplyRespon = raw_input("Y/N?")
-            if(repsonse is not "Y"):
+            if(areplyRespon is not "Y"):
                 areply = raw_input("Reply: ")
             profile['active_stt'] = {'reply': areply}
         print("Type the words that jasper will say after hearing you.")
