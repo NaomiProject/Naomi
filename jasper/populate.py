@@ -13,7 +13,7 @@ def run():
 
     print("\nHi i'm Jasper and welcome to the profile populator." +
           "If, at any step, you'd prefer " +
-          "not to enter the requested information," + 
+          "not to enter the requested information," +
           "just hit 'Enter' with a " +
           "blank field to continue.\n")
 
@@ -31,9 +31,10 @@ def run():
 
     # language
 
-    language = raw_input("\nWhat is your language ?" + 
+    language = raw_input("\nWhat is your language ?" +
                          "available: en-US, fr-FR, de-DE : \n")
-    while not language or (language != 'en-US' and language != 'fr-FR' and language != 'de-DE'):
+    while not language or (language != 'en-US' and language != 'fr-FR' 
+                            and language != 'de-DE'):
         print (language)
         language = raw_input("\nPlease choose your language," +
                              "available: en-US, fr-FR, de-DE : \n")
