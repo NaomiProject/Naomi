@@ -211,7 +211,7 @@ class Mic(object):
     def active_listen(self, timeout=3):
         # record until <timeout> second of silence or double <timeout>.
         n = int(round((self._input_rate/self._input_chunksize)*timeout))
-        if (self._active_stt_reply != None):
+        if self._active_stt_reply:
             self.say(self._active_stt_reply)
         else:
             self._logger.debug("No text to respond with using beep")
@@ -227,7 +227,7 @@ class Mic(object):
                     len(frames) > n and self._snr(frames[-n:]) <= 3):
                 break
 
-        if (self._active_stt_response != None):
+        if self._active_stt_response:
             self.say(self._active_stt_response)
         else:
             self._logger.debug("No text to respond with using beep")

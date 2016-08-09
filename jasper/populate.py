@@ -125,20 +125,22 @@ def run():
               % stt_engines.keys())
         profile['active_stt'] = {'engine': "sphinx"}
 
-    #Getting information to beep or not beep
+    # Getting information to beep or not beep
     print("\nJasper's active listener has two modes Beep or Voice.")
     response = raw_input("\nPlease Choose (B) for beeps or (V) for voice. ")
     while not response or (response != 'B' and response != 'V'):
         response = raw_input("\nPlease choose beeps (B) or voice (V): ")
-    if not(repsonse == "B"):
-        print("Type the words that jasper will respond with after its name being called.")
+    if(response is not "B"):
+        print("Type the words that jasper will respond with after its name" +
+              "being called.")
         areply = raw_input("Reply: ")
         while areply:
             print(areply + "\n is this correct?")
             areplyRespon = raw_input("Y/N?")
-            while not areplyRespon or (areplyRespon != 'Y' and areplyRespon != 'N'):
+            while not areplyRespon or (areplyRespon != 'Y' and
+                                       areplyRespon != 'N'):
                 areplyRespon = raw_input("Y/N?")
-            if not(repsonse == "Y"):
+            if(repsonse is not "Y"):
                 areply = raw_input("Reply: ")
             profile['active_stt'] = {'reply': areply}
         print("Type the words that jasper will say after hearing you.")
@@ -146,9 +148,10 @@ def run():
         while aresponse:
             print(aresponse + "\n is this correct?")
             aresponseRespon = raw_input("Y/N?")
-            while not aresponseRespon or (aresponseRespon != 'Y' and aresponseRespon != 'N'):
+            while not aresponseRespon or (aresponseRespon != 'Y' and
+                                          aresponseRespon != 'N'):
                 aresponseRespon = raw_input("Y/N?")
-            if not(aresponseRespon == "Y"):
+            if(aresponseRespon is not "Y"):
                 aresponse = raw_input("Response: ")
             profile['active_stt'] = {'response': aresponse}
 
