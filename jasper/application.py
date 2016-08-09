@@ -249,16 +249,18 @@ class Jasper(object):
                 float(self.config['passive_stt']['volume_normalization'])
         except KeyError:
             pass
-        try:
-            active_stt_reply = self.config['active_stt_engine']['reply']
-        except KeyError:
-            pass
 
         try:
-            active_stt_response = self.config['active_stt_engine']['response']
+            active_stt_reply = self.config['active_stt']['reply']
         except KeyError:
             self._logger.info(KeyError)
-            #pass
+            active_stt_reply = None
+
+        try:
+            active_stt_response = self.config['active_stt']['response']
+        except KeyError:
+            self._logger.info(KeyError)
+            active_stt_response = None
 
         tts_plugin_info = self.plugins.get_plugin(tts_slug, category='tts')
         tts_plugin = tts_plugin_info.plugin_class(tts_plugin_info, self.config)
@@ -274,7 +276,7 @@ class Jasper(object):
             self._logger.info('Using batched mode')
         else:
             self.mic = mic.Mic(
-                input_device, output_device,active_stt_reply,
+                input_device, output_device, active_stt_reply,
                 active_stt_response, passive_stt_plugin, active_stt_plugin,
                 tts_plugin, self.config, keyword=keyword)
 

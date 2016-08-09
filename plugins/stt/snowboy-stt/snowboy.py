@@ -19,7 +19,7 @@ class SnowboySTTPlugin(plugin.STTPlugin):
         plugin.STTPlugin.__init__(self, *args, **kwargs)
 
         self.resource_file = paths.PLUGIN_PATH + "/stt/snowboy-stt/common.res"
-        self.model = paths.PLUGIN_PATH + "/stt/snowboy-stt/" + self.profile['snowboy']['model']
+        self.model = self.profile['snowboy']['model']
         try:
             self.sensitivity = self.profile['snowboy']['sensitivity']
         except KeyError:
