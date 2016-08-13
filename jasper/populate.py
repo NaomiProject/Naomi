@@ -28,8 +28,6 @@ def run():
     simple_request('first_name', 'First name')
     simple_request('last_name', 'Last name')
     simple_request('keyword', 'What is my Name?')
-<<<<<<< HEAD
-=======
 
     # language
 
@@ -40,7 +38,6 @@ def run():
         language = raw_input("\nPlease choose your language," +
                              "available: en-US, fr-FR, de-DE : \n")
     profile['language'] = language
->>>>>>> add_language
 
     # gmail
     print("\nJasper uses your Gmail to send notifications." +
