@@ -33,22 +33,21 @@ def run():
 
     language = raw_input("\nWhat is your language ?" +
                          "available: en-US, fr-FR, de-DE : \n")
-    while not language or (language != 'en-US' and language != 'fr-FR' 
+    while not language or (language != 'en-US' and language != 'fr-FR'
                            and language != 'de-DE'):
-        print (language)
         language = raw_input("\nPlease choose your language," +
                              "available: en-US, fr-FR, de-DE : \n")
     profile['language'] = language
-    
+
     # gmail
-          print("\nJasper uses your Gmail to send notifications." +
-                "Alternatively, " +
-                "you can skip this step " + 
-                "(or just fill in the email address if you " +
-                "want to receive email notifications) and setup a Mailgun " +
-                "account, as at " + 
-                "http://jasperproject.github.io/documentation/" +
-                "software/#mailgun.\n")
+    print("\nJasper uses your Gmail to send notifications." +
+          "Alternatively, " +
+          "you can skip this step " +
+          "(or just fill in the email address if you " +
+          "want to receive email notifications) and setup a Mailgun " +
+          "account, as at " +
+          "http://jasperproject.github.io/documentation/" +
+          "software/#mailgun.\n")
     simple_request('gmail_address', 'Gmail address')
     # FIXME This needs to be anything but plaintext.
     profile['gmail_password'] = getpass()
