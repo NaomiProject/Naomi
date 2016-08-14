@@ -1,6 +1,21 @@
 import pyowm
 from jasper import plugin
 
-class WeatherPlugin(plugin_Spee):
-    def get_phrases(self):
-        return [self.gettext("Weather")]
+#The next weather module for Jasper, based on the OpenWeatherMap API and the Pyowm project (https://github.com/csparpa/pyowm)
+
+class JasperWeatherPlugin(plugin.SpeechHandlerPlugin):
+    try:
+        location = self.profile['weather']['location']
+    except KeyError:
+        raise ValueError('Weather location not configured!')
+    self._woeid = get_woeid(location)
+
+def get_phrases(self):
+    return [
+        self.gettext("WEATHER"),
+        self.gettext("TODAY"),
+        self.gettext("TOMORROW"),
+        self.gettext("TEMPERATURE"),
+        self.gettext("FORECAST"),
+        self.gettext("YES"),
+        self.gettext("NO")
