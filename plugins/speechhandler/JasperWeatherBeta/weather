@@ -6,11 +6,12 @@ from jasper import plugin
 class JasperWeatherPlugin(plugin.SpeechHandlerPlugin):
     try:
         location = self.profile['weather']['location']
+        key = self.profile['OpenWeatherMap']['key']
     except KeyError:
         raise ValueError('Weather location not configured!')
     self._woeid = get_woeid(location)
 
-def get_phrases(self):
+    def get_phrases(self):
     return [
         self.gettext("WEATHER"),
         self.gettext("TODAY"),
@@ -19,3 +20,13 @@ def get_phrases(self):
         self.gettext("FORECAST"),
         self.gettext("YES"),
         self.gettext("NO")
+
+    def handle(self, text, mic):
+        """
+        Responds to user-input, typically speech text, with a summary of
+        the relevant weather for the requested date (typically, weather
+        information will not be available for days beyond tomorrow).
+        Arguments:
+        text -- user-input, typically transcribed speech
+        mic -- used to interact with the user (for both input and output)
+        """
