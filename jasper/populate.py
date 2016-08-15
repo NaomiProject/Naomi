@@ -11,7 +11,7 @@ import paths
 def run():
     profile = {}
 
-    print("\nHi i'm Jasper and welcome to the profile populator." +
+    print("\nHi i'm Jasper, your Personnal Assistant and welcome to the profile populator." +
           "If, at any step, you'd prefer " +
           "not to enter the requested information," +
           "just hit 'Enter' with a " +
