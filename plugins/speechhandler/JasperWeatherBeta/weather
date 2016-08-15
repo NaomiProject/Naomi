@@ -1,18 +1,12 @@
+import random
 import pyowm
 from jasper import plugin
 
 #The next weather module for Jasper, based on the OpenWeatherMap API and the Pyowm project (https://github.com/csparpa/pyowm)
 
 class JasperWeatherPlugin(plugin.SpeechHandlerPlugin):
-    try:
-        location = self.profile['weather']['location']
-        key = self.profile['OpenWeatherMap']['key']
-    except KeyError:
-        raise ValueError('Weather location not configured!')
-    self._woeid = get_woeid(location)
-
     def get_phrases(self):
-    return [
+        return [
         self.gettext("WEATHER"),
         self.gettext("TODAY"),
         self.gettext("TOMORROW"),
@@ -30,3 +24,41 @@ class JasperWeatherPlugin(plugin.SpeechHandlerPlugin):
         text -- user-input, typically transcribed speech
         mic -- used to interact with the user (for both input and output)
         """
+        #Get information of the user: Location, Key, Unit, Language ...
+
+        try:
+            location = self.profile['OpenWeatherMap']['location']
+            API_key = self.profile['OpenWeatherMap']['key']
+        except KeyError:
+            raise ValueError('Weather location not configured!')
+        self._woeid = get_woeid(location)
+
+        try:
+            unit = self.profile['OpenWeatherMap']['unit']
+        except KeyError:
+            self._unit = 'f'
+        else:
+            unit = unit.lower()
+            if unit == 'c' or unit == 'celsius':
+                self._unit = 'c'
+            elif unit == 'f' or unit == 'fahrenheit':
+                self._unit = 'f'
+            else:
+                raise ValueError('Invalid unit!')
+        try:
+            lang = self.profile['OpenWeatherMap']['Language']
+        except KeyError:
+            raise ValueError ('Language for JasperWeatherPlugin not configured!')
+
+
+        observation = owm.weather_at_place('London,uk')
+        w = observation.get_weather()
+        print(w)
+
+        owm_key = pyowm.OWM(API_key)
+        owm_language = pyowm.OWM('language' = lang)
+
+        if self.gettext('TODAY') and self.gettext("WEATHER"):
+            observation = owm.weather_at_place('London,uk')
+            w = observation.get_weather()
+            mic.say("Today, the weather is", w)
