@@ -1,4 +1,4 @@
-# Jasper Meaning of Life Plugin 
+# Jasper Meaning of Life Plugin
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
 # This file is distributed under the same license as the Jasper package.
 #
@@ -21,7 +21,7 @@ msgstr "Sens de la vie"
 
 #: life/life.py:20
 msgid "It's 42, you idiot."
-msgstr "C'est 42, idiot"
+msgstr "C'est 42, idiot."
 
 #: life/life.py:21
 msgid "It's 42. How many times do I have to tell you?"
