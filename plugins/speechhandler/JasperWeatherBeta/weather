@@ -50,15 +50,17 @@ class JasperWeatherPlugin(plugin.SpeechHandlerPlugin):
         except KeyError:
             raise ValueError ('Language for JasperWeatherPlugin not configured!')
 
+            for
 
-        observation = owm.weather_at_place('London,uk')
-        w = observation.get_weather()
-        print(w)
 
         owm_key = pyowm.OWM(API_key)
         owm_language = pyowm.OWM('language' = lang)
 
         if self.gettext('TODAY') and self.gettext("WEATHER"):
-            observation = owm.weather_at_place('London,uk')
+            observation = owm.weather_at_place(location)
             w = observation.get_weather()
             mic.say("Today, the weather is", w)
+
+        if self.gettext('TOMORROW') and self.gettext("WEATHER")
+
+            obse
