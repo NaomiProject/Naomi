@@ -1,0 +1,27 @@
+# Jasper Weather Plugin
+# This file is distributed under the same license as the Jasper package.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Jasper2fork 0.1"
+"Report-Msgid-Bugs-To: https://github.com/jasperproject/jasper-client/issues\n"
+"POT-Creation-Date: 2015-10-30 19:00+0100\n"
+"PO-Revision-Date: 2016-06-18 00:28+0100\n"
+"Last-Translator: Rocca Seb <se.rocca84@gmail.com>\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: life/life.py:8
+msgid ""
+msgstr ""
+
+#: life/life.py:20
+msgid ""
+msgstr ""
+
+#: life/life.py:21
+msgid ""
+msgstr ""

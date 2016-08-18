@@ -1,0 +1,10 @@
+[Plugin]
+Name = Jasper Weather
+Version = 0.1a
+License = MIT
+URL = https://github.com/chrobione/Jasper2fork
+Description = What's the weather ?
+
+[Author]
+Name = Jasper2fork Project
+URL = https://github.com/chrobione/Jasper2fork

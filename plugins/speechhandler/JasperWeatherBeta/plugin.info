@@ -1,0 +1,10 @@
+[Plugin]
+Name = JasperWeather
+Version = 0.1a
+License = MIT
+URL = https://github.com/chrobione/Jasper2fork
+Description = Check out the latest headlines on Hacker News
+
+[Author]
+Name = Jasper2fork Project
+URL = https://github.com/chrobione/Jasper2fork
