@@ -60,7 +60,7 @@ class STTPlugin(GenericPlugin):
         self._vocabulary_compiled = False
         self._vocabulary_path = None
         self._samplerate = 16000
-        self._volume_normalization = 1
+        self._volume_normalization = None
 
     def compile_vocabulary(self, compilation_func):
         if self._vocabulary_compiled:
