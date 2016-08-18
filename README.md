@@ -16,67 +16,28 @@ The documentation is the first thing.
 
 If you have a jasper working install then you should only need to do the following:
 
-sudo pip install --upgrade setuptools .
-sudo pip install -r Jasper2fork/python_requirements.txt .
-
-For more information, see the [WIKI](https://github.com/chrobione/Jasper2fork/wiki)
-
-
-
-Here is a sample of the ~/.jasper/profile.yml
 ```
-#J2 and jasper-dev branch profile.yml full example.
-# Celluar Carrier http://www.emailtextmessages.com for more info exampl is Verizon.
-carrier: vtext.com
-# First name how the computer will address you
-first_name: Yourname
-# Last or Surname
-last_name: Yourlastname
-
-# Warning GMAIL CONFIG IS UNSECURE PLAIN TEXT STORED PASSWORD
-gmail_address: email@gmail.com
-gmail_password: xxxxxxxx
-# This for weather forecast can acces City or zipcode
-weather:
-  location: 'POSTALCODE'
-# Phone number you can receive text messages on.  
-phone_number: 'xxxxxxxxxxx'
-
-# This sends alerts. false = text message. true = email message.
-prefers_email: false
-
-# Time zone so when you ask for the time it tells you correctly
-timezone: America/Denver
-
-# Passive engine configuration (keyword detection)
-#stt_passive_engine: x
-
-# Speech To Text engine with witai-stt example
-stt_engine: witai-stt
-witai-stt:
-  access_token:    X
-
-# Text To Speech Config default is espeak-tts
-# uncomment to use
-#tts_engine: mary-tts
-
-#mary-tts:
-#  server: 'tts.mattcurry.com'
-#  port: '59125'
-#  language: 'en_US'
-#  voice: 'cmu-slt-hsmm'
-
-# Audio configuration
-# uncomment to use
-#audio_engine: pyaudio
-
-#Mic configuration
-#input_device:
-
-#Speak out configuration
-#output_device:
-
-# Wolfram Alpha Integration
-#keys:
-  #WOLFRAMALPHA:   X
+sudo pip install --upgrade setuptools 
+sudo pip install -r Jasper2fork/python_requirements.txt 
+  
 ```
+
+For further information (installation, setup ...), please, see the [WIKI](https://github.com/chrobione/Jasper2fork/wiki)
+
+## Contributing
+
+If you'd like to contribute to Jasper, please read through the **[Contributing Guide](CONTRIBUTING.md)**, which outlines the philosophies to preserve, tests to run, and more. We highly recommend reading through this guide before writing any code.
+
+The Contributing Guide also outlines some prospective features and areas that could use love. However, for a more thorough overview of Jasper2fork direction and goals, check out the **[Issues](https://github.com/chrobione/Jasper2fork/issues)**.
+
+## Support
+
+If you run into an issue or require technical support, please first look through the closed and open **[GitHub Issues](https://github.com/chrobione/Jasper2fork/issues)**, as you may find a solution there (or some useful advice, at least).
+
+If you're still having trouble, the next place to look would be the new **[Google Group support forum](https://groups.google.com/forum/#!forum/jasper-support-forum)**. If your problem remains unsolved, feel free to create a post there describing the issue, the steps you've taken to debug it, etc.
+
+### Thanks in advance for any and all work you contribute to Jasper2fork !
+
+
+
+
