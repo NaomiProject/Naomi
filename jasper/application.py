@@ -96,6 +96,20 @@ class Jasper(object):
         self._logger.debug("Using STT engine '%s'", active_stt_slug)
 
         try:
+            active_stt_reply = self.config['active_stt']['reply']
+            self._logger.warning(
+                "Using active STT voice reply '%s'", active_stt_reply)
+        except KeyError:
+            pass
+
+        try:
+            active_stt_response = self.config['active_stt']['response']
+            self._logger.warning(
+                "Using active STT voice response '%s'", active_stt_response)
+        except KeyError:
+            pass
+
+        try:
             passive_stt_slug = self.config['passive_stt']['engine']
         except KeyError:
             passive_stt_slug = active_stt_slug
@@ -203,7 +217,13 @@ class Jasper(object):
 
         try:
             active_stt_plugin._samplerate =\
-                self.config['active_stt']['samplerate']
+                int(self.config['active_stt']['samplerate'])
+        except KeyError:
+            pass
+
+        try:
+            active_stt_plugin._volume_normalization =\
+                float(self.config['active_stt']['volume_normalization'])
         except KeyError:
             pass
 
@@ -219,9 +239,27 @@ class Jasper(object):
 
         try:
             passive_stt_plugin._samplerate =\
-                self.config['passive_stt']['samplerate']
+                int(self.config['passive_stt']['samplerate'])
         except KeyError:
             pass
+
+        try:
+            passive_stt_plugin._volume_normalization =\
+                float(self.config['passive_stt']['volume_normalization'])
+        except KeyError:
+            pass
+
+        try:
+            active_stt_reply = self.config['active_stt']['reply']
+        except KeyError:
+            self._logger.info(KeyError)
+            active_stt_reply = None
+
+        try:
+            active_stt_response = self.config['active_stt']['response']
+        except KeyError:
+            self._logger.info(KeyError)
+            active_stt_response = None
 
         tts_plugin_info = self.plugins.get_plugin(tts_slug, category='tts')
         tts_plugin = tts_plugin_info.plugin_class(tts_plugin_info, self.config)
@@ -237,8 +275,8 @@ class Jasper(object):
             self._logger.info('Using batched mode')
         else:
             self.mic = mic.Mic(
-                input_device, output_device,
-                passive_stt_plugin, active_stt_plugin,
+                input_device, output_device, active_stt_reply,
+                active_stt_response, passive_stt_plugin, active_stt_plugin,
                 tts_plugin, self.config, keyword=keyword)
 
         self.conversation = conversation.Conversation(

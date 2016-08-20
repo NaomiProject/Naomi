@@ -36,6 +36,7 @@ class Mic(object):
     """
 
     def __init__(self, input_device, output_device,
+                 active_stt_reply, active_stt_response,
                  passive_stt_engine, active_stt_engine,
                  tts_engine, config, keyword='JASPER'):
         self._logger = logging.getLogger(__name__)
@@ -45,7 +46,8 @@ class Mic(object):
         self.active_stt_engine = active_stt_engine
         self._input_device = input_device
         self._output_device = output_device
-
+        self._active_stt_reply = active_stt_reply
+        self._active_stt_response = active_stt_response
         self._input_rate = get_config_value(config, 'input_samplerate', 16000)
         self._input_bits = get_config_value(config, 'input_samplewidth', 16)
         self._input_channels = get_config_value(config, 'input_channels', 1)
@@ -98,7 +100,7 @@ class Mic(object):
             return 0
 
     @contextlib.contextmanager
-    def _write_frames_to_file(self, frames, framerate):
+    def _write_frames_to_file(self, frames, framerate, volume):
         with tempfile.NamedTemporaryFile(mode='w+b') as f:
             wav_fp = wave.open(f, 'wb')
             wav_fp.setnchannels(self._input_channels)
@@ -112,12 +114,13 @@ class Mic(object):
                                           self._input_channels,
                                           self._input_rate,
                                           framerate, None)[0]
-            maxvolume = audioop.minmax(fragment, self._input_bits/8)[1]
-            fragment_norm = audioop.mul(
-                fragment, int(self._input_bits/8),
-                0.5 * (2.**15) / maxvolume)
+            if volume is not None:
+                maxvolume = audioop.minmax(fragment, self._input_bits/8)[1]
+                fragment = audioop.mul(
+                    fragment, int(self._input_bits/8),
+                    volume * (2.**15) / maxvolume)
 
-            wav_fp.writeframes(fragment_norm)
+            wav_fp.writeframes(fragment)
             wav_fp.close()
             f.seek(0)
             yield f
@@ -126,7 +129,8 @@ class Mic(object):
         while True:
             frames = frame_queue.get()
             with self._write_frames_to_file(
-                    frames, self.passive_stt_engine._samplerate) as f:
+                    frames, self.passive_stt_engine._samplerate,
+                    self.passive_stt_engine._volume_normalization) as f:
                 try:
                     transcribed = self.passive_stt_engine.transcribe(f)
                 except:
@@ -207,7 +211,12 @@ class Mic(object):
     def active_listen(self, timeout=3):
         # record until <timeout> second of silence or double <timeout>.
         n = int(round((self._input_rate/self._input_chunksize)*timeout))
-        self.play_file(paths.data('audio', 'beep_hi.wav'))
+        if self._active_stt_reply:
+            self.say(self._active_stt_reply)
+        else:
+            self._logger.debug("No text to respond with using beep")
+            self.play_file(paths.data('audio', 'beep_hi.wav'))
+
         frames = []
         for frame in self._input_device.record(self._input_chunksize,
                                                self._input_bits,
@@ -217,9 +226,16 @@ class Mic(object):
             if len(frames) >= 2*n or (
                     len(frames) > n and self._snr(frames[-n:]) <= 3):
                 break
-        self.play_file(paths.data('audio', 'beep_lo.wav'))
+
+        if self._active_stt_response:
+            self.say(self._active_stt_response)
+        else:
+            self._logger.debug("No text to respond with using beep")
+            self.play_file(paths.data('audio', 'beep_lo.wav'))
+
         with self._write_frames_to_file(
-                frames, self.active_stt_engine._samplerate) as f:
+                frames, self.active_stt_engine._samplerate,
+                self.active_stt_engine._volume_normalization) as f:
             return self.active_stt_engine.transcribe(f)
 
     # Output methods
