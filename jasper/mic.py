@@ -114,7 +114,7 @@ class Mic(object):
                                           self._input_channels,
                                           self._input_rate,
                                           framerate, None)[0]
-            if volume != 1:
+            if volume is not None:
                 maxvolume = audioop.minmax(fragment, self._input_bits/8)[1]
                 fragment = audioop.mul(
                     fragment, int(self._input_bits/8),
