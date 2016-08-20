@@ -11,9 +11,12 @@ import paths
 def run():
     profile = {}
 
-    print("Welcome to the profile populator. If, at any step, you'd prefer " +
-          "not to enter the requested information, just hit 'Enter' with a " +
-          "blank field to continue.")
+    print("\nHi i'm Jasper, your Personnal Assistant and welcome" +
+          "to the profile populator." +
+          "If, at any step, you'd prefer " +
+          "not to enter the requested information," +
+          "just hit 'Enter' with a " +
+          "blank field to continue.\n")
 
     def simple_request(var, cleanVar, cleanInput=None):
         input = raw_input(cleanVar + ": ")
@@ -25,13 +28,26 @@ def run():
     # name
     simple_request('first_name', 'First name')
     simple_request('last_name', 'Last name')
-    simple_request('What is my Name?', 'keyword')
+    simple_request('keyword', 'What is my Name?')
+
+    # language
+
+    language = raw_input("\nWhat is your language ?" +
+                         "available: en-US, fr-FR, de-DE : \n")
+    while not language or (language != 'en-US' and language != 'fr-FR'
+                           and language != 'de-DE'):
+        language = raw_input("\nPlease choose your language," +
+                             "available: en-US, fr-FR, de-DE : \n")
+    profile['language'] = language
 
     # gmail
-    print("\nJasper uses your Gmail to send notifications. Alternatively, " +
-          "you can skip this step (or just fill in the email address if you " +
+    print("\nJasper uses your Gmail to send notifications." +
+          "Alternatively, " +
+          "you can skip this step " +
+          "(or just fill in the email address if you " +
           "want to receive email notifications) and setup a Mailgun " +
-          "account, as at http://jasperproject.github.io/documentation/" +
+          "account, as at " +
+          "http://jasperproject.github.io/documentation/" +
           "software/#mailgun.\n")
     simple_request('gmail_address', 'Gmail address')
     # FIXME This needs to be anything but plaintext.

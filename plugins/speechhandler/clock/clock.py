@@ -20,9 +20,9 @@ class ClockPlugin(plugin.SpeechHandlerPlugin):
         tz = app_utils.get_timezone(self.profile)
         now = datetime.datetime.now(tz=tz)
         if now.minute == 0:
-            fmt = "It is {t:%l} {t:%P} right now."
+            fmt = "It is {t:%l} {t:%p} right now."
         else:
-            fmt = "It is {t:%l}:{t.minute} {t:%P} right now."
+            fmt = "It is {t:%l}:{t:%M} {t:%p} right now."
         mic.say(self.gettext(fmt).format(t=now))
 
     def is_valid(self, text):
