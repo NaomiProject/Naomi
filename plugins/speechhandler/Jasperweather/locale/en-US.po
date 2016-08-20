@@ -1,15 +1,14 @@
 # Jasper weather Plugin
-# Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
 # This file is distributed under the same license as the Jasper package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Jasper 2.0\n"
-"Report-Msgid-Bugs-To: https://github.com/jasperproject/jasper-client/issues\n"
-"POT-Creation-Date: 2015-10-30 19:00+0100\n"
-"PO-Revision-Date: 2015-10-30 19:00+0100\n"
-"Last-Translator: Jan Holthuis <jan.holthuis@ruhr-uni-bochum.de>\n"
+"Project-Id-Version: Jasper2fork 0.1\n"
+"Report-Msgid-Bugs-To: https://github.com/chrobione/Jasper2fork/issues\n"
+"POT-Creation-Date: 2016-8-20 19:00+0100\n"
+"PO-Revision-Date: 2016-8-20 19:00+0100\n"
+"Last-Translator: Rocca Seb <se.rocca84@gmail.com>\n"
 "Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,8 +22,24 @@ msgstr ""
 msgid "FORECAST"
 msgstr ""
 
+#: jasperweather/jasperweather.py:11
+msgid "TOMMOROW"
+msgstr ""
+
+#: jasperweather/jasperweather.py:11
+msgid "NEXT"
+msgstr ""
+
+#: jasperweather/jasperweather.py:11
+msgid "TEMPERATURE"
+msgstr ""
+
+#: jasperweather/jasperweather.py:11
+msgid "WIND"
+msgstr ""
+
 #: jasperweather/jasperweather.py:22
-msgid "Weather forecast for next week at "+loc +"
+msgid "Weather forecast for next week at "
 msgstr ""
 
 #: jasperweather/jasperweather.py:25
@@ -36,11 +51,11 @@ msgid "You will observe heavy rain on."
 msgstr ""
 
 #: jasperweather/jasperweather.py:44
-msgid "Sunny Days are. "
+msgid "Sunny Days are."
 msgstr ""
 
 #: jasperweather/jasperweather.py:55
-msgid "You will feel heat on. "
+msgid "You will feel heat on."
 msgstr ""
 
 #: jasperweather/jasperweather.py:63
@@ -52,7 +67,7 @@ msgid "Most humid day will be."
 msgstr ""
 
 #: jasperweather/jasperweather.py:79
-msgid "Coolest day will be. "
+msgid "Coolest day will be."
 msgstr ""
 
 #: jasperweather/jasperweather.py:88
@@ -68,21 +83,9 @@ msgid "current"
 msgstr ""
 
 #: jasperweather/jasperweather.py:102
-msgid "Weather at "+loc+". Today is "+stat+". There is a chance of "  \
-       +detstat+". Now Temperature is "+curr_temp+" degree "  \
-       +temp_unit+". Humidity "+humi+" percent. Wind Speed "  \
-       +wind_speed+". with cloud cover "+clou+" percent."
+msgid "Weather at {}. Today is {}. There is a chance of {}. Now Temperature is {} degree {}. Humidity {} percent. Wind Speed {}. with cloud cover {} percent."
 msgstr ""
 
 #: jasperweather/jasperweather.py:107
-msgid "tommorow"
-msgstr ""
-
-#: jasperweather/jasperweather.py:112
-msgid "Weather at "+loc+". Tomorrow will be "+stat+". There will be a chance of "  \
-       +detstat+". Temperature in the morning "+temp_morn+" degree "  \
-       +temp_unit+". Days Temperature will be "+temp_day+" degree "  \
-       +temp_unit+". and Temperature at night will be "+temp_night+" degree "  \
-       +temp_unit+". Humidity "+humi+" percent. Wind Speed "  \
-       +wind_speed+". with clouds cover "+clou+" percent."
+msgid "Weather at {}. Tomorrow will be {}. There will be a chance of{}. Temperature in the morning {} degree . Days Temperature will be  degree {}. and Temperature at night will be {} degree {}. Humidity {} percent. Wind Speed {}. with clouds cover {} percent."
 msgstr ""

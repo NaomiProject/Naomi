@@ -10,24 +10,26 @@ class JasperWeatherplugin(plugin.SpeechHandlerPlugin):
         return [
             self.gettext("WEATHER"),
             self.gettext("FORECAST"),
+            self.gettext("TOMORROW"),
+            self.gettext("NEXT"),
+            self.gettext("WEEK"),
+            self.gettext("TEMPERATURE"),
+            self.gettext("WIND")
                 ]
 
     def handle(self, text, mic):
 
         serviceNum = NumberService()
         try:
-            if 'OpenWeatherMap' in profile:
-                if 'api_key' in self.profile['OpenWeatherMap']:
-                    api_key = self.profile['OpenWeatherMap']['api_key']
-                    owm = pyowm.OWM(api_key)
-                if 'city_name' in self.profile['OpenWeatherMap']:
-                    city_name = self.profile['OpenWeatherMap']['city_name']
-                if 'country' in self.profile['OpenWeatherMap']:
-                    country = self.profile['OpenWeatherMap']['country']
-                if 'temp_unit' in self.profile['OpenWeatherMap']:
-                    temp_unit = self.profile['OpenWeatherMap']['temp_unit']
-
+            api_key = self.profile['OpenWeatherMap']['api_key']
+            city_name = self.profile['OpenWeatherMap']['city_name']
+            country = self.profile['OpenWeatherMap']['country']
+            temp_unit = self.profile['OpenWeatherMap']['temp_unit']
+            lang = self.profile['OpenWeatherMap']['lang']
+            owm = pyowm.OWM(apikey, language= lang)
         except:
+            mic.say(self.gettext("Openweathermap not found in profile."))
+
 
 
     def formatTimeStamp(unix_time):
@@ -112,22 +114,22 @@ class JasperWeatherplugin(plugin.SpeechHandlerPlugin):
                 temp_max = serviceNum.parseMagnitude(temp['temp_max'])
                 temp_min = serviceNum.parseMagnitude(temp['temp_min'])
                 curr_temp = serviceNum.parseMagnitude(temp['temp'])
-                weather_report = "Weather at "+loc+". Today is "+stat+". There is a chance of "  \
-                                  +detstat+". Now Temperature is "+curr_temp+" degree "  \
-                                  +temp_unit+". Humidity "+humi+" percent. Wind Speed "  \
-                                  +wind_speed+". with cloud cover "+clou+" percent."
+                weather_report = self.gettext("\n Weather at {}. Today is {}. There is a chance of "+
+                                              "{}. Now Temperature is {} degree "+
+                                              "{}. Humidity {} percent. Wind Speed "+
+                                              "{}. with cloud cover {} percent.\n".format(loc, stat, detstat, curr_temp, temp_unit, humi, wind_speed, clou))
 
             elif report == 'tommorow':
                 temp = weather.get_temperature(temp_unit)
                 temp_morn = serviceNum.parseMagnitude(temp['morn'])
                 temp_day = serviceNum.parseMagnitude(temp['day'])
                 temp_night = serviceNum.parseMagnitude(temp['night'])
-                weather_report = "Weather at "+loc+". Tomorrow will be "+stat+". There will be a chance of "  \
-                                  +detstat+". Temperature in the morning "+temp_morn+" degree "  \
-                                  +temp_unit+". Days Temperature will be "+temp_day+" degree "  \
-                                  +temp_unit+". and Temperature at night will be "+temp_night+" degree "  \
-                                  +temp_unit+". Humidity "+humi+" percent. Wind Speed "  \
-                                  +wind_speed+". with clouds cover "+clou+" percent."
+                weather_report = self.gettext("\nWeather at {}. Tomorrow will be {}. There will be a chance of "+
+                                              "{}. Temperature in the morning {} degree "+
+                                              "{}. Days Temperature will be  degree "+
+                                              "{}. and Temperature at night will be {} degree "+
+                                              "{}. Humidity {} percent. Wind Speed "+
+                                              "{}. with clouds cover {} percent.\n".format(loc, stat, detstat, temp_morn, temp_unit, temp_day, temp_unit, temp_night, temp_unit, humi ))
 
             return weather_report
 
@@ -159,5 +161,5 @@ class JasperWeatherplugin(plugin.SpeechHandlerPlugin):
                 weather_report = getWeeklyWeatherReport(forecast,loc,temp_unit,report='weekly')
                 mic.say(weather_report)
 
-    def isValid(text):
+    def is_valid(self, text):
         return any(p.lower() in text.lower() for p in self.get_phrases())

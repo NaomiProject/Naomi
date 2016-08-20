@@ -21,13 +21,10 @@ semantic==1.0.3
 facebook-sdk==0.4.0
 
 # Weather/News modules
-feedparser==5.1.3
+pyowm
 
 # Gmail module
 python-dateutil==2.3
 
 # MPDControl module
 python-mpd==0.3.0
-
-
-

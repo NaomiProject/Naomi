@@ -109,6 +109,6 @@ class WitAiSTTPlugin(plugin.STTPlugin):
                                   exc_info=True)
             return []
         else:
-            transcribed = [text.upper()]
+            transcribed = [text.upper()].encode
             self._logger.info('Transcribed: %r', transcribed)
             return transcribed
