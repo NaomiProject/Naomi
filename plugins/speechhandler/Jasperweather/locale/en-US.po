@@ -35,7 +35,11 @@ msgid "TEMPERATURE"
 msgstr ""
 
 #: jasperweather/jasperweather.py:11
-msgid "WIND"
+msgid "CURRENT"
+msgstr ""
+
+#: jasperweather/jasperweather.py:11
+msgid "TODAY"
 msgstr ""
 
 #: jasperweather/jasperweather.py:22

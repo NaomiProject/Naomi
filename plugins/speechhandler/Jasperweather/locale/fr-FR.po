@@ -35,8 +35,12 @@ msgid "TEMPERATURE"
 msgstr "TEMPÉRATURE"
 
 #: jasperweather/jasperweather.py:11
-msgid "WIND"
-msgstr "VENT"
+msgid "CURRENT"
+msgstr "ACTUEL"
+
+#: jasperweather/jasperweather.py:11
+msgid "TODAY"
+msgstr "AUJOURD'HUI"
 
 #: jasperweather/jasperweather.py:22
 msgid "Weather forecast for next week at "
