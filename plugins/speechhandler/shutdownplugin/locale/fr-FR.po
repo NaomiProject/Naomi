@@ -33,11 +33,11 @@ msgstr "Je vais m'éteindre."
 
 #:shutdownplugin/shutdown.py:31
 msgid "Shuting down now."
-msgstr "Je m'éteint maitenant"
+msgstr "Je m'éteint maitenant."
 
 #: shutdownplugin/shutdown.py:32
 msgid "Bye Bye."
-msgstr "Bye bye"
+msgstr "Bye bye."
 
 #: shutdownplugin/shutdown.py:33
 msgid "Goodbye, {}"
