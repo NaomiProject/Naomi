@@ -19,6 +19,10 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: client/conversation.py:24
+msgid "My name is, %s."
+msgstr "Mon nom est %s."
+
+#: client/conversation.py:32
 #, python-format
 msgid "How can I be of service, %s?"
 msgstr "Comment Puis-je vous aider, %s?"

@@ -1,0 +1,10 @@
+[Plugin]
+Name = Shutdown
+Version = 1.0.0
+License = MIT
+URL = https://github.com/jasper2fork/j2f
+Description = Shutdown Jasper
+
+[Author]
+Name = Jasper Project
+URL = https://github.com/jasper2fork/j2f

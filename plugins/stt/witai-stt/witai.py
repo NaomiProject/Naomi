@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 import requests
 from jasper import plugin
