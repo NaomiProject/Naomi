@@ -110,7 +110,7 @@ def xsampa_to_arpabet(xsampa_string, sep=' '):
                         else num_remaining_chars)
 
         for j in range(phone_length, 0, -1):
-            phone = s[i:i+j]
+            phone = s[i:i + j]
             if phone in XSAMPA_TO_ARPABET_MAPPING:
                 result.append(XSAMPA_TO_ARPABET_MAPPING[phone])
                 i += j
