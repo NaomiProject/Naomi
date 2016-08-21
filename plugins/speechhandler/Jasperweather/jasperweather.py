@@ -5,6 +5,7 @@ from semantic.numbers import NumberService
 import pyowm
 import re
 
+
 def formatTimeStamp(unix_time):
     return datetime.fromtimestamp(unix_time).strftime("%B %d")
 
