@@ -1,5 +1,5 @@
 # Jasper2fork
-[![Build Status](https://travis-ci.org/chrobione/Jasper2fork.svg?branch=jasper-dev)](https://travis-ci.org/chrobione/Jasper2fork) [![Coverage Status](https://img.shields.io/coveralls/chrobione/Jasper2fork.svg)](https://coveralls.io/r/chrobione/Jasper2fork) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec)](https://www.codacy.com/app/chrobione/Jasper2fork?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=chrobione/Jasper2fork&amp;utm_campaign=Badge_Grade)
+[![Build Status](https://travis-ci.org/jasper2fork/j2f.svg?branch=jasper-dev)](https://travis-ci.org/jasper2fork/j2f) [![Coverage Status](https://img.shields.io/coveralls/jasper2fork/j2f.svg)](https://coveralls.io/r/jasper2fork/j2f) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec)](https://www.codacy.com/app/jasper2fork/j2f?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jasper2fork/j2f&amp;utm_campaign=Badge_Grade)
 =============
 The current plan is to use [Discord](https://discord.gg/kSnVC9C) and Github for the day to day comms.
 
