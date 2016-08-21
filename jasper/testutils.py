@@ -32,11 +32,10 @@ class TestMic(object):
 
 
 def get_plugin_instance(plugin_class, *extra_args):
-    info = type('', (object,), {
-        'name': 'pluginunittest',
-        'translations': {
-            'en-US': gettext.NullTranslations()
-            }
-        })()
+    info = type('', (object,),
+                {
+                    'name': 'pluginunittest',
+                    'translations':
+                    {'en-US': gettext.NullTranslations()}})()
     args = tuple(extra_args) + (info, TEST_PROFILE)
     return plugin_class(*args)

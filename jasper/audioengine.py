@@ -91,18 +91,18 @@ class AudioDevice(object):
     def play_fp(self, fp, chunksize=1024, add_padding=False):
         w = wave.open(fp, 'rb')
         channels = w.getnchannels()
-        bits = w.getsampwidth()*8
+        bits = w.getsampwidth() * 8
         rate = w.getframerate()
         with self.open_stream(bits, channels, rate,
                               chunksize=chunksize) as stream:
             data = w.readframes(chunksize)
             if add_padding and len(data) > 0:
-                data += b'\00'*(chunksize - len(data))
+                data += b'\00' * (chunksize - len(data))
             while data:
                 stream.write(data)
                 data = w.readframes(chunksize)
                 if add_padding and len(data) > 0:
-                    data += b'\00'*(chunksize - len(data))
+                    data += b'\00' * (chunksize - len(data))
         w.close()
 
     def play_file(self, filename, *args, **kwargs):
@@ -134,7 +134,7 @@ class AudioDevice(object):
                     print('    None')
                 else:
                     n = 4
-                    for chunk in (formats[i:i+n]
+                    for chunk in (formats[i:i + n]
                                   for i in range(0, len(formats), n)):
                         print('    %s' % ', '.join(
                             "(%d Bit %d CH @ %d Hz)" % fmt

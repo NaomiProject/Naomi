@@ -75,7 +75,7 @@ class Mic(object):
         self._logger.debug('Output padding: %s',
                            'yes' if self._output_padding else 'no')
 
-        self._threshold = 2.0**self._input_bits
+        self._threshold = 2.0 ** self._input_bits
 
     @contextlib.contextmanager
     def special_mode(self, name, phrases):
@@ -93,9 +93,9 @@ class Mic(object):
             self.active_stt_engine = original_stt_engine
 
     def _snr(self, frames):
-        rms = audioop.rms(b''.join(frames), int(self._input_bits/8))
+        rms = audioop.rms(b''.join(frames), int(self._input_bits / 8))
         if rms > 0 and self._threshold > 0:
-            return 20.0 * math.log(rms/self._threshold, 10)
+            return 20.0 * math.log(rms / self._threshold, 10)
         else:
             return 0
 
@@ -104,21 +104,21 @@ class Mic(object):
         with tempfile.NamedTemporaryFile(mode='w+b') as f:
             wav_fp = wave.open(f, 'wb')
             wav_fp.setnchannels(self._input_channels)
-            wav_fp.setsampwidth(int(self._input_bits/8))
+            wav_fp.setsampwidth(int(self._input_bits / 8))
             wav_fp.setframerate(framerate)
             if self._input_rate == framerate:
                 fragment = ''.join(frames)
             else:
                 fragment = audioop.ratecv(''.join(frames),
-                                          int(self._input_bits/8),
+                                          int(self._input_bits / 8),
                                           self._input_channels,
                                           self._input_rate,
                                           framerate, None)[0]
             if volume is not None:
-                maxvolume = audioop.minmax(fragment, self._input_bits/8)[1]
+                maxvolume = audioop.minmax(fragment, self._input_bits / 8)[1]
                 fragment = audioop.mul(
-                    fragment, int(self._input_bits/8),
-                    volume * (2.**15) / maxvolume)
+                    fragment, int(self._input_bits / 8),
+                    volume * (2. ** 15) / maxvolume)
 
             wav_fp.writeframes(fragment)
             wav_fp.close()
@@ -210,7 +210,7 @@ class Mic(object):
 
     def active_listen(self, timeout=3):
         # record until <timeout> second of silence or double <timeout>.
-        n = int(round((self._input_rate/self._input_chunksize)*timeout))
+        n = int(round((self._input_rate / self._input_chunksize) * timeout))
         if self._active_stt_reply:
             self.say(self._active_stt_reply)
         else:
@@ -223,7 +223,7 @@ class Mic(object):
                                                self._input_channels,
                                                self._input_rate):
             frames.append(frame)
-            if len(frames) >= 2*n or (
+            if len(frames) >= 2 * n or (
                     len(frames) > n and self._snr(frames[-n:]) <= 3):
                 break
 

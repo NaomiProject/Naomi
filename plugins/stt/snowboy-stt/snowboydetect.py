@@ -94,11 +94,7 @@ except AttributeError:
 
 class SnowboyDetect(_object):
     __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self,
-                                                          SnowboyDetect,
-                                                          name, value)
     __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, SnowboyDetect, name)
     __repr__ = _swig_repr
 
     def __init__(self, resource_filename, model_str):
@@ -107,6 +103,12 @@ class SnowboyDetect(_object):
             self.this.append(this)
         except:
             self.this = this
+
+    def __setattr__(self, name, value):
+        _swig_setattr(self, SnowboyDetect, name, value)
+
+    def __getattr__(self, name):
+        _swig_getattr(self, SnowboyDetect, name)
 
     def Reset(self):
         return _snowboydetect.SnowboyDetect_Reset(self)
@@ -139,7 +141,10 @@ class SnowboyDetect(_object):
     def BitsPerSample(self):
         return _snowboydetect.SnowboyDetect_BitsPerSample(self)
     __swig_destroy__ = _snowboydetect.delete_SnowboyDetect
-    __del__ = lambda self: None
+
+    def __del__(self):
+        None
+
 SnowboyDetect_swigregister = _snowboydetect.SnowboyDetect_swigregister
 SnowboyDetect_swigregister(SnowboyDetect)
 

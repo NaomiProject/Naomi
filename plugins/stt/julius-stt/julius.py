@@ -25,7 +25,7 @@ class JuliusSTTPlugin(plugin.STTPlugin):
                              "support!")
 
         vocabulary_path = self.compile_vocabulary(
-          juliusvocab.compile_vocabulary)
+            juliusvocab.compile_vocabulary)
 
         self._dfa_file = juliusvocab.get_dfa_path(vocabulary_path)
         self._dict_file = juliusvocab.get_dict_path(vocabulary_path)
@@ -95,5 +95,6 @@ class JuliusSTTPlugin(plugin.STTPlugin):
         self._logger.info('Transcribed: %r', transcribed)
         return transcribed
 
-    def get_vocabulary_type(self):
-        return JuliusVocabulary
+    # FIXME: this is not working!, JuliusVocabulary is undefined
+    # def get_vocabulary_type(self):
+    #    return JuliusVocabulary
