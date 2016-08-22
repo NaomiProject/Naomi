@@ -16,9 +16,9 @@ If you think that you found a bug and that you're using the most recent version 
 
 There are a few key philosophies to preserve while designing features for Jasper:
 
-1. **The core Jasper software (`in ~/Jasper2fork/jasper/`) must remain decoupled from any third-party web services.** For example, the Jasper core should never depend on Google Translate in any way. This is to avoid unnecessary dependences on web services that might change or become paid over time.
-2. **The core Jasper software (`in ~/Jasper2fork/jasper/`) must remain decoupled from any paid software or services.** Of course, you're free to use whatever you'd like when running Jasper locally or in a fork, but the main branch needs to remain free and open-source.
-3. **Jasper should be _usable_ by both beginner and expert programmers.** If you make a radical change, in particular one that requires some sort of setup, try to offer an easy-to-run alternative or tutorial. See, for example, the profile populator ([`Jasper2fork/jasper/populate.py`](https://github.com/jasper2fork/j2f/blob/jasper-dev/jasper/populate.py)), which abstracts away the difficulty of correctly formatting and populating the user profile.
+1. **The core Jasper software (`in ~/j2f/jasper/`) must remain decoupled from any third-party web services.** For example, the Jasper core should never depend on Google Translate in any way. This is to avoid unnecessary dependences on web services that might change or become paid over time.
+2. **The core Jasper software (`in ~/j2f/jasper/`) must remain decoupled from any paid software or services.** Of course, you're free to use whatever you'd like when running Jasper locally or in a fork, but the main branch needs to remain free and open-source.
+3. **Jasper should be _usable_ by both beginner and expert programmers.** If you make a radical change, in particular one that requires some sort of setup, try to offer an easy-to-run alternative or tutorial. See, for example, the profile populator ([`j2f/jasper/populate.py`](https://github.com/jasper2fork/j2f/blob/jasper-dev/jasper/populate.py)), which abstracts away the difficulty of correctly formatting and populating the user profile.
 
 ### DOs and DON'Ts
 
