@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import collections
+import logging
 import os
 import re
 import subprocess
 import tempfile
-import logging
+
 from . import phonemeconversion
 
 
@@ -18,14 +20,13 @@ RE_ISYMNOTFOUND = re.compile(r'^Symbol: \'(?P<symbol>.+)\' not found in ' +
 def execute(executable, version, fst_model, input, is_file=False, nbest=None):
     logger = logging.getLogger(__name__)
 
-    cmd = [executable,
-               '--model=%s' % fst_model]
+    cmd = [executable, '--model=%s' % fst_model]
     if version <= 0.8:
         cmd.append('--input=%s' % input)
         cmd.append('--words')
         if is_file:
-            cmd.append('--isfile')   
-    else:        
+            cmd.append('--isfile')
+    else:
         if is_file:
             cmd.append('--wordlist=%s' % input)
         else:
@@ -75,7 +76,8 @@ def execute(executable, version, fst_model, input, is_file=False, nbest=None):
             if word not in result:
                 result[word] = []
             result[word].append(pronounciation)
-    return result
+    results = collections.OrderedDict(sorted(result.items()))
+    return results
 
 
 class PhonetisaurusG2P(object):
@@ -125,7 +127,8 @@ class PhonetisaurusG2P(object):
             for word in words:
                 f.write("%s\n" % word)
             tmp_fname = f.name
-        output = execute(self.executable, self.version, self.fst_model, tmp_fname,
+        output = execute(self.executable, self.version,
+                         self.fst_model, tmp_fname,
                          is_file=True, nbest=self.nbest)
         os.remove(tmp_fname)
         return output
