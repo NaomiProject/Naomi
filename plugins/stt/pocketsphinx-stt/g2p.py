@@ -19,13 +19,13 @@ def execute(executable, version, fst_model, input, is_file=False, nbest=None):
     logger = logging.getLogger(__name__)
 
     cmd = [executable,
-               '--model=%s' % fst_model]
+           '--model=%s' % fst_model]
     if version <= 0.8:
         cmd.append('--input=%s' % input)
         cmd.append('--words')
         if is_file:
-            cmd.append('--isfile')   
-    else:        
+            cmd.append('--isfile')
+    else:
         if is_file:
             cmd.append('--wordlist=%s' % input)
         else:
@@ -125,7 +125,8 @@ class PhonetisaurusG2P(object):
             for word in words:
                 f.write("%s\n" % word)
             tmp_fname = f.name
-        output = execute(self.executable, self.version, self.fst_model, tmp_fname,
+        output = execute(self.executable, self.version, self.fst_model,
+                         tmp_fname,
                          is_file=True, nbest=self.nbest)
         os.remove(tmp_fname)
         return output
