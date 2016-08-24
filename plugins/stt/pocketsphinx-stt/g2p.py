@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+import collections
+import logging
 import os
 import re
 import subprocess
 import tempfile
-import logging
-import collections
+
 from . import phonemeconversion
 
 
@@ -76,7 +77,6 @@ def execute(executable, version, fst_model, input, is_file=False, nbest=None):
             if word not in result:
                 result[word] = []
             result[word].append(pronounciation)
-            
     results = collections.OrderedDict(sorted(result.items()))
     return results
 
