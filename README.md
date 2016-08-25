@@ -9,7 +9,7 @@ Client code for the Jasper voice computing platform. Jasper is an open source pl
 
 This fork is a work in progress and as such if you find something missing/broke/anything please make a pull request with tests would be nice, or file an issue.
 
-There are plenty of things that need help.  If you have to ask your not looking at the code.
+There are plenty of things that need help. If you have to ask your not looking at the code.
 
 The documentation is the first thing.
 
