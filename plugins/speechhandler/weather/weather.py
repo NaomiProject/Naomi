@@ -11,54 +11,54 @@ YAHOO_YQL_QUERY_FORECAST = \
     'SELECT * FROM weather.forecast WHERE woeid="%s" AND u="%s"'
 YAHOO_YQL_URL = 'https://query.yahooapis.com/v1/public/yql'
 YAHOO_YQL_WEATHER_CONDITION_CODES = {
-    0:    'tornado',
-    1:    'tropical storm',
-    2:    'hurricane',
-    3:    'severe thunderstorms',
-    4:    'thunderstorms',
-    5:    'mixed rain and snow',
-    6:    'mixed rain and sleet',
-    7:    'mixed snow and sleet',
-    8:    'freezing drizzle',
-    9:    'drizzle',
-    10:   'freezing rain',
-    11:   'showers',
-    12:   'showers',
-    13:   'snow flurries',
-    14:   'light snow showers',
-    15:   'blowing snow',
-    16:   'snow',
-    17:   'hail',
-    18:   'sleet',
-    19:   'dust',
-    20:   'foggy',
-    21:   'haze',
-    22:   'smoky',
-    23:   'blustery',
-    24:   'windy',
-    25:   'cold',
-    26:   'cloudy',
-    27:   'mostly cloudy at night',
-    28:   'mostly cloudy at day',
-    29:   'partly cloudy at night',
-    30:   'partly cloudy at day',
-    31:   'clear at night',
-    32:   'sunny',
-    33:   'fair at night',
-    34:   'fair at day',
-    35:   'mixed rain and hail',
-    36:   'hot',
-    37:   'isolated thunderstorms',
-    38:   'scattered thunderstorms',
-    39:   'scattered thunderstorms',
-    40:   'scattered showers',
-    41:   'heavy snow',
-    42:   'scattered snow showers',
-    43:   'heavy snow',
-    44:   'partly cloudy',
-    45:   'thundershowers',
-    46:   'snow showers',
-    47:   'isolated thundershowers'
+    0: 'tornado',
+    1: 'tropical storm',
+    2: 'hurricane',
+    3: 'severe thunderstorms',
+    4: 'thunderstorms',
+    5: 'mixed rain and snow',
+    6: 'mixed rain and sleet',
+    7: 'mixed snow and sleet',
+    8: 'freezing drizzle',
+    9: 'drizzle',
+    10: 'freezing rain',
+    11: 'showers',
+    12: 'showers',
+    13: 'snow flurries',
+    14: 'light snow showers',
+    15: 'blowing snow',
+    16: 'snow',
+    17: 'hail',
+    18: 'sleet',
+    19: 'dust',
+    20: 'foggy',
+    21: 'haze',
+    22: 'smoky',
+    23: 'blustery',
+    24: 'windy',
+    25: 'cold',
+    26: 'cloudy',
+    27: 'mostly cloudy at night',
+    28: 'mostly cloudy at day',
+    29: 'partly cloudy at night',
+    30: 'partly cloudy at day',
+    31: 'clear at night',
+    32: 'sunny',
+    33: 'fair at night',
+    34: 'fair at day',
+    35: 'mixed rain and hail',
+    36: 'hot',
+    37: 'isolated thunderstorms',
+    38: 'scattered thunderstorms',
+    39: 'scattered thunderstorms',
+    40: 'scattered showers',
+    41: 'heavy snow',
+    42: 'scattered snow showers',
+    43: 'heavy snow',
+    44: 'partly cloudy',
+    45: 'thundershowers',
+    46: 'snow showers',
+    47: 'isolated thundershowers'
 }
 
 WEEKDAY_NAMES = {
@@ -81,9 +81,9 @@ ForecastItem = collections.namedtuple(
 def yql_json_request(yql_query):
     r = requests.get(YAHOO_YQL_URL,
                      params={
-                        'q': yql_query,
-                        'format': 'json',
-                        'env': 'store://datatables.org/alltableswithkeys'},
+                         'q': yql_query,
+                         'format': 'json',
+                         'env': 'store://datatables.org/alltableswithkeys'},
                      headers={'User-Agent': 'Mozilla/5.0'})
     return r.json()
 
@@ -92,9 +92,9 @@ def get_woeid(location_name):
     yql_query = YAHOO_YQL_QUERY_WOEID % location_name.replace('"', '')
     r = requests.get(YAHOO_YQL_URL,
                      params={
-                        'q': yql_query,
-                        'format': 'json',
-                        'env': 'store://datatables.org/alltableswithkeys'},
+                         'q': yql_query,
+                         'format': 'json',
+                         'env': 'store://datatables.org/alltableswithkeys'},
                      headers={'User-Agent': 'Mozilla/5.0'})
     content = r.json()
     try:
@@ -134,7 +134,7 @@ def get_weather(woeid, unit="f"):
     return Weather(city=channel['location']['city'],
                    date=current_date,
                    text=YAHOO_YQL_WEATHER_CONDITION_CODES[
-                      int(channel['item']['condition']['code'])],
+                       int(channel['item']['condition']['code'])],
                    temp=int(channel['item']['condition']['temp']),
                    forecast=forecast)
 
@@ -204,9 +204,9 @@ class WeatherPlugin(plugin.SpeechHandlerPlugin):
             # Today
             msg = self.gettext(
                 'Currently {text} at {temp} degrees in {city}.').format(
-                    text=self.gettext(weather.text),
-                    temp=weather.temp,
-                    city=weather.city)
+                text=self.gettext(weather.text),
+                temp=weather.temp,
+                city=weather.city)
             if len(weather.forecast) == 0:
                 mic.say(msg)
                 return
@@ -243,10 +243,10 @@ class WeatherPlugin(plugin.SpeechHandlerPlugin):
             mic.say(self.gettext(
                 'Tomorrow in {city}: {text} and temperatures ' +
                 'between {temp_low} and {temp_high} degrees.').format(
-                 city=weather.city,
-                 text=self.gettext(fc.text),
-                 temp_low=fc.temp_low,
-                 temp_high=fc.temp_high))
+                city=weather.city,
+                text=self.gettext(fc.text),
+                temp_low=fc.temp_low,
+                temp_high=fc.temp_high))
         else:
             mic.say(self.gettext(
                 "Sorry, I don't know what the weather in %s will " +
@@ -269,9 +269,9 @@ class WeatherPlugin(plugin.SpeechHandlerPlugin):
             forecast_msgs.append("%s: %s" % (date, self.gettext(
                 '{text} and temperatures between {temp_low} and ' +
                 '{temp_high} degrees.').format(
-                    text=self.gettext(fc.text),
-                    temp_low=fc.temp_low,
-                    temp_high=fc.temp_high)))
+                text=self.gettext(fc.text),
+                temp_low=fc.temp_low,
+                temp_high=fc.temp_high)))
         mic.say((self.gettext('Weather Forecast for the next %d days: ')
                  % len(weather.forecast)) + '... '.join(forecast_msgs))
 
