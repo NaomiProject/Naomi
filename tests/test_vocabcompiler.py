@@ -28,7 +28,7 @@ class TestVocabulary(unittest.TestCase):
         shutil.rmtree(tempdir)
 
     def testVocabulary(self):
-        phrases = ['GOOD BAD UGLY']
+        phrases = ['GOOD BAD UGLY WITH SPECIAL CHARACTER \u00c3']
         with self.do_in_tempdir() as tempdir:
             self.vocab = vocabcompiler.VocabularyCompiler(
                 "unittest", path=tempdir)
