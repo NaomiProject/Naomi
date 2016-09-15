@@ -21,7 +21,7 @@ semantic==1.0.3
 facebook-sdk==0.4.0
 
 # Weather/News modules
-pyowm
+pyowm==2.3.2
 feedparser==5.1.3
 
 # Gmail module
