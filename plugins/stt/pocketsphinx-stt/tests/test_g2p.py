@@ -30,7 +30,8 @@ class DummyProc(object):
 
 class TestPatchedG2P(unittest.TestCase):
     def setUp(self):
-        self.g2pconv = g2p.PhonetisaurusG2P('dummy_proc', 'dummy_fst_model',
+        self.g2pconv = g2p.PhonetisaurusG2P('dummy_proc', 0.7,
+                                            'dummy_fst_model',
                                             nbest=3)
 
     def testTranslateWord(self):

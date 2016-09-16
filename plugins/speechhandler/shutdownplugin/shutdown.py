@@ -9,11 +9,7 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         return [
             self.gettext("SHUTDOWN"),
             self.gettext("SHUT"),
-            self.gettext("DOWN")
-
-
-
-            ]
+            self.gettext("DOWN")]
 
     def handle(self, text, mic):
         """
@@ -37,7 +33,8 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
 
         mic.say(message)
 
-        proc = subprocess.Popen(["pkill", "-f", "Jasper.py"], stdout=subprocess.PIPE)
+        proc = subprocess.Popen(["pkill", "-f", "Jasper.py"],
+                                stdout=subprocess.PIPE)
         proc.wait()
 
     def is_valid(self, text):
