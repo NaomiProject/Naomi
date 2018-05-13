@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import collections
+import logging
 import os
 import re
 import subprocess
 import tempfile
-import logging
+
 from . import phonemeconversion
 
 
@@ -75,7 +77,8 @@ def execute(executable, version, fst_model, input, is_file=False, nbest=None):
             if word not in result:
                 result[word] = []
             result[word].append(pronounciation)
-    return result
+    results = collections.OrderedDict(sorted(result.items()))
+    return results
 
 
 class PhonetisaurusG2P(object):
@@ -128,6 +131,9 @@ class PhonetisaurusG2P(object):
         output = execute(self.executable, self.version, self.fst_model,
                          tmp_fname,
                          is_file=True, nbest=self.nbest)
+
+ 
+
         os.remove(tmp_fname)
         return output
 

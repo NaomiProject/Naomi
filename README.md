@@ -1,3 +1,4 @@
+
 # OVIA Project
 [![Build Status](https://travis-ci.org/jasper2fork/j2f.svg?branch=master)](https://travis-ci.org/jasper2fork/j2f) [![Coverage Status](https://img.shields.io/coveralls/jasper2fork/j2f.svg)](https://coveralls.io/r/jasper2fork/j2f) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec)](https://www.codacy.com/app/jasper2fork/j2f?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jasper2fork/j2f&amp;utm_campaign=Badge_Grade)
 =============
@@ -14,7 +15,9 @@ Say hello to OVIA, an Open Virtual Intelligent Assistant. OVIA can do a lot for 
 
 This fork is a work in progress and as such if you find something missing/broke/anything please make a pull request with tests would be nice, or file an issue.
 
+
 The current plan is to use [Discord](https://discord.gg/cVMrAbj) and Github for the day to day comms.
+
 
 ## Installation
 

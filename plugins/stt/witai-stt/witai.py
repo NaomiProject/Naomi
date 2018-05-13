@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 import requests
 from jasper import plugin
@@ -86,7 +88,7 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         received text from json answer.
         """
         data = fp.read()
-        r = requests.post('https://api.wit.ai/speech?v=20150101',
+        r = requests.post('https://api.wit.ai/speech?v=20160526',
                           data=data,
                           headers=self.headers)
         try:

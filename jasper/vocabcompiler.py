@@ -23,7 +23,8 @@ def phrases_to_revision(phrases):
     sorted_phrases = sorted(phrases)
     joined_phrases = '\n'.join(sorted_phrases)
     sha1 = hashlib.sha1()
-    sha1.update(joined_phrases)
+
+    sha1.update(joined_phrases.encode("utf-8"))
     return sha1.hexdigest()
 
 

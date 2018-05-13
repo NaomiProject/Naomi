@@ -102,7 +102,7 @@ class AlsaAudioDevice(plugin.audioengine.AudioDevice):
         pcm_type = alsaaudio.PCM_PLAYBACK if output else alsaaudio.PCM_CAPTURE
         stream = alsaaudio.PCM(type=pcm_type,
                                mode=alsaaudio.PCM_NORMAL,
-                               device='default')
+                               device=self.name)
         stream.setchannels(channels)
         stream.setrate(rate)
         stream.setformat(bits_to_samplefmt(bits))
