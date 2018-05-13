@@ -129,7 +129,11 @@ class PhonetisaurusG2P(object):
                 f.write("%s\n" % word)
             tmp_fname = f.name
         output = execute(self.executable, self.version, self.fst_model,
-                         tmp_fname, is_file=True, nbest=self.nbest)
+                         tmp_fname,
+                         is_file=True, nbest=self.nbest)
+
+ 
+
         os.remove(tmp_fname)
         return output
 
