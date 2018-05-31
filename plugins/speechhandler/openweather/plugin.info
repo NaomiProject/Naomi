@@ -1,0 +1,10 @@
+[Plugin]
+Name = openweather
+Version = 1.0.0
+License = MIT
+URL = https://github.com/TheOVIAproject
+Description = New weather plugin for OVIA, using the OpenWeatherMap API
+
+[Author]
+Name = OVIA community
+URL = https://github.com/TheOVIAproject
