@@ -38,7 +38,7 @@ class MaryTTSPlugin(plugin.TTSPlugin):
 
         try:
             orig_language = self.profile['language']
-        except:
+        except KeyError:
             orig_language = 'en_US'
 
         language = orig_language.replace('-', '_')
@@ -71,8 +71,8 @@ class MaryTTSPlugin(plugin.TTSPlugin):
             r = self.session.get(self._makeurl('/voices'))
             r.raise_for_status()
         except requests.exceptions.RequestException:
-            self._logger.critical("Communication with MaryTTS server at %s " +
-                                  "failed.", self.netloc)
+            self._logger.critical("Communication with MaryTTS server at %s "
+                                  + "failed.", self.netloc)
             raise
         for line in r.text.splitlines():
             parts = line.strip().split()
@@ -93,7 +93,7 @@ class MaryTTSPlugin(plugin.TTSPlugin):
         query = {'OUTPUT_TYPE': 'AUDIO',
                  'AUDIO': 'WAVE_FILE',
                  'INPUT_TYPE': 'TEXT',
-                 'INPUT_TEXT': phrase,
+                 'INPUT_TEXT': phrase.encode('utf8'),
                  'LOCALE': self.language,
                  'VOICE': self.voice}
 
