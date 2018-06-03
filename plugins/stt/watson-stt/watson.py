@@ -16,7 +16,7 @@ class IBMWatsonSTTPlugin(plugin.STTPlugin):
     2. Create a Speech-To-Text Instance through the IBM Cloud console:
        https://console.bluemix.net/catalog/services/speech-to-text
     3. Select your Speech-To-Text Instance and Click Service Credentials.
-    4. Click New Credential. Name Credential "Jasper Credential"
+    4. Click New Credential. Name Credential "OVIA Credential"
         or appropriate.
     5. Add your credential username/password to your profile.yml.
         Add a 'watson_stt' entry
