@@ -1,0 +1,10 @@
+[Plugin]
+Name = watson-tts
+Version = 1.0.0
+License = MIT
+URL = https://github.com/TheOVIAproject/OVIA
+Description = IBM Watson TTS Online translator
+
+[Author]
+Name = OVIA project
+URL = https://github.com/TheOVIAproject/OVIA
