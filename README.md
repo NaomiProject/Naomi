@@ -1,6 +1,7 @@
 
 # OVIA Project
 [![Build Status](https://travis-ci.org/TheOVIAproject/OVIA.svg?branch=master)](https://travis-ci.org/TheOVIAproject/OVIA) [![Coverage Status](https://img.shields.io/coveralls/jasper2fork/j2f.svg)](https://coveralls.io/r/jasper2fork/j2f) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec)](https://www.codacy.com/app/jasper2fork/j2f?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jasper2fork/j2f&amp;utm_campaign=Badge_Grade)
+[![Discord](https://img.shields.io/badge/Support%2FChat-Discord-green.svg)](https://discord.gg/cVMrAbj)
 =============
 
 
