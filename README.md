@@ -11,15 +11,15 @@
 
 This is the fork of the J2 fork of thejasperproject, thank you for all the work to this point.
 
+New stuff is currently ongoing in the [Developer branch](https://github.com/TheOVIAproject/OVIA/tree/jasper-dev), you can download it, but you have to consider you'll find errors and bugs, in this case, don't forget to report them in [issue](https://github.com/TheOVIAproject/OVIA/issues)
+
 Client code for the OVIA voice computing platform. OVIA is an **open source** platform for developing _always-on_, _voice-controlled_ applications.
 
 Say hello to OVIA, an Open Virtual Intelligent Assistant. OVIA can do a lot for you. We are working on creating a real working Jarvis for everyone to use everyday. If you have seen any movies like Iron Man, then you will know what we're talking about. :grin:
 
 This fork is a work in progress and as such if you find something missing/broke/anything please make a pull request with tests would be nice, or file an issue.
 
-
-The current plan is to use [Discord](https://discord.gg/cVMrAbj) and Github for the day to day comms.
-
+**The current plan is to use [Discord](https://discord.gg/cVMrAbj) and Github for the day to day comms.**
 
 ## Installation
 
