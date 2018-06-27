@@ -17,6 +17,54 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: openweaher.py:11
+#, python-brace-format
+msgid ""
+"Weather forecast for next week at"
+"{loc} . "
+msgstr "Prévision météo à {loc}. "
+
+#: openweaher.py:15
+#, python-brace-format
+msgid ""
+"Rainy Days are. "
+msgstr "Les jours pluvieux sont "
+
+#: openweaher.py:25
+#, python-brace-format
+msgid ""
+"You will observe heavy rain on. "
+msgstr "Vous pourrez observer de fortes pluies "
+
+#: openweaher.py:32
+#, python-brace-format
+msgid ""
+"Sunny Days are. "
+msgstr "les jours ensoleillés sont "
+
+#: openweaher.py:42
+#, python-brace-format
+msgid ""
+"You will feel heat on. "
+msgstr "Il fera chaud sur "
+
+#: openweaher.py:49
+#, python-brace-format
+msgid ""
+"Most windy day will be. "
+msgstr "Le jour où il y aura le plus de vent sera"
+
+#: openweaher.py:56
+#, python-brace-format
+msgid ""
+"Most humid day will be. "
+msgstr "Le jour le plus humide sera "
+
+#: openweaher.py:64
+#, python-brace-format
+msgid ""
+"Coolest day will be. "
+msgstr "Le jour le plus froid sera "
 
 #: openweather.py:25
 #, python-brace-format
@@ -72,7 +120,6 @@ msgstr ""
 #: openweather.py:69
 msgid "WEATHER"
 msgstr "MÉTÉO"
-msgstr "METEO"
 
 #: openweather.py:70 openweather.py:101
 msgid "TODAY"
