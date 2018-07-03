@@ -22,6 +22,11 @@ msgstr ""
 msgid "My name is, %s."
 msgstr "Mon nom est %s."
 
+#:client/conversation.py:26
+msgid "My name is Jasper"
+msgstr "Je suis Jasper"
+
+
 #: client/conversation.py:32
 #, python-format
 msgid "How can I be of service, %s?"
