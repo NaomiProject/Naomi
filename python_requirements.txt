@@ -5,7 +5,7 @@ mock==1.0.1
 python-slugify==0.1.0
 pytz==2014.10
 PyYAML==3.13
-requests==2.5.0
+requests==2.19.1
 #other modules
 slugify==0.0.1
 mad==0.2.2
