@@ -4,6 +4,7 @@ A drop-in replacement for the Mic class that allows for all I/O to occur
 over the terminal. Useful for debugging. Unlike with the typical Mic
 implementation, Jasper is always active listening with local_mic.
 """
+import unicodedata
 
 
 class Mic(object):
@@ -16,7 +17,8 @@ class Mic(object):
         return
 
     def active_listen(self, timeout=3):
-        input = raw_input("YOU: ")
+        input = raw_input("YOU: ").decode('utf8')
+        unicodedata.normalize('NFD', input).encode('ascii', 'ignore')
         self.prev = input
         return [input]
 

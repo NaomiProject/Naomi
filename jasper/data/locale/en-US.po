@@ -23,7 +23,7 @@ msgid "My name is, %s."
 msgstr ""
 
 #:client/conversation.py:26
-msgid "I do not have a name. Please fix your profile.yml."
+msgid "My name is Jasper"
 msgstr ""
 
 #: client/conversation.py:32

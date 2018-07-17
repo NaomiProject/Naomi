@@ -18,7 +18,7 @@ msgstr ""
 #: plugins/speechhandler/weather/weather.py:113
 #: plugins/speechhandler/weather/weather.py:230
 msgid "WEATHER"
-msgstr "METEO"
+msgstr "MÉTÉO"
 
 #: plugins/speechhandler/weather/weather.py:114
 msgid "TODAY"
