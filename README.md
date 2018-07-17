@@ -31,7 +31,7 @@ There you'll also find informations to setup and how to use it.
 * Brand new wiki to help new users :book:
 * Fixed bug :bug: :  
   * Encoding error while using local text mode to interact with Naomi 
-* New weather plugin :cloud:
+  * Wit.AI STT engine HTTP request URL updated
 * New Speech To Text/Text To Speech engines Watson services from IBM 🗣️ 
 * Updating dependencies version
 
