@@ -88,7 +88,7 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         received text from json answer.
         """
         data = fp.read()
-        r = requests.post('https://api.wit.ai/speech?v=20160526',
+        r = requests.post('https://api.wit.ai/speech?v=20170307',
                           data=data,
                           headers=self.headers)
         try:
