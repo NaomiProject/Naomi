@@ -32,12 +32,21 @@ There you'll also find informations to setup and how to use it.
 
 ## Latest improvements :tada:
 
+### V2.1
 * Brand new wiki to help new users :book:
 * Fixed bug :bug: :  
   * Encoding error while using local text mode to interact with Naomi 
   * Wit.AI STT engine HTTP request URL updated
+  * Mary TTS encoding error 
 * New Speech To Text/Text To Speech engines Watson services from IBM 🗣️ 
-* Updating dependencies version
+* Updating some dependencies version
+* Community tools added: Pull-Request template and Issue template
+
+### V2.0
+* Adding multi-lingual support
+* Snowboy for private offline keyword recognition
+* Plugin architecture (break parts into plugins such as STT, TTS, engine, module...) 
+* Configurable audio engine
 
 ## Data policy 
 
@@ -51,9 +60,9 @@ We are going to let you decide how it works. You can use online AI services or u
 
 There are [plenty of things that need help](https://github.com/NaomiProject/Naomi/issues). If you have to ask your not looking at the code.
 
-If you'd like to contribute to Jasper2fork, please read through the **[Contributing Guide](CONTRIBUTING.md)**, which outlines the philosophies to preserve, tests to run, and more. We highly recommend reading through this guide before writing any code.
+If you'd like to contribute to Naomi, please read through the **[Contributing Guide](CONTRIBUTING.md)**, which outlines the philosophies to preserve, tests to run, and more. We highly recommend reading through this guide before writing any code.
 
-The Contributing Guide also outlines some prospective features and areas that could use love. However, for a more thorough overview of Jasper2fork direction and goals, check out the **[Issues](https://github.com/NaomiProject/Naomi/issues)**.
+The Contributing Guide also outlines some prospective features and areas that could use love. However, for a more thorough overview of Naomi direction and goals, check out the **[Issues](https://github.com/NaomiProject/Naomi/issues)**.
 
 ## Support
 
