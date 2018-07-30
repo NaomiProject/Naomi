@@ -29,7 +29,7 @@ You **_should**:
 1. **Watch the [project roadmap](https://github.com/NaomiProject/Naomi/projects) 
 and [milestone](https://github.com/NaomiProject/Naomi/milestones)** in order to find something to work on.
 
-2.**Make sure the stuff you want to do is not already done** it would be awful to reivent the wheel 
+2. **Make sure the stuff you want to do is not already done** it would be awful to reivent the wheel 
 
 3. **In case you want to implement your own ideas**, submit it first [here](https://github.com/NaomiProject/Naomi/issues), we'll have a conversation if this idea respect the project philosophy or explore others options to improve your idea, then may add it to the next milestone and project planning. _Any pull-request that don't follow this rule will be rejected_
 
