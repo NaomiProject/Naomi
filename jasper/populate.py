@@ -186,9 +186,9 @@ def run():
     stt_engines = {
         "PocketSphinx": "sphinx",
         "Google Voice": "google",
-        "Watson": "watson",
+        "Watson": "watson-stt",
         "Kaldi": "kaldigstserver-stt",
-        "Julius": "julius"
+        "Julius": "julius-stt"
     }
 
     # This searches some standard places (/bin, /usr/bin, /usr/local/bin)
@@ -228,7 +228,7 @@ def run():
         # need to test)
         key = raw_input(translator.gettext("Please enter your API key: "))
         profile["keys"] = {"GOOGLE_SPEECH": key}
-    if(profile['stt_engine'] == 'watson'):
+    if(profile['stt_engine'] == 'watson-stt'):
         profile["watson_stt"] = {}
         username = raw_input(translator.gettext("Enter your watson username:"))
         profile["watson_stt"]["username"] = username
@@ -243,7 +243,7 @@ def run():
                 "(default is http://localhost:8888/client/dynamic/recognize)"
             )
         )
-    if(profile['stt_engine'] == 'julius'):
+    if(profile['stt_engine'] == 'julius-stt'):
         # stt_engine: julius
         # julius:
         #     hmmdefs:  '/path/to/your/hmmdefs'
