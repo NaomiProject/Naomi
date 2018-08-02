@@ -63,6 +63,11 @@ msgstr "Voulez vous entendre la météo de demain ?"
 msgid "Do you want to hear the forecast for the next %d days?"
 msgstr "Voulez-vous entendre la météo des %d prochains jours?"
 
+#: plugins/speechhandler/weather/weather.py:223
+#, python-format
+msgid "YEAH"
+msgstr "OUI"
+
 #: plugins/speechhandler/weather/weather.py:195
 #, python-brace-format
 msgid "Tomorrow in {city}: {text} and temperatures between {temp_low} and {temp_high} degrees."

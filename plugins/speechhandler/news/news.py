@@ -81,7 +81,7 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
             for i, a in enumerate(articles, start=1))
         mic.say(text)
 
-        if 'gmail_address' not in self.profile:
+        if ['email']['address'] not in self.profile:
             return
 
         mic.say(self.gettext('Would you like me to send you these articles?'))

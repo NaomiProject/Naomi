@@ -43,13 +43,13 @@ def email_user(profile, SUBJECT="", BODY=""):
 
     body = 'Hello %s,' % profile['first_name']
     body += '\n\n' + BODY.strip() + '\n\n'
-    body += 'Best Regards,\nJasper\n'
+    body += 'Best Regards,\nNaomi\n'
 
     recipient = None
 
     if profile['prefers_email']:
-        if profile['gmail_address']:
-            recipient = profile['gmail_address']
+        if profile['mail']['address']:
+            recipient = profile['mail']['address']
             if profile['first_name'] and profile['last_name']:
                 recipient = "%s %s <%s>" % (
                     profile['first_name'],
@@ -70,11 +70,11 @@ def email_user(profile, SUBJECT="", BODY=""):
             password = profile['mailgun']['password']
             server = 'smtp.mailgun.org'
         else:
-            user = profile['gmail_address']
-            password = profile['gmail_password']
-            server = 'smtp.gmail.com'
+            user = profile['mail']['address']
+            password = profile['mail']['password']
+            server = profile['mail']['smtp']
         send_email(SUBJECT, body, recipient, user,
-                   "Jasper <jasper>", password, server)
+                   "Naomi <naomi>", password, server)
 
     except Exception:
         return False

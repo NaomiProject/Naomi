@@ -44,13 +44,13 @@ def get_most_recent_date(emails):
     return None
 
 
-class GmailPlugin(plugin.SpeechHandlerPlugin):
+class EmailPlugin(plugin.SpeechHandlerPlugin):
     def get_phrases(self):
         return [self.gettext("EMAIL"), self.gettext("INBOX")]
 
     def fetch_unread_emails(self, since=None, markRead=False, limit=None):
         """
-            Fetches a list of unread email objects from a user's Gmail inbox.
+            Fetches a list of unread email objects from a user's Email inbox.
 
             Arguments:
             since -- if provided, no emails before this date will be returned
@@ -60,10 +60,10 @@ class GmailPlugin(plugin.SpeechHandlerPlugin):
             Returns:
             A list of unread email objects.
         """
-        conn = imaplib.IMAP4_SSL('imap.gmail.com')
+        conn = imaplib.IMAP4_SSL(self.profile['email']['imap'])
         conn.debug = 0
-        conn.login(self.profile['gmail_address'],
-                   self.profile['gmail_password'])
+        conn.login(self.profile['email']['address'],
+                   self.profile['email']['password'])
         conn.select(readonly=(not markRead))
 
         msgs = []
@@ -100,7 +100,7 @@ class GmailPlugin(plugin.SpeechHandlerPlugin):
             messages = self.fetch_unread_emails(limit=5)
         except imaplib.IMAP4.error:
             mic.say(self.gettext(
-                "I'm sorry. I'm not authenticated to work with your Gmail."))
+                "I'm sorry. I'm not authenticated to work with your Email account."))
             return
 
         if isinstance(messages, int):
