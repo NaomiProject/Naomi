@@ -1,4 +1,4 @@
-# Naomi core dependencies
+# Jasper core dependencies
 APScheduler==3.0.1
 argparse==1.2.2
 mock==1.0.1
