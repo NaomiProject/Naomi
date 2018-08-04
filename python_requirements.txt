@@ -1,4 +1,4 @@
-# Jasper core dependencies
+# Naomi core dependencies
 APScheduler==3.0.1
 argparse==1.2.2
 mock==1.0.1
@@ -6,6 +6,7 @@ python-slugify==0.1.0
 pytz==2014.10
 PyYAML==3.13
 requests==2.19.1
+blessings
 #other modules
 slugify==0.0.1
 mad==0.2.2
