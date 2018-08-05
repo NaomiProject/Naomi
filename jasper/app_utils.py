@@ -1,34 +1,36 @@
 # -*- coding: utf-8 -*-
 import smtplib
 from email.MIMEText import MIMEText
+from email.MIMEMultipart import MIMEMultipart
 import urllib2
 import re
 from pytz import timezone
+import logging
 
 
-def send_email(SUBJECT, BODY, TO, FROM, SENDER, PASSWORD, SMTP_SERVER):
+def send_email(SUBJECT, BODY, TO, FROM, SENDER, PASSWORD, SMTP_SERVER, SMTP_PORT):
     """Sends an HTML email."""
-    for body_charset in 'US-ASCII', 'ISO-8859-1', 'UTF-8':
-        try:
-            BODY.encode(body_charset)
-        except UnicodeError:
-            pass
-        else:
-            break
-    msg = MIMEText(BODY.encode(body_charset), 'html', body_charset)
+
+    msg = MIMEMultipart()
     msg['From'] = SENDER
     msg['To'] = TO
     msg['Subject'] = SUBJECT
 
-    SMTP_PORT = 587
+    msg.attach(MIMEText(BODY.encode('UTF-8'), 'html', 'UTF-8'))
+
+    logging.info('using %s, and %s as port', SMTP_SERVER, SMTP_PORT)
+
     session = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+
     session.starttls()
+
     session.login(FROM, PASSWORD)
     session.sendmail(SENDER, TO, msg.as_string())
     session.quit()
+    logging.info('Successful.')
 
 
-def email_user(profile, SUBJECT="", BODY=""):
+def email_user(profile, SUBJECT="", BODY="", ):
     """
     sends an email.
 
@@ -47,14 +49,18 @@ def email_user(profile, SUBJECT="", BODY=""):
 
     recipient = None
 
-    if profile['prefers_email']:
-        if profile['mail']['address']:
-            recipient = profile['mail']['address']
-            if profile['first_name'] and profile['last_name']:
-                recipient = "%s %s <%s>" % (
-                    profile['first_name'],
-                    profile['last_name'],
-                    recipient)
+
+    if profile['email']['address']:
+        recipient = profile['email']['address']
+        if profile['first_name'] and profile['last_name']:
+            first_name=profile['first_name']
+            last_name=profile['last_name']
+            recipient = "{first_name} {last_name} <{recipient}>".format(
+                    first_name=profile['first_name'],
+                    last_name=profile['last_name'],
+                    recipient=recipient)
+
+
     else:
         if profile['carrier'] and profile['phone_number']:
             recipient = "%s@%s" % (
@@ -65,16 +71,16 @@ def email_user(profile, SUBJECT="", BODY=""):
         return False
 
     try:
-        if 'mailgun' in profile:
-            user = profile['mailgun']['username']
-            password = profile['mailgun']['password']
-            server = 'smtp.mailgun.org'
-        else:
-            user = profile['mail']['address']
-            password = profile['mail']['password']
-            server = profile['mail']['smtp']
+        user = profile['email']['address']
+        password = profile['email']['password']
+        server = profile['email']['smtp']
+        try:
+            port = profile ['email']['smtp_port']
+        except KeyError:
+            port = 587
+
         send_email(SUBJECT, body, recipient, user,
-                   "Naomi <naomi>", password, server)
+                   "Naomi <naomi>", password, server, port)
 
     except Exception:
         return False
