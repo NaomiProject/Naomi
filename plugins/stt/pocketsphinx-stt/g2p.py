@@ -173,8 +173,8 @@ class PhonetisaurusG2P(object):
         self._logger.info("Self.fst_model = %s" % self.fst_model)
         self._logger.info("tmp_fname = %s" % tmp_fname)
         self._logger.info(
-            "%s --model=%s --beam=1000 --thresh=99.0 --accumulate=true " +
-            "--pmass=0.85 --nlog_probs=false --wordlist=%s --nbest=%d" %
+            ("%s --model=%s --beam=1000 --thresh=99.0 --accumulate=true " +
+            "--pmass=0.85 --nlog_probs=false --wordlist=%s --nbest=%d") %
             (self.executable, self.fst_model, tmp_fname, self.nbest)
         )
 
