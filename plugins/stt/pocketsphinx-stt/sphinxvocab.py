@@ -4,15 +4,15 @@ import logging
 import tempfile
 try:
     import cmuclmtk
-except:
+except ImportError:
     pass
-
-
 from .g2p import PhonetisaurusG2P
+
 
 def delete_temp_file(file_to_delete):
     if False:
         os.remove(file_to_delete)
+
 
 def get_languagemodel_path(path):
     """
@@ -77,10 +77,14 @@ def compile_vocabulary(config, directory, phrases):
     # AJC 2018-05-20
     # Old phonetisaurus-g2p apparently wanted words in upper case.
     # New phonetisaurus-g2pfst seems to prefer lower case
-    if( executable=="phonetisaurus-g2pfst" ):
-        text = " ".join([("<s> %s </s>" % phrase.lower()) for phrase in phrases])
+    if(executable == "phonetisaurus-g2pfst"):
+        text = " ".join(
+            [("<s> %s </s>" % phrase.lower()) for phrase in phrases]
+        )
     else:
-        text = " ".join([("<s> %s </s>" % phrase.upper()) for phrase in phrases])
+        text = " ".join(
+            [("<s> %s </s>" % phrase.upper()) for phrase in phrases]
+        )
     # There's some strange issue when text2idngram sometime can't find any
     # input (although it's there). For a reason beyond me, this can be fixed
     # by appending a space char to the string.
@@ -112,7 +116,7 @@ def compile_languagemodel(text, output_file):
         vocab_file = f.name
 
     # Create vocab file from text
-    logger.debug("Creating vocab file: '%s'"%vocab_file)
+    logger.debug("Creating vocab file: '%s'" % vocab_file)
     cmuclmtk.text2vocab(text, vocab_file)
 
     # Get words from vocab file
@@ -128,7 +132,7 @@ def compile_languagemodel(text, output_file):
         logger.warning('Vocab file seems to be empty!')
 
     # Create language model from text
-    logger.debug("Creating languagemodel file: '%s'"%output_file)
+    logger.debug("Creating languagemodel file: '%s'" % output_file)
     cmuclmtk.text2lm(text, output_file, vocab_file=vocab_file)
 
     # Remote the vocab file
@@ -148,7 +152,7 @@ def compile_dictionary(g2pconverter, words, output_file):
     """
     # create the dictionary
     logger = logging.getLogger(__name__)
-    logger.debug("Getting phonemes for %d words..."%len(words))
+    logger.debug("Getting phonemes for %d words..." % len(words))
     try:
         phonemes = g2pconverter.translate(words)
     except ValueError as e:
@@ -157,18 +161,32 @@ def compile_dictionary(g2pconverter, words, output_file):
         else:
             raise e
 
-    logger.debug("Creating dict file: '%s'"%output_file)
+    logger.debug("Creating dict file: '%s'" % output_file)
     with open(output_file, "w") as f:
         for word, pronounciations in phonemes.items():
             for i, pronounciation in enumerate(pronounciations, start=1):
-                if( g2pconverter.executable=="phonetisaurus-g2pfst" ):
+                if(g2pconverter.executable == "phonetisaurus-g2pfst"):
                     if i == 1:
-                        line = "%s\t%s\n" % (word.lower(), pronounciation)
+                        line = "%s\t%s\n" % (
+                            word.lower(),
+                            pronounciation
+                        )
                     else:
-                        line = "%s(%d)\t%s\n" % (word.lower(), i, pronounciation)
+                        line = "%s(%d)\t%s\n" % (
+                            word.lower(),
+                            i,
+                            pronounciation
+                        )
                 else:
                     if i == 1:
-                        line = "%s\t%s\n" % (word.upper(), pronounciation)
+                        line = "%s\t%s\n" % (
+                            word.upper(),
+                            pronounciation
+                        )
                     else:
-                        line = "%s(%d)\t%s\n" % (word.upper(), i, pronounciation)
+                        line = "%s(%d)\t%s\n" % (
+                            word.upper(),
+                            i,
+                            pronounciation
+                        )
                 f.write(line)

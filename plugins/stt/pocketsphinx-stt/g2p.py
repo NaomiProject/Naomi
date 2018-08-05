@@ -7,19 +7,22 @@ import logging
 from . import phonemeconversion
 
 
-RE_WORDS = re.compile(r'(?P<word>[a-zA-Z]+)\s+(?P<precision>\d+\.\d+)\s+' +
-                      r'(?:(?P<sep><s>\s+)){0,1}(?P<pronounciation>.+)' +
-                      r'(?(sep)\s+</s>)',
-                      re.MULTILINE)
-RE_ISYMNOTFOUND = re.compile(r'^Symbol: \'(?P<symbol>.+)\' not found in ' +
-                             r'input symbols table')
-
-
 def execute(executable, fst_model, input, is_file=False, nbest=None):
     logger = logging.getLogger(__name__)
-    
-    # the newer version of phonetisaurus uses a different filename and a different method
-    if( executable=='phonetisaurus-g2pfst' ):
+
+    RE_WORDS = re.compile(
+        r'(?P<word>[a-zA-Z]+)\s+(?P<precision>\d+\.\d+)\s+' +
+        r'(?:(?P<sep><s>\s+)){0,1}(?P<pronounciation>.+)' +
+        r'(?(sep)\s+</s>)',
+        re.MULTILINE
+    )
+    RE_ISYMNOTFOUND = re.compile(
+        r'^Symbol: \'(?P<symbol>.+)\' not found in ' +
+        r'input symbols table'
+    )
+    # the newer version of phonetisaurus uses a different filename
+    # and a different method
+    if(executable == 'phonetisaurus-g2pfst'):
         cmd = [executable,
             '--model=%s' % fst_model,
             '--beam=1000',
@@ -28,11 +31,15 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
             '--pmass=0.85',
             '--nlog_probs=false',
             '--wordlist=%s' % input]
-        # In this case, the output looks a little different from the old g2p output
+        # In this case, the output looks a little different
+        # from the old g2p output
         # For example:
         #     phonetisaurus-g2p:     ANSWER	12.2497	<s> AE N S ER </s>
         #     phonetisaurus-g2pfst:  ANSWER	1	AE1 N S ER0
-        RE_WORDS = re.compile(r'(?P<word>[a-zA-Z]+)\s+(?P<precision>[\d\.]+)\s+(?P<pronounciation>[a-zA-Z]+.*[a-zA-Z0-9])\s*$',re.MULTILINE)
+        RE_WORDS = re.compile(
+            r'(?P<word>[a-zA-Z]+)\s+(?P<precision>[\d\.]+)\s+' +
+            r'(?P<pronounciation>[a-zA-Z]+.*[a-zA-Z0-9])\s*$',
+            re.MULTILINE)
     else:
         cmd = [executable,
             '--model=%s' % fst_model,
@@ -45,44 +52,51 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
         cmd.extend(['--nbest=%d' % nbest])
 
     cmd = [str(x) for x in cmd]
-    logger.debug( "cmd: %s"%cmd )
+    logger.debug("cmd: %s" % cmd)
     try:
         # FIXME: We can't just use subprocess.call and redirect stdout
         # and stderr, because it looks like Phonetisaurus can't open
         # an already opened file descriptor a second time. This is why
         # we have to use this somehow hacky subprocess.Popen approach.
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        logger.debug('Polling')
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
         while proc.poll() is None:
             nextline = proc.stderr.readline()
-            logger.debug("NextLine: '%s'"%nextline)
-            if( nextline == '' ):
+            logger.debug("NextLine: '%s'" % nextline)
+            if(nextline == ''):
                 continue
-            if( len(RE_ISYMNOTFOUND.findall(nextline)) > 0 ):
-                # instead of killing the process or raising an error, just skip the line.
-                # this will create the checksum so that sydney won't re-compile the vocabulary
-                # so that I can replace the failed files with ones I build using the 
-                # http://www.speech.cs.cmu.edu/tools/lmtool-new.html language model tool
+            if(len(RE_ISYMNOTFOUND.findall(nextline)) > 0):
+                # instead of killing the process or raising an error,
+                # just skip the line.
+                # This will create the checksum which will continue
+                # to be valid, while allowing the user to generate
+                # their own language model.
+                # http://www.speech.cs.cmu.edu/tools/lmtool-new.html
                 logger.error('Input symbol not found')
                 continue
-                #proc.kill()
-                #raise ValueError('Input symbol not found')
         stdoutdata, stderrdata = proc.communicate()
-        logger.debug("StdOutData: %s"%stdoutdata)
-        # Do some preprocessing on these results to get them into the format Sydney is expecting
-        
+        logger.debug("StdOutData: %s" % stdoutdata)
     except OSError:
-        logger.error("Error occured while executing command '%s'",' '.join(cmd), exc_info=True)
+        logger.error(
+            "Error occured while executing command '%s'" % ' '.join(cmd),
+            exc_info=True
+        )
         raise
 
-    if( stderrdata ):
+    if(stderrdata):
         for line in stderrdata.splitlines():
             message = line.strip()
-            if( message ):
+            if(message):
                 logger.debug(message)
 
-    if( proc.returncode!=0 ):
-        logger.error("Command '%s' return with exit status %d",' '.join(cmd), proc.returncode)
+    if(proc.returncode != 0):
+        logger.error(
+            "Command '%s' return with exit status %d" % ' '.join(cmd),
+            proc.returncode
+        )
         raise OSError("Command execution failed")
 
     result = {}
@@ -97,7 +111,13 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
 
 
 class PhonetisaurusG2P(object):
-    def __init__(self, executable, fst_model,fst_model_alphabet='arpabet',nbest=None):
+    def __init__(
+        self,
+        executable,
+        fst_model,
+        fst_model_alphabet='arpabet',
+        nbest=None
+    ):
         self._logger = logging.getLogger(__name__)
 
         self.executable = executable
@@ -106,15 +126,17 @@ class PhonetisaurusG2P(object):
         self._logger.debug("Using FST model: '%s'", self.fst_model)
 
         self.fst_model_alphabet = fst_model_alphabet
-        self._logger.debug("Using FST model alphabet: '%s'",self.fst_model_alphabet)
+        self._logger.debug(
+            "Using FST model alphabet: '%s'" % self.fst_model_alphabet
+        )
 
         self.nbest = nbest
-        if( self.nbest is not None ):
+        if(self.nbest is not None):
             self._logger.debug("Will use the %d best results.", self.nbest)
 
     def _convert_phonemes(self, data):
-        if( self.fst_model_alphabet=='xsampa' ):
-            print("xsampa: ",data)
+        if(self.fst_model_alphabet == 'xsampa'):
+            print("xsampa: %s" % data)
             quit()
             for word in data:
                 converted_phonemes = []
@@ -124,13 +146,18 @@ class PhonetisaurusG2P(object):
                 data[word] = converted_phonemes
             return data
         elif self.fst_model_alphabet == 'arpabet':
-            print( 'arpabet: ',data )
+            print('arpabet: %s' % data)
             return data
         raise ValueError('Invalid FST model alphabet!')
 
     def _translate_word(self, word):
         self._logger.debug("enter _translate_word")
-        return execute(self.executable, self.fst_model, word,nbest=self.nbest)
+        return execute(
+            self.executable,
+            self.fst_model,
+            word,
+            nbest=self.nbest
+        )
 
     def _translate_words(self, words):
         self._logger.debug("enter _translate_words")
@@ -142,25 +169,38 @@ class PhonetisaurusG2P(object):
                 self._logger.info(word)
                 f.write("%s\n" % word)
             tmp_fname = f.name
-        self._logger.info( "Self.executable = %s"%self.executable )
-        self._logger.info( "Self.fst_model = %s"%self.fst_model )
-        self._logger.info( "tmp_fname = %s"%tmp_fname )
-        self._logger.info( "%s --model=%s --beam=1000 --thresh=99.0 --accumulate=true --pmass=0.85 --nlog_probs=false --wordlist=%s --nbest=%d"%(self.executable,self.fst_model,tmp_fname,self.nbest) )
+        self._logger.info("Self.executable = %s" % self.executable)
+        self._logger.info("Self.fst_model = %s" % self.fst_model)
+        self._logger.info("tmp_fname = %s" % tmp_fname)
+        self._logger.info(
+            "%s --model=%s --beam=1000 --thresh=99.0 --accumulate=true " +
+            "--pmass=0.85 --nlog_probs=false --wordlist=%s --nbest=%d" %
+            (self.executable, self.fst_model, tmp_fname, self.nbest)
+        )
 
-        output = execute(self.executable, self.fst_model, tmp_fname,is_file=True, nbest=self.nbest)
-        
+        output = execute(
+            self.executable,
+            self.fst_model,
+            tmp_fname,
+            is_file=True,
+            nbest=self.nbest
+        )
+
         os.remove(tmp_fname)
         return output
 
     def translate(self, words):
         if type(words) is str or len(words) == 1:
             self._logger.debug('Converting single word to phonemes')
-            output = self._translate_word(words if type(words) is str else words[0])
+            output = self._translate_word(
+                words if type(words) is str else words[0]
+            )
         else:
             self._logger.debug('Converting %d words to phonemes', len(words))
             output = self._translate_words(words)
-        self._logger.debug('G2P conversion returned phonemes for %d words',
-                           len(output))
+        self._logger.debug(
+            'G2P conversion returned phonemes for %d words' % len(output)
+        )
         self._logger.debug(output)
 
         return self._convert_phonemes(output)
