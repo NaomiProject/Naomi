@@ -8,7 +8,7 @@ from application import USE_STANDARD_MIC, USE_TEXT_MIC, USE_BATCH_MIC
 
 
 def main(args=None):
-    parser = argparse.ArgumentParser(description='Jasper Voice Control Center')
+    parser = argparse.ArgumentParser(description='Naomi Voice Control Center')
     parser.add_argument('--debug', action='store_true',
                         help='Show debug messages')
     list_info = parser.add_mutually_exclusive_group(required=False)
@@ -25,10 +25,10 @@ def main(args=None):
                           'commands audio filenames at each line.')
     p_args = parser.parse_args(args)
 
-    print("*******************************************************")
-    print("*             JASPER - THE TALKING JASPER          *")
-    print("* (c) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis *")
-    print("*******************************************************")
+    print("***********************************************************")
+    print("*                    Naomi Assistant                      *")
+    print("* Made by the Naomi Community, based on the JasperProject *")
+    print("***********************************************************")
 
     # Set up logging
     logging.basicConfig(level=logging.DEBUG if p_args.debug else logging.INFO)
