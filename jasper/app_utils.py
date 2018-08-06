@@ -30,7 +30,7 @@ def send_email(SUBJECT, BODY, TO, FROM, SENDER, PASSWORD, SMTP_SERVER, SMTP_PORT
     logging.info('Successful.')
 
 
-def email_user(profile, SUBJECT="", BODY="", ):
+def email_user(profile, SUBJECT="", BODY=""):
     """
     sends an email.
 

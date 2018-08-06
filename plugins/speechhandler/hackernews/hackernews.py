@@ -30,7 +30,7 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
         try:
             self._num_headlines = self.profile['hacker-news']['num-headlines']
         except KeyError:
-            self._num_headlines = 3
+            self._num_headlines = 4
 
     def get_priority(self):
         return 4
@@ -69,28 +69,30 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
             for i, a in enumerate(articles, start=1))
         mic.say(text)
 
-        if ['email']['address'] not in self.profile:
+        if not self.profile['email']['address']:
             return
 
-        mic.say(self.gettext('Would you like me to send you these articles?'))
+        if self.profile['prefers_email'] :
 
-        answers = mic.active_listen()
-        if any(self.gettext('YES').upper() in answer.upper()
-               for answer in answers):
-            mic.say(self.gettext("Sure, just give me a moment."))
-            email_text = self.make_email_text(articles)
-            email_sent = app_utils.email_user(
-                self.profile,
-                SUBJECT=self.gettext("Top Stories from Hacker News"),
-                BODY=email_text)
-            if email_sent:
-                mic.say(self.gettext(
-                    "Okay, I've sent you an email."))
+            mic.say(self.gettext('Would you like me to send you these articles?'))
+
+            answers = mic.active_listen()
+            if any(self.gettext('YES').upper() in answer.upper()
+                for answer in answers):
+                    mic.say(self.gettext("Sure, just give me a moment."))
+                    email_text = self.make_email_text(articles)
+                    email_sent = app_utils.email_user(
+                    self.profile,
+                    SUBJECT=self.gettext("Top Stories from Hacker News"),
+                    BODY=email_text)
+                    if email_sent:
+                        mic.say(self.gettext(
+                        "Okay, I've sent you an email."))
+                    else:
+                        mic.say(self.gettext(
+                        "Sorry, I'm having trouble sending you these articles."))
             else:
-                mic.say(self.gettext(
-                    "Sorry, I'm having trouble sending you these articles."))
-        else:
-            mic.say(self.gettext("Okay, I will not send any articles."))
+                mic.say(self.gettext("Okay, I will not send any articles."))
 
     def make_email_text(self, articles):
         text = self.gettext(

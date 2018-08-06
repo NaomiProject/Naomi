@@ -1,0 +1,74 @@
+# This file is distributed under the same license as the Jasper package.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Naomi 2.2\n"
+"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
+"POT-Creation-Date: 2018-08-06 23:14+0100\n"
+"PO-Revision-Date: 2018-08-06 23:14+0100\n"
+"Last-Translator: Rocca Sebastien <se.rocca84@gmail.com>\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: plugins/speechhandler/hackernews/hackernews.py:40
+msgid "HACKER"
+msgstr "HACKER"
+
+#: plugins/speechhandler/hackernews/hackernews.py:41
+msgid "NEWS"
+msgstr "NEWS"
+
+#: plugins/speechhandler/hackernews/hackernews.py:42
+msgid "YES"
+msgstr "OUI"
+
+#: plugins/speechhandler/hackernews/hackernews.py:43
+msgid "NO"
+msgstr "NON"
+
+#: plugins/speechhandler/hackernews/hackernews.py:55
+msgid "Getting the top %d stories from Hacker News..."
+msgstr "Reception du top %d depuis Hacker News"
+
+#: plugins/speechhandler/hackernews/hackernews.py:60
+msgid ""
+"Sorry, I'm unable to get the top stories from "
+"Hacker News right now."
+msgstr ""
+"Désolé, je suis incapable de recuperer les meilleurs"
+" articles Hacker News maintenant."
+
+#: plugins/speechhandler/hackernews/hackernews.py:65
+msgid "These are the current top stories..."
+msgstr "Voici les meilleurs articles actuellement ..."
+
+#: plugins/speechhandler/hackernews/hackernews.py:75
+msgid "Would you like me to send you these articles?"
+msgstr "Voulez vous que je vous envois ces articles?"
+
+#: plugins/speechhandler/hackernews/hackernews.py:80
+msgid "Sure, just give me a moment."
+msgstr "d'accord, donnez moi un instant."
+
+#: plugins/speechhandler/hackernews/hackernews.py:84
+msgid "Top Stories from Hacker News"
+msgstr "Les meilleurs articles Hacker News"
+
+#: plugins/speechhandler/hackernews/hackernews.py:88
+msgid "Okay, I've sent you an email."
+msgstr "D'accord. Je vous ai envoyé un mail."
+
+#: plugins/speechhandler/hackernews/hackernews.py:90
+msgid "Sorry, I'm having trouble sending you these articles."
+msgstr "Désolé. J'ai du mal à vous envoyer ces articles."
+
+#: plugins/speechhandler/hackernews/hackernews.py:93
+msgid "Okay, I will not send any articles."
+msgstr "d'accord, je ne vous envoies aucun article."
+
+#: plugins/speechhandler/hackernews/hackernews.py:97
+msgid "These are the Hacker News articles you requested:"
+msgstr "Voici les articles que vous avez demandé:"
