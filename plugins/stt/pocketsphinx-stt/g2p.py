@@ -166,13 +166,14 @@ class PhonetisaurusG2P(object):
             # won't work if we remove it, because it seems that I can't open
             # a file descriptor a second time.
             for word in words:
-                self._logger.info(word)
+                self._logger.debug(word)
                 f.write("%s\n" % word)
             tmp_fname = f.name
-        self._logger.info("Self.executable = %s" % self.executable)
-        self._logger.info("Self.fst_model = %s" % self.fst_model)
-        self._logger.info("tmp_fname = %s" % tmp_fname)
-        self._logger.info(
+        self._logger.debug("Self.executable = %s" % self.executable)
+        self._logger.debug("Self.fst_model = %s" % self.fst_model)
+        self._logger.debug("tmp_fname = %s" % tmp_fname)
+        self._logger.debug("nbest = %s" % self.nbest)
+        self._logger.debug(
             ("%s --model=%s --beam=1000 --thresh=99.0 --accumulate=true " +
             "--pmass=0.85 --nlog_probs=false --wordlist=%s --nbest=%d") %
             (self.executable, self.fst_model, tmp_fname, self.nbest)
