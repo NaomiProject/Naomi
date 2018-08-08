@@ -26,7 +26,7 @@ msgstr "AUJOURD'HUI"
 
 #: plugins/speechhandler/weather/weather.py:115
 #: plugins/speechhandler/weather/weather.py:151
-msgid "TOMORROW"
+msgid "TOMORROW "
 msgstr "DEMAIN"
 
 #: plugins/speechhandler/weather/weather.py:116
@@ -66,7 +66,7 @@ msgstr "Voulez-vous entendre la météo des %d prochains jours?"
 #: plugins/speechhandler/weather/weather.py:223
 #, python-format
 msgid "YEAH"
-msgstr "OUI"
+msgstr "OUAI"
 
 #: plugins/speechhandler/weather/weather.py:195
 #, python-brace-format

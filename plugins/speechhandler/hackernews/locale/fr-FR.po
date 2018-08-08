@@ -19,7 +19,7 @@ msgstr "HACKER"
 
 #: plugins/speechhandler/hackernews/hackernews.py:41
 msgid "NEWS"
-msgstr "NEWS"
+msgstr "ACTUALITÉ"
 
 #: plugins/speechhandler/hackernews/hackernews.py:42
 msgid "YES"
