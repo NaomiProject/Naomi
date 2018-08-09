@@ -17,7 +17,8 @@ msgstr ""
 
 #: news.py:57 news.py:129
 msgid "NEWS"
-msgstr "NEWS"
+msgstr "ACTUALITÉ"
+
 
 #: news.py:58 news.py:129
 msgid "HEADLINES"
@@ -33,7 +34,7 @@ msgstr "NON"
 
 #: news.py:72
 msgid "Pulling up the news..."
-msgstr "Récéption des news..."
+msgstr "Récéption des titres..."
 
 #: news.py:82
 msgid "Sorry, I'm unable to get the latest headlines right now."
@@ -53,7 +54,7 @@ msgstr "d'accord, donnez moi un instant."
 
 #: news.py:103
 msgid "Your Top Headlines"
-msgstr "Vos meilleurs titres"
+msgstr "Voici les titres du jour"
 
 #: news.py:107
 msgid "Okay, I've sent you an email."
