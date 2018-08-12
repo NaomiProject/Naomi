@@ -19,41 +19,52 @@ aplay test.wav
 ## Build and install openfst:
 ```
 sudo apt install gcc g++ make python-pip autoconf libtool
-wget http://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.6.7.tar.gz
-tar -zxvf openfst-1.6.7.tar.gz
-cd openfst-1.6.7
+wget http://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.6.9.tar.gz
+tar -zxvf openfst-1.6.9.tar.gz
+cd openfst-1.6.9
 autoreconf -i
 ./configure --enable-static --enable-shared --enable-far --enable-lookahead-fsts --enable-const-fsts --enable-pdt --enable-ngram-fsts --enable-linear-fsts --prefix=/usr
 make
 sudo make install
 cd
 ```
-
 ## Build and install mitlm-0.4.2:
+Below, when I say "edit x add y" I mean to add the exact line "y" to the file "x" at the logical point. I'm generally using
+the command line, which means I'm usually using vi or vim as my text editor.
+
+I added the line "AC_CONFIG_MACRO_DIRS([m4])" to configure.ac on line 12, below "AC_CONFIG_AUX_DUR([build-aux])" and above "AM_INIT_AUTOMAKE([foreign -Wall -Werror])"
+
+I added the line "ACLOCAL_AMFLAGS = -I m4" to Makefile.am on line 11, below "AM_CPPFLAGS = -I$(top_srcdir)/src" and above "AUTOMAKE_OPTIONS = subdir-objects"
+
 ```
 sudo apt install git gfortran autoconf-archive
 git clone https://github.com/mitlm/mitlm.git
 cd mitlm
-vi configure.ac add AC_CONFIG_MACRO_DIRS([m4])
-vi Makefile.am  add ACLOCAL_AMFLAGS = -I m4
+```
+edit configure.ac add AC_CONFIG_MACRO_DIRS([m4])
+edit Makefile.am  add ACLOCAL_AMFLAGS = -I m4
+```
 autoreconf -i
 ./configure
 make
 sudo make install
 cd
 ```
+
 ## Build and install Phonetisaurus:
 ```
+sudo apt install git
 git clone https://github.com/AdolfVonKleist/Phonetisaurus.git
 cd Phonetisaurus
 ./configure --enable-python
 make
-sudo make install
+sudo make install 
 cd python
 cp -iv ../.libs/Phonetisaurus.so ./
 sudo python setup.py install
 cd
 ```
+
 ## Build and install sphinxbase-0.8:
 
 Here we download the latest sphinxbase from github, configure it, and make sure that alsa was picked up in the configuration by saving the output from configure to a log file, then search for "alsa". You should get a result like:
@@ -77,19 +88,16 @@ cd
 git clone https://github.com/cmusphinx/pocketsphinx.git
 cd pocketsphinx
 ./autogen.sh
-./configure
 make
 sudo make install
 cd
 which pocketsphinx_continuous
 ```
 ## Install python PocketSphinx libary
-Download the old .egg file, convert it to wheel, and install it with pip.
 ```
-sudo pip install wheel
-wget https://pypi.python.org/packages/e1/e8/448fb4ab687ecad1be8708d152eb7ed69455be7740fc5899255be2228b52/pocketsphinx-0.1.3-py2.7-linux-x86_64.egg#md5=1b4ce66e44f53d23c981e789f84edf29`
-python -m wheel convert pocketsphinx-0.1.3-py2.7-linux-x86_64.egg
-pip install ./pocketsphinx-0.1.3-cp27-none-linux_x86_64.whl
+git clone --recursive https://github.com/cmusphinx/pocketsphinx-python.git
+cd pocketsphinx-python/
+sudo python setup.py install
 ```
 ## Build and install CMUCLMTK
 ```
