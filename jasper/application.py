@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import logging, coloredlogs
+import logging
 import os
 import re
 import shutil
@@ -19,10 +19,6 @@ from . import batch_mic
 USE_STANDARD_MIC = 0
 USE_TEXT_MIC = 1
 USE_BATCH_MIC = 2
-
-logger = logging.getLogger(__name__)
-
-coloredlogs.install(level='DEBUG')
 
 
 class Jasper(object):

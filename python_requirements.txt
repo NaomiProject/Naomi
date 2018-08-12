@@ -28,6 +28,3 @@ python-dateutil==2.7.3
 
 # MPDControl module
 python-mpd==0.3.0
-
-# Colored for Logging
-coloredlogs==10.0
