@@ -2,14 +2,13 @@
 APScheduler==3.5.2
 argparse==1.4.0
 mock==2.0.0
-python-slugify==0.1.0
 pytz==2018.5
 PyYAML==3.13
 requests==2.19.1
 blessings
 
 #other modules
-slugify==1.2.5
+python-slugify==1.2.5
 mad==0.2.2
 
 # Pocketsphinx STT engine
@@ -29,3 +28,6 @@ python-dateutil==2.7.3
 
 # MPDControl module
 python-mpd==0.3.0
+
+# Colored for Logging
+coloredlogs==10.0
