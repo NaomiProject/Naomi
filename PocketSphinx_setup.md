@@ -42,6 +42,7 @@ git clone https://github.com/mitlm/mitlm.git
 cd mitlm
 ```
 edit configure.ac add AC_CONFIG_MACRO_DIRS([m4])
+
 edit Makefile.am  add ACLOCAL_AMFLAGS = -I m4
 ```
 autoreconf -i
