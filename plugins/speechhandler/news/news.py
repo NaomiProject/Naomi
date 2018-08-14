@@ -37,6 +37,7 @@ def get_top_articles(language='en', num_headlines=5):
         articles.append(Article(title=title, link=link))
         if len(articles) >= num_headlines:
             break
+
     return articles
 
 
@@ -73,7 +74,7 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
             mic.say(self.gettext(
                 "Sorry, I'm unable to get the latest headlines right now."))
             return
-
+        del articles[0] #fixing "This RSS feed URL is deprecated"
         text = self.gettext('These are the current top headlines...')
         text += ' '
         text += '... '.join(
@@ -81,32 +82,36 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
             for i, a in enumerate(articles, start=1))
         mic.say(text)
 
-        if 'gmail_address' not in self.profile:
+        if not self.profile['email']['address']:
             return
 
-        mic.say(self.gettext('Would you like me to send you these articles?'))
+        if self.profile['prefers_email'] :
 
-        answers = mic.active_listen()
-        if any(self.gettext('YES').upper() in answer.upper()
-               for answer in answers):
-            mic.say(self.gettext("Sure, just give me a moment."))
-            email_text = self.make_email_text(articles)
-            email_sent = app_utils.email_user(
-                self.profile,
-                SUBJECT=self.gettext("Your Top Headlines"),
-                BODY=email_text)
-            if email_sent:
-                mic.say(self.gettext(
-                    "Okay, I've sent you an email."))
+            mic.say(self.gettext('Would you like me to send you these articles?'))
+
+            answers = mic.active_listen()
+            if any(self.gettext('YES').upper() in answer.upper()
+                for answer in answers):
+                    mic.say(self.gettext("Sure, just give me a moment."))
+                    SUBJECT=self.gettext("Your Top Headlines")
+                    email_text = self.make_email_text(articles)
+                    email_sent = app_utils.email_user(
+                    self.profile,
+                    SUBJECT=SUBJECT,
+                    BODY=email_text)
+                    if email_sent:
+                        mic.say(self.gettext(
+                        "Okay, I've sent you an email."))
+                    else:
+                        mic.say(self.gettext(
+                        "Sorry, I'm having trouble sending you these articles."))
             else:
-                mic.say(self.gettext(
-                    "Sorry, I'm having trouble sending you these articles."))
-        else:
-            mic.say(self.gettext("Okay, I will not send any articles."))
+                mic.say(self.gettext("Okay, I will not send any articles."))
 
     def make_email_text(self, articles):
         text = self.gettext('These are the articles you requested:')
         text += '\n\n'
+        del articles[1]  #to fix 'This RSS feed URL is deprecated'
         for article in articles:
             text += '- %s\n  %s\n' % (article.title, article.link)
         return text
