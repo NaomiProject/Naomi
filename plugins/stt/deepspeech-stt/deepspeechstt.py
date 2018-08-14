@@ -114,17 +114,6 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
             raise RuntimeError(msg)
         self._ds = Model(self._MODEL, self._N_FEATURES, self._N_CONTEXT, self._ALPHABET, self._BEAM_WIDTH)
         self._ds.enableDecoderWithLM(self._ALPHABET, self._LM, self._TRIE, self._LM_WEIGHT, self._WORD_COUNT_WEIGHT, self._VALID_WORD_COUNT_WEIGHT)
-        # Create the audiolog if it does not exist
-        # self._audiolog=os.path.join(os.path.dirname(os.path.realpath(__file__)),"audiolog")
-        # if not os.path.exists(self._audiolog):
-        #     os.makedirs(self._audiolog)
-        # Clear the audiolog
-        # files=os.listdir(self._audiolog)
-        # for file in files:
-        #     if file.endswith(".wav"):
-        #         self._logger.info("to delete: %s"%os.path.join(self._audiolog,file))
-        #         os.remove(os.path.join(self._audiolog,file))
-        # self._filecount=0
 
     def transcribe(self, fp):
         """
@@ -140,12 +129,5 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
         
         transcribed = [text.upper()]
         print('>> %r'%transcribed)
-
-        # write the output to a log file
-        #if( self._save_input and not transcribed==[''] ):
-        #    self._filecount+=1
-        #    f=open(os.path.join(self._audiolog,"%d_%s.wav"%(self._filecount,text)),"w")
-        #    f.write(fp.read())
-        #    f.close()
 
         return transcribed
