@@ -17,7 +17,7 @@ msgstr ""
 
 #: gmail/gmail.py:49
 msgid "EMAIL"
-msgstr "Email"
+msgstr "mail"
 
 #: gmail/gmail.py:49
 msgid "INBOX"

@@ -66,12 +66,12 @@ msgstr "Voulez-vous entendre la météo des %d prochains jours?"
 #: plugins/speechhandler/weather/weather.py:223
 #, python-format
 msgid "YEAH"
-msgstr "OUAI"
+msgstr "OUI"
 
 #: plugins/speechhandler/weather/weather.py:195
 #, python-brace-format
 msgid "Tomorrow in {city}: {text} and temperatures between {temp_low} and {temp_high} degrees."
-msgstr "Demain à {city}: il fera {text} et la température sera comprise entre {temp_low} et {temp_high} degrés"
+msgstr "Demain à {city}: il fera {text} et la température sera comprise entre {temp_low} et {temp_high} degrés "
 
 #: plugins/speechhandler/weather/weather.py:204
 msgid "Sorry, I had a problem retrieving the weather data."
@@ -194,7 +194,7 @@ msgid "fair at night"
 msgstr "juste la nuit"
 
 msgid "fair at day"
-msgstr "juste le jour"
+msgstr "ensoleillé"
 
 msgid "mixed rain and hail"
 msgstr "mixe pluie et grêle"
