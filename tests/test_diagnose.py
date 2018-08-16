@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
-from jasper import diagnose
+from naomi import diagnose
 
 
 class TestDiagnose(unittest.TestCase):

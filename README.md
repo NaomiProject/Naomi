@@ -1,16 +1,16 @@
 
 
 # Naomi Project
-[![Build Status](https://travis-ci.org/jasper2fork/j2f.svg?branch=master)](https://travis-ci.org/jasper2fork/j2f) [![Coverage Status](https://img.shields.io/coveralls/jasper2fork/j2f.svg)](https://coveralls.io/r/jasper2fork/j2f) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec)](https://www.codacy.com/app/jasper2fork/j2f?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jasper2fork/j2f&amp;utm_campaign=Badge_Grade) [![Requirements Status](https://requires.io/github/NaomiProject/Naomi/requirements.svg?branch=jasper-dev)](https://requires.io/github/NaomiProject/Naomi/requirements/?branch=jasper-dev)
+[![Build Status](https://travis-ci.org/naomi2fork/j2f.svg?branch=master)](https://travis-ci.org/naomi2fork/j2f) [![Coverage Status](https://img.shields.io/coveralls/naomi2fork/j2f.svg)](https://coveralls.io/r/naomi2fork/j2f) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec)](https://www.codacy.com/app/naomi2fork/j2f?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=naomi2fork/j2f&amp;utm_campaign=Badge_Grade) [![Requirements Status](https://requires.io/github/NaomiProject/Naomi/requirements.svg?branch=naomi-dev)](https://requires.io/github/NaomiProject/Naomi/requirements/?branch=naomi-dev)
 [![Discord](https://img.shields.io/badge/Support%2FChat-Discord-green.svg)](https://discord.gg/knequ9t)
 =============
 
-**Jasper2fork project is back ! We're changing the project name to Naomi**
+**Naomi2fork project is back ! We're changing the project name to Naomi**
 
 
 **Some links will may not work due to the name change, thanks to warn us**
 
-This is the fork of the J2 fork of _thejasperproject_, thank you for all the work to this point.
+This is the fork of the J2 fork of _thenaomiproject_, thank you for all the work to this point.
 
 Client code for the Naomi voice computing platform, an **open source** platform for developing _always-on_, _voice-controlled_ applications to bring an open assistant for **makers** and **enthusiasts**
 

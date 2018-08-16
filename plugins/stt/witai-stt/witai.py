@@ -2,7 +2,7 @@
 
 import logging
 import requests
-from jasper import plugin
+from naomi import plugin
 
 # There seems to be no way to get language setting of the defined app
 # Last updated: April 06, 2016

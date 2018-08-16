@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
-from jasper import testutils, diagnose
+from naomi import testutils, diagnose
 from . import weather
 
 

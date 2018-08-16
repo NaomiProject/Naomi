@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def check_network_connection(server="www.google.com"):
     """
-    Checks if jasper can connect a network server.
+    Checks if naomi can connect a network server.
 
     Arguments:
         server -- (optional) the server to connect with (Default:

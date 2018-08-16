@@ -66,3 +66,6 @@ target/
 
 # SublimeLinter config file
 .sublimelinterrc
+*.md
+*.md
+*.md

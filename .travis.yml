@@ -14,7 +14,7 @@ addons:
     - libmad0
     - libmad0-dev
 install: 
-    # Install jasper core dependencies
+    # Install naomi core dependencies
     - "pip install -r python_requirements.txt "
     # Install additional testing software
     - "pip install python-coveralls"
@@ -22,7 +22,7 @@ install:
     - "pip install flake8 "
     - "python ./setup.py install"
 before_script:
-    - "flake8 --config ./.flake8 setup.py jasper tests plugins"
+    - "flake8 --config ./.flake8 setup.py naomi tests plugins"
 script:
     - "coverage run ./setup.py test"
 after_success:

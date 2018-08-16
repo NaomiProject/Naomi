@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
-from jasper import app_utils
-from jasper import plugin
+from naomi import app_utils
+from naomi import plugin
 
 
 class ClockPlugin(plugin.SpeechHandlerPlugin):

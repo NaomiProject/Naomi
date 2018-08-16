@@ -1,6 +1,6 @@
-# Jasper core translations
+# Naomi core translations
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
-# This file is distributed under the same license as the Jasper package.
+# This file is distributed under the same license as the Naomi package.
 # Jan Holthuis <holthuis.jan@googlemail>, 2015.
 #
 msgid ""
@@ -8,10 +8,10 @@ msgstr ""
 "Project-Id-Version: 2.0-dev\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-10-28 01:17+0100\n"
-"PO-Revision-Date: 2016-6-16 23:01+0100\n"
-"Last-Translator: Rocca Seb <se.rocca84@gmail.com>\n"
-"Language-Team: Jasper Project\n"
-"Language: fr_FR\n"
+"PO-Revision-Date: 2015-10-28 01:25+0100\n"
+"Last-Translator: Jan Holthuis <holthuis.jan@googlemail.com>\n"
+"Language-Team: Naomi Project\n"
+"Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,27 +19,18 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: client/conversation.py:24
-msgid "My name is, %s."
-msgstr "Mon nom est %s."
-
-#:client/conversation.py:26
-msgid "My name is Jasper"
-msgstr "Je suis Jasper"
-
-
-#: client/conversation.py:32
 #, python-format
 msgid "How can I be of service, %s?"
-msgstr "Comment Puis-je vous aider, %s?"
+msgstr "Was kann ich für dich tun, %s?"
 
 #: client/conversation.py:27
-msgid "How can I be of service ?"
-msgstr "Puis-je vous aider ?"
+msgid "How can I be of service?"
+msgstr "Was kann ich für dich tun?"
 
 #: client/conversation.py:53
 msgid "I'm sorry. I had some trouble with that operation. Please try again later."
-msgstr "Je suis désolé. Il y a quelques problèmes. Merci de réessayer plus tard"
+msgstr "Tut mir leid, ich konnte deine Anfrage nicht bearbeiten. Bitte versuche es später noch einmal."
 
 #: client/conversation.py:60
 msgid "Pardon?"
-msgstr "Pardon ?"
+msgstr "Das habe ich leider nicht verstanden."

@@ -4,8 +4,8 @@ import pipes
 import platform
 import subprocess
 import tempfile
-from jasper import diagnose
-from jasper import plugin
+from naomi import diagnose
+from naomi import plugin
 
 EXECUTABLE = 'say'
 

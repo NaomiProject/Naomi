@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
-from jasper import plugin
+from naomi import plugin
 
 
 class MeaningOfLifePlugin(plugin.SpeechHandlerPlugin):

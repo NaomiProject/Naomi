@@ -1,5 +1,5 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-import jasper
+import naomi
 
-jasper.main()
+naomi.main()

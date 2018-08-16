@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
+import re
 import shutil
 import yaml
 import pkg_resources
@@ -8,6 +9,7 @@ import pkg_resources
 from . import audioengine
 from . import brain
 from . import paths
+from . import populate
 from . import pluginstore
 from . import conversation
 from . import mic
@@ -19,10 +21,9 @@ USE_TEXT_MIC = 1
 USE_BATCH_MIC = 2
 
 
-class Jasper(object):
+class Naomi(object):
     def __init__(self, use_mic=USE_STANDARD_MIC, batch_file=None):
         self._logger = logging.getLogger(__name__)
-
         # Create config dir if it does not exist yet
         if not os.path.exists(paths.CONFIG_PATH):
             try:
@@ -34,7 +35,7 @@ class Jasper(object):
 
         # Check if config dir is writable
         if not os.access(paths.CONFIG_PATH, os.W_OK):
-            self._logger.critical("Config dir %s is not writable. Jasper " +
+            self._logger.critical("Config dir %s is not writable. Naomi " +
                                   "won't work correctly.",
                                   paths.CONFIG_PATH)
 
@@ -59,17 +60,37 @@ class Jasper(object):
                     raise
 
         # Read config
-        self._logger.debug("Trying to read config file: '%s'", new_configfile)
-        try:
-            with open(new_configfile, "r") as f:
-                self.config = yaml.safe_load(f)
-        except OSError:
-            self._logger.error("Can't open config file: '%s'", new_configfile)
-            raise
-        except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
-            self._logger.error("Unable to parse config file: %s %s",
-                               e.problem.strip(), str(e.problem_mark).strip())
-            raise
+        # set a loop so we can keep looping back until the config file exists
+        config_read = False
+        while(not config_read):
+            self._logger.debug(
+                "Trying to read config file: '%s'" % new_configfile
+            )
+            try:
+                with open(new_configfile, "r") as f:
+                    self.config = yaml.safe_load(f)
+                    config_read = True
+            except IOError:
+                # AJC 2018-07-29 Changed this from a warning to debug, since
+                # we attempt to fix the problem right here
+                self._logger.debug(
+                    "Can't open config file: '%s'" % new_configfile
+                )
+                # raise
+                print("Your config file does not exist.")
+                input = raw_input(
+                    "Would you like to answer a few " +
+                    "questions to create a new one? "
+                )
+                if(re.match(r'\s*[Yy]', input)):
+                    populate.run()
+                else:
+                    print("Cannot continue. Exiting.")
+                    quit()
+            except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
+                self._logger.error("Unable to parse config file: %s %s",
+                                e.problem.strip(), str(e.problem_mark).strip())
+                raise
 
         try:
             language = self.config['language']

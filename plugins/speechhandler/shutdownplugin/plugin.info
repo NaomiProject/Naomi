@@ -2,9 +2,9 @@
 Name = Shutdown
 Version = 1.0.0
 License = MIT
-URL = https://github.com/jasper2fork/j2f
-Description = Shutdown Jasper
+URL = https://github.com/naomi2fork/j2f
+Description = Shutdown Naomi
 
 [Author]
-Name = Jasper Project
-URL = https://github.com/jasper2fork/j2f
+Name = Naomi Project
+URL = https://github.com/naomi2fork/j2f

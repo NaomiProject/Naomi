@@ -21,7 +21,7 @@ If applicable, add screenshots to help explain your problem.
 - Device:  [e.g. Raspberry Pi, Laptop ...]
 - OS: [e.g. Raspbian, Ubuntu ...]
   - Updated recently ? (Yes/No) 
-- Jasper Version: [e.g. 2.1]
+- Naomi Version: [e.g. 2.1]
 
 **Additional context**
 Add any other context about the problem here.
