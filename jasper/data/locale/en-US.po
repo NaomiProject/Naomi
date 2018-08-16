@@ -23,7 +23,7 @@ msgid "My name is, %s."
 msgstr ""
 
 #:client/conversation.py:26
-msgid "My name is Jasper"
+msgid "My name is Naomi"
 msgstr ""
 
 #: client/conversation.py:32
