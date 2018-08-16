@@ -1,11 +1,11 @@
 # Naomi core dependencies
-APScheduler==3.5.3
+APScheduler==3.5.2
 argparse==1.4.0
 mock==2.0.0
 pytz==2018.5
 PyYAML==3.13
 requests==2.19.1
-blessings==1.7
+blessings
 
 #other modules
 python-slugify==1.2.5
