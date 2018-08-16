@@ -1,0 +1,9 @@
+[Plugin]
+Name = deepspeech-stt
+Version = 1.0.0
+License = MIT
+URL = https://github.com/aaronchantrill/Naomi
+Description = Speech-To-Text implementation which relies on the DeepSpeech api.
+
+[Author]
+Name = Aaron Chantrill
