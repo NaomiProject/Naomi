@@ -18,17 +18,17 @@ Say hello to Naomi, an Open Virtual Intelligent Assistant, it [can do a lot for 
 
 This fork is a work in progress and as such if you find something missing/broke/anything please make a pull request with tests would be nice, or [file an issue](https://github.com/NaomiProject/Naomi/issues).
 
-The current plan is to use [**Discord**](https://discord.gg/cVMrAbj) and Github for the day to day comms.
+The current plan is to use [**Discord**](https://discord.gg/knequ9t) and Github for the day to day comms.
 
 ## Installation
 
 You can find installations steps on [the new wiki](https://github.com/NaomiProject/Naomi/wiki)
 
-**The current plan is to use [Discord](https://discord.gg/cVMrAbj) and Github for the day to day comms.**
+**The current plan is to use [Discord](https://discord.gg/knequ9t) and Github for the day to day comms.**
 
 There you'll also find informations to setup and how to use it.
 
-**Note**: For thoses who want to use the developers branch, we've created a "Tester" [**Discord**](https://discord.gg/cVMrAbj) role to help us to improve Naomi daily by reporting issues/bugs, do not hesistate to tell us if you're interested 🙂
+**Note**: For thoses who want to use the developers branch, we've created a "Tester" [**Discord**](https://discord.gg/knequ9t) role to help us to improve Naomi daily by reporting issues/bugs, do not hesistate to tell us if you're interested 🙂
 
 ## Latest improvements :tada:
 
@@ -68,7 +68,7 @@ The Contributing Guide also outlines some prospective features and areas that co
 
 If you run into an issue or require technical support, please first look through the closed and open **[GitHub Issues](https://github.com/NaomiProject/Naomi/issues)**, as you may find a solution there (or some useful advice, at least).
 
-If you're still having trouble, the next place to look would be the new **[Discord](https://discord.gg/cVMrAbj)**. If your problem remains unsolved, feel free to create a post there describing the issue, the steps you've taken to debug it, etc.
+If you're still having trouble, the next place to look would be the new **[Discord](https://discord.gg/knequ9t)**. If your problem remains unsolved, feel free to create a post there describing the issue, the steps you've taken to debug it, etc.
 
 ### Social Networking
 
