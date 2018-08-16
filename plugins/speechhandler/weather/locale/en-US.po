@@ -1,12 +1,12 @@
-# Jasper Weather Plugin
+# Naomi Weather Plugin
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
-# This file is distributed under the same license as the Jasper package.
+# This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Jasper 2.0\n"
-"Report-Msgid-Bugs-To: https://github.com/jasperproject/jasper-client/issues\n"
+"Project-Id-Version: Naomi 2.0\n"
+"Report-Msgid-Bugs-To: https://github.com/naomiproject/naomi-client/issues\n"
 "POT-Creation-Date: 2015-12-01 15:10+0100\n"
 "PO-Revision-Date: 2015-12-01 15:10+0100\n"
 "Last-Translator: Jan Holthuis <jan.holthuis@ruhr-uni-bochum.de>\n"
@@ -61,6 +61,11 @@ msgstr ""
 #: plugins/speechhandler/weather/weather.py:177
 #, python-format
 msgid "Do you want to hear the forecast for the next %d days?"
+msgstr ""
+
+#: plugins/speechhandler/weather/weather.py:223
+#, python-format
+msgid "YEAH"
 msgstr ""
 
 #: plugins/speechhandler/weather/weather.py:195

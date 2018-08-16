@@ -2,9 +2,9 @@
 Name = att-stt
 Version = 1.0.0
 License = MIT
-URL = http://jasperproject.github.io/
+URL = http://naomiproject.github.io/
 Description = Speech-To-Text implementation which relies on the AT&T Speech API.
 
 [Author]
-Name = Jasper Project
-URL = http://jasperproject.github.io/
+Name = Naomi Project
+URL = http://naomiproject.github.io/

@@ -1,7 +1,7 @@
 import os.path
 import logging
 import tempfile
-from jasper import plugin
+from naomi import plugin
 from . import sphinxvocab
 try:
     try:

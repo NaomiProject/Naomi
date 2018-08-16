@@ -1,12 +1,12 @@
-# Jasper News Plugin
+# Naomi News Plugin
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
-# This file is distributed under the same license as the Jasper package.
+# This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Jasper 2.0\n"
-"Report-Msgid-Bugs-To: https://github.com/jasperproject/jasper-client/issues\n"
+"Project-Id-Version: Naomi 2.0\n"
+"Report-Msgid-Bugs-To: https://github.com/naomiproject/naomi-client/issues\n"
 "POT-Creation-Date: 2015-12-01 03:11+0100\n"
 "PO-Revision-Date: 2015-12-01 03:11+0100\n"
 "Last-Translator: Jan Holthuis <jan.holthuis@ruhr-uni-bochum.de>\n"

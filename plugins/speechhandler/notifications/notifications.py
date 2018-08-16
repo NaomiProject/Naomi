@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import facebook
-from jasper import plugin
+from naomi import plugin
 
 
 class NotificationsPlugin(plugin.SpeechHandlerPlugin):
@@ -27,7 +27,7 @@ class NotificationsPlugin(plugin.SpeechHandlerPlugin):
             mic.say(self.gettext(
                 "I have not been authorized to query your Facebook. If " +
                 "you would like to check your notifications in the " +
-                "future, please visit the Jasper dashboard."))
+                "future, please visit the Naomi dashboard."))
             return
         except:
             mic.say(self.gettext(

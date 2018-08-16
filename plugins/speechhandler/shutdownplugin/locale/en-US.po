@@ -1,12 +1,12 @@
-# Jasper2fork Shutdown Plugin
+# Naomi2fork Shutdown Plugin
 #
-# This file is distributed under the same license as the Jasper2fork package.
+# This file is distributed under the same license as the Naomi2fork package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Jasper2fork 0.2\n"
-"Report-Msgid-Bugs-To: https://github.com/jasper2fork/j2f/issues\n"
+"Project-Id-Version: Naomi2fork 0.2\n"
+"Report-Msgid-Bugs-To: https://github.com/naomi2fork/j2f/issues\n"
 "POT-Creation-Date: 2016-8-21 19:00+0100\n"
 "PO-Revision-Date: 2016-8-21 19:00+0100\n"
 "Last-Translator: Rocca Seb <se.rocca84@gmail.com>\n"

@@ -2,7 +2,7 @@ import json
 import tempfile
 import logging
 import requests
-from jasper import plugin
+from naomi import plugin
 
 
 class IBMWatsonTTSPlugin(plugin.TTSPlugin):

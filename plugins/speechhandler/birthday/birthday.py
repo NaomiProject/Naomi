@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
 import facebook
-from jasper import app_utils
-from jasper import plugin
+from naomi import app_utils
+from naomi import plugin
 
 
 class BirthdayPlugin(plugin.SpeechHandlerPlugin):
@@ -29,7 +29,7 @@ class BirthdayPlugin(plugin.SpeechHandlerPlugin):
             mic.say(self.gettext(
                 "I have not been authorized to query your Facebook. If you " +
                 "would like to check birthdays in the future, please visit " +
-                "the Jasper dashboard."))
+                "the Naomi dashboard."))
             return
         except:
             mic.say(self.gettext("I apologize, there's a problem with that " +

@@ -1,15 +1,15 @@
-# Jasper Gmail Plugin 
+# Naomi Gmail Plugin
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
-# This file is distributed under the same license as the Jasper package.
+# This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Jasper 2.0\n"
-"Report-Msgid-Bugs-To: https://github.com/jasperproject/jasper-client/issues\n"
+"Project-Id-Version: Naomi 2.2\n"
+"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
 "POT-Creation-Date: 2015-10-30 19:00+0100\n"
-"PO-Revision-Date: 2016-06-18 0:12+0100\n"
-"Last-Translator: Rocca Seb <se.rocca84@gmail.com>\n"
+"PO-Revision-Date: 2018-8-02 01:00+0100\n"
+"Last-Translator: Sebastien Rocca <se.rocca84@gmail.com>\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,15 +17,15 @@ msgstr ""
 
 #: gmail/gmail.py:49
 msgid "EMAIL"
-msgstr "Email"
+msgstr "mail"
 
 #: gmail/gmail.py:49
 msgid "INBOX"
-msgstr "Récéption"
+msgstr "Reçus"
 
 #: gmail/gmail.py:103
-msgid "I'm sorry. I'm not authenticated to work with your Gmail."
-msgstr "Désolé. Je ne suis pas authenfié avec votre compte Gmail  "
+msgid "I'm sorry. I'm not authenticated to work with your Email account."
+msgstr "Désolé. Je ne suis pas authenfié avec votre compte Email"
 
 #: gmail/gmail.py:108 gmail/gmail.py:120
 msgid "You have no unread emails."

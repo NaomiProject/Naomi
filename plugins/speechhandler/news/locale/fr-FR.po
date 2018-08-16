@@ -1,12 +1,12 @@
-# Jasper News Plugin
+# Naomi News Plugin
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
-# This file is distributed under the same license as the Jasper package.
+# This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Jasper 2.0\n"
-"Report-Msgid-Bugs-To: https://github.com/jasperproject/jasper-client/issues\n"
+"Project-Id-Version: Naomi 2.0\n"
+"Report-Msgid-Bugs-To: https://github.com/naomiproject/naomi-client/issues\n"
 "POT-Creation-Date: 2015-12-01 03:11+0100\n"
 "PO-Revision-Date: 2016-06-18 00:50+0100\n"
 "Last-Translator: Rocca Seb <se.rocca84@gmail.com>\n"
@@ -17,7 +17,8 @@ msgstr ""
 
 #: news.py:57 news.py:129
 msgid "NEWS"
-msgstr "NEWS"
+msgstr "ACTUALITÉ"
+
 
 #: news.py:58 news.py:129
 msgid "HEADLINES"
@@ -33,7 +34,7 @@ msgstr "NON"
 
 #: news.py:72
 msgid "Pulling up the news..."
-msgstr "Récéption des news..."
+msgstr "Récéption des titres..."
 
 #: news.py:82
 msgid "Sorry, I'm unable to get the latest headlines right now."
@@ -53,7 +54,7 @@ msgstr "d'accord, donnez moi un instant."
 
 #: news.py:103
 msgid "Your Top Headlines"
-msgstr "Vos meilleurs titres"
+msgstr "Voici les titres du jour"
 
 #: news.py:107
 msgid "Okay, I've sent you an email."

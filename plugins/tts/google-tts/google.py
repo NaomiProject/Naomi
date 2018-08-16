@@ -1,7 +1,7 @@
 import os
 import tempfile
 import gtts
-from jasper import plugin
+from naomi import plugin
 
 
 class GoogleTTSPlugin(plugin.TTSPlugin):

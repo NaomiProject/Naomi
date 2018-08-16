@@ -1,12 +1,12 @@
-# Jasper Birthday Plugin 
+# Naomi Birthday Plugin 
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
-# This file is distributed under the same license as the Jasper package.
+# This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Jasper 2.0\n"
-"Report-Msgid-Bugs-To: https://github.com/jasperproject/jasper-client/issues\n"
+"Project-Id-Version: Naomi 2.0\n"
+"Report-Msgid-Bugs-To: https://github.com/naomiproject/naomi-client/issues\n"
 "POT-Creation-Date: 2015-10-30 19:00+0100\n"
 "PO-Revision-Date: 2015-10-30 19:00+0100\n"
 "Last-Translator: Jan Holthuis <jan.holthuis@ruhr-uni-bochum.de>\n"
@@ -19,7 +19,7 @@ msgid "BIRTHDAY"
 msgstr ""
 
 #: birthday/birthday.py:30
-msgid "I have not been authorized to query your Facebook. If you would like to check birthdays in the future, please visit the Jasper dashboard."
+msgid "I have not been authorized to query your Facebook. If you would like to check birthdays in the future, please visit the Naomi dashboard."
 msgstr ""
 
 #: birthday/birthday.py:35

@@ -7,7 +7,7 @@ import logging
 import tempfile
 import shutil
 import subprocess
-from jasper import paths
+from naomi import paths
 
 
 class VoxForgeLexicon(object):
@@ -90,7 +90,7 @@ def get_word_defs(lexicon, phrases):
 
 def compile_vocabulary(directory, phrases, profile):
     logger = logging.getLogger(__name__)
-    prefix = 'jasper'
+    prefix = 'naomi'
     tmpdir = tempfile.mkdtemp()
 
     lexicon_file = paths.data('julius-stt', 'VoxForge.tgz')

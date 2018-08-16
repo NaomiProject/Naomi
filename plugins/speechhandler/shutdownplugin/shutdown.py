@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
-from jasper import plugin
+from naomi import plugin
 import subprocess
 
 
@@ -33,7 +33,7 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
 
         mic.say(message)
 
-        proc = subprocess.Popen(["pkill", "-f", "Jasper.py"],
+        proc = subprocess.Popen(["pkill", "-f", "Naomi.py"],
                                 stdout=subprocess.PIPE)
         proc.wait()
 
