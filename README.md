@@ -1,114 +1,77 @@
-<h1 align="center">
-  <br>
-  <a href="https://projectnaomi.com/"><img src="https://projectnaomi.com/wp-content/uploads/2018/08/Asset-1@10x.png" alt="Naomi" width="400"></a>
-  <br>
-  <br>
-</h1>
-
-<h4 align="center">An open source platform for developing always-on, voice-controlled applications. </br>
-	Based on the previous work from <a href="http://jasperproject.github.io" target="_blank">Jasper</a>.
-</h4>
-
-<p align="center">
-	<a href="">
-    	<img src="https://img.shields.io/badge/python-v2.7-blue.svg">
-    </a>
-	<a href="https://travis-ci.org/naomiproject/naomi">
-    	<img src="https://travis-ci.org/naomiproject/naomi.svg?branch=master">
-    </a>
-    <a href="https://coveralls.io/r/naomiproject/naomi">
-    	<img src="https://img.shields.io/coveralls/naomiproject/naomi.svg">
-    </a>
-    <a href="(https://www.codacy.com/app/naomiproject/naomi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=naomiproject/naomi&amp;utm_campaign=Badge_Grade">
-    	<img src="https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec">
-    </a>
-    <a href="https://requires.io/github/NaomiProject/Naomi/requirements/?branch=naomi-dev">
-    	<img src="https://requires.io/github/NaomiProject/Naomi/requirements.svg?branch=naomi-dev">
-    </a>
-    </br>
-    </br>
-    <a href="https://github.com/anfederico/Clairvoyant/issues">
-    	<img src="https://img.shields.io/github/issues/naomiproject/naomi.svg">
-    </a>
-    <a href="">
-    	<img src="https://img.shields.io/badge/contributions-welcome-orange.svg">
-    </a>
-    <a href="https://discord.gg/knequ9t">
-    	<img src="https://img.shields.io/badge/Support%2FChat-Discord-blue.svg">
-    </a>
-    <a href="https://opensource.org/licenses/MIT">
-    	<img src="https://img.shields.io/badge/license-MIT-blue.svg">
-    </a>
-</p>
-
-<p align="center">
-  <a href="#key-features">Key Features</a> •
-  <a href="#how-to-use">How To Use</a> •
-  <a href="#documentation">Documentation</a> •
-  <a href="#download">Download</a> •
-  <a href="#credits">Credits</a> •
-  <a href="#license">License</a>
-</p>
-
-<p align="center">
-	<img src="https://projectnaomi.com/wp-content/uploads/2018/08/bd71c75e2fc9dad03ddf44dc3c47c7e2-1.png">
-</p>
-
-## Key Features
-
-* Control Anything
-  - Use your voice to ask for information, update social networks, control your home, and more.
-* Always Listening
-  - Naomi is always on, always listening for commands, and you can speak from feet away.
-* 100% Open Source
-  - Build it yourself with off-the-shelf hardware, and use our documentation to write your own modules.
-* Cross Platform Coming Soon
-  - Raspberry Pi and Linux currently.
-* Thorough Documentation
-  - Documentation is kept up to date.
-
-## How To Use
-
-To clone and run this application, you'll need the required tools installed on your computer. From your command line:
-
-```bash
-# Install tools
-$ apt install git nano python-pip python-pyaudio python3-pyaudio
-
-# Clone this repository
-$ git clone https://github.com/naomiproject/naomi
-
-# Go into the repository
-$ cd naomi
-
-# Install dependencies
-$ pip install -r python_requirements.txt
-
-# Run the app
-$ python Naomi.py
-```
-
-## Documentation
-
-All the documentation is available on our [website](https://projectnaomi.com/documentation)!
-
-## Download
-
-You can [download](https://github.com/naomiproject/naomi/releases/tag/v2.1) latest installable version of Naomi for Linux & Raspberry Pi.
-
-## Credits
-
-This software uses code from the initial Jasper Project & the Jasper2fork.
-
-- [JasperProject](http://jasperproject.github.io/)
-- [Jasper2Fork](https://github.com/andweber/j2f)
 
 
-## License
+# Naomi Project
+[![Build Status](https://travis-ci.org/naomi2fork/j2f.svg?branch=master)](https://travis-ci.org/naomi2fork/j2f) [![Coverage Status](https://img.shields.io/coveralls/naomi2fork/j2f.svg)](https://coveralls.io/r/naomi2fork/j2f) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec)](https://www.codacy.com/app/naomi2fork/j2f?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=naomi2fork/j2f&amp;utm_campaign=Badge_Grade) [![Requirements Status](https://requires.io/github/NaomiProject/Naomi/requirements.svg?branch=naomi-dev)](https://requires.io/github/NaomiProject/Naomi/requirements/?branch=naomi-dev)
+[![Discord](https://img.shields.io/badge/Support%2FChat-Discord-green.svg)](https://discord.gg/knequ9t)
+=============
 
-MIT
+**Naomi2fork project is back ! We're changing the project name to Naomi**
 
----
 
-> [projectnaomi.com](https://projectnaomi.com) &nbsp;&middot;&nbsp;
-> GitHub [@naomiproject](https://github.com/naomiproject)
+**Some links will may not work due to the name change, thanks to warn us**
+
+This is the fork of the J2 fork of _thenaomiproject_, thank you for all the work to this point.
+
+Client code for the Naomi voice computing platform, an **open source** platform for developing _always-on_, _voice-controlled_ applications to bring an open assistant for **makers** and **enthusiasts**
+
+Say hello to Naomi, an Open Virtual Intelligent Assistant, it [can do a lot for you](https://github.com/NaomiProject/Naomi/wiki/Preinstalled-and-available-plugins). We are working on creating a real working Jarvis for everyone to use everyday. If you have seen any movies like Iron Man, then you will know what we're talking about. :grin:
+
+This fork is a work in progress and as such if you find something missing/broke/anything please make a pull request with tests would be nice, or [file an issue](https://github.com/NaomiProject/Naomi/issues).
+
+The current plan is to use [**Discord**](https://discord.gg/cVMrAbj) and Github for the day to day comms.
+
+## Installation
+
+You can find installations steps on [the new wiki](https://github.com/NaomiProject/Naomi/wiki)
+
+**The current plan is to use [Discord](https://discord.gg/cVMrAbj) and Github for the day to day comms.**
+
+There you'll also find informations to setup and how to use it.
+
+**Note**: For thoses who want to use the developers branch, we've created a "Tester" [**Discord**](https://discord.gg/cVMrAbj) role to help us to improve Naomi daily by reporting issues/bugs, do not hesistate to tell us if you're interested 🙂
+
+## Latest improvements :tada:
+
+### V2.1
+* Brand new wiki to help new users :book:
+* Fixed bug :bug: :  
+  * Encoding error while using local text mode to interact with Naomi 
+  * Wit.AI STT engine HTTP request URL updated
+  * Mary TTS encoding error 
+* New Speech To Text/Text To Speech engines Watson services from IBM 🗣️ 
+* Updating some dependencies version
+* Community tools added: Pull-Request template and Issue template
+
+### V2.0
+* Adding multi-lingual support
+* Snowboy for private offline keyword recognition
+* Plugin architecture (break parts into plugins such as STT, TTS, engine, module...) 
+* Configurable audio engine
+
+## Data policy 
+
+We don't want to depend on having your data used saved online in order to use Naomi.
+
+We are going to let you decide how it works. You can use online AI services or use offline AI services (on your devices). It can even use both. By using online services,your assistant has access to much more, but the service records everything you give them. Devices are getting stronger locally, let's use that to our advantage… 
+
+**Naomi is developed with :heart: and modern open source tech to benefit to all, that's why we won't collect and use your personnal data**
+
+## Contributing
+
+There are [plenty of things that need help](https://github.com/NaomiProject/Naomi/issues). If you have to ask your not looking at the code.
+
+If you'd like to contribute to Naomi, please read through the **[Contributing Guide](CONTRIBUTING.md)**, which outlines the philosophies to preserve, tests to run, and more. We highly recommend reading through this guide before writing any code.
+
+The Contributing Guide also outlines some prospective features and areas that could use love. However, for a more thorough overview of Naomi direction and goals, check out the **[Issues](https://github.com/NaomiProject/Naomi/issues)**.
+
+## Support
+
+If you run into an issue or require technical support, please first look through the closed and open **[GitHub Issues](https://github.com/NaomiProject/Naomi/issues)**, as you may find a solution there (or some useful advice, at least).
+
+If you're still having trouble, the next place to look would be the new **[Discord](https://discord.gg/cVMrAbj)**. If your problem remains unsolved, feel free to create a post there describing the issue, the steps you've taken to debug it, etc.
+
+### Social Networking
+
+You can find Naomi and it's community on Twitter and Instagram with the hashtags **#naomiassistant** and **#NaomiStation** 
+
+## Thanks in advance for any and all work you contribute to Naomi !
