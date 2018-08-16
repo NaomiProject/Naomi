@@ -53,6 +53,7 @@
 <p align="center">
 	<img src="https://projectnaomi.com/wp-content/uploads/2018/08/bd71c75e2fc9dad03ddf44dc3c47c7e2-1.png">
 </p>
+
 ## Key Features
 
 * Control Anything
