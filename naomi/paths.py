@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 
-# Jasper main directory
+# Naomi main directory
 PKG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 
 DATA_PATH = os.path.join(PKG_PATH, "data")
 PLUGIN_PATH = os.path.normpath(os.path.join(PKG_PATH, os.pardir, "plugins"))
 
-CONFIG_PATH = os.path.expanduser(os.getenv('JASPER_CONFIG', '~/.jasper'))
+CONFIG_PATH = os.path.expanduser(os.getenv('JASPER_CONFIG', '~/.naomi'))
 
 
 def config(*fname):

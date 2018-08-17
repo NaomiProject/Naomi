@@ -3,7 +3,7 @@ import os
 import requests
 import sys
 import scipy.io.wavfile as wav
-from jasper import plugin
+from naomi import plugin
 
 try:
     from deepspeech.model import Model

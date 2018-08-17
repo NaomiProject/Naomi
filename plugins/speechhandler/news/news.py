@@ -3,8 +3,8 @@ import collections
 import urllib
 import urlparse
 import feedparser
-from jasper import plugin
-from jasper import app_utils
+from naomi import plugin
+from naomi import app_utils
 
 FEED_URL = 'https://news.google.com/news/feeds'
 

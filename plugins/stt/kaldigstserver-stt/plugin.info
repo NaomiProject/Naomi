@@ -2,9 +2,9 @@
 Name = kaldigstserver-stt
 Version = 1.0.0
 License = MIT
-URL = http://jasperproject.github.io/
+URL = http://naomiproject.github.io/
 Description = STT Plugin for the Kaldi GStreamer server.
 
 [Author]
-Name = Jasper Project
-URL = http://jasperproject.github.io/
+Name = Naomi Project
+URL = http://naomiproject.github.io/

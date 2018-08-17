@@ -129,7 +129,7 @@ def run():
         print(translator.gettext("    (or just fill in the email address if you " +
                                  "want to receive email notifications)"))
         print(translator.gettext("    and setup a Mailgun account, as at "))
-        print(translator.gettext(t.bold_yellow + "    http://jasperproject.github.io/documentation/" +
+        print(translator.gettext(t.bold_yellow + "    http://naomiproject.github.io/documentation/" +
                                                  "software/#mailgun.\n"))
         simple_request(
             'gmail_address',

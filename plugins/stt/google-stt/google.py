@@ -4,7 +4,7 @@ import urllib
 import urlparse
 import wave
 import requests
-from jasper import plugin
+from naomi import plugin
 
 
 class GoogleSTTPlugin(plugin.STTPlugin):

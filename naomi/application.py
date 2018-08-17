@@ -21,7 +21,7 @@ USE_TEXT_MIC = 1
 USE_BATCH_MIC = 2
 
 
-class Jasper(object):
+class Naomi(object):
     def __init__(self, use_mic=USE_STANDARD_MIC, batch_file=None):
         self._logger = logging.getLogger(__name__)
         # Create config dir if it does not exist yet
@@ -35,7 +35,7 @@ class Jasper(object):
 
         # Check if config dir is writable
         if not os.access(paths.CONFIG_PATH, os.W_OK):
-            self._logger.critical("Config dir %s is not writable. Jasper " +
+            self._logger.critical("Config dir %s is not writable. Naomi " +
                                   "won't work correctly.",
                                   paths.CONFIG_PATH)
 

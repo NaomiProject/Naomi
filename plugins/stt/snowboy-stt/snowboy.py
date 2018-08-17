@@ -1,6 +1,6 @@
 import snowboydetect
-from jasper import plugin
-from jasper import paths
+from naomi import plugin
+from naomi import paths
 
 
 class SnowboySTTPlugin(plugin.STTPlugin):
@@ -11,7 +11,7 @@ class SnowboySTTPlugin(plugin.STTPlugin):
 
         ...
         snowboy-stt:
-            model: Hello_Jasper.pmdl
+            model: Hello_Naomi.pmdl
 
     """
 

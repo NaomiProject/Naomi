@@ -1,12 +1,12 @@
-# Jasper Clock Plugin
+# Naomi Clock Plugin
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
-# This file is distributed under the same license as the Jasper package.
+# This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Naomi 2.2\n"
-"Report-Msgid-Bugs-To: https://github.com/jasperproject/jasper-client/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/naomiproject/naomi-client/issues\n"
 "POT-Creation-Date: 2015-10-30 19:00+0100\n"
 "PO-Revision-Date: 2018-8-7 01:10+0100\n"
 "Last-Translator: Rocca Seb <se.rocca84@gmail.>\n"

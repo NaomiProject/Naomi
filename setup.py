@@ -6,16 +6,16 @@ import setuptools
 from setuptools.command.bdist_egg import bdist_egg
 from distutils.command.build import build
 
-APPNAME = 'jasper'
+APPNAME = 'naomi'
 
 
-class jasper_bdist_egg(bdist_egg):
+class naomi_bdist_egg(bdist_egg):
     def run(self):
         self.run_command('build_i18n')
         setuptools.command.bdist_egg.bdist_egg.run(self)
 
 
-class jasper_build_i18n(setuptools.Command):
+class naomi_build_i18n(setuptools.Command):
     description = 'compile PO translations to MO files'
 
     user_options = []
@@ -40,7 +40,7 @@ class jasper_build_i18n(setuptools.Command):
                     f.write(msgfmt.Msgfmt(po_path).get())
 
 
-class jasper_build(build):
+class naomi_build(build):
     sub_commands = build.sub_commands + [
         ('build_i18n', None)
     ]
@@ -49,7 +49,7 @@ class jasper_build(build):
 setuptools.setup(
     name=APPNAME,
     version='2.0a1.dev1',
-    url='http://jasperproject.github.io/',
+    url='http://naomiproject.github.io/',
     license='MIT',
 
     author='Shubhro Saha, Charlie Marsh, Jan Holthuis',
@@ -60,7 +60,7 @@ setuptools.setup(
     ),
 
     description=(
-        'Jasper is an open source platform for developing ' +
+        'Naomi is an open source platform for developing ' +
         'always-on, voice-controlled applications.'
     ),
 
@@ -101,14 +101,14 @@ setuptools.setup(
 
     entry_points={
         'console_scripts': [
-            'Jasper = %s.main:main' % APPNAME
+            'Naomi = %s.main:main' % APPNAME
         ]
     },
 
     cmdclass={
-        'bdist_egg': jasper_bdist_egg,
-        'build': jasper_build,
-        'build_i18n': jasper_build_i18n,
+        'bdist_egg': naomi_bdist_egg,
+        'build': naomi_build,
+        'build_i18n': naomi_build_i18n,
     },
 
     test_suite='tests'

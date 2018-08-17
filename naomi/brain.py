@@ -27,7 +27,7 @@ class Brain(object):
     def get_standard_phrases(self):
         """
         Gets the standard phrases (i.e. phrases that occur frequently in
-        normal conversations) from a file in the jasper data dir.
+        normal conversations) from a file in the naomi data dir.
 
         Returns:
             A list of standard phrases.

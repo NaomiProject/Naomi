@@ -4,8 +4,8 @@ import pipes
 import re
 import subprocess
 import tempfile
-from jasper import diagnose
-from jasper import plugin
+from naomi import diagnose
+from naomi import plugin
 
 if not diagnose.check_executable('espeak'):
     raise ImportError("espeak executable not found!")
@@ -24,7 +24,7 @@ Voice = collections.namedtuple(
 
 class EspeakTTSPlugin(plugin.TTSPlugin):
     """
-    Uses the eSpeak speech synthesizer included in the Jasper disk image
+    Uses the eSpeak speech synthesizer included in the Naomi disk image
     Requires espeak to be available
     """
 

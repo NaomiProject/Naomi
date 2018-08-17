@@ -27,7 +27,7 @@ def main(args=None):
 
     print("***********************************************************")
     print("*                    Naomi Assistant                      *")
-    print("* Made by the Naomi Community, based on the JasperProject *")
+    print("* Made by the Naomi Community, based on the NaomiProject *")
     print("***********************************************************")
 
     # Set up logging
@@ -43,8 +43,8 @@ def main(args=None):
     else:
         used_mic = USE_STANDARD_MIC
 
-    # Run Jasper
-    app = application.Jasper(use_mic=used_mic,
+    # Run Naomi
+    app = application.Naomi(use_mic=used_mic,
                              batch_file=p_args.batch_file)
     if p_args.list_plugins:
         app.list_plugins()

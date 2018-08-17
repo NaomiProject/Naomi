@@ -1,4 +1,4 @@
-Jasper was originally created by Shubhro Saha and Charles Marsh in early 2014.
+Naomi was originally created by Shubhro Saha and Charles Marsh in early 2014.
 In August 2014, the core development team has been joined by Jan Holthuis.
 
     Jan Holthuis <jan.holthuis@ruhr-uni-bochum.de>
@@ -6,7 +6,7 @@ In August 2014, the core development team has been joined by Jan Holthuis.
     Shubhro Saha <saha@princeton.edu>
 
 Here is a probably incomplete list of contributors, that helped to improve
-Jasper. Thanks a lot!
+Naomi. Thanks a lot!
 
     Alex Bate <alex@alexbate.co.uk>
     Andy Buckingham <andy@andybee.com>
@@ -20,4 +20,4 @@ Jasper. Thanks a lot!
 *Please alphabetize new entries*
 
 We'd also like to thank all the people who reported bugs, helped
-answer newbie questions, and generally made Jasper better.
+answer newbie questions, and generally made Naomi better.

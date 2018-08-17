@@ -2,9 +2,9 @@
 Name = alsa
 Version = 1.0.0
 License = MIT
-URL = http://jasperproject.github.io/
+URL = http://naomiproject.github.io/
 Description = AudioEngine using the pyalsaaudio library for the Advanced Linux Sound Architecture (ALSA).
 
 [Author]
-Name = Jasper Project
-URL = http://jasperproject.github.io/
+Name = Naomi Project
+URL = http://naomiproject.github.io/

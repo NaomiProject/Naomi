@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
-from jasper import testutils
+from naomi import testutils
 from . import clock
 
 

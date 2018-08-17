@@ -139,7 +139,7 @@ idngram2lm -vocab_type 0 -idngram test.idngram -vocab test.vocab -arpa test.lm
 ```
 ### Create test.formatted.dict
 ```
-phonetisaurus-g2pfst --model=/home/jasper/CMUDict/train/model.fst --nbest=1 --beam=1000 --thresh=99.0 --accumulate=true --pmass=0.85 --nlog_probs=false --wordlist=./test.vocab > test.dict
+phonetisaurus-g2pfst --model=/home/naomi/CMUDict/train/model.fst --nbest=1 --beam=1000 --thresh=99.0 --accumulate=true --pmass=0.85 --nlog_probs=false --wordlist=./test.vocab > test.dict
 cat test.dict | sed -rne '/^([[:lower:]])+\s/p' | perl -pe 's/([0-9])+//g;s/\s+/ /g;@_=split(/\s+/);$w=shift(@_);$_=$w."\t".join(" ",@_)."\n";' > test.formatted.dict
 ```
 ## Test with audio file:

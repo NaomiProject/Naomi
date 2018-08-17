@@ -24,7 +24,7 @@ class Conversation(i18n.GettextMixin):
             salutation = (self.gettext("My name is, %s.")
                           % self.profile['keyword'])
         else:
-            salutation = self.gettext("My name is Jasper")
+            salutation = self.gettext("My name is Naomi")
         self.mic.say(salutation)
 
     def greet(self):

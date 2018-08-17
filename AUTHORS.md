@@ -2,7 +2,7 @@
 
 #### Ordered by first contribution.
 
-- Jasper Project <jasperprojecthq@gmail.com>
+- Naomi Project <naomiprojecthq@gmail.com>
 - Shubhro Saha <shbhrsaha@gmail.com>
 - Charles Marsh <crmarsh@princeton.edu>
 - David Celis <dcelis@newrelic.com>

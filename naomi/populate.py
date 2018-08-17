@@ -79,7 +79,7 @@ def run():
           "(or just fill in the email address if you " +
           "want to receive email notifications) and setup a Mailgun " +
           "account, as at " +
-          "http://jasperproject.github.io/documentation/" +
+          "http://naomiproject.github.io/documentation/" +
           "software/#mailgun.\n"))
     simple_request(
         'gmail_address',
@@ -306,11 +306,11 @@ def run():
                 ))
         profile['pocketsphinx']['phonetisaurus_executable'] = phonetisaurus_executable
         # We have the following things to configure:
-        #  hmm_dir - the default for jasper is "/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k"
+        #  hmm_dir - the default for naomi is "/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k"
         #          - if you install through the pocketsphinx-en-us debian apt package then it is "/usr/share/pocketsphinx/model/en-us/en-us"
         #          - if you install the latest pocketsphinx from source, it should be here: "~/pocketsphinx/model/en-us/en-us"
         #  fst_model -
-        #          - the default for jasper is "~/phonetisaurus/g014b2b.fst"
+        #          - the default for naomi is "~/phonetisaurus/g014b2b.fst"
         #          - if you install the latest CMUDict, then it will be at "~/CMUDict/train/model.fst"
         hmm_dir = ""
         while not(hmm_dir):
@@ -446,7 +446,7 @@ def run():
         profile["mary-tts"]["voice"] = raw_input("Voice:")
     # Getting information to beep or not beep
     print(translator.gettext(
-        "Jasper's active listener has two modes Beep or Voice."
+        "Naomi's active listener has two modes Beep or Voice."
     ))
     response = raw_input(translator.gettext(
         "Please Choose (B) for beeps or (V) for voice. "
@@ -457,7 +457,7 @@ def run():
         ))
     if(response is not "B"):
         print(translator.gettext(
-            "Type the words that jasper will respond with " +
+            "Type the words that naomi will respond with " +
             "after its name being called."
         ))
         areply = raw_input("Reply: ")
@@ -468,7 +468,7 @@ def run():
         if(areplyRespon != "Y"):
             areply = raw_input("Reply: ")
         profile['active_stt'] = {'reply': areply}
-        print("Type the words that jasper will say after hearing you.")
+        print("Type the words that naomi will say after hearing you.")
         aresponse = raw_input("Response: ")
         print(aresponse + "\n is this correct?")
         aresponseRespon = raw_input("Y/N?")

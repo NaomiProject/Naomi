@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 A drop-in replacement for the Mic class that allows for batch mode operation.
-Useful for debugging. Unlike with the typical Mic implementation, Jasper
+Useful for debugging. Unlike with the typical Mic implementation, Naomi
 processes the given commands in the batchfile.
 """
 import os.path

@@ -1,6 +1,6 @@
 import requests
 import mstranslator
-from jasper import plugin
+from naomi import plugin
 
 
 class MicrosoftTranslatorTTSPlugin(plugin.TTSPlugin):
