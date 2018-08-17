@@ -1,5 +1,5 @@
 # Naomi core dependencies
-APScheduler==3.5.2
+APScheduler==3.5.3
 argparse==1.4.0
 mock==2.0.0
 pytz==2018.5
