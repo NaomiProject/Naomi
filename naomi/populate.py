@@ -136,7 +136,7 @@ def verifyLocation(place):
 # of that value, otherwise return None
 def CheckForValue(value, list):
     try:
-        temp = list.index(value)
+        temp = list.index(value)+1
     except ValueError:
         temp = None
     return temp
@@ -1006,7 +1006,7 @@ def run(profile):
         response = simple_input(
             t.red + _("Please choose beeps (B) or voice (V):") + t.bold_white
         )
-    if(response.lower()[:1] is "v"):
+    if(response.lower()[:1] == "v"):
         print("")
         print("")
         print("")
@@ -1017,25 +1017,26 @@ def run(profile):
         )
         print("")
         areplyRespon = None
-        while(areplyRespon.lower()[:1] != affirmative.lower()[:1]):
+        while((not areplyRespon) or (areplyRespon.lower()[:1] != affirmative.lower()[:1])):
             areply = simple_input(
                 format_prompt( 
                     "?",
-                    "Reply"
+                    _("Reply")
                 ),
-                get_profile_var(profile,"active_stt","response")
+                get_profile_var(profile,"active_stt","reply")
             )
             print("")
             print(areply + t.bold_blue +" " + _("Is this correct?"))
             print("")
-            while(not CheckForValue(areplyRespon.lower()[:1],[affirmative.lower()[:1],negative.lower()[:1]])):
+            areplyRespon = None
+            while((not areplyRespon) or (not CheckForValue(areplyRespon.lower()[:1],[affirmative.lower()[:1],negative.lower()[:1]]))):
                 areplyRespon = simple_input(
                     format_prompt( 
                         "?",
                         affirmative.upper()[:1] + "/" + negative.upper()[:1] +"?"
                     )
                 )
-        profile['active_stt'] = {'reply': areply}
+        profile['active_stt']['reply'] = areply
         print("")
         print("")
         print("")
@@ -1045,7 +1046,7 @@ def run(profile):
             + _("Type the words I should say after hearing a command")
         )
         aresponseRespon = None
-        while(aresponseRespon.lower()[:1] != affirmative.lower()[:1]):
+        while((not aresponseRespon) or (aresponseRespon.lower()[:1] != affirmative.lower()[:1])):
             aresponse = simple_input(
                 format_prompt( 
                     "?",
@@ -1056,13 +1057,15 @@ def run(profile):
             print("")
             print(aresponse + t.bold_blue+" Is this correct?")
             print("")
-            aresponseRespon = simple_input(
-                format_prompt( 
-                    "?",
-                    affirmative.upper()[:1] + "/" + negative.upper()[:1] + "?"
+            aresponseRespon = None
+            while((not aresponseRespon) or (not CheckForValue(aresponseRespon.lower()[:1],[affirmative.lower()[:1],negative.lower()[:1]]))):
+                aresponseRespon = simple_input(
+                    format_prompt( 
+                        "?",
+                        affirmative.upper()[:1] + "/" + negative.upper()[:1] + "?"
+                    )
                 )
-            )
-        profile['active_stt'] = {'response': aresponse}
+        profile['active_stt']['response'] = aresponse
         print("")
         print("")
         print("")

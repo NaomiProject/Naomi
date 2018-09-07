@@ -15,7 +15,7 @@ def main(args=None):
         help='Show debug messages'
     )
     parser.add_argument(
-        '--reconfigure',
+        '--repopulate',
         action='store_true',
         help='Rebuild configuration profile'
     )
@@ -59,7 +59,7 @@ def main(args=None):
     app = application.Naomi(
         use_mic = used_mic,
         batch_file = p_args.batch_file,
-        reconfigure = p_args.reconfigure
+        repopulate = p_args.repopulate
     )
     if p_args.list_plugins:
         app.list_plugins()

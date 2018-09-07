@@ -356,8 +356,8 @@ msgstr "La langue?"
 msgid "Voice?"
 msgstr "Voix?"
 
-#: populate.py:988
-msgid "I have two ways to let you know I've heard you: Beep or Voice."
+#: populate.py:990
+msgid "I have two ways to let you know I've heard you; Beep or Voice."
 msgstr "J'ai deux façons de vous faire savoir que je vous ai entendu: Bip ou voix"
 
 #: populate.py:999
@@ -371,6 +371,10 @@ msgstr "Veuillez choisir des bips (B) ou des voix (V):"
 #: populate.py:1014
 msgid "Type the words I should say after hearing my wake word: %s"
 msgstr "Tapez les mots que je devrais dire après avoir entendu mon mot réveil:% s"
+
+#: populate.py:1024
+msgid "Reply"
+msgstr "Répondre"
 
 #: populate.py:1027
 msgid "Is this correct?"
