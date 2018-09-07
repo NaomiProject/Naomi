@@ -23,12 +23,11 @@ import i18n
 import subprocess
 from blessings import Terminal
 
-t = None
 
 # AaronC
 # Get a value from the profile, whether it exists or not
 # If the value does not exist in the profile, returns None
-def get_profile_var(profile,*args):
+def get_profile_var(profile, *args):
     response = profile
     for arg in args:
         try:
@@ -38,9 +37,9 @@ def get_profile_var(profile,*args):
             # break out of the for loop
             break
     return response
-    
-# AaronC - 
-def format_prompt(icon,prompt):
+
+
+def format_prompt(icon, prompt):
     if(icon == "!"):
         prompt = (
             t.bold_white + '['
@@ -57,6 +56,7 @@ def format_prompt(icon,prompt):
         )
     return prompt
 
+
 # AaronC - simple_input is a lot like raw_input, just adds
 # a colon and space at the end. If a default value is
 # passed in, then adds that to the end followed by two slashes.
@@ -65,7 +65,7 @@ def format_prompt(icon,prompt):
 # then that can be done here.
 # Part of the purpose is to provide a way of overriding
 # raw_input easily without hunting down every reference
-def simple_input(prompt, default = None):
+def simple_input(prompt, default=None):
     prompt += ": "
     if(default):
         prompt += default + "// "
@@ -74,8 +74,9 @@ def simple_input(prompt, default = None):
     # if the user pressed enter without entering anything,
     # set the response to default
     if(default and not response):
-         response = default
+        response = default
     return response.strip()
+
 
 # AaronC - simple_request is more complicated, and populates
 # the profile variable directly
@@ -86,9 +87,11 @@ def simple_request(profile, var, prompt, cleanInput=None):
             input = cleanInput(input)
         profile[var] = input
 
+
 # AaronC - This is currently used to clean phone numbers
 def clean_number(s):
     return re.sub(r'[^0-9]', '', s)
+
 
 # AaronC - This searches some standard places (/bin, /usr/bin, /usr/local/bin)
 # for a program name.
@@ -102,6 +105,7 @@ def CheckProgramExists(program):
         if(os.path.isfile(os.path.join(location, program))):
             response = True
     return response
+
 
 # FIXME
 # AaronC - Location. This uses weather underground for verification, which
@@ -126,20 +130,24 @@ def verifyLocation(place):
     if numEntries == 0:
         return False
     else:
-        print( 
+        print(
             _("Location saved as ")
             + feed['feed']['description'][33:]
         )
         return True
 
+
 # If value exists in list, return the index
-# of that value, otherwise return None
+# of that value (+ 1 so that the first item
+# does not return zero which is interpreted
+# as false), otherwise return None
 def CheckForValue(value, list):
     try:
-        temp = list.index(value)+1
+        temp = list.index(value) + 1
     except ValueError:
         temp = None
     return temp
+
 
 def run(profile):
     #
@@ -152,14 +160,14 @@ def run(profile):
     #
     global t, _
     t = Terminal()
-    
-    language = get_profile_var(profile,"language")
+
+    language = get_profile_var(profile, "language")
     if(not language):
         language = 'en-US'
         profile["language"] = language
     translations = i18n.parse_translations(paths.data('locale'))
     translator = i18n.GettextMixin(translations, profile)
-    _ = translator.gettext        
+    _ = translator.gettext
     #
     # AustinC; can't use français due to the special char "ç"
     # it breaks due to it being out of range for ascii
@@ -174,7 +182,7 @@ def run(profile):
         (
             once
         )and(
-            CheckForValue(language,languages.keys())
+            CheckForValue(language, languages.keys())
         )
     ):
         once = True
@@ -194,7 +202,7 @@ def run(profile):
             ),
             language
         ).lower().strip()
-        if(CheckForValue(temp[:2],[key[:2] for key in languages.keys()])):
+        if(CheckForValue(temp[:2], [key[:2] for key in languages.keys()])):
             for key in languages.keys():
                 if(temp[:2] == key[:2]):
                     language = key
@@ -219,18 +227,18 @@ def run(profile):
     print("")
     print("")
     print("")
-    print("    "+t.bold_blue(
+    print("    " + t.bold_blue(
         _("Hello, thank you for selecting me to be your personal assistant.")
     ))
     print("")
-    print("    "+t.bold_blue(
+    print("    " + t.bold_blue(
         _("Let's populate your profile.")
     ))
     print("")
-    print("    "+t.bold_blue(
+    print("    " + t.bold_blue(
         _("If, at any step, you would prefer not to enter the requested information")
     ))
-    print("    "+t.bold_blue(
+    print("    " + t.bold_blue(
         _("just hit 'Enter' with a blank field to continue.")
     ))
     print("")
@@ -239,7 +247,7 @@ def run(profile):
     simple_request(
         profile,
         'keyword',
-        format_prompt( 
+        format_prompt(
             "?",
             _('First, what name would you like to call me by?').decode('utf-8')
         )
@@ -249,14 +257,15 @@ def run(profile):
     print("")
 
     # your name
-    print("    " + t.bold_blue +
-        _("Now please tell me a little about yourself.")
+    print(
+        "    " + t.bold_blue
+        + _("Now please tell me a little about yourself.")
     )
     print("")
     simple_request(
         profile,
         "first_name",
-        format_prompt( 
+        format_prompt(
             "?",
             _("What is your first name?")
         )
@@ -265,7 +274,7 @@ def run(profile):
     simple_request(
         profile,
         'last_name',
-        format_prompt( 
+        format_prompt(
             "?",
             _('What is your last name?').decode('utf-8')
         )
@@ -275,7 +284,7 @@ def run(profile):
     print("")
 
     # email
-    
+
     print(
         "    "
         + t.bold_blue
@@ -289,22 +298,22 @@ def run(profile):
     except KeyError:
         profile["email"] = {}
     # email imap
-    profile["email"]["imap"]=simple_input(
-        format_prompt( 
+    profile["email"]["imap"] = simple_input(
+        format_prompt(
             "?",
             _('Please enter your imap server as "server[:port]"')
         ),
-        get_profile_var(profile,"email","imap")
+        get_profile_var(profile, "email", "imap")
     )
-    
-    profile["email"]["address"]=simple_input(
-        format_prompt( 
+
+    profile["email"]["address"] = simple_input(
+        format_prompt(
             "?",
             _('What is your email address?')
         ),
-        get_profile_var(profile,"email","address")
+        get_profile_var(profile, "email", "address")
     )
-    
+
     # FIXME This needs to be anything but plaintext.
     # AaronC 2018-07-29 I've looked into this and the problem that needs to
     # be solved here is protection from a casual sort of hacker - like if
@@ -318,12 +327,12 @@ def run(profile):
             _('What is your email password?') + ': '
         )
     )
-    if( temp ):
+    if(temp):
         profile['email']['password'] = temp
     print("")
     print("")
     print("")
-    
+
     print(
         "    "
         + t.bold_blue
@@ -348,7 +357,7 @@ def run(profile):
                 "?",
                 _("What is your Phone number?")
             ),
-            get_profile_var(profile,'phone_number')
+            get_profile_var(profile, 'phone_number')
         )
     )
     profile['phone_number'] = phone_number
@@ -373,7 +382,7 @@ def run(profile):
         print(
             "    'AT&T', 'Verizon', 'T-Mobile' "
             + t.red
-            + "(" + _("without the quotes") +")."
+            + "(" + _("without the quotes") + ")."
         )
         print("")
         print(
@@ -394,11 +403,11 @@ def run(profile):
         print("    " + _("'vmobl.com'; for T-Mobile Germany, enter 't-d1-sms.de')."))
         print("")
         carrier = simple_input(
-            format_prompt( 
+            format_prompt(
                 "?",
                 _("What is your Carrier? ")
             ),
-            get_profile_var(profile,"carrier")
+            get_profile_var(profile, "carrier")
         )
         if carrier == 'AT&T':
             profile['carrier'] = 'txt.att.net'
@@ -417,7 +426,7 @@ def run(profile):
     # in your profile, then if you have "prefers_email"
     # selected, it will send an article to you via email,
     # otherwise it does not attempt to send anything to you.
-    
+
     # if the user has entered an email address but no phone number
     # go ahead and assume "prefers email"
     if((profile['email']['address']) and not (profile['phone_number'])):
@@ -435,18 +444,18 @@ def run(profile):
             + _("email (E) or text message (T)?")
         )
         print("")
-        if(get_profile_var(profile,"prefers_email")):
+        if(get_profile_var(profile, "prefers_email")):
             temp = 'E'
         else:
             temp = "T"
         response = simple_input(
-            format_prompt( 
+            format_prompt(
                 "?",
                 _("Email (E) or Text message (T)?")
             ),
             temp
         )
-        
+
         while not response or (response[:1] != 'E' and response[:1] != 'T'):
             print("")
             response = simple_input(
@@ -475,13 +484,13 @@ def run(profile):
     )
     print("")
     location = simple_input(
-        format_prompt( 
+        format_prompt(
             "?",
             _("What is your location?")
         ),
-        get_profile_var(profile,"location")
+        get_profile_var(profile, "location")
     )
-    
+
     while location and not verifyLocation(location):
         print(
             t.red
@@ -489,7 +498,7 @@ def run(profile):
             + _("Please try another location.")
         )
         location = simple_input(
-            format_prompt( 
+            format_prompt(
                 "?",
                 _("What is your location?")
             ),
@@ -519,11 +528,11 @@ def run(profile):
     print("    " + t.bold_blue + _("or none at all."))
     print("")
     tz = simple_input(
-        format_prompt( 
+        format_prompt(
             "?",
             _("What is your timezone?")
         ),
-        get_profile_var(profile,"timezone")
+        get_profile_var(profile, "timezone")
     )
     while tz:
         try:
@@ -531,9 +540,9 @@ def run(profile):
             profile['timezone'] = tz
             break
         except pytz.exceptions.UnknownTimeZoneError:
-            print(t.red+_("Not a valid timezone. Try again."))
+            print(t.red + _("Not a valid timezone. Try again."))
             tz = simple_input(
-                format_prompt( 
+                format_prompt(
                     "?",
                     _("What is your timezone?")
                 ),
@@ -561,7 +570,7 @@ def run(profile):
     print("")
     response = "PocketSphinx"
     for engine in stt_engines:
-        if (get_profile_var(profile,'stt_engine')==stt_engines[engine]):
+        if (get_profile_var(profile, 'stt_engine') == stt_engines[engine]):
             response = engine
             break
     response = simple_input(
@@ -595,11 +604,11 @@ def run(profile):
         # Set the api key (I'm not sure this actually works anymore,
         # need to test)
         key = simple_input(
-            format_prompt( 
+            format_prompt(
                 "!",
                 _("Please enter your API key:")
             ),
-            get_profile_var(profile,"keys","GOOGLE_SPEECH")
+            get_profile_var(profile, "keys", "GOOGLE_SPEECH")
         )
         print("")
         print("")
@@ -607,7 +616,7 @@ def run(profile):
     if(profile['stt_engine'] == 'watson-stt'):
         profile["watson_stt"] = {}
         username = simple_input(
-            format_prompt( 
+            format_prompt(
                 "!",
                 _("Please enter your watson username:")
             )
@@ -638,11 +647,11 @@ def run(profile):
             + t.yellow + " %s)" % default
         )
         print("")
-        temp = get_profile_var(profile,"kaldigstserver-stt","url")
+        temp = get_profile_var(profile, "kaldigstserver-stt", "url")
         if(not temp):
             temp = default
         profile['kaldigstserver-stt']['url'] = simple_input(
-            format_prompt( 
+            format_prompt(
                 "!",
                 _("Please enter your server url:")
             ),
@@ -665,27 +674,27 @@ def run(profile):
             profile["julius"] = {}
         # hmmdefs
         profile["julius"]["hmmdefs"] = simple_input(
-            format_prompt( 
+            format_prompt(
                 "!",
                 _("Enter path to julius hmm defs")
             ),
-            get_profile_var(profile,"julius","hmmdefs")
+            get_profile_var(profile, "julius", "hmmdefs")
         )
         # tiedlist
         profile["julius"]["tiedlist"] = simple_input(
-            format_prompt( 
+            format_prompt(
                 "!",
                 _("Enter path to julius tied list")
             ),
-            get_profile_var(profile,"julius","tiedlist")
+            get_profile_var(profile, "julius", "tiedlist")
         )
         # lexicon
         profile["julius"]["lexicon"] = simple_input(
-            format_prompt( 
+            format_prompt(
                 "!",
                 _("Enter path to julius lexicon")
             ),
-            get_profile_var(profile,"julius","lexicon")
+            get_profile_var(profile, "julius", "lexicon")
         )
         # FIXME AaronC 2018-07-29 So I don't know if I need to check above to
         # see if the julius lexicon is a tar file or if I can just set this.
@@ -707,7 +716,7 @@ def run(profile):
         # this the default at the end
         # is the phonetisaurus program phonetisaurus-g2p (old version)
         # or phonetisaurus-g2pfst?
-        phonetisaurus_executable = get_profile_var(profile,'pocketsphinx','phonetisaurus_executable')
+        phonetisaurus_executable = get_profile_var(profile, 'pocketsphinx', 'phonetisaurus_executable')
         once = False
         while not((once) and (phonetisaurus_executable)):
             once = True
@@ -719,7 +728,7 @@ def run(profile):
                 elif(CheckProgramExists('phonetisaurus-g2p')):
                     phonetisaurus_executable = 'phonetisaurus-g2p'
             phonetisaurus_executable = simple_input(
-                format_prompt( 
+                format_prompt(
                     "?",
                     _("What is the name of your phonetisaurus-g2p program?")
                 ),
@@ -736,7 +745,7 @@ def run(profile):
         #  fst_model -
         #          - the default for kara is "~/phonetisaurus/g014b2b.fst"
         #          - if you install the latest CMUDict, then it will be at "~/CMUDict/train/model.fst"
-        hmm_dir=get_profile_var(profile,'pocketsphinx','hmm_dir')
+        hmm_dir = get_profile_var(profile, 'pocketsphinx', 'hmm_dir')
         once = False
         while not(once and hmm_dir):
             once = True
@@ -762,17 +771,17 @@ def run(profile):
                 elif(os.path.isdir("/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k")):
                     hmm_dir = "/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k"
             temp = simple_input(
-                format_prompt( 
+                format_prompt(
                     "!",
                     _("Please enter the path to your hmm directory")
                 ),
                 hmm_dir
             )
-            if( temp ):
+            if(temp):
                 hmm_dir = temp
         profile["pocketsphinx"]["hmm_dir"] = hmm_dir
         # fst_model
-        fst_model = get_profile_var(profile,"pocketsphinx","fst_model")
+        fst_model = get_profile_var(profile, "pocketsphinx", "fst_model")
         once = False
         while not (once and fst_model):
             once = True
@@ -802,7 +811,7 @@ def run(profile):
                             "g014b2b.fst"
                         )
             fst_model = simple_input(
-                format_prompt( 
+                format_prompt(
                     "!",
                     _("Please enter the path to your fst model")
                 ),
@@ -825,7 +834,7 @@ def run(profile):
     }
     response = "Festival"
     for engine in tts_engines:
-        if(get_profile_var(profile,"tts_engine")==tts_engines[engine]):
+        if(get_profile_var(profile, "tts_engine") == tts_engines[engine]):
             response = engine
     print(
         "    "
@@ -840,7 +849,7 @@ def run(profile):
         format_prompt(
             "?",
             t.bold_white + _("Available implementations: ")
-            + t.yellow + ("%s. " % tts_engines.keys()) +t.bold_white
+            + t.yellow + ("%s. " % tts_engines.keys()) + t.bold_white
         ),
         response
     )
@@ -848,9 +857,9 @@ def run(profile):
         profile['tts_engine'] = tts_engines[response]
     else:
         print(
-            t.red+_("Unrecognized option.") +
-            t.bold_white+_("Setting text to speech engine to") + " " +
-            t.yellow+"Festival."
+            t.red + _("Unrecognized option.") +
+            t.bold_white + _("Setting text to speech engine to") + " " +
+            t.yellow + "Festival."
         )
         profile['tts_engine'] = 'festival-tts'
         print("")
@@ -859,7 +868,7 @@ def run(profile):
     # Deal with special cases
     if(profile["tts_engine"] == "espeak-tts"):
         # tts_engine: espeak-tts
-        print(t.bold_blue+"    If you would like to alter the espeak voice, you can use")
+        print(t.bold_blue + "    If you would like to alter the espeak voice, you can use")
         print("    the following options in your config file:")
         print("")
         print("    espeak-tts:")
@@ -871,7 +880,7 @@ def run(profile):
         print("")
     elif(profile["tts_engine"] == "festival-tts"):
         # tts_engine: festival-tts
-        print(t.bold_blue+"    Use the festival command to set the default voice.")
+        print(t.bold_blue + "    Use the festival command to set the default voice.")
         print("")
         print("")
         print("")
@@ -880,23 +889,23 @@ def run(profile):
             temp = profile["flite-tts"]
         except KeyError:
             profile["flite-tts"] = {}
-        voices = subprocess.check_output(['flite','-lv']).split(" ")[2:-1]
+        voices = subprocess.check_output(['flite', '-lv']).split(" ")[2:-1]
         print(
             "    "
             + _("Available voices: ")
             + t.yellow + "%s. " % voices
         )
-        profile["flite-tts"]["voice"]=simple_input(
-            format_prompt( 
+        profile["flite-tts"]["voice"] = simple_input(
+            format_prompt(
                 "?",
                 _("Select a voice")
             ),
-            get_profile_var(profile,"flite-tts","voice")
+            get_profile_var(profile, "flite-tts", "voice")
         )
         print("")
         print("")
         print("")
-    elif( profile["tts_engine"]=="pico-tts" ):
+    elif(profile["tts_engine"] == "pico-tts"):
         pass
     elif(profile["tts_engine"] == "ivona-tts"):
         print(
@@ -920,27 +929,27 @@ def run(profile):
         except KeyError:
             profile["ivona-tts"] = {}
         profile["ivona-tts"]["access_key"] = simple_input(
-            format_prompt( 
+            format_prompt(
                 "?",
                 _("What is your Access key?")
             ),
-            get_profile_var(profile,"ivona-tts","access_key")
+            get_profile_var(profile, "ivona-tts", "access_key")
         )
         profile["ivona-tts"]["secret_key"] = simple_input(
-            format_prompt( 
+            format_prompt(
                 "?",
                 _("What is your Secret key?")
             ),
-            get_profile_var(profile,"ivona-tts","secret_key")
+            get_profile_var(profile, "ivona-tts", "secret_key")
         )
         # ivona-tts voice
-        temp = get_profile_var(profile,"ivona-tts","voice")
+        temp = get_profile_var(profile, "ivona-tts", "voice")
         if(not temp):
-            temp="Brian"
+            temp = "Brian"
         profile["ivona-tts"]["voice"] = simple_input(
-            format_prompt( 
+            format_prompt(
                 "?",
-                _("Which voice do you want")+" "+t.yellow+_("(default is Brian)")+t.bold_white+"?"
+                _("Which voice do you want") + " " + t.yellow + _("(default is Brian)") + t.bold_white + "?"
             ),
             temp
         )
@@ -953,32 +962,32 @@ def run(profile):
         except KeyError:
             profile["mary-tts"] = {}
         profile["mary-tts"]["server"] = simple_input(
-            format_prompt( 
+            format_prompt(
                 "?",
                 _("Server?")
             ),
-            get_profile_var(profile,"mary-tts","server")
+            get_profile_var(profile, "mary-tts", "server")
         )
         profile["mary-tts"]["port"] = simple_input(
-            format_prompt( 
+            format_prompt(
                 "?",
                 "Port?"
             ),
-            get_profile_var(profile,"mary-tts","port")
+            get_profile_var(profile, "mary-tts", "port")
         )
         profile["mary-tts"]["language"] = simple_input(
-            format_prompt( 
+            format_prompt(
                 "?",
                 _("Language?")
             ),
-            get_profile_var(profile,"mary-tts","language")
+            get_profile_var(profile, "mary-tts", "language")
         )
         profile["mary-tts"]["voice"] = simple_input(
-            format_prompt( 
+            format_prompt(
                 "?",
                 _("Voice?")
             ),
-            get_profile_var(profile,"mary-tts","voice")
+            get_profile_var(profile, "mary-tts", "voice")
         )
         print("")
         print("")
@@ -996,13 +1005,13 @@ def run(profile):
     else:
         temp = "B"
     response = simple_input(
-        format_prompt( 
+        format_prompt(
             "?",
             _("(B) for beeps or (V) for voice.")
         ),
         temp
     )
-    while not response or (response.lower()[:1] != 'b' and response.lower()[:1] != 'v'):
+    while((not response) or (response.lower()[:1] != 'b' and response.lower()[:1] != 'v')):
         response = simple_input(
             t.red + _("Please choose beeps (B) or voice (V):") + t.bold_white
         )
@@ -1019,21 +1028,21 @@ def run(profile):
         areplyRespon = None
         while((not areplyRespon) or (areplyRespon.lower()[:1] != affirmative.lower()[:1])):
             areply = simple_input(
-                format_prompt( 
+                format_prompt(
                     "?",
                     _("Reply")
                 ),
-                get_profile_var(profile,"active_stt","reply")
+                get_profile_var(profile, "active_stt", "reply")
             )
             print("")
-            print(areply + t.bold_blue +" " + _("Is this correct?"))
+            print(areply + t.bold_blue + " " + _("Is this correct?"))
             print("")
             areplyRespon = None
-            while((not areplyRespon) or (not CheckForValue(areplyRespon.lower()[:1],[affirmative.lower()[:1],negative.lower()[:1]]))):
+            while((not areplyRespon) or (not CheckForValue(areplyRespon.lower()[:1], [affirmative.lower()[:1], negative.lower()[:1]]))):
                 areplyRespon = simple_input(
-                    format_prompt( 
+                    format_prompt(
                         "?",
-                        affirmative.upper()[:1] + "/" + negative.upper()[:1] +"?"
+                        affirmative.upper()[:1] + "/" + negative.upper()[:1] + "?"
                     )
                 )
         profile['active_stt']['reply'] = areply
@@ -1048,19 +1057,19 @@ def run(profile):
         aresponseRespon = None
         while((not aresponseRespon) or (aresponseRespon.lower()[:1] != affirmative.lower()[:1])):
             aresponse = simple_input(
-                format_prompt( 
+                format_prompt(
                     "?",
                     _("Response")
                 ),
-                get_profile_var(profile,"active_stt","response")
+                get_profile_var(profile, "active_stt", "response")
             )
             print("")
-            print(aresponse + t.bold_blue+" Is this correct?")
+            print(aresponse + t.bold_blue + " Is this correct?")
             print("")
             aresponseRespon = None
-            while((not aresponseRespon) or (not CheckForValue(aresponseRespon.lower()[:1],[affirmative.lower()[:1],negative.lower()[:1]]))):
+            while((not aresponseRespon) or (not CheckForValue(aresponseRespon.lower()[:1], [affirmative.lower()[:1], negative.lower()[:1]]))):
                 aresponseRespon = simple_input(
-                    format_prompt( 
+                    format_prompt(
                         "?",
                         affirmative.upper()[:1] + "/" + negative.upper()[:1] + "?"
                     )
