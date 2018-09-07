@@ -81,11 +81,11 @@ def simple_input(prompt, default=None):
 # AaronC - simple_request is more complicated, and populates
 # the profile variable directly
 def simple_request(profile, var, prompt, cleanInput=None):
-    input = simple_input(prompt, get_profile_var(profile, var))
-    if input:
+    input_str = simple_input(prompt, get_profile_var(profile, var))
+    if input_str:
         if cleanInput:
-            input = cleanInput(input)
-        profile[var] = input
+            input_str = cleanInput(input_str)
+        profile[var] = input_str
 
 
 # AaronC - This is currently used to clean phone numbers
@@ -141,9 +141,9 @@ def verifyLocation(place):
 # of that value (+ 1 so that the first item
 # does not return zero which is interpreted
 # as false), otherwise return None
-def CheckForValue(value, list):
+def CheckForValue(_value, _list):
     try:
-        temp = list.index(value) + 1
+        temp = _list.index(_value) + 1
     except ValueError:
         temp = None
     return temp
@@ -160,6 +160,7 @@ def run(profile):
     #
     global t, _
     t = Terminal()
+    _ = None
 
     language = get_profile_var(profile, "language")
     if(not language):

@@ -10,7 +10,7 @@ from application import USE_STANDARD_MIC, USE_TEXT_MIC, USE_BATCH_MIC
 def main(args=None):
     parser = argparse.ArgumentParser(description='Naomi Voice Control Center')
     parser.add_argument(
-        '--debug', 
+        '--debug',
         action='store_true',
         help='Show debug messages'
     )
@@ -57,9 +57,9 @@ def main(args=None):
 
     # Run Naomi
     app = application.Naomi(
-        use_mic = used_mic,
-        batch_file = p_args.batch_file,
-        repopulate = p_args.repopulate
+        use_mic=used_mic,
+        batch_file=p_args.batch_file,
+        repopulate=p_args.repopulate
     )
     if p_args.list_plugins:
         app.list_plugins()
