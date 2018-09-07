@@ -998,9 +998,9 @@ def run(profile):
         + t.bold_blue
         + _("I have two ways to let you know I've heard you; Beep or Voice.")
     )
-    # If there are values for [active-stt][reply] and [active-stt][response]
+    # If there are values for [active_stt][reply] and [active_stt][response]
     # then use them otherwise use beeps
-    if(get_profile_var(profile, "active-stt", "reply")):
+    if(get_profile_var(profile, "active_stt", "reply")):
         temp = "V"
     else:
         temp = "B"
