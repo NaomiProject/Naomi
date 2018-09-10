@@ -22,7 +22,12 @@ USE_BATCH_MIC = 2
 
 
 class Naomi(object):
-    def __init__(self, use_mic=USE_STANDARD_MIC, batch_file=None):
+    def __init__(
+        self,
+        use_mic=USE_STANDARD_MIC,
+        batch_file=None,
+        repopulate=False
+    ):
         self._logger = logging.getLogger(__name__)
         # Create config dir if it does not exist yet
         if not os.path.exists(paths.CONFIG_PATH):
@@ -70,6 +75,8 @@ class Naomi(object):
                 with open(new_configfile, "r") as f:
                     self.config = yaml.safe_load(f)
                     config_read = True
+                if(repopulate):
+                    populate.run(self.config)
             except IOError:
                 # AJC 2018-07-29 Changed this from a warning to debug, since
                 # we attempt to fix the problem right here
@@ -83,7 +90,7 @@ class Naomi(object):
                     "questions to create a new one? "
                 )
                 if(re.match(r'\s*[Yy]', input)):
-                    populate.run()
+                    populate.run({})
                 else:
                     print("Cannot continue. Exiting.")
                     quit()

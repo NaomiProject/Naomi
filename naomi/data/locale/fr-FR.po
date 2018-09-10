@@ -8,24 +8,23 @@ msgstr ""
 "Project-Id-Version: 2.0-dev\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-10-28 01:17+0100\n"
-"PO-Revision-Date: 2016-6-16 23:01+0100\n"
-"Last-Translator: Rocca Seb <se.rocca84@gmail.com>\n"
+"PO-Revision-Date: 2018-09-05 23:24-0700\n"
+"Last-Translator: Aaron Chantrill <aaron.chantrill@dottywood.org>\n"
 "Language-Team: Naomi Project\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.5\n"
+"X-Generator: Poedit 2.1.1\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: client/conversation.py:24
 msgid "My name is, %s."
 msgstr "Mon nom est %s."
 
-#:client/conversation.py:26
+#: client/conversation.py:26
 msgid "My name is Naomi"
 msgstr "Je suis Naomi"
-
 
 #: client/conversation.py:32
 #, python-format
@@ -38,8 +37,361 @@ msgstr "Puis-je vous aider ?"
 
 #: client/conversation.py:53
 msgid "I'm sorry. I had some trouble with that operation. Please try again later."
-msgstr "Je suis désolé. Il y a quelques problèmes. Merci de réessayer plus tard"
+msgstr "Je suis désolé. Il y a quelques problèmes. Merci de réessayer plus tard."
 
 #: client/conversation.py:60
 msgid "Pardon?"
-msgstr "Pardon ?"
+msgstr "Pardon?"
+
+#: conversation.py:35
+msgid "How can I be of service?"
+msgstr "Comment puis-je être utile?"
+
+#: conversation.py:59
+msgid "I'm sorry. I had some trouble with that "
+msgstr "Je suis désolé. J'ai eu des problèmes avec ça "
+
+#: conversation.py:61
+msgid "operation. Please try again later."
+msgstr "opération. Veuillez réessayer plus tard."
+
+#: populate.py:128
+msgid "Location saved as "
+msgstr "Emplacement enregistré sous "
+
+#: populate.py:182
+msgid "Language Selector"
+msgstr "Sélecteur de langue"
+
+#: populate.py:191
+msgid "Select Language"
+msgstr "Choisir la langue"
+
+#: populate.py:221
+msgid "Hello, thank you for selecting me to be your personal assistant."
+msgstr "Bonjour, merci de m'avoir choisi pour être votre assistant personnel."
+
+#: populate.py:225
+msgid "Let's populate your profile."
+msgstr "Peuplons votre profil."
+
+#: populate.py:229
+msgid "If, at any step, you would prefer not to enter the requested information"
+msgstr "Si, à tout moment, vous préférez ne pas saisir les informations demandées"
+
+#: populate.py:232
+msgid "just hit 'Enter' with a blank field to continue."
+msgstr "appuyez simplement sur \"Entrée\" avec un champ vide pour continuer."
+
+#: populate.py:242
+msgid "First, what name would you like to call me by?"
+msgstr "D'abord, par quel nom aimeriez-vous m'appeler?"
+
+#: populate.py:251
+msgid "Now please tell me a little about yourself."
+msgstr "Maintenant, s'il vous plaît, parlez-moi un peu de vous."
+
+#: populate.py:259
+msgid "What is your first name?"
+msgstr "Quel est votre prénom?"
+
+#: populate.py:268
+msgid "What is your last name?"
+msgstr "Quel est ton nom de famille?"
+
+#: populate.py:280
+msgid "I can use an email account to send notifications to you."
+msgstr "Je peux utiliser un compte de messagerie pour vous envoyer des notifications."
+
+#: populate.py:283 populate.py:332
+msgid "Alternatively, you can skip this step"
+msgstr "Sinon, vous pouvez ignorer cette étape"
+
+#: populate.py:293
+msgid "Please enter your imap server as \"server[:port]\""
+msgstr "Veuillez entrer votre serveur imap en tant que \"serveur[:port]\""
+
+#: populate.py:301
+msgid "What is your email address?"
+msgstr "Quelle est ton adresse email?"
+
+#: populate.py:316
+msgid "What is your email password?"
+msgstr "Quel est votre mot de passe email?"
+
+#: populate.py:328
+msgid "I can use your phone number to send notifications to you."
+msgstr "Je peux utiliser votre numéro de téléphone pour vous envoyer des notifications."
+
+#: populate.py:338
+msgid "No country codes!"
+msgstr "Pas de codes pays!"
+
+#: populate.py:340
+msgid "Any dashes or spaces will be removed for you"
+msgstr "Tous les tirets ou espaces seront supprimés pour vous"
+
+#: populate.py:347
+msgid "What is your Phone number?"
+msgstr "Quel est ton numéro de téléphone?"
+
+#: populate.py:364
+msgid "What is your phone carrier?"
+msgstr "Quel est votre opérateur téléphonique?"
+
+#: populate.py:368
+msgid "If you have a US phone number, "
+msgstr "Si vous avez un numéro de téléphone américain, "
+
+#: populate.py:369
+msgid "you can enter one of the following:"
+msgstr "vous pouvez entrer l'un des éléments suivants:"
+
+#: populate.py:374
+msgid "without the quotes"
+msgstr "sans les guillemets"
+
+#: populate.py:380
+msgid "If your carrier isn't listed or you have an international"
+msgstr "Si votre opérateur ne figure pas dans la liste ou si"
+
+#: populate.py:384
+msgid "number, go to"
+msgstr "vous avez un numéro international, allez à"
+
+#: populate.py:390
+msgid "and enter the email suffix for your carrier (e.g., for Virgin Mobile, enter "
+msgstr "et entrez le suffixe de messagerie pour votre opérateur (par exemple, pour Virgin Mobile, entrez "
+
+#: populate.py:392
+msgid "'vmobl.com'; for T-Mobile Germany, enter 't-d1-sms.de')."
+msgstr "'vmobl.com'; pour T-Mobile Allemagne, entrez 't-d1-sms.de')."
+
+#: populate.py:397
+msgid "What is your Carrier? "
+msgstr "Quel est votre transporteur? "
+
+#: populate.py:429
+msgid "Would you prefer to have notifications sent by"
+msgstr "Préféreriez-vous que les notifications soient envoyées par"
+
+#: populate.py:433
+msgid "email (E) or text message (T)?"
+msgstr "courrier électronique (E) ou par message texte (T)?"
+
+#: populate.py:443
+msgid "Email (E) or Text message (T)?"
+msgstr "courrier électronique (E) ou par message texte (T)?"
+
+#: populate.py:452
+msgid "Please choose email (E) or text message (T)!"
+msgstr "Veuillez choisir un email (E) ou un message texte (T)!"
+
+#: populate.py:468
+msgid "For weather information, please enter your 5-digit zipcode (e.g., 08544)."
+msgstr "Pour obtenir des informations météorologiques, veuillez saisir votre code postal à 5 ​​chiffres (par exemple, 08544)."
+
+#: populate.py:472
+msgid "If you are outside the US, insert the name of the nearest big town/city."
+msgstr "Si vous êtes en dehors des États-Unis, insérez le nom de la grande ville/ville la plus proche."
+
+#: populate.py:478 populate.py:492
+msgid "What is your location?"
+msgstr "Emplacement enregistré sous?"
+
+#: populate.py:486
+msgid "Weather not found."
+msgstr "Météo introuvable."
+
+#: populate.py:487
+msgid "Please try another location."
+msgstr "Veuillez essayer un autre endroit."
+
+#: populate.py:509
+msgid "Please enter a timezone from the list located in the TZ*"
+msgstr "Veuillez entrer un fuseau horaire dans la liste située dans"
+
+#: populate.py:513
+msgid "column at"
+msgstr "la colonne TZ * à"
+
+#: populate.py:517
+msgid "or none at all."
+msgstr "ou pas du tout."
+
+#: populate.py:522 populate.py:536
+msgid "What is your timezone?"
+msgstr "Quel est votre fuseau horaire?"
+
+#: populate.py:532
+msgid "Not a valid timezone. Try again."
+msgstr "Pas un fuseau horaire valide. Réessayer."
+
+#: populate.py:557
+msgid "If you would like to choose a specific speech to text(STT) engine, please specify which!"
+msgstr ""
+"Si vous souhaitez choisir un moteur de parole à texte (STT) spécifique, veuillez spécifier lequel!"
+
+#: populate.py:567
+msgid "Available implementations:"
+msgstr "Implémentations disponibles:"
+
+#: populate.py:578 populate.py:849
+msgid "Unrecognized option."
+msgstr "Option non reconnue."
+
+#: populate.py:582
+msgid "Setting speech to text engine to "
+msgstr "Définition de la parole au moteur de texte à "
+
+#: populate.py:598
+msgid "Please enter your API key:"
+msgstr "Veuillez entrer votre clé API:"
+
+#: populate.py:610
+msgid "Please enter your watson username:"
+msgstr "Veuillez entrer votre nom d'utilisateur watson:"
+
+#: populate.py:617
+msgid "Please enter your watson password:"
+msgstr "Veuillez entrer votre mot de passe watson:"
+
+#: populate.py:630
+msgid "I need your Kaldi g-streamer server url to continue"
+msgstr "J'ai besoin de l'url de votre serveur Kaldi g-streamer pour continuer"
+
+#: populate.py:635
+msgid "default is"
+msgstr "le défaut est"
+
+#: populate.py:645
+msgid "Please enter your server url:"
+msgstr "Veuillez entrer l'URL de votre serveur:"
+
+#: populate.py:668
+msgid "Enter path to julius hmm defs"
+msgstr "Entrez le chemin de julius hmm defs"
+
+#: populate.py:676
+msgid "Enter path to julius tied list"
+msgstr "Entrez le chemin d'accès à la liste de liens julius"
+
+#: populate.py:684
+msgid "Enter path to julius lexicon"
+msgstr "Entrez le chemin de julius lexicon"
+
+#: populate.py:722
+msgid "What is the name of your phonetisaurus-g2p program?"
+msgstr "Quel est le nom de votre programme phonetisaurus-g2p?"
+
+#: populate.py:765
+msgid "Please enter the path to your hmm directory"
+msgstr "Veuillez entrer le chemin de votre répertoire hmm"
+
+#: populate.py:805
+msgid "Please enter the path to your fst model"
+msgstr "Veuillez entrer le chemin de votre premier modèle"
+
+#: populate.py:831
+msgid "If you would like to choose a specific text to speech (TTS) engine,"
+msgstr "Si vous souhaitez choisir un moteur de synthèse vocale (TTS)"
+
+#: populate.py:835
+msgid "please specify which."
+msgstr "spécifique, veuillez spécifier lequel."
+
+#: populate.py:840
+msgid "Available implementations: "
+msgstr "Implémentations disponibles "
+
+#: populate.py:850
+msgid "Setting text to speech engine to"
+msgstr "Réglage du texte sur le moteur vocal à"
+
+#: populate.py:884
+msgid "Available voices: "
+msgstr "Voix disponibles: "
+
+#: populate.py:890
+msgid "Select a voice"
+msgstr "Choisir la langue"
+
+#: populate.py:903
+msgid "You will now need to enter your Ivona account information."
+msgstr "Vous devrez maintenant entrer vos informations de compte Ivona."
+
+#: populate.py:908
+msgid "You will need to create an account at"
+msgstr "Vous devrez créer un compte sur"
+
+#: populate.py:913
+msgid "if you haven't already."
+msgstr "si vous ne l'avez pas déjà fait."
+
+#: populate.py:923
+msgid "What is your Access key?"
+msgstr "Quelle est votre clé d'accès?"
+
+#: populate.py:930
+msgid "What is your Secret key?"
+msgstr "Quelle est votre clé secrète?"
+
+#: populate.py:941
+msgid "(default is Brian)"
+msgstr "(défaut est Brian)"
+
+#: populate.py:941
+msgid "Which voice do you want"
+msgstr "Quelle voix voulez-vous"
+
+#: populate.py:956
+msgid "Server?"
+msgstr "Serveur?"
+
+#: populate.py:970
+msgid "Language?"
+msgstr "La langue?"
+
+#: populate.py:977
+msgid "Voice?"
+msgstr "Voix?"
+
+#: populate.py:990
+msgid "I have two ways to let you know I've heard you; Beep or Voice."
+msgstr "J'ai deux façons de vous faire savoir que je vous ai entendu: Bip ou voix"
+
+#: populate.py:999
+msgid "(B) for beeps or (V) for voice."
+msgstr "(B) pour les bips ou (V) pour la voix."
+
+#: populate.py:1005
+msgid "Please choose beeps (B) or voice (V):"
+msgstr "Veuillez choisir des bips (B) ou des voix (V):"
+
+#: populate.py:1014
+msgid "Type the words I should say after hearing my wake word: %s"
+msgstr "Tapez les mots que je devrais dire après avoir entendu mon mot réveil:% s"
+
+#: populate.py:1024
+msgid "Reply"
+msgstr "Répondre"
+
+#: populate.py:1027
+msgid "Is this correct?"
+msgstr "Est-ce correct?"
+
+#: populate.py:1043
+msgid "Type the words I should say after hearing a command"
+msgstr "Tapez les mots que je devrais dire après avoir entendu une commande"
+
+#: populate.py:1050
+msgid "Response"
+msgstr "Réponse"
+
+#: populate.py:1071
+msgid "Writing to profile..."
+msgstr "Ecrire à profil ..."
+
+#: populate.py:1080
+msgid "Done."
+msgstr "Terminé."
