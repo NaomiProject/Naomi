@@ -14,20 +14,20 @@
     	<img src="https://img.shields.io/badge/python-v2.7-blue.svg">
     </a>
 	<a href="https://travis-ci.org/naomiproject/naomi">
-    	<img src="https://travis-ci.org/naomiproject/naomi.svg?branch=master">
+    	<img src="https://travis-ci.org/NaomiProject/Naomi.svg?branch=master">
     </a>
-    <a href="https://coveralls.io/r/naomiproject/naomi">
-    	<img src="https://img.shields.io/coveralls/naomiproject/naomi.svg">
+    <a href="https://coveralls.io/github/NaomiProject/Naomi?branch=master">
+    	<img src="https://coveralls.io/repos/github/NaomiProject/Naomi/badge.svg?branch=master">
     </a>
     <a href="(https://www.codacy.com/app/naomiproject/naomi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=naomiproject/naomi&amp;utm_campaign=Badge_Grade">
     	<img src="https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec">
     </a>
-    <a href="https://requires.io/github/NaomiProject/Naomi/requirements/?branch=naomi-dev">
-    	<img src="https://requires.io/github/NaomiProject/Naomi/requirements.svg?branch=naomi-dev">
+    <a href="https://requires.io/github/NaomiProject/Naomi/requirements/?branch=master">
+    	<img src="https://requires.io/github/NaomiProject/Naomi/requirements.svg?branch=master">
     </a>
     </br>
     </br>
-    <a href="https://github.com/anfederico/Clairvoyant/issues">
+    <a href="https://github.com/naomiproject/naomi/issues">
     	<img src="https://img.shields.io/github/issues/naomiproject/naomi.svg">
     </a>
     <a href="">
