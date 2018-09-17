@@ -27,6 +27,8 @@ t = Terminal()
 _ = None
 affirmative = ""
 negative = ""
+audioengine_plugins = None
+
 
 # AaronC 2018-09-14
 # Colors
@@ -1473,7 +1475,7 @@ def run(profile):
     # For plugin & general use elsewhere, blessings or
     # coloredformatting.py can be used.
     #
-    
+
     select_language(profile)
     separator()
 
