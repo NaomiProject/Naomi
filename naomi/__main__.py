@@ -7,6 +7,12 @@ from . import application
 from application import USE_STANDARD_MIC, USE_TEXT_MIC, USE_BATCH_MIC
 
 
+# globals
+_ = None
+audioengine_plugins = None
+t = None
+
+
 def main(args=None):
     parser = argparse.ArgumentParser(description='Naomi Voice Control Center')
     parser.add_argument(
@@ -42,7 +48,7 @@ def main(args=None):
 
     # Set up logging
     logging.basicConfig(
-        level=logging.DEBUG if p_args.debug else logging.WARNING
+        level=logging.DEBUG if p_args.debug else logging.ERROR
     )
 
     # Select Mic

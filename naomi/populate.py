@@ -21,11 +21,6 @@ from . import pluginstore
 from . import audioengine
 
 
-# globals
-_ = None
-audioengine_plugins = None
-t = None
-
 # AaronC 2018-09-14
 # Colors
 # This returns to whatever the default color is in the terminal
@@ -1472,7 +1467,7 @@ def run(profile):
     # coloredformatting.py can be used.
     #
 
-    global t, _, negative, affirmative, audio_engine_plugins
+    global t, _, negative, affirmative
 
     t = Terminal()
 
@@ -1539,13 +1534,3 @@ if __name__ == "__main__":
     print("This program can no longer be run directly.")
     print("Please run the Populate.py program from the")
     print("Naomi root directory.")
-    subprocess.call(
-        os.path.join(
-            os.path.dirname(
-                os.path.dirname(
-                    os.path.abspath(__file__)
-                )
-            ),
-            "Populate.py"
-        )
-    )
