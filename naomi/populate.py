@@ -21,6 +21,12 @@ from . import pluginstore
 from . import audioengine
 
 
+# globals
+_ = None
+audioengine_plugins = None
+t = None
+
+
 # AaronC 2018-09-14
 # Colors
 # This returns to whatever the default color is in the terminal

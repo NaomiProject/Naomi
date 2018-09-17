@@ -7,12 +7,6 @@ from . import application
 from application import USE_STANDARD_MIC, USE_TEXT_MIC, USE_BATCH_MIC
 
 
-# globals
-_ = None
-audioengine_plugins = None
-t = None
-
-
 def main(args=None):
     parser = argparse.ArgumentParser(description='Naomi Voice Control Center')
     parser.add_argument(
