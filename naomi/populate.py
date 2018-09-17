@@ -11,6 +11,7 @@ import os
 import paths
 import pytz
 import re
+<<<<<<< HEAD
 import subprocess
 import sys
 import tempfile
@@ -88,6 +89,27 @@ def _snr(input_bits, threshold, frames):
     else:
         return 0
 
+=======
+import sys
+import yaml
+# The following is necessary because when this program is run as a standalone
+# program it can't do a relative import, so you have to add the current
+# directory to the path.
+if __name__ == '__main__' and __package__ is None:
+    os.sys.path.append(
+        os.path.dirname(
+            os.path.dirname(
+                os.path.abspath(__file__)
+            )
+        )
+    )
+import i18n
+import subprocess
+from blessings import Terminal
+
+
+# AaronC
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
 # Get a value from the profile, whether it exists or not
 # If the value does not exist in the profile, returns None
 def get_profile_var(profile, *args):
@@ -105,6 +127,7 @@ def get_profile_var(profile, *args):
 def format_prompt(icon, prompt):
     if(icon == "!"):
         prompt = (
+<<<<<<< HEAD
             icon_text('[')
             + alert_icon('!')
             + icon_text('] ')
@@ -116,6 +139,19 @@ def format_prompt(icon, prompt):
             + question_icon('?')
             + icon_text('] ')
             + question_text(prompt)
+=======
+            t.bold_white + '['
+            + t.bold_cyan + '!'
+            + t.bold_white + '] '
+            + prompt
+        )
+    elif(icon == "?"):
+        prompt = (
+            t.bold_white + '['
+            + t.bold_yellow + '?'
+            + t.bold_white + '] '
+            + prompt
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
     return prompt
 
@@ -131,7 +167,11 @@ def format_prompt(icon, prompt):
 def simple_input(prompt, default=None):
     prompt += ": "
     if(default):
+<<<<<<< HEAD
         prompt += default_text(default) + default_prompt() + input_text()
+=======
+        prompt += default + "// "
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     sys.stdout.write(prompt)
     response = raw_input()
     # if the user pressed enter without entering anything,
@@ -161,7 +201,11 @@ def clean_number(s):
 # This could be updated to search the PATH, and also verify that execute
 # permissions are set, but for right now this is a quick and dirty
 # placeholder.
+<<<<<<< HEAD
 def check_program_exists(program):
+=======
+def CheckProgramExists(program):
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     standardlocations = ['/usr/local/bin', '/usr/bin', '/bin']
     response = False
     for location in standardlocations:
@@ -186,7 +230,11 @@ def check_program_exists(program):
 # On the privacy side, I think it should be necessary to alert the user
 # any time their information is going to be shared with a new website,
 # and keep a list of authorized websites/services.
+<<<<<<< HEAD
 def verify_location(place):
+=======
+def verifyLocation(place):
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     feed = feedparser.parse('http://rss.wunderground.com/auto/rss_full/' +
                             place)
     numEntries = len(feed['entries'])
@@ -194,10 +242,15 @@ def verify_location(place):
         return False
     else:
         print(
+<<<<<<< HEAD
             success_text(
                 _("Location saved as") + " "
                 + feed['feed']['description'][33:]
             )
+=======
+            _("Location saved as ")
+            + feed['feed']['description'][33:]
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
         return True
 
@@ -206,7 +259,11 @@ def verify_location(place):
 # of that value (+ 1 so that the first item
 # does not return zero which is interpreted
 # as false), otherwise return None
+<<<<<<< HEAD
 def check_for_value(_value, _list):
+=======
+def CheckForValue(_value, _list):
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     try:
         temp = _list.index(_value) + 1
     except ValueError:
@@ -214,6 +271,7 @@ def check_for_value(_value, _list):
     return temp
 
 
+<<<<<<< HEAD
 def separator():
     print("")
     print("")
@@ -221,6 +279,21 @@ def separator():
 
 def select_language(profile):
     global _, affirmative, negative
+=======
+def run(profile):
+    #
+    # AustinC; Implemented new UX for the population process.
+    # For population blessings is used to handle colors,
+    # formatting, & and screen isolation.
+    #
+    # For plugin & general use elsewhere, blessings or
+    # coloredformatting.py can be used.
+    #
+    global t, _
+    t = Terminal()
+    _ = None
+
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     language = get_profile_var(profile, "language")
     if(not language):
         language = 'en-US'
@@ -242,18 +315,30 @@ def select_language(profile):
         (
             once
         )and(
+<<<<<<< HEAD
             check_for_value(language, languages.keys())
+=======
+            CheckForValue(language, languages.keys())
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
     ):
         once = True
         print("")
         print("")
         print("")
+<<<<<<< HEAD
         print("    " + instruction_text(_("Language Selector")))
         print("")
         print("")
         for key in languages.keys():
             print "    " + selection_text(languages[key])
+=======
+        print("    " + t.bold_blue + _("Language Selector"))
+        print("")
+        print("")
+        for key in languages.keys():
+            print t.bold_white + "    " + languages[key]
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         print("")
         temp = simple_input(
             format_prompt(
@@ -262,7 +347,11 @@ def select_language(profile):
             ),
             language
         ).lower().strip()
+<<<<<<< HEAD
         if(check_for_value(temp[:2], [key[:2] for key in languages.keys()])):
+=======
+        if(CheckForValue(temp[:2], [key[:2] for key in languages.keys()])):
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
             for key in languages.keys():
                 if(temp[:2] == key[:2]):
                     language = key
@@ -284,6 +373,7 @@ def select_language(profile):
     translations = i18n.parse_translations(paths.data('locale'))
     translator = i18n.GettextMixin(translations, profile)
     _ = translator.gettext
+<<<<<<< HEAD
 
 
 def greet_user():
@@ -314,6 +404,26 @@ def greet_user():
     )
     print("")
 
+=======
+    print("")
+    print("")
+    print("")
+    print("    " + t.bold_blue(
+        _("Hello, thank you for selecting me to be your personal assistant.")
+    ))
+    print("")
+    print("    " + t.bold_blue(
+        _("Let's populate your profile.")
+    ))
+    print("")
+    print("    " + t.bold_blue(
+        _("If, at any step, you would prefer not to enter the requested information")
+    ))
+    print("    " + t.bold_blue(
+        _("just hit 'Enter' with a blank field to continue.")
+    ))
+    print("")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
 
 def get_wakeword(profile):
     # my name
@@ -325,14 +435,25 @@ def get_wakeword(profile):
             _('First, what name would you like to call me by?').decode('utf-8')
         )
     )
+<<<<<<< HEAD
+=======
+    print("")
+    print("")
+    print("")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
 
 
 def get_user_name(profile):
     # your name
     print(
+<<<<<<< HEAD
         "    " + instruction_text(
             _("Now please tell me a little about yourself.")
         )
+=======
+        "    " + t.bold_blue
+        + _("Now please tell me a little about yourself.")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     )
     print("")
     simple_request(
@@ -352,6 +473,7 @@ def get_user_name(profile):
             _('What is your last name?').decode('utf-8')
         )
     )
+<<<<<<< HEAD
 
 
 def get_email_info(profile):
@@ -363,6 +485,21 @@ def get_email_info(profile):
     )
     print("    " + _("Alternatively, you can skip this step"))
     print("")
+=======
+    print("")
+    print("")
+    print("")
+
+    # email
+
+    print(
+        "    "
+        + t.bold_blue
+        + _("I can use an email account to send notifications to you.")
+    )
+    print("")
+    print("    " + _("Alternatively, you can skip this step"))
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     # email
     try:
         temp = profile["email"]
@@ -389,6 +526,7 @@ def get_email_info(profile):
     # AaronC 2018-07-29 I've looked into this and the problem that needs to
     # be solved here is protection from a casual sort of hacker - like if
     # you are working on your configuration file and your friend is looking
+<<<<<<< HEAD
     # over your shoulder and gets your password.
     # I suggest creating an encrypt/decrypt function that takes
     # both a string to encrypt/decrypt and an encryption function
@@ -407,10 +545,20 @@ def get_email_info(profile):
         format_prompt(
             "?",
             prompt
+=======
+    # over your shoulder and gets your password. I know that there are
+    # standard ways of dealing with this. I wonder how Thunderbird/Firefox
+    # deals with this.
+    temp = getpass(
+        format_prompt(
+            "?",
+            _('What is your email password?') + ': '
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
     )
     if(temp):
         profile['email']['password'] = temp
+<<<<<<< HEAD
 
 
 def get_phone_info(profile):
@@ -418,6 +566,16 @@ def get_phone_info(profile):
         "    " + instruction_text(
             _("I can use your phone number to send notifications to you.")
         )
+=======
+    print("")
+    print("")
+    print("")
+
+    print(
+        "    "
+        + t.bold_blue
+        + _("I can use your phone number to send notifications to you.")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     )
     print(
         "    "
@@ -425,11 +583,19 @@ def get_phone_info(profile):
     )
     print("")
     print(
+<<<<<<< HEAD
         "    " + alert_text(
             _("No country codes!")
         ) + " " + instruction_text(
             _("Any dashes or spaces will be removed for you")
         )
+=======
+        "    "
+        + t.red
+        + _("No country codes!")
+        + t.bold_blue + " "
+        + _("Any dashes or spaces will be removed for you")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     )
     print("")
     phone_number = clean_number(
@@ -445,6 +611,7 @@ def get_phone_info(profile):
 
     # carrier
     if(profile['phone_number']):
+<<<<<<< HEAD
         separator()
         # If the phone number is blank, it makes no sense to ask
         # for the carrier.
@@ -484,6 +651,45 @@ def get_phone_info(profile):
                 _("'vmobl.com'; for T-Mobile Germany, enter 't-d1-sms.de').")
             )
         )
+=======
+        print("")
+        print("")
+        print("")
+        # If the phone number is blank, it makes no sense to ask
+        # for the carrier.
+        print(
+            "    "
+            + t.bold_blue
+            + _("What is your phone carrier?")
+        )
+        print(
+            "    "
+            + _("If you have a US phone number, ")
+            + _("you can enter one of the following:")
+        )
+        print(
+            "    'AT&T', 'Verizon', 'T-Mobile' "
+            + t.red
+            + "(" + _("without the quotes") + ")."
+        )
+        print("")
+        print(
+            "    "
+            + t.bold_blue
+            + _("If your carrier isn't listed or you have an international")
+        )
+        print(
+            "    "
+            + _("number, go to") + " "
+            + t.bold_yellow + "http://www.emailtextmessages.com"
+        )
+        print(
+            "    "
+            + t.bold_blue
+            + _("and enter the email suffix for your carrier (e.g., for Virgin Mobile, enter ")
+        )
+        print("    " + _("'vmobl.com'; for T-Mobile Germany, enter 't-d1-sms.de')."))
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         print("")
         carrier = simple_input(
             format_prompt(
@@ -500,9 +706,14 @@ def get_phone_info(profile):
             profile['carrier'] = 'tmomail.net'
         else:
             profile['carrier'] = carrier
+<<<<<<< HEAD
 
 
 def get_notification_info(profile):
+=======
+        print("")
+
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     # Notifications
     # Used by hackernews and news plugins.
     # Neither of which attempt to send a text message,
@@ -519,6 +730,7 @@ def get_notification_info(profile):
     # which the user prefers
     elif((profile['phone_number']) and (profile['email']['address'])):
         print(
+<<<<<<< HEAD
             "    " + instruction_text(
                 _("Would you prefer to have notifications sent by")
             )
@@ -527,6 +739,15 @@ def get_notification_info(profile):
             "    " + instruction_text(
                 _("email (E) or text message (T)?")
             )
+=======
+            "    "
+            + t.bold_blue
+            + _("Would you prefer to have notifications sent by")
+        )
+        print(
+            "    "
+            + _("email (E) or text message (T)?")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
         print("")
         if(get_profile_var(profile, "prefers_email")):
@@ -544,9 +765,15 @@ def get_notification_info(profile):
         while not response or (response[:1] != 'E' and response[:1] != 'T'):
             print("")
             response = simple_input(
+<<<<<<< HEAD
                 alert_text(
                     _("Please choose email (E) or text message (T)!")
                 ),
+=======
+                t.red
+                + _("Please choose email (E) or text message (T)!")
+                + t.bold_white,
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
                 response
             )
         profile['prefers_email'] = (response == 'E')
@@ -554,6 +781,7 @@ def get_notification_info(profile):
         # if no email address is configured, just set this to false
         profile['prefers_email'] = False
 
+<<<<<<< HEAD
 
 def get_weather_location(profile):
     # Weather
@@ -568,6 +796,22 @@ def get_weather_location(profile):
         )
     )
     print("")
+=======
+    # Weather
+    print("")
+    print("")
+    print("")
+    print(
+        "    "
+        + t.bold_blue
+        + _("For weather information, please enter your 5-digit zipcode (e.g., 08544).")
+    )
+    print(
+        "    "
+        + _("If you are outside the US, insert the name of the nearest big town/city.")
+    )
+    print("")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     location = simple_input(
         format_prompt(
             "?",
@@ -576,6 +820,7 @@ def get_weather_location(profile):
         get_profile_var(profile, "location")
     )
 
+<<<<<<< HEAD
     while location and not verify_location(location):
         print(
             alert_text(
@@ -583,6 +828,13 @@ def get_weather_location(profile):
             ) + " " + instruction_text(
                 _("Please try another location.")
             )
+=======
+    while location and not verifyLocation(location):
+        print(
+            t.red
+            + _("Weather not found.") + " "
+            + _("Please try another location.")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
         location = simple_input(
             format_prompt(
@@ -593,6 +845,12 @@ def get_weather_location(profile):
         )
     if location:
         profile['location'] = location
+<<<<<<< HEAD
+=======
+    print("")
+    print("")
+    print("")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
 
 
 def get_timezone(profile):
@@ -601,6 +859,7 @@ def get_timezone(profile):
     # able to work out the time zone.
     # Also, sending me to a wikipedia page to configure this? Really?
     print(
+<<<<<<< HEAD
         "    " + instruction_text(
             _("Please enter a timezone from the list located in the TZ*")
         )
@@ -613,6 +872,19 @@ def get_timezone(profile):
         )
     )
     print("    " + instruction_text(_("or none at all.")))
+=======
+        "    "
+        + t.bold_blue
+        + _("Please enter a timezone from the list located in the TZ*")
+    )
+    print(
+        "    "
+        + _("column at") + " "
+        + t.bold_yellow
+        + "http://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
+    )
+    print("    " + t.bold_blue + _("or none at all."))
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     print("")
     tz = simple_input(
         format_prompt(
@@ -627,7 +899,11 @@ def get_timezone(profile):
             profile['timezone'] = tz
             break
         except pytz.exceptions.UnknownTimeZoneError:
+<<<<<<< HEAD
             print(alert_text(_("Not a valid timezone. Try again.")))
+=======
+            print(t.red + _("Not a valid timezone. Try again."))
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
             tz = simple_input(
                 format_prompt(
                     "?",
@@ -635,14 +911,24 @@ def get_timezone(profile):
                 ),
                 tz
             )
+<<<<<<< HEAD
 
 
 def get_stt_engine(profile):
+=======
+    print("")
+    print("")
+    print("")
+
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     # Get a list of STT engines
     stt_engines = {
         "PocketSphinx": "sphinx",
         "DeepSpeech": "deepspeech-stt",
+<<<<<<< HEAD
         "Wit.AI": "witai-stt",
+=======
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         "Google Voice": "google",
         "Watson": "watson-stt",
         "Kaldi": "kaldigstserver-stt",
@@ -650,6 +936,7 @@ def get_stt_engine(profile):
     }
 
     print(
+<<<<<<< HEAD
         "    " + instruction_text(
             _("Please select a speech to text engine.")
         )
@@ -679,6 +966,43 @@ def get_stt_engine(profile):
                     _("Unrecognized option.")
                 )
             )
+=======
+        "    "
+        + t.bold_blue
+        + _("If you would like to choose a specific speech to text(STT) engine, please specify which!")
+    )
+    print("")
+    response = "PocketSphinx"
+    for engine in stt_engines:
+        if (get_profile_var(profile, 'stt_engine') == stt_engines[engine]):
+            response = engine
+            break
+    response = simple_input(
+        "    "
+        + _("Available implementations:") + " "
+        + t.yellow + ("%s. " % stt_engines.keys()) + t.bold_white,
+        response
+    )
+    print("")
+    if (response in stt_engines.keys()):
+        profile['stt_engine'] = response
+    else:
+        if response:
+            print(
+                t.red
+                + _("Unrecognized option.")
+            )
+        print(
+            t.bold_white
+            + _("Setting speech to text engine to ")
+            + t.yellow
+            + "Pocketsphinx."
+            + t.bold_white
+        )
+        profile['stt_engine'] = 'sphinx'
+    print("")
+    print("")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     print("")
     # Handle special cases here
     if(profile['active_stt']['engine'] == 'google'):
@@ -694,7 +1018,11 @@ def get_stt_engine(profile):
         print("")
         print("")
         print("")
+<<<<<<< HEAD
     if(profile['active_stt']['engine'] == 'watson-stt'):
+=======
+    if(profile['stt_engine'] == 'watson-stt'):
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         profile["watson_stt"] = {}
         username = simple_input(
             format_prompt(
@@ -711,12 +1039,17 @@ def get_stt_engine(profile):
         print("")
         print("")
         print("")
+<<<<<<< HEAD
     if(profile['active_stt']['engine'] == 'kaldigstserver-stt'):
+=======
+    if(profile['stt_engine'] == 'kaldigstserver-stt'):
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         try:
             temp = profile['kaldigstserver-stt']
         except KeyError:
             profile['kaldigstserver-stt'] = {}
         print(
+<<<<<<< HEAD
             "    " + instruction_text(
                 _("I need your Kaldi g-streamer server url to continue")
             )
@@ -730,6 +1063,17 @@ def get_stt_engine(profile):
             ) + instruction_text(
                 ")"
             )
+=======
+            "    "
+            + t.bold_blue
+            + _("I need your Kaldi g-streamer server url to continue")
+        )
+        default = "http://localhost:8888/client/dynamic/recognize"
+        print(
+            "    ("
+            + _("default is")
+            + t.yellow + " %s)" % default
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
         print("")
         temp = get_profile_var(profile, "kaldigstserver-stt", "url")
@@ -742,7 +1086,14 @@ def get_stt_engine(profile):
             ),
             temp
         )
+<<<<<<< HEAD
     if(profile['active_stt']['engine'] == 'julius-stt'):
+=======
+        print("")
+        print("")
+        print("")
+    if(profile['stt_engine'] == 'julius-stt'):
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         # stt_engine: julius
         # julius:
         #     hmmdefs:  '/path/to/your/hmmdefs'
@@ -786,6 +1137,9 @@ def get_stt_engine(profile):
         # something needs to be entered. Someone with experience setting up
         # Julius will need to finish this up.
         profile["julius"]["lexicon_archive_member"] = "VoxForge/VoxForgeDict"
+        print("")
+        print("")
+        print("")
     else:
         try:
             temp = profile["pocketsphinx"]
@@ -795,20 +1149,30 @@ def get_stt_engine(profile):
         # this the default at the end
         # is the phonetisaurus program phonetisaurus-g2p (old version)
         # or phonetisaurus-g2pfst?
+<<<<<<< HEAD
         phonetisaurus_executable = get_profile_var(
             profile,
             'pocketsphinx',
             'phonetisaurus_executable'
         )
+=======
+        phonetisaurus_executable = get_profile_var(profile, 'pocketsphinx', 'phonetisaurus_executable')
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         once = False
         while not((once) and (phonetisaurus_executable)):
             once = True
             # Let's check some standard places (this is crunchier than actually
             # using "find" but should work in most cases):
             if(not phonetisaurus_executable):
+<<<<<<< HEAD
                 if(check_program_exists('phonetisaurus-g2pfst')):
                     phonetisaurus_executable = 'phonetisaurus-g2pfst'
                 elif(check_program_exists('phonetisaurus-g2p')):
+=======
+                if(CheckProgramExists('phonetisaurus-g2pfst')):
+                    phonetisaurus_executable = 'phonetisaurus-g2pfst'
+                elif(CheckProgramExists('phonetisaurus-g2p')):
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
                     phonetisaurus_executable = 'phonetisaurus-g2p'
             phonetisaurus_executable = simple_input(
                 format_prompt(
@@ -818,12 +1182,23 @@ def get_stt_engine(profile):
                 phonetisaurus_executable
             )
         profile['pocketsphinx']['phonetisaurus_executable'] = phonetisaurus_executable
+        print("")
+        print("")
+        print("")
         # We have the following things to configure:
+<<<<<<< HEAD
         #  hmm_dir - the default is "/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k"
         #          - if you install through the pocketsphinx-en-us debian apt package then it is "/usr/share/pocketsphinx/model/en-us/en-us"
         #          - if you install the latest pocketsphinx from source, it should be here: "~/pocketsphinx/model/en-us/en-us"
         #  fst_model -
         #          - the default is "~/phonetisaurus/g014b2b.fst"
+=======
+        #  hmm_dir - the default for kara is "/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k"
+        #          - if you install through the pocketsphinx-en-us debian apt package then it is "/usr/share/pocketsphinx/model/en-us/en-us"
+        #          - if you install the latest pocketsphinx from source, it should be here: "~/pocketsphinx/model/en-us/en-us"
+        #  fst_model -
+        #          - the default for kara is "~/phonetisaurus/g014b2b.fst"
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         #          - if you install the latest CMUDict, then it will be at "~/CMUDict/train/model.fst"
         hmm_dir = get_profile_var(profile, 'pocketsphinx', 'hmm_dir')
         once = False
@@ -898,6 +1273,12 @@ def get_stt_engine(profile):
                 fst_model
             )
         profile["pocketsphinx"]["fst_model"] = fst_model
+<<<<<<< HEAD
+=======
+    print("")
+    print("")
+    print("")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
 
 
 def get_tts_engine(profile):
@@ -911,6 +1292,7 @@ def get_tts_engine(profile):
         "Ivona": "ivona-tts",
         "Mary": "mary-tts"
     }
+<<<<<<< HEAD
     try:
         response=tts_engines.keys()[tts_engines.values().index(get_profile_var(profile,'tts_engine'))]
     except (KeyError, ValueError):
@@ -951,11 +1333,52 @@ def get_tts_engine(profile):
                 _("the following options in your config file:")
             )
         )
+=======
+    response = "Festival"
+    for engine in tts_engines:
+        if(get_profile_var(profile, "tts_engine") == tts_engines[engine]):
+            response = engine
+    print(
+        "    "
+        + t.bold_blue
+        + _(
+            "If you would like to choose a specific text to speech (TTS) engine,"
+        )
+    )
+    print("    " + _("please specify which."))
+    print("")
+    response = simple_input(
+        format_prompt(
+            "?",
+            t.bold_white + _("Available implementations: ")
+            + t.yellow + ("%s. " % tts_engines.keys()) + t.bold_white
+        ),
+        response
+    )
+    if(response in tts_engines.keys()):
+        profile['tts_engine'] = tts_engines[response]
+    else:
+        print(
+            t.red + _("Unrecognized option.") +
+            t.bold_white + _("Setting text to speech engine to") + " " +
+            t.yellow + "Festival."
+        )
+        profile['tts_engine'] = 'festival-tts'
+        print("")
+        print("")
+        print("")
+    # Deal with special cases
+    if(profile["tts_engine"] == "espeak-tts"):
+        # tts_engine: espeak-tts
+        print(t.bold_blue + "    If you would like to alter the espeak voice, you can use")
+        print("    the following options in your config file:")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         print("")
         print("    espeak-tts:")
         print("        voice: 'default+m3'   # optional")
         print("        pitch_adjustment: 40  # optional")
         print("        words_per_minute: 160 # optional")
+<<<<<<< HEAD
     elif(profile["tts_engine"] == "festival-tts"):
         # tts_engine: festival-tts
         print(
@@ -963,6 +1386,17 @@ def get_tts_engine(profile):
                 _("Use the festival command to set the default voice.")
             )
         )
+=======
+        print("")
+        print("")
+        print("")
+    elif(profile["tts_engine"] == "festival-tts"):
+        # tts_engine: festival-tts
+        print(t.bold_blue + "    Use the festival command to set the default voice.")
+        print("")
+        print("")
+        print("")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     elif(profile["tts_engine"] == "flite-tts"):
         try:
             temp = profile["flite-tts"]
@@ -970,11 +1404,17 @@ def get_tts_engine(profile):
             profile["flite-tts"] = {}
         voices = subprocess.check_output(['flite', '-lv']).split(" ")[2:-1]
         print(
+<<<<<<< HEAD
             "    " + instruction_text(
                 _("Available voices:")
             )+ " " + selection_text(
                 "%s. " % voices
             )
+=======
+            "    "
+            + _("Available voices: ")
+            + t.yellow + "%s. " % voices
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
         profile["flite-tts"]["voice"] = simple_input(
             format_prompt(
@@ -983,10 +1423,17 @@ def get_tts_engine(profile):
             ),
             get_profile_var(profile, "flite-tts", "voice")
         )
+<<<<<<< HEAD
+=======
+        print("")
+        print("")
+        print("")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     elif(profile["tts_engine"] == "pico-tts"):
         pass
     elif(profile["tts_engine"] == "ivona-tts"):
         print(
+<<<<<<< HEAD
             "    " + instruction_text(
                 _("You will now need to enter your Ivona account information.")
             )
@@ -1003,6 +1450,21 @@ def get_tts_engine(profile):
             ) + " " + instruction_text(
                 _("if you haven't already.")
             )
+=======
+            "    "
+            + t.bold_blue
+            + _("You will now need to enter your Ivona account information.")
+        )
+        print("")
+        print(
+            "    "
+            + _("You will need to create an account at")
+        )
+        print(
+            "    " + t.yellow
+            + "https://www.ivona.com/us/account/speechcloud/creation/"
+            + " " + t.bold_blue + _("if you haven't already.")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
         print("")
         try:
@@ -1030,12 +1492,22 @@ def get_tts_engine(profile):
         profile["ivona-tts"]["voice"] = simple_input(
             format_prompt(
                 "?",
+<<<<<<< HEAD
                 _("Which voice do you want") + " " + default_text(
                     _("(default is Brian)")
                 ) + question_text("?")
             ),
             temp
         )
+=======
+                _("Which voice do you want") + " " + t.yellow + _("(default is Brian)") + t.bold_white + "?"
+            ),
+            temp
+        )
+        print("")
+        print("")
+        print("")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     elif(profile["tts_engine"] == "mary-tts"):
         try:
             temp = profile["mary-tts"]
@@ -1069,6 +1541,7 @@ def get_tts_engine(profile):
             ),
             get_profile_var(profile, "mary-tts", "voice")
         )
+<<<<<<< HEAD
 
 
 def get_beep_or_voice(profile):
@@ -1077,6 +1550,16 @@ def get_beep_or_voice(profile):
         "    " + instruction_text(
             _("I have two ways to let you know I've heard you; Beep or Voice.")
         )
+=======
+        print("")
+        print("")
+        print("")
+    # Getting information to beep or not beep
+    print(
+        "    "
+        + t.bold_blue
+        + _("I have two ways to let you know I've heard you; Beep or Voice.")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     )
     # If there are values for [active_stt][reply] and [active_stt][response]
     # then use them otherwise use beeps
@@ -1091,6 +1574,7 @@ def get_beep_or_voice(profile):
         ),
         temp
     )
+<<<<<<< HEAD
     while(
         (not response)
         or (response.lower()[:1] != 'b' and response.lower()[:1] != 'v')
@@ -1099,15 +1583,26 @@ def get_beep_or_voice(profile):
             alert_text(
                 _("Please choose beeps (B) or voice (V)")
             )
+=======
+    while((not response) or (response.lower()[:1] != 'b' and response.lower()[:1] != 'v')):
+        response = simple_input(
+            t.red + _("Please choose beeps (B) or voice (V):") + t.bold_white
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
     if(response.lower()[:1] == "v"):
         print("")
         print("")
         print("")
         print(
+<<<<<<< HEAD
             "    " + instruction_text(
                 _("Type the words I should say after hearing my wake word: %s") % profile["keyword"]
             )
+=======
+            "    "
+            + t.bold_blue
+            + _("Type the words I should say after hearing my wake word: %s") % profile["keyword"]
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
         print("")
         areplyRespon = None
@@ -1120,10 +1615,17 @@ def get_beep_or_voice(profile):
                 get_profile_var(profile, "active_stt", "reply")
             )
             print("")
+<<<<<<< HEAD
             print(areply + " " + instruction_text(_("Is this correct?")))
             print("")
             areplyRespon = None
             while((not areplyRespon) or (not check_for_value(areplyRespon.lower()[:1], [affirmative.lower()[:1], negative.lower()[:1]]))):
+=======
+            print(areply + t.bold_blue + " " + _("Is this correct?"))
+            print("")
+            areplyRespon = None
+            while((not areplyRespon) or (not CheckForValue(areplyRespon.lower()[:1], [affirmative.lower()[:1], negative.lower()[:1]]))):
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
                 areplyRespon = simple_input(
                     format_prompt(
                         "?",
@@ -1135,9 +1637,15 @@ def get_beep_or_voice(profile):
         print("")
         print("")
         print(
+<<<<<<< HEAD
             "    " + instruction_text(
                 _("Type the words I should say after hearing a command")
             )
+=======
+            "    "
+            + t.bold_blue
+            + _("Type the words I should say after hearing a command")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
         )
         aresponseRespon = None
         while((not aresponseRespon) or (aresponseRespon.lower()[:1] != affirmative.lower()[:1])):
@@ -1149,10 +1657,17 @@ def get_beep_or_voice(profile):
                 get_profile_var(profile, "active_stt", "response")
             )
             print("")
+<<<<<<< HEAD
             print(aresponse + " " + instruction_text(_("Is this correct?")))
             print("")
             aresponseRespon = None
             while((not aresponseRespon) or (not check_for_value(aresponseRespon.lower()[:1], [affirmative.lower()[:1], negative.lower()[:1]]))):
+=======
+            print(aresponse + t.bold_blue + " Is this correct?")
+            print("")
+            aresponseRespon = None
+            while((not aresponseRespon) or (not CheckForValue(aresponseRespon.lower()[:1], [affirmative.lower()[:1], negative.lower()[:1]]))):
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
                 aresponseRespon = simple_input(
                     format_prompt(
                         "?",
@@ -1160,6 +1675,7 @@ def get_beep_or_voice(profile):
                     )
                 )
         profile['active_stt']['response'] = aresponse
+<<<<<<< HEAD
     else:
         # If beeps are selected, must remove both reply and response
         profile['active_stt']['reply'] = ""
@@ -1427,6 +1943,11 @@ def run(profile):
     
     get_wakeword(profile)
     separator()
+=======
+        print("")
+        print("")
+        print("")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
 
     get_user_name(profile)
     separator()
@@ -1466,9 +1987,14 @@ def run(profile):
     
     # write to profile
     print(
+<<<<<<< HEAD
         "    " + status_text(
             _("Writing to profile...")
         )
+=======
+        "    "
+        + t.bold_magenta + _("Writing to profile...")
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
     )
     if not os.path.exists(paths.CONFIG_PATH):
         os.makedirs(paths.CONFIG_PATH)
@@ -1477,6 +2003,7 @@ def run(profile):
     print("")
     print("")
     print("")
+<<<<<<< HEAD
     print("    " + success_text(_("Done.")) + normal_text())
 
 
@@ -1494,3 +2021,16 @@ if __name__ == "__main__":
             "Populate.py"
         )
     )
+=======
+    print("    " + t.bold_green + _("Done."))
+
+
+if __name__ == "__main__":
+    configfile = paths.config('profile.yml')
+    if os.path.exists(configfile):
+        with open(configfile, "r") as f:
+            config = yaml.safe_load(f)
+    else:
+        config = {}
+    run(config)
+>>>>>>> f800dc3835234e267823c9bd925f1c50e6f632d4
