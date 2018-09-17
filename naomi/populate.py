@@ -28,57 +28,71 @@ from . import audioengine
 def normal_text(text=""):
     return t.normal + text
 
+
 # this is for instructions
 def instruction_text(text=""):
     return t.bold_blue + text
+
 
 # This is for the brackets surrounding the icon
 def icon_text(text=""):
     return t.bold_cyan + text
 
+
 # This is for question text
 def question_text(text=""):
     return t.bold_blue + text
+
 
 # This is for the question icon
 def question_icon(text=""):
     return t.bold_yellow + text
 
+
 # This is for alert text
 def alert_text(text=""):
     return t.bold_red + text
+
 
 # This is for the alert icon
 def alert_icon(text=""):
     return t.bold_cyan + text
 
+
 # This is for listing choices available to choose from
 def selection_text(text=""):
     return t.bold_cyan + text
+
 
 # This is for displaying the default choice when there is a default
 def default_text(text=""):
     return t.normal + text
 
+
 # This is for the prompt after the default text
 def default_prompt(text="// "):
     return t.bold_blue + text
+
 
 # This is the color for the text as the user is entering a choice
 def input_text(text=""):
     return t.normal + text
 
+
 # This is text for a url
 def url_text(text=""):
     return t.bold_cyan + t.underline + text + t.normal
+
 
 # This is for a status message
 def status_text(text=""):
     return t.bold_magenta + text
 
+
 # This is a positive alert
 def success_text(text=""):
     return t.bold_green + text
+
 
 # AaronC
 def _snr(input_bits, threshold, frames):
@@ -87,6 +101,7 @@ def _snr(input_bits, threshold, frames):
         return 20.0 * math.log(rms / threshold, 10)
     else:
         return 0
+
 
 # Get a value from the profile, whether it exists or not
 # If the value does not exist in the profile, returns None
@@ -218,6 +233,7 @@ def separator():
     print("")
     print("")
     print("")
+
 
 def select_language(profile):
     global _, affirmative, negative
@@ -399,7 +415,7 @@ def get_email_info(profile):
     # incrementally while not forcing people to re-enter credentials
     # every time a new encryption method is added.
     prompt = _("What is your email password?") + ": "
-    if(get_profile_var(profile,"email","password")):
+    if(get_profile_var(profile, "email", "password")):
         prompt += default_text(
             _("(just press enter to keep current password)")
         ) + default_prompt()
@@ -480,7 +496,8 @@ def get_phone_info(profile):
                 _("and enter the email suffix for your carrier (e.g., for Virgin Mobile, enter ")
             )
         )
-        print("    " + instruction_text(
+        print(
+            "    " + instruction_text(
                 _("'vmobl.com'; for T-Mobile Germany, enter 't-d1-sms.de').")
             )
         )
@@ -656,7 +673,15 @@ def get_stt_engine(profile):
     )
     print("")
     try:
-        response=stt_engines.keys()[stt_engines.values().index(get_profile_var(profile,'active_stt','engine'))]
+        response = stt_engines.keys()[
+            stt_engines.values().index(
+                get_profile_var(
+                    profile,
+                    'active_stt',
+                    'engine'
+                )
+            )
+        ]
     except (KeyError, ValueError):
         response = "PocketSphinx"
     once = False
@@ -684,7 +709,7 @@ def get_stt_engine(profile):
     if(profile['active_stt']['engine'] == 'google'):
         # Set the api key (I'm not sure this actually works anymore,
         # need to test)
-        key = simple_input(
+        profile['keys']['GOOGLE_SPEECH'] = simple_input(
             format_prompt(
                 "!",
                 _("Please enter your API key:")
@@ -912,7 +937,14 @@ def get_tts_engine(profile):
         "Mary": "mary-tts"
     }
     try:
-        response=tts_engines.keys()[tts_engines.values().index(get_profile_var(profile,'tts_engine'))]
+        response = tts_engines.keys()[
+            tts_engines.values().index(
+                get_profile_var(
+                    profile,
+                    'tts_engine'
+                )
+            )
+        ]
     except (KeyError, ValueError):
         response = "Festival"
     print(
@@ -972,7 +1004,7 @@ def get_tts_engine(profile):
         print(
             "    " + instruction_text(
                 _("Available voices:")
-            )+ " " + selection_text(
+            ) + " " + selection_text(
                 "%s. " % voices
             )
         )
@@ -1169,7 +1201,7 @@ def get_beep_or_voice(profile):
 def select_audio_engine(profile):
     # Audio Engine
     global audioengine_plugins
-    audioengine_plugins=pluginstore.PluginStore(
+    audioengine_plugins = pluginstore.PluginStore(
         [os.path.join(
             os.path.dirname(
                 os.path.dirname(
@@ -1183,12 +1215,16 @@ def select_audio_engine(profile):
 
     print(instruction_text(_("Please select an audio engine.")))
     try:
-        response = audioengines[audioengines.index(get_profile_var(profile,'audio_engine'))]
+        response = audioengines[
+            audioengines.index(
+                get_profile_var(profile, 'audio_engine')
+            )
+        ]
     except (ValueError):
         response = "pyaudio"
     once = False
     while not ((once) and (response in audioengines)):
-        once=True
+        once = True
         response = simple_input(
             "    " + _("Available implementations:") + " " + selection_text(
                 ("%s. " % audioengines)
@@ -1209,7 +1245,7 @@ def get_output_device(profile):
     output_devices = [device.slug for device in audio_engine.get_devices(
         device_type=audioengine.DEVICE_TYPE_OUTPUT
     )]
-    output_device = get_profile_var(profile,"audio","output_device")
+    output_device = get_profile_var(profile, "audio", "output_device")
     if not output_device:
         output_device = audio_engine.get_default_device(output=True)
     heard = ""
@@ -1230,8 +1266,15 @@ def get_output_device(profile):
         # configuration file
         output_chunksize = 1024
         output_add_padding = False
-        
-        filename = os.path.join(os.path.dirname(os.path.abspath(__file__)),"data","audio","beep_lo.wav")
+
+        filename = os.path.join(
+            os.path.dirname(
+                os.path.abspath(__file__)
+            ),
+            "data",
+            "audio",
+            "beep_lo.wav"
+        )
         if(os.path.isfile(filename)):
             print(instruction_text(_("Testing device by playing a sound")))
             actual_output_device = audio_engine.get_device_by_slug(output_device)
@@ -1241,7 +1284,7 @@ def get_output_device(profile):
                 add_padding=output_add_padding
             )
             heard = simple_input(
-                _("Were you able to hear the beep (%s/%s)?") % (affirmative.upper()[:1],negative.upper()[:1])
+                _("Were you able to hear the beep (%s/%s)?") % (affirmative.upper()[:1], negative.upper()[:1])
             ).lower().strip()[:1]
             if not (heard == affirmative.lower()[:1]):
                 print(
@@ -1281,7 +1324,7 @@ def get_input_device(profile):
     # AaronC 2018-09-14 Get a list of available input devices
     input_devices = [device.slug for device in audio_engine.get_devices(
         device_type=audioengine.DEVICE_TYPE_INPUT)]
-    input_device = get_profile_var(profile,"audio","input_device")
+    input_device = get_profile_var(profile, "audio", "input_device")
     if not input_device:
         input_device = audio_engine.get_default_device(input=True)
     heard = ""
@@ -1306,7 +1349,7 @@ def get_input_device(profile):
             # The following are defaults. They should be read
             # from the proper locations in the profile file if
             # they have been set.
-            threshold = 10 # 10 dB
+            threshold = 10  # 10 dB
             input_chunks = 1024
             input_bits = 16
             input_channels = 1
@@ -1321,7 +1364,7 @@ def get_input_device(profile):
             actual_output_device = audio_engine.get_device_by_slug(
                 profile["audio"]["output_device"]
             )
-            frames = collections.deque([],30)
+            frames = collections.deque([], 30)
             recording = False
             recording_frames = []
             filename = os.path.join(
@@ -1424,18 +1467,17 @@ def run(profile):
     # For plugin & general use elsewhere, blessings or
     # coloredformatting.py can be used.
     #
-    _logger = logging.getLogger(__name__)
 
     global t, _, negative, affirmative, audio_engine_plugins
-    
+
     t = Terminal()
 
     select_language(profile)
     separator()
-    
+
     greet_user()
     separator()
-    
+
     get_wakeword(profile)
     separator()
 
@@ -1444,37 +1486,37 @@ def run(profile):
 
     get_email_info(profile)
     separator()
-    
+
     get_phone_info(profile)
     separator()
-    
+
     get_notification_info(profile)
     separator()
-    
+
     get_weather_location(profile)
     separator()
-    
+
     get_timezone(profile)
     separator()
-    
+
     get_stt_engine(profile)
     separator()
 
     get_tts_engine(profile)
     separator()
-    
+
     get_beep_or_voice(profile)
     separator()
-    
+
     select_audio_engine(profile)
     separator()
-    
+
     get_output_device(profile)
     separator()
-    
+
     get_input_device(profile)
     separator()
-    
+
     # write to profile
     print(
         "    " + status_text(
@@ -1485,9 +1527,7 @@ def run(profile):
         os.makedirs(paths.CONFIG_PATH)
     outputFile = open(paths.config("profile.yml"), "w")
     yaml.dump(profile, outputFile, default_flow_style=False)
-    print("")
-    print("")
-    print("")
+    separator()
     print("    " + success_text(_("Done.")) + normal_text())
 
 
