@@ -22,10 +22,11 @@ from . import audioengine
 
 
 # globals
+t = Terminal()
+# given values in select_language()
 _ = None
-audioengine_plugins = None
-t = None
-
+affirmative = ""
+negative = ""
 
 # AaronC 2018-09-14
 # Colors
@@ -1472,11 +1473,7 @@ def run(profile):
     # For plugin & general use elsewhere, blessings or
     # coloredformatting.py can be used.
     #
-
-    global t, _, negative, affirmative
-
-    t = Terminal()
-
+    
     select_language(profile)
     separator()
 
