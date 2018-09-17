@@ -5,7 +5,6 @@ from blessings import Terminal
 import collections
 import feedparser
 from getpass import getpass
-import logging
 import math
 import os
 import paths
@@ -21,6 +20,11 @@ from . import i18n
 from . import pluginstore
 from . import audioengine
 
+
+# globals
+_ = None
+audioengine_plugins = None
+t = None
 
 # AaronC 2018-09-14
 # Colors
