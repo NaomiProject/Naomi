@@ -663,6 +663,12 @@ def get_timezone(profile):
 
 
 def get_stt_engine(profile):
+    # Check that active_stt exists
+    try:
+        temp = profile['active_stt']
+    except KeyError:
+        profile['active_stt'] = {}
+
     # Get a list of STT engines
     stt_engines = {
         "PocketSphinx": "sphinx",
