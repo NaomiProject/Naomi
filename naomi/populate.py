@@ -879,6 +879,22 @@ def get_stt_engine(profile):
                         "en-us",
                         "en-us"
                     )
+                elif(os.path.isdir(os.path.join(
+                    os.path.expanduser("~"),
+                    "pocketsphinx-python",
+                    "pocketsphinx",
+                    "model",
+                    "en-us",
+                    "en-us"
+                ))):
+                    hmm_dir = os.path.join(
+                        os.path.expanduser("~"),
+                        "pocketsphinx-python",
+                        "pocketsphinx",
+                        "model",
+                        "en-us",
+                        "en-us"
+                    )
                 elif(os.path.isdir("/usr/share/pocketsphinx/model/en-us/en-us")):
                     hmm_dir = "/usr/share/pocketsphinx/model/en-us/en-us"
                 elif(os.path.isdir("/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k")):
