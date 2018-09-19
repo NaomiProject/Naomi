@@ -5,7 +5,6 @@ import contextlib
 import re
 import slugify
 import pyaudio
-from ctypes import *
 from naomi import plugin
 
 

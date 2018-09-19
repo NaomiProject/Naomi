@@ -11,7 +11,6 @@ import paths
 import pytz
 import re
 import subprocess
-import sys
 import tempfile
 import wave
 import yaml
@@ -179,7 +178,7 @@ def simple_request(profile, var, prompt, cleanInput=None):
 # AaronC Sept 18 2018 This uses affirmative/negative to ask
 # a yes/no question. Returns True for yes and False for no.
 def simple_yes_no(prompt):
-    response=""
+    response = ""
     while(response not in (affirmative.lower()[:1], negative.lower()[:1])):
         response = simple_input(
             format_prompt(
@@ -193,7 +192,7 @@ def simple_yes_no(prompt):
         ).strip().lower()[:1]
         if response not in (affirmative.lower()[:1], negative.lower()[:1]):
             print(alert_text("Please select '%s' or '%s'.") % (affirmative.upper()[:1], negative.upper()[:1]))
-    if response==affirmative.lower()[:1]:
+    if response == affirmative.lower()[:1]:
         return True
     else:
         return False
@@ -275,9 +274,9 @@ def select_language(profile):
     # it breaks due to it being out of range for ascii
     #
     languages = {
-        u'EN-English':  u'en-US',
+        u'EN-English': u'en-US',
         u'FR-Français': u'fr-FR',
-        u'DE-Deutsch':  u'de-DE'
+        u'DE-Deutsch': u'de-DE'
     }
     language = get_profile_var(profile, "language")
     if(not language):
@@ -664,10 +663,10 @@ def get_timezone(profile):
     )
     print("    " + instruction_text(_("or none at all.")))
     print("")
-    tz = get_profile_var(profile,"timezone")
+    tz = get_profile_var(profile, "timezone")
     if not tz:
         try:
-            tz = subprocess.check_output(["cat","/etc/timezone"]).strip()
+            tz = subprocess.check_output(["cat", "/etc/timezone"]).strip()
         except OSError:
             tz = None
     tz = simple_input(
@@ -1086,9 +1085,9 @@ def get_tts_engine(profile):
         except OSError:
             print(alert_text(_("FLite does not appear to be installed")))
             print(instruction_text(_("Please install it using:")))
-            print("  $ "+success_text("sudo apt install flite"))
+            print("  $ " + success_text("sudo apt install flite"))
             print(instruction_text(_("then re-run this program with the --repopulate flag")))
-            print("  $ "+success_text("./Naomi.py --repopulate"))
+            print("  $ " + success_text("./Naomi.py --repopulate"))
     elif(profile["tts_engine"] == "pico-tts"):
         pass
     elif(profile["tts_engine"] == "ivona-tts"):
@@ -1325,7 +1324,7 @@ def get_output_device(profile):
             once = True
             output_device_slug = simple_input(
                 instruction_text(
-                   _("Available output devices:") + " "
+                    _("Available output devices:") + " "
                 ) + selection_text(
                     ", ".join(output_devices)
                 ),
@@ -1406,7 +1405,7 @@ def get_input_device(profile):
     try:
         temp = profile["audio"]
     except KeyError:
-        profile["audio"]={}
+        profile["audio"] = {}
     # AaronC 2018-09-14 Initialize AudioEngine
     ae_info = audioengine_plugins.get_plugin(
         profile['audio_engine'],
@@ -1437,7 +1436,7 @@ def get_input_device(profile):
         # try recording a sample
         while not(heard):
             print(
-		instruction_text(
+                instruction_text(
                     _("I will test your selection by recording your voice and playing it back to you.")
                 )
             )
