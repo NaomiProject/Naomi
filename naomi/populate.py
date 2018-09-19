@@ -154,9 +154,11 @@ def format_prompt(icon, prompt):
 def simple_input(prompt, default=None):
     prompt += ": "
     if(default):
-        prompt += default_text(default) + default_prompt() + input_text()
-    sys.stdout.write(prompt)
-    response = raw_input()
+        prompt += default_text(default) + default_prompt()
+    prompt += input_text()
+    # don't use print here so no automatic carriage return
+    # sys.stdout.write(prompt)
+    response = raw_input(prompt)
     # if the user pressed enter without entering anything,
     # set the response to default
     if(default and not response):
@@ -172,6 +174,29 @@ def simple_request(profile, var, prompt, cleanInput=None):
         if cleanInput:
             input_str = cleanInput(input_str)
         profile[var] = input_str
+
+
+# AaronC Sept 18 2018 This uses affirmative/negative to ask
+# a yes/no question. Returns True for yes and False for no.
+def simple_yes_no(prompt):
+    response=""
+    while(response not in (affirmative.lower()[:1], negative.lower()[:1])):
+        response = simple_input(
+            format_prompt(
+                "?",
+                prompt + instruction_text(" (") + selection_text(
+                    affirmative.upper()[:1]
+                ) + instruction_text("/") + selection_text(
+                    negative.upper()[:1]
+                ) + instruction_text(")")
+            )
+        ).strip().lower()[:1]
+        if response not in (affirmative.lower()[:1], negative.lower()[:1]):
+            print(alert_text("Please select '%s' or '%s'.") % (affirmative.upper()[:1], negative.upper()[:1]))
+    if response==affirmative.lower()[:1]:
+        return True
+    else:
+        return False
 
 
 # AaronC - This is currently used to clean phone numbers
@@ -245,28 +270,29 @@ def separator():
 
 def select_language(profile):
     global _, affirmative, negative
-    language = get_profile_var(profile, "language")
-    if(not language):
-        language = 'en-US'
-        profile["language"] = language
-    translations = i18n.parse_translations(paths.data('locale'))
-    translator = i18n.GettextMixin(translations, profile)
-    _ = translator.gettext
     #
     # AustinC; can't use français due to the special char "ç"
     # it breaks due to it being out of range for ascii
     #
     languages = {
-        u'en-US': u'EN-English',
-        u'fr-FR': u'FR-Français',
-        u'de-DE': u'DE-Deutsch'
+        u'EN-English':  u'en-US',
+        u'FR-Français': u'fr-FR',
+        u'DE-Deutsch':  u'de-DE'
     }
+    language = get_profile_var(profile, "language")
+    if(not language):
+        language = "en-US"
+        profile["language"] = language
+    selected_language = languages.keys()[languages.values().index(language)]
+    translations = i18n.parse_translations(paths.data('locale'))
+    translator = i18n.GettextMixin(translations, profile)
+    _ = translator.gettext
     once = False
     while not (
         (
             once
         )and(
-            check_for_value(language, languages.keys())
+            check_for_value(selected_language, languages.keys())
         )
     ):
         once = True
@@ -276,33 +302,29 @@ def select_language(profile):
         print("    " + instruction_text(_("Language Selector")))
         print("")
         print("")
-        for key in languages.keys():
-            print "    " + selection_text(languages[key])
+        for language in languages.keys():
+            print "    " + language.encode("utf-8")
         print("")
-        temp = simple_input(
+        selected_language = simple_input(
             format_prompt(
                 "?",
                 _('Select Language')
             ),
-            language
-        ).lower().strip()
-        if(check_for_value(temp[:2], [key[:2] for key in languages.keys()])):
-            for key in languages.keys():
-                if(temp[:2] == key[:2]):
-                    language = key
-                    break
-        if(language.lower()[:2] == 'en'):
-            language = 'en-US'
-            affirmative = 'yes'
-            negative = 'no'
-        elif(language.lower()[:2] == 'fr'):
-            language = 'fr-FR'
-            affirmative = 'oui'
-            negative = 'non'
-        elif(language.lower()[:2] == 'de'):
-            language = 'de-DE'
-            affirmative = "ja"
-            negative = "nein"
+            selected_language
+        ).strip()
+        if(check_for_value(selected_language.lower()[:2], [value.lower()[:2] for value in languages.values()])):
+            if(selected_language.lower()[:2] == 'en'):
+                language = 'en-US'
+                affirmative = 'yes'
+                negative = 'no'
+            elif(selected_language.lower()[:2] == 'fr'):
+                language = 'fr-FR'
+                affirmative = 'oui'
+                negative = 'non'
+            elif(selected_language.lower()[:2] == 'de'):
+                language = 'de-DE'
+                affirmative = "ja"
+                negative = "nein"
 
     profile['language'] = language
     translations = i18n.parse_translations(paths.data('locale'))
@@ -341,13 +363,16 @@ def greet_user():
 
 def get_wakeword(profile):
     # my name
-    simple_request(
-        profile,
-        'keyword',
+    try:
+        keyword = profile["keyword"]
+    except KeyError:
+        keyword = "Naomi"
+    profile["keyword"] = simple_input(
         format_prompt(
             "?",
-            _('First, what name would you like to call me by?').decode('utf-8')
-        )
+            _("First, what name would you like to call me by?")
+        ),
+        keyword
     )
 
 
@@ -373,7 +398,7 @@ def get_user_name(profile):
         'last_name',
         format_prompt(
             "?",
-            _('What is your last name?').decode('utf-8')
+            _('What is your last name?')
         )
     )
 
@@ -621,7 +646,7 @@ def get_weather_location(profile):
 
 
 def get_timezone(profile):
-        # timezone
+    # timezone
     # FIXME AaronC 2018-07-26 Knowing the zip code, you should be
     # able to work out the time zone.
     # Also, sending me to a wikipedia page to configure this? Really?
@@ -639,12 +664,18 @@ def get_timezone(profile):
     )
     print("    " + instruction_text(_("or none at all.")))
     print("")
+    tz = get_profile_var(profile,"timezone")
+    if not tz:
+        try:
+            tz = subprocess.check_output(["cat","/etc/timezone"]).strip()
+        except OSError:
+            tz = None
     tz = simple_input(
         format_prompt(
             "?",
             _("What is your timezone?")
         ),
-        get_profile_var(profile, "timezone")
+        tz
     )
     while tz:
         try:
@@ -1030,21 +1061,34 @@ def get_tts_engine(profile):
             temp = profile["flite-tts"]
         except KeyError:
             profile["flite-tts"] = {}
-        voices = subprocess.check_output(['flite', '-lv']).split(" ")[2:-1]
-        print(
-            "    " + instruction_text(
-                _("Available voices:")
-            ) + " " + selection_text(
-                "%s. " % voices
+        try:
+            voices = subprocess.check_output(['flite', '-lv']).split(" ")[2:-1]
+            print(
+                "    " + instruction_text(
+                    _("Available voices:")
+                ) + " " + selection_text(
+                    "%s. " % voices
+                )
             )
-        )
-        profile["flite-tts"]["voice"] = simple_input(
-            format_prompt(
-                "?",
-                _("Select a voice")
-            ),
-            get_profile_var(profile, "flite-tts", "voice")
-        )
+            voice = get_profile_var(profile, "flite-tts", "voice")
+            if not voice:
+                try:
+                    voice = voices[voices.index("kal")]
+                except ValueError:
+                    voice = None
+            profile["flite-tts"]["voice"] = simple_input(
+                format_prompt(
+                    "?",
+                    _("Select a voice")
+                ),
+                voice
+            )
+        except OSError:
+            print(alert_text(_("FLite does not appear to be installed")))
+            print(instruction_text(_("Please install it using:")))
+            print("  $ "+success_text("sudo apt install flite"))
+            print(instruction_text(_("then re-run this program with the --repopulate flag")))
+            print("  $ "+success_text("./Naomi.py --repopulate"))
     elif(profile["tts_engine"] == "pico-tts"):
         pass
     elif(profile["tts_engine"] == "ivona-tts"):
@@ -1173,7 +1217,7 @@ def get_beep_or_voice(profile):
         )
         print("")
         areplyRespon = None
-        while((not areplyRespon) or (areplyRespon.lower()[:1] != affirmative.lower()[:1])):
+        while(not areplyRespon):
             areply = simple_input(
                 format_prompt(
                     "?",
@@ -1181,28 +1225,21 @@ def get_beep_or_voice(profile):
                 ),
                 get_profile_var(profile, "active_stt", "reply")
             )
-            print("")
-            print(areply + " " + instruction_text(_("Is this correct?")))
-            print("")
             areplyRespon = None
-            while((not areplyRespon) or (not check_for_value(areplyRespon.lower()[:1], [affirmative.lower()[:1], negative.lower()[:1]]))):
-                areplyRespon = simple_input(
-                    format_prompt(
-                        "?",
-                        affirmative.upper()[:1] + "/" + negative.upper()[:1] + "?"
-                    )
+            while(areplyRespon is None):
+                print("")
+                areplyRespon = simple_yes_no(
+                    areply + " - " + _("Is this correct?")
                 )
         profile['active_stt']['reply'] = areply
-        print("")
-        print("")
-        print("")
+        separator()
         print(
             "    " + instruction_text(
                 _("Type the words I should say after hearing a command")
             )
         )
         aresponseRespon = None
-        while((not aresponseRespon) or (aresponseRespon.lower()[:1] != affirmative.lower()[:1])):
+        while(not aresponseRespon):
             aresponse = simple_input(
                 format_prompt(
                     "?",
@@ -1211,15 +1248,12 @@ def get_beep_or_voice(profile):
                 get_profile_var(profile, "active_stt", "response")
             )
             print("")
-            print(aresponse + " " + instruction_text(_("Is this correct?")))
+            print()
             print("")
             aresponseRespon = None
-            while((not aresponseRespon) or (not check_for_value(aresponseRespon.lower()[:1], [affirmative.lower()[:1], negative.lower()[:1]]))):
-                aresponseRespon = simple_input(
-                    format_prompt(
-                        "?",
-                        affirmative.upper()[:1] + "/" + negative.upper()[:1] + "?"
-                    )
+            while(aresponseRespon is None):
+                aresponseRespon = simple_yes_no(
+                    aresponse + " - " + _("Is this correct?")
                 )
         profile['active_stt']['response'] = aresponse
     else:
@@ -1257,14 +1291,19 @@ def select_audio_engine(profile):
         once = True
         response = simple_input(
             "    " + _("Available implementations:") + " " + selection_text(
-                ("%s. " % audioengines)
-            ),
+                ("%s" % audioengines)
+            ) + instruction_text("."),
             response
         )
     profile['audio_engine'] = response
 
 
 def get_output_device(profile):
+    # AaronC 2018-09-18 Make sure we have an "audio" section
+    try:
+        temp = profile["audio"]
+    except KeyError:
+        profile["audio"]={}
     # AaronC 2018-09-14 Initialize AudioEngine
     ae_info = audioengine_plugins.get_plugin(
         profile['audio_engine'],
@@ -1275,22 +1314,24 @@ def get_output_device(profile):
     output_devices = [device.slug for device in audio_engine.get_devices(
         device_type=audioengine.DEVICE_TYPE_OUTPUT
     )]
-    output_device = get_profile_var(profile, "audio", "output_device")
-    if not output_device:
-        output_device = audio_engine.get_default_device(output=True)
-    heard = ""
+    output_device_slug = get_profile_var(profile, "audio", "output_device")
+    if not output_device_slug:
+        output_device_slug = audio_engine.get_default_device(output=True).slug
+    heard = None
     once = False
-    while not ((once) and (heard == affirmative.lower()[:1])):
+    while not (once and heard):
         print(instruction_text(_("Please choose an output device")))
-        while not ((once) and (output_device in output_devices)):
+        while not ((once) and (output_device_slug in output_devices)):
             once = True
-            output_device = simple_input(
-                _("Available output devices:") + " " + selection_text(
+            output_device_slug = simple_input(
+                instruction_text(
+                   _("Available output devices:") + " "
+                ) + selection_text(
                     ", ".join(output_devices)
                 ),
-                output_device
+                output_device_slug
             )
-        profile["audio"]["output_device"] = output_device
+        profile["audio"]["output_device"] = output_device_slug
         # try playing a sound
         # FIXME Set the following defaults to what is in the
         # configuration file
@@ -1307,28 +1348,45 @@ def get_output_device(profile):
         )
         if(os.path.isfile(filename)):
             print(instruction_text(_("Testing device by playing a sound")))
-            actual_output_device = audio_engine.get_device_by_slug(output_device)
-            actual_output_device.play_file(
-                filename,
-                chunksize=output_chunksize,
-                add_padding=output_add_padding
-            )
-            heard = simple_input(
-                _("Were you able to hear the beep (%s/%s)?") % (affirmative.upper()[:1], negative.upper()[:1])
-            ).lower().strip()[:1]
-            if not (heard == affirmative.lower()[:1]):
+            output_device = audio_engine.get_device_by_slug(output_device_slug)
+            try:
+                output_device.play_file(
+                    filename,
+                    chunksize=output_chunksize,
+                    add_padding=output_add_padding
+                )
+                heard = simple_yes_no(
+                    _("Were you able to hear the beep (%s/%s)?") % (affirmative.upper()[:1], negative.upper()[:1])
+                )
+                if not (heard):
+                    print(
+                        instruction_text(
+                            _("The volume on your device may be too low. You should be able to use 'alsamixer' to set the volume level.")
+                        )
+                    )
+                    heard = simple_yes_no(
+                        instruction_text(
+                            _("Do you want to continue and try to fix the volume later?")
+                        )
+                    )
+                    if not (heard):
+                        once = False
+            except audioengine.UnsupportedFormat as e:
+                print(alert_text(str(e)))
                 print(
                     instruction_text(
-                        _("The volume on your device may be too low. You should be able to use 'alsamixer' to set the volume level.")
+                        _("Output format not supported on this device.")
                     )
                 )
-                heard = simple_input(
+                print(
                     instruction_text(
-                        _("Do you want to continue and try to fix the volume later?")
+                        _("Please choose a different device.")
                     )
                 )
-                if not (heard == affirmative.lower()[:1]):
-                    once = False
+                print("")
+                once = False
+            except e:
+                print(e)
         else:
             print(
                 alert_text(
@@ -1340,10 +1398,15 @@ def get_output_device(profile):
                     _("Skipping test")
                 )
             )
-            heard = affirmative.lower()[:1]
+            heard = True
 
 
 def get_input_device(profile):
+    # AaronC 2018-09-18 Make sure we have an "audio" section
+    try:
+        temp = profile["audio"]
+    except KeyError:
+        profile["audio"]={}
     # AaronC 2018-09-14 Initialize AudioEngine
     ae_info = audioengine_plugins.get_plugin(
         profile['audio_engine'],
@@ -1354,26 +1417,29 @@ def get_input_device(profile):
     # AaronC 2018-09-14 Get a list of available input devices
     input_devices = [device.slug for device in audio_engine.get_devices(
         device_type=audioengine.DEVICE_TYPE_INPUT)]
-    input_device = get_profile_var(profile, "audio", "input_device")
-    if not input_device:
-        input_device = audio_engine.get_default_device(input=True)
+    input_device_slug = get_profile_var(profile, "audio", "input_device")
+    if not input_device_slug:
+        input_device_slug = audio_engine.get_default_device(output=False).slug
     heard = ""
     once = False
-    while not ((once) and (heard == affirmative.lower()[:1])):
+    while not (once and heard):
         print(instruction_text(_("Please choose an input device")))
-        while not ((once) and (input_device in input_devices)):
+        once = False
+        while not ((once) and (input_device_slug in input_devices)):
             once = True
-            input_device = simple_input(
+            input_device_slug = simple_input(
                 _("Available input devices:") + " " + selection_text(
                     ", ".join(input_devices)
                 ),
-                input_device
+                input_device_slug
             )
-        profile["audio"]["input_device"] = input_device
+        profile["audio"]["input_device"] = input_device_slug
         # try recording a sample
-        while not(heard == affirmative.lower()[:1]):
+        while not(heard):
             print(
-                _("I will test your selection by recording your voice and playing it back to you.")
+		instruction_text(
+                    _("I will test your selection by recording your voice and playing it back to you.")
+                )
             )
             # FIXME AaronC Sept 16 2018
             # The following are defaults. They should be read
@@ -1388,10 +1454,10 @@ def get_input_device(profile):
             output_chunksize = 1024
             output_add_padding = False
 
-            actual_input_device = audio_engine.get_device_by_slug(
+            input_device = audio_engine.get_device_by_slug(
                 profile["audio"]["input_device"]
             )
-            actual_output_device = audio_engine.get_device_by_slug(
+            output_device = audio_engine.get_device_by_slug(
                 profile["audio"]["output_device"]
             )
             frames = collections.deque([], 30)
@@ -1406,15 +1472,17 @@ def get_input_device(profile):
                 "beep_hi.wav"
             )
             if(os.path.isfile(filename)):
-                actual_output_device.play_file(
+                output_device.play_file(
                     filename,
                     chunksize=output_chunksize,
                     add_padding=output_add_padding
                 )
             print(
-                _("Please speak into the mic now")
+                instruction_text(
+                    _("Please speak into the mic now")
+                )
             )
-            for frame in actual_input_device.record(
+            for frame in input_device.record(
                 input_chunks,
                 input_bits,
                 input_channels,
@@ -1425,7 +1493,9 @@ def get_input_device(profile):
                     snr = _snr(input_bits, threshold, [frame])
                     if snr >= threshold:
                         print(
-                            _("Started recording")
+                            alert_text(
+                                _("Sound detected - recording")
+                            )
                         )
                         recording = True
                         recording_frames = list(frames)[-10:]
@@ -1433,10 +1503,12 @@ def get_input_device(profile):
                         # Threshold not reached. Update.
                         soundlevel = float(audioop.rms("".join(frames), 2))
                         if (soundlevel < threshold):
-                            threshold = soundlevel
                             print(
-                                _("No sound detected. Setting threshold to %s") % threshold
+                                alert_text(
+                                    _("No sound detected. Setting threshold from %s to %s") % (threshold, soundlevel)
+                                )
                             )
+                            threshold = soundlevel
                 else:
                     recording_frames.append(frame)
                     if len(recording_frames) > 20:
@@ -1446,13 +1518,15 @@ def get_input_device(profile):
                             # stop recording
                             recording = False
                             print(
-                                _("Recorded %d frames") % len(recording_frames)
+                                success_text(
+                                    _("Recorded %d frames") % len(recording_frames)
+                                )
                             )
                             break
             if len(recording_frames) > 20:
                 once = False
                 replay = "y"
-                while not ((once) and (replay != affirmative.lower()[:1])):
+                while not ((once) and (not replay)):
                     once = True
                     with tempfile.NamedTemporaryFile(mode='w+b') as f:
                         wav_fp = wave.open(f, 'wb')
@@ -1462,29 +1536,29 @@ def get_input_device(profile):
                         fragment = "".join(frames)
                         wav_fp.writeframes(fragment)
                         wav_fp.close()
-                        actual_output_device.play_file(
+                        output_device.play_file(
                             f.name,
                             chunksize=output_chunksize,
                             add_padding=output_add_padding
                         )
-                    heard = simple_input(
-                        _("Did you hear yourself (%s/%s)?") % (affirmative.upper()[:1], negative.upper()[:1])
-                    ).strip().lower()[:1]
-                    if (heard == affirmative.lower()[:1]):
-                        replay = negative.lower()[:1]
+                        heard = simple_yes_no(
+                            _("Did you hear yourself?")
+                        )
+                    if (heard):
+                        replay = False
+                        once = True
                     else:
-                        replay = simple_input(
+                        replay = simple_yes_no(
                             _("Replay?")
-                        ).strip().lower()[:1]
-                        if (replay == negative.lower()[:1]):
-                            heard = simple_input(
-                                instruction_text(
-                                    _("Do you want to skip this test and continue?")
-                                )
-                            ).strip().lower()[:1]
-                            if (heard == affirmative.lower()[:1]):
-                                replay = negative.lower()[:1]
+                        )
+                        if (not replay):
+                            heard = simple_yes_no(
+                                _("Do you want to skip this test and continue?")
+                            )
+                            if (heard):
+                                replay = False
                             else:
+                                heard = True
                                 once = False
 
 
