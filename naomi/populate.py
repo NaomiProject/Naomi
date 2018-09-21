@@ -67,7 +67,7 @@ def alert_icon(text=""):
 
 
 # This is for listing choices available to choose from
-def selection_text(text=""):
+def choices_text(text=""):
     return t.bold_cyan + text
 
 
@@ -183,9 +183,9 @@ def simple_yes_no(prompt):
         response = simple_input(
             format_prompt(
                 "?",
-                prompt + instruction_text(" (") + selection_text(
+                prompt + instruction_text(" (") + choices_text(
                     affirmative.upper()[:1]
-                ) + instruction_text("/") + selection_text(
+                ) + instruction_text("/") + choices_text(
                     negative.upper()[:1]
                 ) + instruction_text(")")
             )
@@ -508,7 +508,7 @@ def get_phone_info(profile):
             )
         )
         print(
-            selection_text("    'AT&T', 'Verizon', 'T-Mobile' ") + alert_text(
+            choices_text("    'AT&T', 'Verizon', 'T-Mobile' ") + alert_text(
                 "(" + _("without the quotes") + ")."
             )
         )
@@ -734,7 +734,7 @@ def get_stt_engine(profile):
         response = simple_input(
             "    " + instruction_text(
                 _("Available choices:")
-            ) + " " + selection_text(
+            ) + " " + choices_text(
                 ("%s. " % stt_engines.keys())
             ),
             response
@@ -890,7 +890,7 @@ def get_stt_engine(profile):
         # We have the following things to configure:
         #  hmm_dir - the default is "/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k"
         #          - if you install through the pocketsphinx-en-us debian apt package then it is "/usr/share/pocketsphinx/model/en-us/en-us"
-        #          - if you install the latest pocketsphinx from source, it should be here: "~/pocketsphinx/model/en-us/en-us"
+        #          - if you install the latest pocketsphinx from source, it should be here: "~/pocketsphinx-python/pocketsphinx/model/en-us/en-us"
         #  fst_model -
         #          - the default is "~/phonetisaurus/g014b2b.fst"
         #          - if you install the latest CMUDict, then it will be at "~/CMUDict/train/model.fst"
@@ -902,20 +902,6 @@ def get_stt_engine(profile):
             # in the "~/pocketsphinx/model/en-us/en-us" directory
             if(not hmm_dir):
                 if(os.path.isdir(os.path.join(
-                    os.path.expanduser("~"),
-                    "pocketsphinx",
-                    "model",
-                    "en-us",
-                    "en-us"
-                ))):
-                    hmm_dir = os.path.join(
-                        os.path.expanduser("~"),
-                        "pocketsphinx",
-                        "model",
-                        "en-us",
-                        "en-us"
-                    )
-                elif(os.path.isdir(os.path.join(
                     os.path.expanduser("~"),
                     "pocketsphinx-python",
                     "pocketsphinx",
@@ -931,50 +917,89 @@ def get_stt_engine(profile):
                         "en-us",
                         "en-us"
                     )
+                elif(os.path.isdir(os.path.join(
+                    os.path.expanduser("~"),
+                    "pocketsphinx",
+                    "model",
+                    "en-us",
+                    "en-us"
+                ))):
+                    hmm_dir = os.path.join(
+                        os.path.expanduser("~"),
+                        "pocketsphinx",
+                        "model",
+                        "en-us",
+                        "en-us"
+                    )
                 elif(os.path.isdir("/usr/share/pocketsphinx/model/en-us/en-us")):
                     hmm_dir = "/usr/share/pocketsphinx/model/en-us/en-us"
                 elif(os.path.isdir("/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k")):
                     hmm_dir = "/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k"
-            temp = simple_input(
+            hmm_dir = simple_input(
                 format_prompt(
                     "!",
                     _("Please enter the path to your hmm directory")
                 ),
                 hmm_dir
             )
-            if(temp):
-                hmm_dir = temp
-        profile["pocketsphinx"]["hmm_dir"] = hmm_dir
+            profile["pocketsphinx"]["hmm_dir"] = hmm_dir
         # fst_model
         fst_model = get_profile_var(profile, "pocketsphinx", "fst_model")
         once = False
         while not (once and fst_model):
             once = True
-            if(not fst_model):
-                if(phonetisaurus_executable == "phonetisaurus-g2pfst"):
-                    if(os.path.isfile(os.path.join(
-                        os.path.expanduser("~"),
-                        "cmudict",
-                        "train",
-                        "model.fst"
-                    ))):
-                        fst_model = os.path.join(
-                            os.path.expanduser("~"),
-                            "cmudict",
-                            "train",
-                            "model.fst"
-                        )
-                elif(phonetisaurus_executable == "phonetisaurus-g2p"):
-                    if(os.path.isfile(os.path.join(
-                        os.path.expanduser("~"),
-                        "phonetisaurus",
-                        "g014b2b.fst"
-                    ))):
-                        fst_model = os.path.join(
-                            os.path.expanduser("~"),
-                            "phonetisaurus",
-                            "g014b2b.fst"
-                        )
+            if(os.path.isfile(os.path.join(
+                os.path.expanduser("~"),
+                "pocketsphinx-python",
+                "pocketsphinx",
+                "model",
+                "en-us",
+                "train",
+                "model.fst"
+            ))):
+                fst_model = os.path.join(
+                    os.path.expanduser("~"),
+                    "pocketsphinx-python",
+                    "pocketsphinx",
+                    "model",
+                    "en-us",
+                    "train",
+                    "model.fst"
+                )
+            elif(os.path.isfile(os.path.join(
+                os.path.expanduser("~"),
+                "cmudict",
+                "train",
+                "model.fst"
+            ))):
+                fst_model = os.path.join(
+                    os.path.expanduser("~"),
+                    "cmudict",
+                    "train",
+                    "model.fst"
+                )
+            elif(os.path.isfile(os.path.join(
+                os.path.expanduser("~"),
+                "CMUDict",
+                "train",
+                "model.fst"
+            ))):
+                fst_model = os.path.join(
+                    os.path.expanduser("~"),
+                    "CMUDict",
+                    "train",
+                    "model.fst"
+                )
+            elif(os.path.isfile(os.path.join(
+                os.path.expanduser("~"),
+                "phonetisaurus",
+                "g014b2b.fst"
+            ))):
+                fst_model = os.path.join(
+                    os.path.expanduser("~"),
+                    "phonetisaurus",
+                    "g014b2b.fst"
+                )
             fst_model = simple_input(
                 format_prompt(
                     "!",
@@ -982,7 +1007,7 @@ def get_stt_engine(profile):
                 ),
                 fst_model
             )
-        profile["pocketsphinx"]["fst_model"] = fst_model
+            profile["pocketsphinx"]["fst_model"] = fst_model
 
 
 def get_tts_engine(profile):
@@ -1019,7 +1044,7 @@ def get_tts_engine(profile):
         response = simple_input(
             format_prompt(
                 "?",
-                _("Available implementations: ") + selection_text(
+                _("Available implementations: ") + choices_text(
                     "%s. " % tts_engines.keys()
                 )
             ),
@@ -1065,14 +1090,14 @@ def get_tts_engine(profile):
             print(
                 "    " + instruction_text(
                     _("Available voices:")
-                ) + " " + selection_text(
+                ) + " " + choices_text(
                     "%s. " % voices
                 )
             )
             voice = get_profile_var(profile, "flite-tts", "voice")
             if not voice:
                 try:
-                    voice = voices[voices.index("kal")]
+                    voice = voices[voices.index("slt")]
                 except ValueError:
                     voice = None
             profile["flite-tts"]["voice"] = simple_input(
@@ -1192,7 +1217,10 @@ def get_beep_or_voice(profile):
     response = simple_input(
         format_prompt(
             "?",
-            _("(B) for beeps or (V) for voice.")
+            _("(%s) for beeps or (%s) for voice.") % (
+                choices_text("B") + instruction_text(),
+                choices_text("V") + instruction_text()
+            )
         ),
         temp
     )
@@ -1289,7 +1317,7 @@ def select_audio_engine(profile):
     while not ((once) and (response in audioengines)):
         once = True
         response = simple_input(
-            "    " + _("Available implementations:") + " " + selection_text(
+            "    " + _("Available implementations:") + " " + choices_text(
                 ("%s" % audioengines)
             ) + instruction_text("."),
             response
@@ -1325,7 +1353,7 @@ def get_output_device(profile):
             output_device_slug = simple_input(
                 instruction_text(
                     _("Available output devices:") + " "
-                ) + selection_text(
+                ) + choices_text(
                     ", ".join(output_devices)
                 ),
                 output_device_slug
@@ -1427,7 +1455,7 @@ def get_input_device(profile):
         while not ((once) and (input_device_slug in input_devices)):
             once = True
             input_device_slug = simple_input(
-                _("Available input devices:") + " " + selection_text(
+                _("Available input devices:") + " " + choices_text(
                     ", ".join(input_devices)
                 ),
                 input_device_slug
@@ -1497,7 +1525,10 @@ def get_input_device(profile):
                             )
                         )
                         recording = True
-                        recording_frames = list(frames)[-10:]
+                        if len(frames) > 30:
+                            recording_frames = list(frames)[-30:]
+                        else:
+                            recording_frames = list(frames)
                     elif len(frames) >= frames.maxlen:
                         # Threshold not reached. Update.
                         soundlevel = float(audioop.rms("".join(frames), 2))
@@ -1524,8 +1555,8 @@ def get_input_device(profile):
                             break
             if len(recording_frames) > 20:
                 once = False
-                replay = "y"
-                while not ((once) and (not replay)):
+                replay = True
+                while (replay and not ((once) and (heard))):
                     once = True
                     with tempfile.NamedTemporaryFile(mode='w+b') as f:
                         wav_fp = wave.open(f, 'wb')
@@ -1540,9 +1571,9 @@ def get_input_device(profile):
                             chunksize=output_chunksize,
                             add_padding=output_add_padding
                         )
-                        heard = simple_yes_no(
-                            _("Did you hear yourself?")
-                        )
+                    heard = simple_yes_no(
+                        _("Did you hear yourself?")
+                    )
                     if (heard):
                         replay = False
                         once = True
@@ -1556,8 +1587,9 @@ def get_input_device(profile):
                             )
                             if (heard):
                                 replay = False
+                                once = True
                             else:
-                                heard = True
+                                replay = False
                                 once = False
 
 
