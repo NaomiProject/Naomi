@@ -666,7 +666,7 @@ def get_timezone(profile):
     tz = get_profile_var(profile, "timezone")
     if not tz:
         try:
-            tz = subprocess.check_output([["/bin/sh","/bin/cat", "/etc/timezone"]).strip()
+            tz = subprocess.check_output(["/bin/sh","/bin/cat", "/etc/timezone"]).strip()
         except OSError:
             tz = None
     tz = simple_input(
