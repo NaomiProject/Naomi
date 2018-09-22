@@ -666,7 +666,7 @@ def get_timezone(profile):
     tz = get_profile_var(profile, "timezone")
     if not tz:
         try:
-            tz = subprocess.check_output(["/bin/sh", "/bin/cat", "/etc/timezone"]).strip()
+            tz = subprocess.check_output(["/bin/cat", "/etc/timezone"]).strip()
         except OSError:
             tz = None
     tz = simple_input(
@@ -1330,7 +1330,7 @@ def get_output_device(profile):
     try:
         temp = profile["audio"]
     except KeyError:
-        profile["audio"]={}
+        profile["audio"] = {}
     # AaronC 2018-09-14 Initialize AudioEngine
     ae_info = audioengine_plugins.get_plugin(
         profile['audio_engine'],
