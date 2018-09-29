@@ -1447,22 +1447,21 @@ def get_input_device(profile):
     input_device_slug = get_profile_var(profile, "audio", "input_device")
     if not input_device_slug:
         input_device_slug = audio_engine.get_default_device(output=False).slug
-    heard = ""
     once = False
-    while not (once and heard):
+    while not (once):
         print(instruction_text(_("Please choose an input device")))
-        once = False
-        while not ((once) and (input_device_slug in input_devices)):
-            once = True
-            input_device_slug = simple_input(
-                _("Available input devices:") + " " + choices_text(
-                    ", ".join(input_devices)
-                ),
-                input_device_slug
-            )
+        once = True
+        input_device_slug = simple_input(
+            _("Available input devices:") + " " + choices_text(
+                ", ".join(input_devices)
+            ),
+            input_device_slug
+        )
         profile["audio"]["input_device"] = input_device_slug
         # try recording a sample
+        heard = False
         while not(heard):
+            heard = True
             print(
                 instruction_text(
                     _("I will test your selection by recording your voice and playing it back to you.")
@@ -1556,7 +1555,7 @@ def get_input_device(profile):
             if len(recording_frames) > 20:
                 once = False
                 replay = True
-                while (replay and not ((once) and (heard))):
+                while (replay):
                     once = True
                     with tempfile.NamedTemporaryFile(mode='w+b') as f:
                         wav_fp = wave.open(f, 'wb')
@@ -1582,14 +1581,16 @@ def get_input_device(profile):
                             _("Replay?")
                         )
                         if (not replay):
-                            heard = simple_yes_no(
+                            skip = simple_yes_no(
                                 _("Do you want to skip this test and continue?")
                             )
-                            if (heard):
+                            if (skip):
                                 replay = False
+                                heard = True
                                 once = True
                             else:
                                 replay = False
+                                heard = True
                                 once = False
 
 
