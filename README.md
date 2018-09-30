@@ -72,17 +72,17 @@
 To clone and run this application, you'll need the required tools installed on your computer. From your command line:
 
 ```bash
-# Install tools
-$ apt install git nano python-pip python-pyaudio python3-pyaudio
-
 # Clone this repository
 $ git clone https://github.com/naomiproject/naomi
 
 # Go into the repository
 $ cd naomi
 
-# Install dependencies
-$ pip install -r python_requirements.txt
+# setup the install
+$ chmod +x naomi-setup.sh
+
+# Run the install
+$ ./naomi-setup.sh
 
 # Run the app
 $ python Naomi.py
