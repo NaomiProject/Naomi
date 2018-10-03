@@ -189,7 +189,6 @@ def simple_request(profile, path, prompt, cleanInput=None):
     if input_str:
         if cleanInput:
             input_str = cleanInput(input_str)
-        last=path[0]
         set_profile_var(profile, path, input_str)
 
 # AaronC Sept 18 2018 This uses affirmative/negative to ask
@@ -1371,9 +1370,16 @@ def get_output_device(profile):
         # try playing a sound
         # FIXME Set the following defaults to what is in the
         # configuration file
-        output_chunksize = 1024
-        output_add_padding = False
-
+        output_chunksize = get_profile_var(
+            profile,
+            ['output_chunksize'],
+            1024
+        )
+        output_add_padding = get_profile_var(
+            profile,
+            ['audio', 'output_padding'],
+            False
+        )
         filename = os.path.join(
             os.path.dirname(
                 os.path.abspath(__file__)
@@ -1483,9 +1489,16 @@ def get_input_device(profile):
             input_channels = get_profile_var(profile,['input_channels'],1)
             input_rate = get_profile_var(profile,['input_samplerate'],16000)
 
-            output_chunksize = get_profile_var(profile,['output_chunksize'],1024)
-            output_add_padding = get_profile_var(profile,['audio','output_padding'],False)
-
+            output_chunksize = get_profile_var(
+                profile,
+                ['output_chunksize'],
+                1024
+            )
+            output_add_padding = get_profile_var(
+                profile,
+                ['audio','output_padding'],
+                False
+            )
             input_device = audio_engine.get_device_by_slug(
                 get_profile_var(profile,['audio','input_device'])
             )
