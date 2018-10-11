@@ -112,16 +112,36 @@ def _snr(input_bits, threshold, frames):
 
 # Get a value from the profile, whether it exists or not
 # If the value does not exist in the profile, returns None
-def get_profile_var(profile, *args):
+def get_profile_var(profile, path, default=None):
     response = profile
-    for arg in args:
+    for branch in path:
         try:
-            response = response[arg]
+            response = response[branch]
         except KeyError:
-            response = None
+            # set the variable in profile
+            response = default
+            if default is not None:
+                set_profile_var(profile, path, default)
             # break out of the for loop
             break
     return response
+
+
+def set_profile_var(profile, path, value):
+        temp = profile
+        if len(path) > 0:
+            last = path[0]
+            if len(path) > 1:
+                for branch in path[1:]:
+                    try:
+                        if not isinstance(temp[last], dict):
+                            temp[last] = {}
+                    except KeyError:
+                        temp[last] = {}
+                    temp = temp[last]
+                    last = branch
+            temp[last] = value
+        # FIXME - Add an error here if someone tries to write to the root of profile.
 
 
 def format_prompt(icon, prompt):
@@ -167,12 +187,12 @@ def simple_input(prompt, default=None):
 
 # AaronC - simple_request is more complicated, and populates
 # the profile variable directly
-def simple_request(profile, var, prompt, cleanInput=None):
-    input_str = simple_input(prompt, get_profile_var(profile, var))
+def simple_request(profile, path, prompt, cleanInput=None):
+    input_str = simple_input(prompt, get_profile_var(profile, path))
     if input_str:
         if cleanInput:
             input_str = cleanInput(input_str)
-        profile[var] = input_str
+        set_profile_var(profile, path, input_str)
 
 
 # AaronC Sept 18 2018 This uses affirmative/negative to ask
@@ -234,8 +254,9 @@ def check_program_exists(program):
 # any time their information is going to be shared with a new website,
 # and keep a list of authorized websites/services.
 def verify_location(place):
-    feed = feedparser.parse('http://rss.wunderground.com/auto/rss_full/' +
-                            place)
+    feed = feedparser.parse(
+        'http://rss.wunderground.com/auto/rss_full/' + place
+    )
     numEntries = len(feed['entries'])
     if numEntries == 0:
         return False
@@ -278,10 +299,7 @@ def select_language(profile):
         u'FR-Français': u'fr-FR',
         u'DE-Deutsch': u'de-DE'
     }
-    language = get_profile_var(profile, "language")
-    if(not language):
-        language = "en-US"
-        profile["language"] = language
+    language = get_profile_var(profile, ["language"], "en-US")
     selected_language = languages.keys()[languages.values().index(language)]
     translations = i18n.parse_translations(paths.data('locale'))
     translator = i18n.GettextMixin(translations, profile)
@@ -302,7 +320,7 @@ def select_language(profile):
         print("")
         print("")
         for language in languages.keys():
-            print "    " + language.encode("utf-8")
+            print("    " + language.encode("utf-8"))
         print("")
         selected_language = simple_input(
             format_prompt(
@@ -325,7 +343,7 @@ def select_language(profile):
                 affirmative = "ja"
                 negative = "nein"
 
-    profile['language'] = language
+    set_profile_var(profile, ['language'], language)
     translations = i18n.parse_translations(paths.data('locale'))
     translator = i18n.GettextMixin(translations, profile)
     _ = translator.gettext
@@ -362,16 +380,17 @@ def greet_user():
 
 def get_wakeword(profile):
     # my name
-    try:
-        keyword = profile["keyword"]
-    except KeyError:
-        keyword = "Naomi"
-    profile["keyword"] = simple_input(
-        format_prompt(
-            "?",
-            _("First, what name would you like to call me by?")
-        ),
-        keyword
+    keyword = get_profile_var(profile, ["keyword"], "Naomi")
+    set_profile_var(
+        profile,
+        ["keyword"],
+        simple_input(
+            format_prompt(
+                "?",
+                _("First, what name would you like to call me by?")
+            ),
+            keyword
+        )
     )
 
 
@@ -385,7 +404,7 @@ def get_user_name(profile):
     print("")
     simple_request(
         profile,
-        "first_name",
+        ["first_name"],
         format_prompt(
             "?",
             _("What is your first name?")
@@ -394,7 +413,7 @@ def get_user_name(profile):
     print("")
     simple_request(
         profile,
-        'last_name',
+        ['last_name'],
         format_prompt(
             "?",
             _('What is your last name?')
@@ -412,25 +431,28 @@ def get_email_info(profile):
     print("    " + _("Alternatively, you can skip this step"))
     print("")
     # email
-    try:
-        temp = profile["email"]
-    except KeyError:
-        profile["email"] = {}
-    # email imap
-    profile["email"]["imap"] = simple_input(
-        format_prompt(
-            "?",
-            _('Please enter your imap server as "server[:port]"')
-        ),
-        get_profile_var(profile, "email", "imap")
+    set_profile_var(
+        profile,
+        ["email", "imap"],
+        simple_input(
+            format_prompt(
+                "?",
+                _('Please enter your imap server as "server[:port]"')
+            ),
+            get_profile_var(profile, ["email", "imap"])
+        )
     )
 
-    profile["email"]["address"] = simple_input(
-        format_prompt(
-            "?",
-            _('What is your email address?')
-        ),
-        get_profile_var(profile, "email", "address")
+    set_profile_var(
+        profile,
+        ["email", "address"],
+        simple_input(
+            format_prompt(
+                "?",
+                _('What is your email address?')
+            ),
+            get_profile_var(profile, ["email", "address"])
+        )
     )
 
     # FIXME This needs to be anything but plaintext.
@@ -447,7 +469,7 @@ def get_email_info(profile):
     # incrementally while not forcing people to re-enter credentials
     # every time a new encryption method is added.
     prompt = _("What is your email password?") + ": "
-    if(get_profile_var(profile, "email", "password")):
+    if(get_profile_var(profile, ["email", "password"])):
         prompt += default_text(
             _("(just press enter to keep current password)")
         ) + default_prompt()
@@ -458,7 +480,7 @@ def get_email_info(profile):
         )
     )
     if(temp):
-        profile['email']['password'] = temp
+        set_profile_var(profile, ['email', 'password'], temp)
 
 
 def get_phone_info(profile):
@@ -486,13 +508,13 @@ def get_phone_info(profile):
                 "?",
                 _("What is your Phone number?")
             ),
-            get_profile_var(profile, 'phone_number')
+            get_profile_var(profile, ['phone_number'])
         )
     )
-    profile['phone_number'] = phone_number
+    set_profile_var(profile, ['phone_number'], phone_number)
 
     # carrier
-    if(profile['phone_number']):
+    if(get_profile_var(profile, ['phone_number'])):
         separator()
         # If the phone number is blank, it makes no sense to ask
         # for the carrier.
@@ -539,16 +561,16 @@ def get_phone_info(profile):
                 "?",
                 _("What is your Carrier? ")
             ),
-            get_profile_var(profile, "carrier")
+            get_profile_var(profile, ["carrier"])
         )
         if carrier == 'AT&T':
-            profile['carrier'] = 'txt.att.net'
+            set_profile_var(profile, ['carrier'], 'txt.att.net')
         elif carrier == 'Verizon':
-            profile['carrier'] = 'vtext.com'
+            set_profile_var(profile, ['carrier'], 'vtext.com')
         elif carrier == 'T-Mobile':
-            profile['carrier'] = 'tmomail.net'
+            set_profile_var(profile, ['carrier'], 'tmomail.net')
         else:
-            profile['carrier'] = carrier
+            set_profile_var(profile, ['carrier'], carrier)
 
 
 def get_notification_info(profile):
@@ -562,11 +584,31 @@ def get_notification_info(profile):
 
     # if the user has entered an email address but no phone number
     # go ahead and assume "prefers email"
-    if((profile['email']['address']) and not (profile['phone_number'])):
-        profile["prefers_email"] = True
+    if(
+        (
+            get_profile_var(
+                profile,
+                ['email', 'address']
+            )
+        ) and not (
+            get_profile_var(
+                profile,
+                ['phone_number']
+            )
+        )
+    ):
+        set_profile_var(profile, ["prefers_email"], True)
     # if both email address and phone number are configured, ask
     # which the user prefers
-    elif((profile['phone_number']) and (profile['email']['address'])):
+    elif(
+        get_profile_var(
+            profile,
+            ['phone_number']
+        ) and get_profile_var(
+            profile,
+            ['email', 'address']
+        )
+    ):
         print(
             "    " + instruction_text(
                 _("Would you prefer to have notifications sent by")
@@ -578,7 +620,7 @@ def get_notification_info(profile):
             )
         )
         print("")
-        if(get_profile_var(profile, "prefers_email")):
+        if(get_profile_var(profile, ["prefers_email"])):
             temp = 'E'
         else:
             temp = "T"
@@ -598,10 +640,10 @@ def get_notification_info(profile):
                 ),
                 response
             )
-        profile['prefers_email'] = (response == 'E')
+        set_profile_var(profile, ['prefers_email'], (response == 'E'))
     else:
         # if no email address is configured, just set this to false
-        profile['prefers_email'] = False
+        set_profile_var(profile, ['prefers_email'], False)
 
 
 def get_weather_location(profile):
@@ -622,7 +664,7 @@ def get_weather_location(profile):
             "?",
             _("What is your location?")
         ),
-        get_profile_var(profile, "location")
+        get_profile_var(profile, ["location"])
     )
 
     while location and not verify_location(location):
@@ -641,7 +683,7 @@ def get_weather_location(profile):
             location
         )
     if location:
-        profile['location'] = location
+        set_profile_var(profile, ['location'], location)
 
 
 def get_timezone(profile):
@@ -663,7 +705,7 @@ def get_timezone(profile):
     )
     print("    " + instruction_text(_("or none at all.")))
     print("")
-    tz = get_profile_var(profile, "timezone")
+    tz = get_profile_var(profile, ["timezone"])
     if not tz:
         try:
             tz = subprocess.check_output(["/bin/cat", "/etc/timezone"]).strip()
@@ -679,7 +721,7 @@ def get_timezone(profile):
     while tz:
         try:
             pytz.timezone(tz)
-            profile['timezone'] = tz
+            set_profile_var(profile, ['timezone'], tz)
             break
         except pytz.exceptions.UnknownTimeZoneError:
             print(alert_text(_("Not a valid timezone. Try again.")))
@@ -693,12 +735,6 @@ def get_timezone(profile):
 
 
 def get_stt_engine(profile):
-    # Check that active_stt exists
-    try:
-        temp = profile['active_stt']
-    except KeyError:
-        profile['active_stt'] = {}
-
     # Get a list of STT engines
     stt_engines = {
         "PocketSphinx": "sphinx",
@@ -716,18 +752,15 @@ def get_stt_engine(profile):
         )
     )
     print("")
-    try:
-        response = stt_engines.keys()[
-            stt_engines.values().index(
-                get_profile_var(
-                    profile,
-                    'active_stt',
-                    'engine'
-                )
+    response = stt_engines.keys()[
+        stt_engines.values().index(
+            get_profile_var(
+                profile,
+                ["active_stt", "engine"],
+                "sphinx"
             )
-        ]
-    except (KeyError, ValueError):
-        response = "PocketSphinx"
+        )
+    ]
     once = False
     while not ((once) and (response in stt_engines.keys())):
         once = True
@@ -741,7 +774,11 @@ def get_stt_engine(profile):
         )
         print("")
         try:
-            profile['active_stt']['engine'] = stt_engines[response]
+            set_profile_var(
+                profile,
+                ['active_stt', 'engine'],
+                stt_engines[response]
+            )
         except KeyError:
             print(
                 alert_text(
@@ -750,41 +787,49 @@ def get_stt_engine(profile):
             )
     print("")
     # Handle special cases here
-    if(profile['active_stt']['engine'] == 'google'):
+    if(get_profile_var(profile, ['active_stt', 'engine']) == 'google'):
         # Set the api key (I'm not sure this actually works anymore,
         # need to test)
-        profile['keys']['GOOGLE_SPEECH'] = simple_input(
-            format_prompt(
-                "!",
-                _("Please enter your API key:")
-            ),
-            get_profile_var(profile, "keys", "GOOGLE_SPEECH")
+        set_profile_var(
+            profile,
+            ['keys', 'GOOGLE_SPEECH'],
+            simple_input(
+                format_prompt(
+                    "!",
+                    _("Please enter your API key:")
+                ),
+                get_profile_var(profile, ["keys", "GOOGLE_SPEECH"])
+            )
         )
         print("")
         print("")
         print("")
-    if(profile['active_stt']['engine'] == 'watson-stt'):
-        profile["watson_stt"] = {}
+    if(get_profile_var(profile, ['active_stt', 'engine']) == 'watson-stt'):
         username = simple_input(
             format_prompt(
                 "!",
                 _("Please enter your watson username:")
             )
         )
-        profile["watson_stt"]["username"] = username
+        set_profile_var(profile, ["watson_stt", "username"], username)
         # FIXME AaronC 2018-07-29 - another password. Not as crucial as
         # protecting the user's email password but still...
-        profile["watson_stt"]["password"] = getpass(
-            _("Please enter your watson password:")
+        set_profile_var(
+            profile,
+            ["watson_stt", "password"],
+            getpass(
+                _("Please enter your watson password:")
+            )
         )
         print("")
         print("")
         print("")
-    if(profile['active_stt']['engine'] == 'kaldigstserver-stt'):
-        try:
-            temp = profile['kaldigstserver-stt']
-        except KeyError:
-            profile['kaldigstserver-stt'] = {}
+    if(
+        get_profile_var(
+            profile,
+            ['active_stt', 'engine']
+        ) == 'kaldigstserver-stt'
+    ):
         print(
             "    " + instruction_text(
                 _("I need your Kaldi g-streamer server url to continue")
@@ -801,17 +846,21 @@ def get_stt_engine(profile):
             )
         )
         print("")
-        temp = get_profile_var(profile, "kaldigstserver-stt", "url")
+        temp = get_profile_var(profile, ["kaldigstserver-stt", "url"])
         if(not temp):
             temp = default
-        profile['kaldigstserver-stt']['url'] = simple_input(
-            format_prompt(
-                "!",
-                _("Please enter your server url:")
-            ),
-            temp
+        set_profile_var(
+            profile,
+            ['kaldigstserver-stt', 'url'],
+            simple_input(
+                format_prompt(
+                    "!",
+                    _("Please enter your server url:")
+                ),
+                temp
+            )
         )
-    if(profile['active_stt']['engine'] == 'julius-stt'):
+    if(get_profile_var(profile, ['active_stt', 'engine']) == 'julius-stt'):
         # stt_engine: julius
         # julius:
         #     hmmdefs:  '/path/to/your/hmmdefs'
@@ -819,33 +868,41 @@ def get_stt_engine(profile):
         #     lexicon:  '/path/to/your/lexicon.tgz'
         #     lexicon_archive_member: 'VoxForge/VoxForgeDict'
         #           only needed if lexicon is a tar/tar.gz archive
-        try:
-            temp = profile["julius"]
-        except KeyError:
-            profile["julius"] = {}
         # hmmdefs
-        profile["julius"]["hmmdefs"] = simple_input(
-            format_prompt(
-                "!",
-                _("Enter path to julius hmm defs")
-            ),
-            get_profile_var(profile, "julius", "hmmdefs")
+        set_profile_var(
+            profile,
+            ["julius", "hmmdefs"],
+            simple_input(
+                format_prompt(
+                    "!",
+                    _("Enter path to julius hmm defs")
+                ),
+                get_profile_var(profile, ["julius", "hmmdefs"])
+            )
         )
         # tiedlist
-        profile["julius"]["tiedlist"] = simple_input(
-            format_prompt(
-                "!",
-                _("Enter path to julius tied list")
-            ),
-            get_profile_var(profile, "julius", "tiedlist")
+        set_profile_var(
+            profile,
+            ["julius", "tiedlist"],
+            simple_input(
+                format_prompt(
+                    "!",
+                    _("Enter path to julius tied list")
+                ),
+                get_profile_var(profile, ["julius", "tiedlist"])
+            )
         )
         # lexicon
-        profile["julius"]["lexicon"] = simple_input(
-            format_prompt(
-                "!",
-                _("Enter path to julius lexicon")
-            ),
-            get_profile_var(profile, "julius", "lexicon")
+        set_profile_var(
+            profile,
+            ["julius", "lexicon"],
+            simple_input(
+                format_prompt(
+                    "!",
+                    _("Enter path to julius lexicon")
+                ),
+                get_profile_var(profile, ["julius", "lexicon"])
+            )
         )
         # FIXME AaronC 2018-07-29 So I don't know if I need to check above to
         # see if the julius lexicon is a tar file or if I can just set this.
@@ -854,20 +911,19 @@ def get_stt_engine(profile):
         # if the above is a literal string or just indicates that the path to
         # something needs to be entered. Someone with experience setting up
         # Julius will need to finish this up.
-        profile["julius"]["lexicon_archive_member"] = "VoxForge/VoxForgeDict"
+        set_profile_var(
+            profile,
+            ["julius", "lexicon_archive_member"],
+            "VoxForge/VoxForgeDict"
+        )
     else:
-        try:
-            temp = profile["pocketsphinx"]
-        except KeyError:
-            profile["pocketsphinx"] = {}
         # AaronC 2018-07-29 Since pocketsphinx/phonetisaurus is assumed, make
         # this the default at the end
         # is the phonetisaurus program phonetisaurus-g2p (old version)
         # or phonetisaurus-g2pfst?
         phonetisaurus_executable = get_profile_var(
             profile,
-            'pocketsphinx',
-            'phonetisaurus_executable'
+            ['pocketsphinx', 'phonetisaurus_executable']
         )
         once = False
         while not((once) and (phonetisaurus_executable)):
@@ -886,7 +942,11 @@ def get_stt_engine(profile):
                 ),
                 phonetisaurus_executable
             )
-        profile['pocketsphinx']['phonetisaurus_executable'] = phonetisaurus_executable
+        set_profile_var(
+            profile,
+            ['pocketsphinx', 'phonetisaurus_executable'],
+            phonetisaurus_executable
+        )
         # We have the following things to configure:
         #  hmm_dir - the default is "/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k"
         #          - if you install through the pocketsphinx-en-us debian apt package then it is "/usr/share/pocketsphinx/model/en-us/en-us"
@@ -894,7 +954,7 @@ def get_stt_engine(profile):
         #  fst_model -
         #          - the default is "~/phonetisaurus/g014b2b.fst"
         #          - if you install the latest CMUDict, then it will be at "~/CMUDict/train/model.fst"
-        hmm_dir = get_profile_var(profile, 'pocketsphinx', 'hmm_dir')
+        hmm_dir = get_profile_var(profile, ['pocketsphinx', 'hmm_dir'])
         once = False
         while not(once and hmm_dir):
             once = True
@@ -942,9 +1002,9 @@ def get_stt_engine(profile):
                 ),
                 hmm_dir
             )
-            profile["pocketsphinx"]["hmm_dir"] = hmm_dir
+            set_profile_var(profile, ["pocketsphinx", "hmm_dir"], hmm_dir)
         # fst_model
-        fst_model = get_profile_var(profile, "pocketsphinx", "fst_model")
+        fst_model = get_profile_var(profile, ["pocketsphinx", "fst_model"])
         once = False
         while not (once and fst_model):
             once = True
@@ -1007,7 +1067,11 @@ def get_stt_engine(profile):
                 ),
                 fst_model
             )
-            profile["pocketsphinx"]["fst_model"] = fst_model
+            set_profile_var(
+                profile,
+                ["pocketsphinx", "fst_model"],
+                fst_model
+            )
 
 
 def get_tts_engine(profile):
@@ -1026,7 +1090,7 @@ def get_tts_engine(profile):
             tts_engines.values().index(
                 get_profile_var(
                     profile,
-                    'tts_engine'
+                    ['tts_engine']
                 )
             )
         ]
@@ -1051,12 +1115,12 @@ def get_tts_engine(profile):
             response
         )
         try:
-            profile['tts_engine'] = tts_engines[response]
+            set_profile_var(profile, ['tts_engine'], tts_engines[response])
         except KeyError:
             print(alert_text(_("Unrecognized option.")))
     print("")
     # Deal with special cases
-    if(profile["tts_engine"] == "espeak-tts"):
+    if(get_profile_var(profile, ["tts_engine"]) == "espeak-tts"):
         # tts_engine: espeak-tts
         print(
             "    " + instruction_text(
@@ -1073,18 +1137,14 @@ def get_tts_engine(profile):
         print("        voice: 'default+m3'   # optional")
         print("        pitch_adjustment: 40  # optional")
         print("        words_per_minute: 160 # optional")
-    elif(profile["tts_engine"] == "festival-tts"):
+    elif(get_profile_var(profile, ["tts_engine"]) == "festival-tts"):
         # tts_engine: festival-tts
         print(
             "    " + instruction_text(
                 _("Use the festival command to set the default voice.")
             )
         )
-    elif(profile["tts_engine"] == "flite-tts"):
-        try:
-            temp = profile["flite-tts"]
-        except KeyError:
-            profile["flite-tts"] = {}
+    elif(get_profile_var(profile, ["tts_engine"]) == "flite-tts"):
         try:
             voices = subprocess.check_output(['flite', '-lv']).split(" ")[2:-1]
             print(
@@ -1094,18 +1154,22 @@ def get_tts_engine(profile):
                     "%s. " % voices
                 )
             )
-            voice = get_profile_var(profile, "flite-tts", "voice")
+            voice = get_profile_var(profile, ["flite-tts", "voice"])
             if not voice:
                 try:
                     voice = voices[voices.index("slt")]
                 except ValueError:
                     voice = None
-            profile["flite-tts"]["voice"] = simple_input(
-                format_prompt(
-                    "?",
-                    _("Select a voice")
-                ),
-                voice
+            set_profile_var(
+                profile,
+                ["flite-tts", "voice"],
+                simple_input(
+                    format_prompt(
+                        "?",
+                        _("Select a voice")
+                    ),
+                    voice
+                )
             )
         except OSError:
             print(alert_text(_("FLite does not appear to be installed")))
@@ -1113,9 +1177,9 @@ def get_tts_engine(profile):
             print("  $ " + success_text("sudo apt install flite"))
             print(instruction_text(_("then re-run this program with the --repopulate flag")))
             print("  $ " + success_text("./Naomi.py --repopulate"))
-    elif(profile["tts_engine"] == "pico-tts"):
+    elif(get_profile_var(profile, ["tts_engine"]) == "pico-tts"):
         pass
-    elif(profile["tts_engine"] == "ivona-tts"):
+    elif(get_profile_var(profile, ["tts_engine"]) == "ivona-tts"):
         print(
             "    " + instruction_text(
                 _("You will now need to enter your Ivona account information.")
@@ -1135,69 +1199,89 @@ def get_tts_engine(profile):
             )
         )
         print("")
-        try:
-            temp = profile["ivona-tts"]
-        except KeyError:
-            profile["ivona-tts"] = {}
-        profile["ivona-tts"]["access_key"] = simple_input(
-            format_prompt(
-                "?",
-                _("What is your Access key?")
-            ),
-            get_profile_var(profile, "ivona-tts", "access_key")
+        set_profile_var(
+            profile,
+            ["ivona-tts", "access_key"],
+            simple_input(
+                format_prompt(
+                    "?",
+                    _("What is your Access key?")
+                ),
+                get_profile_var(profile, ["ivona-tts", "access_key"])
+            )
         )
-        profile["ivona-tts"]["secret_key"] = simple_input(
-            format_prompt(
-                "?",
-                _("What is your Secret key?")
-            ),
-            get_profile_var(profile, "ivona-tts", "secret_key")
+        set_profile_var(
+            profile,
+            ["ivona-tts", "secret_key"],
+            simple_input(
+                format_prompt(
+                    "?",
+                    _("What is your Secret key?")
+                ),
+                get_profile_var(profile, ["ivona-tts", "secret_key"])
+            )
         )
         # ivona-tts voice
-        temp = get_profile_var(profile, "ivona-tts", "voice")
+        temp = get_profile_var(profile, ["ivona-tts", "voice"])
         if(not temp):
             temp = "Brian"
-        profile["ivona-tts"]["voice"] = simple_input(
-            format_prompt(
-                "?",
-                _("Which voice do you want") + " " + default_text(
-                    _("(default is Brian)")
-                ) + question_text("?")
-            ),
-            temp
+        set_profile_var(
+            profile,
+            ["ivona-tts", "voice"],
+            simple_input(
+                format_prompt(
+                    "?",
+                    _("Which voice do you want") + " " + default_text(
+                        _("(default is Brian)")
+                    ) + question_text("?")
+                ),
+                temp
+            )
         )
-    elif(profile["tts_engine"] == "mary-tts"):
-        try:
-            temp = profile["mary-tts"]
-        except KeyError:
-            profile["mary-tts"] = {}
-        profile["mary-tts"]["server"] = simple_input(
-            format_prompt(
-                "?",
-                _("Server?")
-            ),
-            get_profile_var(profile, "mary-tts", "server")
+    elif(get_profile_var(profile, ["tts_engine"]) == "mary-tts"):
+        set_profile_var(
+            profile,
+            ["mary-tts", "server"],
+            simple_input(
+                format_prompt(
+                    "?",
+                    _("Server?")
+                ),
+                get_profile_var(profile, ["mary-tts", "server"])
+            )
         )
-        profile["mary-tts"]["port"] = simple_input(
-            format_prompt(
-                "?",
-                "Port?"
-            ),
-            get_profile_var(profile, "mary-tts", "port")
+        set_profile_var(
+            profile,
+            ["mary-tts", "port"],
+            simple_input(
+                format_prompt(
+                    "?",
+                    "Port?"
+                ),
+                get_profile_var(profile, ["mary-tts", "port"])
+            )
         )
-        profile["mary-tts"]["language"] = simple_input(
-            format_prompt(
-                "?",
-                _("Language?")
-            ),
-            get_profile_var(profile, "mary-tts", "language")
+        set_profile_var(
+            profile,
+            ["mary-tts", "language"],
+            simple_input(
+                format_prompt(
+                    "?",
+                    _("Language?")
+                ),
+                get_profile_var(profile, ["mary-tts", "language"])
+            )
         )
-        profile["mary-tts"]["voice"] = simple_input(
-            format_prompt(
-                "?",
-                _("Voice?")
-            ),
-            get_profile_var(profile, "mary-tts", "voice")
+        set_profile_var(
+            profile,
+            ["mary-tts", "voice"],
+            simple_input(
+                format_prompt(
+                    "?",
+                    _("Voice?")
+                ),
+                get_profile_var(profile, ["mary-tts", "voice"])
+            )
         )
 
 
@@ -1210,7 +1294,7 @@ def get_beep_or_voice(profile):
     )
     # If there are values for [active_stt][reply] and [active_stt][response]
     # then use them otherwise use beeps
-    if(get_profile_var(profile, "active_stt", "reply")):
+    if(get_profile_var(profile, ["active_stt", "reply"])):
         temp = "V"
     else:
         temp = "B"
@@ -1239,7 +1323,8 @@ def get_beep_or_voice(profile):
         print("")
         print(
             "    " + instruction_text(
-                _("Type the words I should say after hearing my wake word: %s") % profile["keyword"]
+                _("Type the words I should say after hearing my wake word: %s")
+                % get_profile_var(profile, ["keyword"])
             )
         )
         print("")
@@ -1250,7 +1335,7 @@ def get_beep_or_voice(profile):
                     "?",
                     _("Reply")
                 ),
-                get_profile_var(profile, "active_stt", "reply")
+                get_profile_var(profile, ["active_stt", "reply"])
             )
             areplyRespon = None
             while(areplyRespon is None):
@@ -1258,7 +1343,7 @@ def get_beep_or_voice(profile):
                 areplyRespon = simple_yes_no(
                     areply + " - " + _("Is this correct?")
                 )
-        profile['active_stt']['reply'] = areply
+        set_profile_var(profile, ['active_stt', 'reply'], areply)
         separator()
         print(
             "    " + instruction_text(
@@ -1272,21 +1357,19 @@ def get_beep_or_voice(profile):
                     "?",
                     _("Response")
                 ),
-                get_profile_var(profile, "active_stt", "response")
+                get_profile_var(profile, ["active_stt", "response"])
             )
-            print("")
-            print()
             print("")
             aresponseRespon = None
             while(aresponseRespon is None):
                 aresponseRespon = simple_yes_no(
                     aresponse + " - " + _("Is this correct?")
                 )
-        profile['active_stt']['response'] = aresponse
+        set_profile_var(profile, ['active_stt', 'response'], aresponse)
     else:
         # If beeps are selected, must remove both reply and response
-        profile['active_stt']['reply'] = ""
-        profile['active_stt']['response'] = ""
+        set_profile_var(profile, ['active_stt', 'reply'], "")
+        set_profile_var(profile, ['active_stt', 'response'], "")
 
 
 def select_audio_engine(profile):
@@ -1308,7 +1391,7 @@ def select_audio_engine(profile):
     try:
         response = audioengines[
             audioengines.index(
-                get_profile_var(profile, 'audio_engine')
+                get_profile_var(profile, ['audio_engine'])
             )
         ]
     except (ValueError):
@@ -1322,18 +1405,13 @@ def select_audio_engine(profile):
             ) + instruction_text("."),
             response
         )
-    profile['audio_engine'] = response
+    set_profile_var(profile, ['audio_engine'], response)
 
 
 def get_output_device(profile):
-    # AaronC 2018-09-18 Make sure we have an "audio" section
-    try:
-        temp = profile["audio"]
-    except KeyError:
-        profile["audio"] = {}
     # AaronC 2018-09-14 Initialize AudioEngine
     ae_info = audioengine_plugins.get_plugin(
-        profile['audio_engine'],
+        get_profile_var(profile, ['audio_engine']),
         category='audioengine'
     )
     # AaronC 2018-09-14 Get a list of available output devices
@@ -1341,7 +1419,7 @@ def get_output_device(profile):
     output_devices = [device.slug for device in audio_engine.get_devices(
         device_type=audioengine.DEVICE_TYPE_OUTPUT
     )]
-    output_device_slug = get_profile_var(profile, "audio", "output_device")
+    output_device_slug = get_profile_var(profile, ["audio", "output_device"])
     if not output_device_slug:
         output_device_slug = audio_engine.get_default_device(output=True).slug
     heard = None
@@ -1358,13 +1436,20 @@ def get_output_device(profile):
                 ),
                 output_device_slug
             )
-        profile["audio"]["output_device"] = output_device_slug
+        set_profile_var(profile, ["audio", "output_device"], output_device_slug)
         # try playing a sound
         # FIXME Set the following defaults to what is in the
         # configuration file
-        output_chunksize = 1024
-        output_add_padding = False
-
+        output_chunksize = get_profile_var(
+            profile,
+            ['output_chunksize'],
+            1024
+        )
+        output_add_padding = get_profile_var(
+            profile,
+            ['audio', 'output_padding'],
+            False
+        )
         filename = os.path.join(
             os.path.dirname(
                 os.path.abspath(__file__)
@@ -1429,14 +1514,9 @@ def get_output_device(profile):
 
 
 def get_input_device(profile):
-    # AaronC 2018-09-18 Make sure we have an "audio" section
-    try:
-        temp = profile["audio"]
-    except KeyError:
-        profile["audio"] = {}
     # AaronC 2018-09-14 Initialize AudioEngine
     ae_info = audioengine_plugins.get_plugin(
-        profile['audio_engine'],
+        get_profile_var(profile, ['audio_engine']),
         category='audioengine'
     )
     # AaronC 2018-09-14 Get a list of available output devices
@@ -1444,7 +1524,7 @@ def get_input_device(profile):
     # AaronC 2018-09-14 Get a list of available input devices
     input_devices = [device.slug for device in audio_engine.get_devices(
         device_type=audioengine.DEVICE_TYPE_INPUT)]
-    input_device_slug = get_profile_var(profile, "audio", "input_device")
+    input_device_slug = get_profile_var(profile, ["audio", "input_device"])
     if not input_device_slug:
         input_device_slug = audio_engine.get_default_device(output=False).slug
     once = False
@@ -1457,34 +1537,38 @@ def get_input_device(profile):
             ),
             input_device_slug
         )
-        profile["audio"]["input_device"] = input_device_slug
+        set_profile_var(profile, ["audio", "input_device"], input_device_slug)
         # try recording a sample
-        heard = False
-        while not(heard):
-            heard = True
-            print(
-                instruction_text(
-                    _("I will test your selection by recording your voice and playing it back to you.")
-                )
-            )
+        test = simple_yes_no(
+            _("Would you like me to test your selection by recording your voice and playing it back to you?")
+        )
+        while test:
+            test = False
             # FIXME AaronC Sept 16 2018
             # The following are defaults. They should be read
             # from the proper locations in the profile file if
             # they have been set.
             threshold = 10  # 10 dB
-            input_chunks = 1024
-            input_bits = 16
-            input_channels = 1
-            input_rate = 16000
+            input_chunks = get_profile_var(profile, ['input_chunksize'], 1024)
+            input_bits = get_profile_var(profile, ['input_samplewidth'], 16)
+            input_channels = get_profile_var(profile, ['input_channels'], 1)
+            input_rate = get_profile_var(profile, ['input_samplerate'], 16000)
 
-            output_chunksize = 1024
-            output_add_padding = False
-
+            output_chunksize = get_profile_var(
+                profile,
+                ['output_chunksize'],
+                1024
+            )
+            output_add_padding = get_profile_var(
+                profile,
+                ['audio', 'output_padding'],
+                False
+            )
             input_device = audio_engine.get_device_by_slug(
-                profile["audio"]["input_device"]
+                get_profile_var(profile, ['audio', 'input_device'])
             )
             output_device = audio_engine.get_device_by_slug(
-                profile["audio"]["output_device"]
+                get_profile_var(profile, ["audio", "output_device"])
             )
             frames = collections.deque([], 30)
             recording = False
@@ -1588,10 +1672,12 @@ def get_input_device(profile):
                                 replay = False
                                 heard = True
                                 once = True
+                                test = False
                             else:
                                 replay = False
                                 heard = True
                                 once = False
+                                test = False
 
 
 def run(profile):
