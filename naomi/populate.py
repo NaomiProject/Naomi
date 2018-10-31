@@ -20,12 +20,13 @@ from . import pluginstore
 from . import audioengine
 
 
-# globals
+# properties
 t = Terminal()
 # given values in select_language()
 _ = None
 affirmative = ""
 negative = ""
+
 audioengine_plugins = None
 
 
@@ -177,7 +178,7 @@ def simple_input(prompt, default=None):
     prompt += input_text()
     # don't use print here so no automatic carriage return
     # sys.stdout.write(prompt)
-    response = raw_input(prompt)
+    response = raw_input(prompt.encode("utf-8"))
     # if the user pressed enter without entering anything,
     # set the response to default
     if(default and not response):
@@ -309,9 +310,14 @@ def select_language(profile):
         (
             once
         )and(
-            check_for_value(selected_language, languages.keys())
+            check_for_value(
+                selected_language.strip().lower(), 
+                [x[:len(selected_language)].lower() for x in languages.keys()]
+            )
         )
     ):
+        print( "Selected language: %s" % selected_language )
+        print( "Languages.keys(): %s" % languages.keys() )
         once = True
         print("")
         print("")
@@ -328,20 +334,30 @@ def select_language(profile):
                 _('Select Language')
             ),
             selected_language
-        ).strip()
-        if(check_for_value(selected_language.lower()[:2], [value.lower()[:2] for value in languages.values()])):
-            if(selected_language.lower()[:2] == 'en'):
-                language = 'en-US'
-                affirmative = 'yes'
-                negative = 'no'
-            elif(selected_language.lower()[:2] == 'fr'):
-                language = 'fr-FR'
-                affirmative = 'oui'
-                negative = 'non'
-            elif(selected_language.lower()[:2] == 'de'):
-                language = 'de-DE'
-                affirmative = "ja"
-                negative = "nein"
+        ).strip().lower()
+        if(len(selected_language)>0):
+            if(check_for_value(
+                selected_language,
+                [x[:len(selected_language)].lower() for x in languages.keys()]
+            )):
+                language = languages[
+                    languages.keys()[
+                        [
+                            x[
+                                :len(selected_language)
+                            ].lower() for x in languages.keys()
+                        ].index(selected_language)
+                    ]
+                ]
+                if(language == 'fr-FR'):
+                    affirmative = 'oui'
+                    negative = 'non'
+                elif(language == 'de-DE'):
+                    affirmative = "ja"
+                    negative = "nein"
+                else:
+                    affirmative = 'yes'
+                    negative = 'no'
 
     set_profile_var(profile, ['language'], language)
     translations = i18n.parse_translations(paths.data('locale'))
@@ -547,12 +563,13 @@ def get_phone_info(profile):
         )
         print(
             "    " + instruction_text(
-                _("and enter the email suffix for your carrier (e.g., for Virgin Mobile, enter ")
+                _("and enter the email suffix for your carrier") + " "
+                + _("(e.g., for Virgin Mobile, enter 'vmobl.com';") + " "
             )
         )
         print(
             "    " + instruction_text(
-                _("'vmobl.com'; for T-Mobile Germany, enter 't-d1-sms.de').")
+                _("for T-Mobile Germany, enter 't-d1-sms.de').")
             )
         )
         print("")
@@ -609,6 +626,8 @@ def get_notification_info(profile):
             ['email', 'address']
         )
     ):
+        email_choice = _("email").lower()[:1]
+        text_choice = _("text").lower()[:1]
         print(
             "    " + instruction_text(
                 _("Would you prefer to have notifications sent by")
@@ -616,31 +635,47 @@ def get_notification_info(profile):
         )
         print(
             "    " + instruction_text(
-                _("email (E) or text message (T)?")
+                _("email ({email_choice}) or text message ({text_choice})?").format(
+                    email_choice=email_choice.upper(),
+                    text_choice=text_choice.upper()
+                )
             )
         )
         print("")
         if(get_profile_var(profile, ["prefers_email"])):
-            temp = 'E'
+            temp = email_choice
         else:
-            temp = "T"
+            temp = text_choice
         response = simple_input(
             format_prompt(
                 "?",
-                _("Email (E) or Text message (T)?")
+                _("Email ({email_choice}) or Text message ({text_choice})?").format(
+                    email_choice=email_choice.upper(),
+                    text_choice=text_choice.upper()
+                )
             ),
             temp
         )
 
-        while not response or (response[:1] != 'E' and response[:1] != 'T'):
+        while not response or (
+            response.lower()[:1] != email_choice 
+            and response.lower()[:1] != text_choice
+        ):
             print("")
             response = simple_input(
                 alert_text(
-                    _("Please choose email (E) or text message (T)!")
+                    _("Please choose email ({email_choice}) or text message ({text_choice})!").format(
+                        email_choice=email_choice.upper(),
+                        text_choice=text_choice.upper()
+                    )
                 ),
                 response
             )
-        set_profile_var(profile, ['prefers_email'], (response == 'E'))
+        set_profile_var(
+            profile,
+            ['prefers_email'],
+            (response.lower()[:1] == email_choice)
+        )
     else:
         # if no email address is configured, just set this to false
         set_profile_var(profile, ['prefers_email'], False)
@@ -650,12 +685,14 @@ def get_weather_location(profile):
     # Weather
     print(
         "    " + instruction_text(
-            _("For weather information, please enter your 5-digit zipcode (e.g., 08544).")
+            _("For weather information, please enter your 5-digit zipcode")
+            + " " + _("(e.g., 08544).")
         )
     )
     print(
         "    " + instruction_text(
-            _("If you are outside the US, insert the name of the nearest big town/city.")
+            _("If you are outside the US,") + " "
+            + _("insert the name of the nearest big town/city.")
         )
     )
     print("")
@@ -991,10 +1028,48 @@ def get_stt_engine(profile):
                         "en-us",
                         "en-us"
                     )
-                elif(os.path.isdir("/usr/share/pocketsphinx/model/en-us/en-us")):
-                    hmm_dir = "/usr/share/pocketsphinx/model/en-us/en-us"
-                elif(os.path.isdir("/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k")):
-                    hmm_dir = "/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k"
+                elif(os.path.isdir(os.path.join(
+                        "/",
+                        "usr",
+                        "share",
+                        "pocketsphinx",
+                        "model",
+                        "en-us",
+                        "en-us"
+                ))):
+                    hmm_dir = os.path.join(
+                        "/",
+                        "usr",
+                        "share",
+                        "pocketsphinx",
+                        "model",
+                        "en-us",
+                        "en-us"
+                    )
+                elif(
+                    os.path.isdir(os.path.join(
+                        "/",
+                        "usr",
+                        "local",
+                        "share",
+                        "pocketsphinx",
+                        "model",
+                        "hmm",
+                        "en_US",
+                        "hub4wsj_sc_8k"
+                    ))
+                ):
+                    hmm_dir = os.path.join(
+                        "/",
+                        "usr",
+                        "local",
+                        "share",
+                        "pocketsphinx",
+                        "model",
+                        "hmm",
+                        "en_US",
+                        "hub4wsj_sc_8k"
+                    )
             hmm_dir = simple_input(
                 format_prompt(
                     "!",
@@ -1175,7 +1250,9 @@ def get_tts_engine(profile):
             print(alert_text(_("FLite does not appear to be installed")))
             print(instruction_text(_("Please install it using:")))
             print("  $ " + success_text("sudo apt install flite"))
-            print(instruction_text(_("then re-run this program with the --repopulate flag")))
+            print(instruction_text(
+                _("then re-run Naomi with the --repopulate flag")
+            ))
             print("  $ " + success_text("./Naomi.py --repopulate"))
     elif(get_profile_var(profile, ["tts_engine"]) == "pico-tts"):
         pass
@@ -1186,14 +1263,17 @@ def get_tts_engine(profile):
             )
         )
         print("")
+        url = url_text(
+            "https://www.ivona.com/us/account/speechcloud/creation/"
+        )
         print(
             "    " + instruction_text(
-                _("You will need to create an account at")
+                _("You will need to create an account at %s") % url
             )
         )
         print(
             "    " + url_text(
-                "https://www.ivona.com/us/account/speechcloud/creation/"
+                
             ) + " " + instruction_text(
                 _("if you haven't already.")
             )
@@ -1294,30 +1374,45 @@ def get_beep_or_voice(profile):
     )
     # If there are values for [active_stt][reply] and [active_stt][response]
     # then use them otherwise use beeps
+    voice_choice = _("voice").lower()[:1]
+    beep_choice = _("beep").lower()[:1]
     if(get_profile_var(profile, ["active_stt", "reply"])):
-        temp = "V"
+        temp = voice_choice.encode("utf-8")
     else:
-        temp = "B"
+        temp = beep_choice.encode("utf-8")
+    print(
+        _("{beep} for beeps or {voice} for voice.").format(
+            beep=choices_text() + beep_choice + instruction_text(),
+            voice=choices_text() + voice_choice + instruction_text()
+        )
+    )
     response = simple_input(
         format_prompt(
             "?",
-            _("(%s) for beeps or (%s) for voice.") % (
-                choices_text("B") + instruction_text(),
-                choices_text("V") + instruction_text()
+            _("({beep}) for beeps or ({voice}) for voice.").format(
+                beep=choices_text() + beep_choice + instruction_text(),
+                voice=choices_text() + voice_choice + instruction_text()
             )
         ),
         temp
     )
     while(
         (not response)
-        or (response.lower()[:1] != 'b' and response.lower()[:1] != 'v')
+        or (
+            response.lower()[:1] != beep_choice
+            and
+            response.lower()[:1] != voice_choice
+        )
     ):
         response = simple_input(
             alert_text(
-                _("Please choose beeps (B) or voice (V)")
+                _("Please choose beeps ({beeps_choice}) or voice ({voice_choice})").format(
+                    beeps_choice=beeps_choice.upper(),
+                    voice_choice=voice_choice.upper()
+                )
             )
         )
-    if(response.lower()[:1] == "v"):
+    if(response.lower()[:1] == voice_choice):
         print("")
         print("")
         print("")
@@ -1468,7 +1563,10 @@ def get_output_device(profile):
                     add_padding=output_add_padding
                 )
                 heard = simple_yes_no(
-                    _("Were you able to hear the beep (%s/%s)?") % (affirmative.upper()[:1], negative.upper()[:1])
+                    _("Were you able to hear the beep ({y}/{n})?").format(
+                        y=affirmative.upper()[:1],
+                        n=negative.upper()[:1]
+                    )
                 )
                 if not (heard):
                     print(
@@ -1497,8 +1595,6 @@ def get_output_device(profile):
                 )
                 print("")
                 once = False
-            except e:
-                print(e)
         else:
             print(
                 alert_text(
@@ -1618,7 +1714,11 @@ def get_input_device(profile):
                         if (soundlevel < threshold):
                             print(
                                 alert_text(
-                                    _("No sound detected. Setting threshold from %s to %s") % (threshold, soundlevel)
+                                    _("No sound detected.") + " "
+                                    + _("Setting threshold from {t} to {s}").format(
+                                        t=threshold,
+                                        s=soundlevel
+                                    )
                                 )
                             )
                             threshold = soundlevel
@@ -1626,13 +1726,21 @@ def get_input_device(profile):
                     recording_frames.append(frame)
                     if len(recording_frames) > 20:
                         # Check if we are below threshold again
-                        last_snr = _snr(input_bits, threshold, recording_frames[-10:])
-                        if (last_snr <= threshold) or (len(recording_frames) > 60):
+                        last_snr = _snr(
+                            input_bits,
+                            threshold,
+                            recording_frames[-10:]
+                        )
+                        if(
+                            (last_snr <= threshold)
+                            or (len(recording_frames) > 60)
+                        ):
                             # stop recording
                             recording = False
                             print(
                                 success_text(
-                                    _("Recorded %d frames") % len(recording_frames)
+                                    _("Recorded %d frames")
+                                    % len(recording_frames)
                                 )
                             )
                             break

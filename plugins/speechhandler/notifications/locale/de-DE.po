@@ -1,3 +1,4 @@
+# #-#-#-#-#  de-DE.po (Naomi 2.2-dev)  #-#-#-#-#
 # Naomi Facebook Notifications Plugin 
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
 # This file is distributed under the same license as the Naomi package.
@@ -5,15 +6,18 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Naomi 2.0\n"
+"#-#-#-#-#  de-DE.po (Naomi 2.2-dev)  #-#-#-#-#\n"
+"Project-Id-Version: Naomi 2.2-dev\n"
 "Report-Msgid-Bugs-To: https://github.com/naomiproject/naomi-client/issues\n"
 "POT-Creation-Date: 2015-10-30 19:00+0100\n"
 "PO-Revision-Date: 2015-10-30 19:00+0100\n"
 "Last-Translator: Jan Holthuis <jan.holthuis@ruhr-uni-bochum.de>\n"
 "Language: de_DE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
 
 #: notifications/notifications.py:8
 msgid "FACEBOOK"
@@ -24,8 +28,13 @@ msgid "NOTIFICATION"
 msgstr "BENACHRICHTIGUNG"
 
 #: notifications/notifications.py:28
-msgid "I have not been authorized to query your Facebook. If you would like to check your notifications in the future, please visit the Naomi dashboard."
-msgstr "Ich wurde nicht autorisiert, dein Facebook abzufragen. Wenn du möchtest, dass ich dich über die deine Facebook-Benachrichtigungen informiere, besuche bitte das Naomi Dashboard."
+msgid ""
+"I have not been authorized to query your Facebook. If you would like to "
+"check your notifications in the future, please visit the Naomi dashboard."
+msgstr ""
+"Ich wurde nicht autorisiert, dein Facebook abzufragen. Wenn du möchtest, "
+"dass ich dich über die deine Facebook-Benachrichtigungen informiere, besuche "
+"bitte das Naomi Dashboard."
 
 #: notifications/notifications.py:34
 msgid "I apologize, I can't access Facebook at the moment."
