@@ -316,8 +316,6 @@ def select_language(profile):
             )
         )
     ):
-        print( "Selected language: %s" % selected_language )
-        print( "Languages.keys(): %s" % languages.keys() )
         once = True
         print("")
         print("")
@@ -335,7 +333,7 @@ def select_language(profile):
             ),
             selected_language
         ).strip().lower()
-        if(len(selected_language)>0):
+        if(len(selected_language) > 0):
             if(check_for_value(
                 selected_language,
                 [x[:len(selected_language)].lower() for x in languages.keys()]
@@ -1272,7 +1270,7 @@ def get_tts_engine(profile):
             )
         )
         print(
-                " " + instruction_text(
+            " " + instruction_text(
                 _("if you haven't already.")
             )
         )
@@ -1405,7 +1403,7 @@ def get_beep_or_voice(profile):
         response = simple_input(
             alert_text(
                 _("Please choose beeps ({beeps_choice}) or voice ({voice_choice})").format(
-                    beeps_choice=beeps_choice.upper(),
+                    beeps_choice=beep_choice.upper(),
                     voice_choice=voice_choice.upper()
                 )
             )
