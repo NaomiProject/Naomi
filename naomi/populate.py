@@ -311,7 +311,7 @@ def select_language(profile):
             once
         )and(
             check_for_value(
-                selected_language.strip().lower(), 
+                selected_language.strip().lower(),
                 [x[:len(selected_language)].lower() for x in languages.keys()]
             )
         )
@@ -658,7 +658,7 @@ def get_notification_info(profile):
         )
 
         while not response or (
-            response.lower()[:1] != email_choice 
+            response.lower()[:1] != email_choice
             and response.lower()[:1] != text_choice
         ):
             print("")
@@ -1268,13 +1268,11 @@ def get_tts_engine(profile):
         )
         print(
             "    " + instruction_text(
-                _("You will need to create an account at %s") % url
+                _("You will need to create an account at %s") % url_text(url)
             )
         )
         print(
-            "    " + url_text(
-                
-            ) + " " + instruction_text(
+                " " + instruction_text(
                 _("if you haven't already.")
             )
         )
