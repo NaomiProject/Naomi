@@ -296,9 +296,9 @@ def select_language(profile):
     # it breaks due to it being out of range for ascii
     #
     languages = {
-        u'EN-English': u'en-US',
-        u'FR-Français': u'fr-FR',
-        u'DE-Deutsch': u'de-DE'
+        u'EN-English': 'en-US',
+        u'FR-Français': 'fr-FR',
+        u'DE-Deutsch': 'de-DE'
     }
     language = get_profile_var(profile, ["language"], "en-US")
     selected_language = languages.keys()[languages.values().index(language)]
@@ -482,19 +482,20 @@ def get_email_info(profile):
     # This should allow the encryption method to be improved
     # incrementally while not forcing people to re-enter credentials
     # every time a new encryption method is added.
-    prompt = _("What is your email password?") + ": "
-    if(get_profile_var(profile, ["email", "password"])):
-        prompt += default_text(
-            _("(just press enter to keep current password)")
-        ) + default_prompt()
-    temp = getpass(
-        format_prompt(
-            "?",
-            prompt
+    if(get_profile_var(profile, ["email", "address"])):
+        prompt = _("What is your email password?") + ": "
+        if(get_profile_var(profile, ["email", "password"])):
+            prompt += default_text(
+                _("(just press enter to keep current password)")
+            ) + default_prompt()
+        temp = getpass(
+            format_prompt(
+                "?",
+                prompt
+            )
         )
-    )
-    if(temp):
-        set_profile_var(profile, ['email', 'password'], temp)
+        if(temp):
+            set_profile_var(profile, ['email', 'password'], temp)
 
 
 def get_phone_info(profile):
@@ -839,7 +840,7 @@ def get_stt_engine(profile):
         print("")
         print("")
         print("")
-    if(get_profile_var(profile, ['active_stt', 'engine']) == 'watson-stt'):
+    elif(get_profile_var(profile, ['active_stt', 'engine']) == 'watson-stt'):
         username = simple_input(
             format_prompt(
                 "!",
@@ -859,7 +860,7 @@ def get_stt_engine(profile):
         print("")
         print("")
         print("")
-    if(
+    elif(
         get_profile_var(
             profile,
             ['active_stt', 'engine']
@@ -895,7 +896,7 @@ def get_stt_engine(profile):
                 temp
             )
         )
-    if(get_profile_var(profile, ['active_stt', 'engine']) == 'julius-stt'):
+    elif(get_profile_var(profile, ['active_stt', 'engine']) == 'julius-stt'):
         # stt_engine: julius
         # julius:
         #     hmmdefs:  '/path/to/your/hmmdefs'
@@ -951,6 +952,15 @@ def get_stt_engine(profile):
             ["julius", "lexicon_archive_member"],
             "VoxForge/VoxForgeDict"
         )
+    elif(get_profile_var(profile, ['active_stt', 'engine']) == 'witai-stt'):
+        witai_token = simple_input(
+            format_prompt(
+                "!",
+                _("Please enter your Wit.AI token")
+            ),
+            get_profile_var(profile,["witai-stt", "access_token"])
+        )
+        set_profile_var(profile, ["witai-stt", "access_token"], witai_token)        
     else:
         # AaronC 2018-07-29 Since pocketsphinx/phonetisaurus is assumed, make
         # this the default at the end
