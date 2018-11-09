@@ -26,7 +26,7 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
             self.gettext("I'm going down."),
             self.gettext("Shuting down now."),
             self.gettext("Bye Bye."),
-            self.gettext("Goodbye, {}".format(name))
+            self.gettext("Goodbye, {}").format(name)
         ]
 
         message = random.choice(messages)
