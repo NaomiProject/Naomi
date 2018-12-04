@@ -12,6 +12,7 @@ def do_in_tempdir():
     yield tempdir
     shutil.rmtree(tempdir)
 
+
 WORDS = {'GOOD': ['G UH D', 'G UW D'],
          'BAD': ['B AE D'],
          'UGLY': ['AH G L IY']}
