@@ -34,7 +34,8 @@ class MPDClient(object):
         client.idletimeout = None
         try:
             client.connect(self._server, self._port)
-            client.password(self._password)
+            if self._password is not None and self._password != '':
+                client.password(self._password)
             yield client
         except (mpd.ConnectionError, socket.error) as e:
             if isinstance(e, socket.error):
