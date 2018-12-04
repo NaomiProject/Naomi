@@ -1,72 +1,80 @@
+# #-#-#-#-#  en-US.po (Naomi 2.2-dev)  #-#-#-#-#
 # Naomi News Plugin
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
+# Portions copyright (C) 2018 others
 # This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Naomi 2.0\n"
-"Report-Msgid-Bugs-To: https://github.com/naomiproject/naomi-client/issues\n"
+"#-#-#-#-#  en-US.po (Naomi 2.2-dev)  #-#-#-#-#\n"
+"Project-Id-Version: Naomi 2.2-dev\n"
+"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
 "POT-Creation-Date: 2015-12-01 03:11+0100\n"
 "PO-Revision-Date: 2015-12-01 03:11+0100\n"
 "Last-Translator: Jan Holthuis <jan.holthuis@ruhr-uni-bochum.de>\n"
 "Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
 
-#: news.py:57 news.py:129
+#: news.py:57 news.py:129 /home/pi/Naomi/plugins/speechhandler/news/news.py:50
+#: /home/pi/Naomi/plugins/speechhandler/news/news.py:127
 msgid "NEWS"
 msgstr ""
 
-#: news.py:58 news.py:129
+#: news.py:58 news.py:129 /home/pi/Naomi/plugins/speechhandler/news/news.py:51
+#: /home/pi/Naomi/plugins/speechhandler/news/news.py:127
 msgid "HEADLINES"
 msgstr ""
 
-#: news.py:59 news.py:98
+#: news.py:59 news.py:98 /home/pi/Naomi/plugins/speechhandler/news/news.py:52
+#: /home/pi/Naomi/plugins/speechhandler/news/news.py:93
 msgid "YES"
 msgstr ""
 
-#: news.py:60
+#: news.py:60 /home/pi/Naomi/plugins/speechhandler/news/news.py:53
 msgid "NO"
 msgstr ""
 
-#: news.py:72
+#: news.py:72 /home/pi/Naomi/plugins/speechhandler/news/news.py:65
 msgid "Pulling up the news..."
 msgstr ""
 
-#: news.py:82
+#: news.py:82 /home/pi/Naomi/plugins/speechhandler/news/news.py:74
 msgid "Sorry, I'm unable to get the latest headlines right now."
 msgstr ""
 
-#: news.py:85
+#: news.py:85 /home/pi/Naomi/plugins/speechhandler/news/news.py:78
 msgid "These are the current top headlines..."
 msgstr ""
 
-#: news.py:95
+#: news.py:95 /home/pi/Naomi/plugins/speechhandler/news/news.py:90
 msgid "Would you like me to send you these articles?"
 msgstr ""
 
-#: news.py:99
+#: news.py:99 /home/pi/Naomi/plugins/speechhandler/news/news.py:95
 msgid "Sure, just give me a moment."
 msgstr ""
 
-#: news.py:103
+#: news.py:103 /home/pi/Naomi/plugins/speechhandler/news/news.py:96
 msgid "Your Top Headlines"
 msgstr ""
 
-#: news.py:107
+#: news.py:107 /home/pi/Naomi/plugins/speechhandler/news/news.py:103
 msgid "Okay, I've sent you an email."
 msgstr ""
 
-#: news.py:110
+#: news.py:110 /home/pi/Naomi/plugins/speechhandler/news/news.py:106
 msgid "Sorry, I'm having trouble sending you these articles."
 msgstr ""
 
-#: news.py:112
+#: news.py:112 /home/pi/Naomi/plugins/speechhandler/news/news.py:109
 msgid "Okay, I will not send any articles."
 msgstr ""
 
-#: news.py:115
+#: news.py:115 /home/pi/Naomi/plugins/speechhandler/news/news.py:112
 msgid "These are the articles you requested:"
 msgstr ""

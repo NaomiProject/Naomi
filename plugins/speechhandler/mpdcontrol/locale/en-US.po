@@ -1,134 +1,178 @@
+# #-#-#-#-#  en-US.po (Naomi 2.2-dev)  #-#-#-#-#
 # Naomi MPDControl Plugin
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
+# Portions copyright (C) 2018 others
 # This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Naomi 2.0\n"
-"Report-Msgid-Bugs-To: https://github.com/naomiproject/naomi-client/issues\n"
+"#-#-#-#-#  en-US.po (Naomi 2.2-dev)  #-#-#-#-#\n"
+"Project-Id-Version: Naomi 2.2-dev\n"
+"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
 "POT-Creation-Date: 2015-12-02 17:58+0100\n"
 "PO-Revision-Date: 2015-12-02 17:58+0100\n"
 "Last-Translator: Jan Holthuis <jan.holthuis@ruhr-uni-bochum.de>\n"
-"Language: de_DE\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:31
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:37
 msgid "MUSIC"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:31
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:37
 msgid "SPOTIFY"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:44
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:50
 msgid "Please give me a moment, I'm starting the music mode."
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:47
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:114
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:53
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:123
 msgid "PLAY"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:47
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:119
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:53
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:129
 msgid "PAUSE"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:47
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:111
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:53
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:120
 msgid "STOP"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:48
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:133
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:134
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:54
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:143
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:144
 msgid "NEXT"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:48
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:133
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:54
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:143
 msgid "PREVIOUS"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:49
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:126
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:55
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:136
 msgid "LOUDER"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:49
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:129
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:55
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:139
 msgid "SOFTER"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:50
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:90
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:56
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:96
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:98
 msgid "PLAYLIST"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:51
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:145
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:57
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:156
 msgid "CLOSE"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:51
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:145
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:57
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:156
 msgid "EXIT"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:60
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:66
 msgid "Music mode started!"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:79
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:85
 msgid "Pardon?"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:84
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:90
 msgid "Music Mode stopped!"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:106
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:115
 #, python-format
 msgid "Playlist %s loaded."
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:110
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:119
 msgid "Sorry, I can't find a playlist with that name."
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:113
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:122
 msgid "Music stopped."
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:118
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:144
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:127
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:154
 #, python-brace-format
 msgid "Playing {song.title} by {song.artist}..."
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:123
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:133
 msgid "Music paused."
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:125
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:135
 msgid "Music is not playing."
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:127
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:137
 msgid "Increasing volume."
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:130
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:140
 msgid "Decreasing volume."
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:135
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:145
 msgid "Next song"
 msgstr ""
 
 #: plugins/speechhandler/mpdcontrol/mpdcontrol.py:139
+#: /home/pi/Naomi/plugins/speechhandler/mpdcontrol/mpdcontrol.py:149
 msgid "Previous song"
 msgstr ""
