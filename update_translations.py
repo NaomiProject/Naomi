@@ -88,7 +88,7 @@ def check_executable(executable):
             stderr=devnull
         ).communicate()
         return True
-    except OSError as e:
+    except OSError:
         return False
 
 def main():
