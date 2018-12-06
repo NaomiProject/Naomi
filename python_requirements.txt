@@ -4,7 +4,7 @@ argparse==1.4.0
 mock==2.0.0
 pytz==2018.5
 PyYAML==3.13
-requests==2.19.1
+requests==2.20.0
 blessings
 
 #other modules
