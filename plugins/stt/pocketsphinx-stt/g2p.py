@@ -68,15 +68,11 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
             logger.debug("NextLine: '%s'" % nextline)
             if(nextline == ''):
                 continue
+            # It is important to raise this error so we can try lower() in sphinxvocab.py
             if(len(RE_ISYMNOTFOUND.findall(nextline)) > 0):
-                # instead of killing the process or raising an error,
-                # just skip the line.
-                # This will create the checksum which will continue
-                # to be valid, while allowing the user to generate
-                # their own language model.
-                # http://www.speech.cs.cmu.edu/tools/lmtool-new.html
-                logger.error('Input symbol not found')
-                continue
+                logger.error('%s - Input symbol not found' % nextline)
+                proc.kill()
+                raise ValueError('Input symbol not found')
         stdoutdata, stderrdata = proc.communicate()
         logger.debug("StdOutData: %s" % stdoutdata)
     except OSError:
