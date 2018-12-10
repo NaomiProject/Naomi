@@ -90,11 +90,12 @@ $ python Naomi.py
 
 ## Documentation
 
-All the documentation is available on our [website](https://projectnaomi.com/documentation)!
+For Basic Users: All the documentation is available on our [website](https://projectnaomi.com/documentation)!
+For Developer: All the documentation is available on our [wiki](https://github.com/NaomiProject/Naomi/wiki)!
 
 ## Download
 
-You can [download](https://github.com/naomiproject/naomi/releases/tag/v2.1) latest installable version of Naomi for Linux & Raspberry Pi.
+You can [download](https://github.com/naomiproject/naomi/releases/tag/v2.1) latest installable version of Naomi for Raspberry Pi.
 
 ## Credits
 
