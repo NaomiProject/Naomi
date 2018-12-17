@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="https://projectnaomi.com/"><img src="https://projectnaomi.com/wp-content/uploads/2018/08/Asset-1@10x.png" alt="Naomi" width="400"></a>
+  <a href="https://projectnaomi.com/"><img src="https://projectnaomi.com/naomi-logo.png" alt="Naomi" width="400"></a>
   <br>
   <br>
 </h1>
@@ -43,7 +43,6 @@
 
 <p align="center">
   <a href="#key-features">Key Features</a> •
-  <a href="#how-to-use">How To Use</a> •
   <a href="#documentation">Documentation</a> •
   <a href="#download">Download</a> •
   <a href="#credits">Credits</a> •
@@ -51,7 +50,7 @@
 </p>
 
 <p align="center">
-	<img src="https://projectnaomi.com/wp-content/uploads/2018/08/bd71c75e2fc9dad03ddf44dc3c47c7e2-1.png">
+	<img src="https://projectnaomi.com/hero.png">
 </p>
 
 ## Key Features
@@ -67,35 +66,14 @@
 * Thorough Documentation
   - Documentation is kept up to date.
 
-## How To Use
-
-To clone and run this application, you'll need the required tools installed on your computer. From your command line:
-
-```bash
-# Clone this repository
-$ git clone https://github.com/naomiproject/naomi
-
-# Go into the repository
-$ cd naomi
-
-# setup the install
-$ chmod +x naomi-setup.sh
-
-# Run the install
-$ ./naomi-setup.sh
-
-# Run the app
-$ python Naomi.py
-```
 
 ## Documentation
 
-For Basic Users: All the documentation is available on our [website](https://projectnaomi.com/documentation)!
-For Developer: All the documentation is available on our [wiki](https://github.com/NaomiProject/Naomi/wiki)!
+All the documentation is available on our [website](https://projectnaomi.com/documentation)!
 
 ## Download
 
-You can [download](https://github.com/naomiproject/naomi/releases/tag/v2.1) latest installable version of Naomi for Raspberry Pi.
+You can [download](https://projectnaomi.com/download) latest installable version of Naomi from our website.
 
 ## Credits
 
