@@ -1,10 +1,11 @@
 #!/bin/bash
 
 #########################################
-# Installing python and necessary packages for Naomi.
-# This script will install python into the ~/local/bin
-# directory, and install naomi & requirments
-# in their respective directories
+# Installing python and necessary packages
+# for Naomi. This script will install python
+# into the ~/local/bin directory and install
+# naomi & requirements in their respective
+# directories.
 #########################################
 
 # installing python 2.7.3
@@ -30,16 +31,11 @@ cd pip-1.2.1
 ~/local/bin/python setup.py install  # specify the path to the python you installed above
 
 # install framework
-#cd ~
-#apt-get update
-#apt-get install nano python-pip python-pyaudio python3-pyaudio -y
-#pip install pyalsaaudio -y
+cd ~
+apt-get update
+apt-get install portaudio19-dev libasound2-dev -y
 
 # install naomi & dependancies
-#cd ~
-#wget https://github.com/NaomiProject/Naomi/archive/v2.1.tar.gz
-#tar xvzf v2.1.tar.gz
-#mv v2.1 Naomi
 ~/Naomi/pip install -r python_requirements.txt
 
 
