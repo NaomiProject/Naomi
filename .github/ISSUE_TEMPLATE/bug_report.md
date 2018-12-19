@@ -1,27 +1,32 @@
----
-name: Bug report
-about: Create a report to help us improve
+<!--- Provide a general summary of the issue in the Title above -->
 
----
+## Description
+<!--- Provide a more detailed introduction to the issue itself, and why you consider it to be a bug -->
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Expected Behavior
+<!--- Tell us what should happen -->
 
-**To Reproduce**
-Steps to reproduce the behavior:
+## Actual Behavior
+<!--- Tell us what happens instead -->
 
+## Possible Fix
+<!--- Not obligatory, but suggest a fix or reason for the bug -->
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## Steps to Reproduce
+<!--- Provide a link to a live example, or an unambiguous set of steps to -->
+<!--- reproduce this bug. Include code to reproduce, if relevant -->
+1.
+2.
+3.
+4.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+## Context
+<!--- How has this bug affected you? What were you trying to accomplish? -->
 
-**System** 
-- Device:  [e.g. Raspberry Pi, Laptop ...]
-- OS: [e.g. Raspbian, Ubuntu ...]
-  - Updated recently ? (Yes/No) 
-- Naomi Version: [e.g. 2.1]
-
-**Additional context**
-Add any other context about the problem here.
+## Your Environment
+<!--- Include as many relevant details about the environment you experienced the bug in -->
+* Version used:
+* Environment name and version (e.g. PHP 5.4 on nginx 1.9.1):
+* Server type and version:
+* Operating System and version:
+* Link to your project:
