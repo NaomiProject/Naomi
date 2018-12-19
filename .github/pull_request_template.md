@@ -1,59 +1,35 @@
-| Status  | Type  | Env Vars Change |
-| :---: | :---: | :---: |
-| Ready/In Development/Hold | Feature/Bug/Chore/Tooling/Release/Hotfix | Yes/No |
-
-> ⚠️  NOTE: use notes like this to emphasize something about the PR. This could
-> include other PRs this PR is built on top of; new or removed environment
-> variables; reasons for why the PR is on hold; or anything else you would like
-> to draw attention to
+<!--- Provide a general summary of your changes in the Title above -->
 
 ## Description
+<!--- Describe your changes in detail -->
 
-_A few sentences describing the overall goals of the pull request's commits.
-What is the current behavior of the app? What is the updated/expected behavior
-with this PR?_
+## Related Issue
+<!--- This project only accepts pull requests related to open issues -->
+<!--- If suggesting a new feature or change, please discuss it in an issue first -->
+<!--- If fixing a bug, there should be an issue describing it with steps to reproduce -->
+<!--- Please link to the issue here: -->
 
+## Motivation and Context
+<!--- Why is this change required? What problem does it solve? -->
 
-## Before & After Screenshots
+## How Has This Been Tested?
+<!--- Please describe in detail how you tested your changes. -->
+<!--- Include details of your testing environment, and the tests you ran to -->
+<!--- see how your change affects other areas of the code, etc. -->
 
-**BEFORE**:
-[insert screenshot here]
+## Screenshots (if appropriate):
 
-**AFTER**:
-[insert screenshot here]
+## Types of changes
+<!--- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to change)
 
-
-## Other changes (e.g. bug fixes, UI tweaks, refactors)
-
-_Descriptions of minor changes here._
-
-
-## Related Tickets
-
-* [insert ticket name here](insert link here)
-
-
-## Todos
-
-_Fill out or remove list items as needed_
-
-- [ ] Tests
-- [ ] Documentation
-
-
-## Deploy Notes
-
-_Notes regarding deployment of the contained body of work. These should note any
-new dependencies, new scripts, etc._
-
-**New scripts**:
-
-- `script` : script details
-
-**New dependencies**:
-
-- `dependency` : dependency details
-
-**New dev dependencies**:
-
-- `dependency` : dependency details
+## Checklist:
+<!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
+<!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
+- [ ] My code follows the code style of this project.
+- [ ] My change requires a change to the documentation.
+- [ ] I have updated the documentation accordingly.
+- [ ] I have added tests to cover my changes.
+- [ ] All new and existing tests passed.
