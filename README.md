@@ -13,9 +13,6 @@
 	<a href="">
     	<img src="https://img.shields.io/badge/python-v2.7-blue.svg">
     </a>
-	<a href="https://travis-ci.org/naomiproject/naomi">
-    	<img src="https://travis-ci.org/NaomiProject/Naomi.svg?branch=master">
-    </a>
     <a href="https://coveralls.io/github/NaomiProject/Naomi?branch=master">
     	<img src="https://coveralls.io/repos/github/NaomiProject/Naomi/badge.svg?branch=master">
     </a>
