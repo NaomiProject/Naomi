@@ -52,6 +52,8 @@
 
 ## Key Features
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/04cc331e03bf41c48e15701dea9e9f04)](https://app.codacy.com/app/Longshotpro2/Naomi?utm_source=github.com&utm_medium=referral&utm_content=NaomiProject/Naomi&utm_campaign=Badge_Grade_Dashboard)
+
 * Control Anything
   - Use your voice to ask for information, update social networks, control your home, and more.
 * Always Listening
