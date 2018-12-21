@@ -67,3 +67,6 @@ target/
 
 # SublimeLinter config file
 .sublimelinterrc
+
+# Naomi executable created by naomi-setup.sh
+Naomi

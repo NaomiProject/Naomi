@@ -107,7 +107,7 @@ class Mic(object):
             wav_fp.setsampwidth(int(self._input_bits / 8))
             wav_fp.setframerate(framerate)
             if self._input_rate == framerate:
-                fragment = ''.join(frames)
+                fragment = b''.join(frames)
             else:
                 fragment = audioop.ratecv(''.join(frames),
                                           int(self._input_bits / 8),
@@ -183,7 +183,7 @@ class Mic(object):
                 elif len(frames) >= frames.maxlen:
                     # Threshold SNR not reached. Update threshold with
                     # background noise.
-                    self._threshold = float(audioop.rms("".join(frames), 2))
+                    self._threshold = float(audioop.rms(b"".join(frames), 2))
             else:
                 # We're recording
                 recording_frames.append(frame)

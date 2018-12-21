@@ -26,10 +26,13 @@ class FliteTTSPlugin(plugin.TTSPlugin):
                              "support!")
         try:
             voice = self.profile['flite-tts']['voice']
+            self._logger.info("Voice: {}".format(voice))
         except KeyError:
             voice = ''
         else:
-            if not voice or voice not in self.get_voices():
+            voices = self.get_voices()
+            if not voice or voice not in voices:
+                self._logger.info("Voice {} not in Voices {}".format(voice,voices))
                 voice = ''
         self.voice = voice
 
@@ -41,15 +44,19 @@ class FliteTTSPlugin(plugin.TTSPlugin):
             subprocess.call(cmd, stdout=out_f)
             out_f.seek(0)
             for line in out_f:
-                if line.startswith('Voices available: '):
-                    voices.extend([x.strip() for x in line[18:].split()
+                strline = line.decode("utf-8")
+                if strline.startswith('Voices available: '):
+                    voices.extend([x.strip() for x in strline[18:].split()
                                    if x.strip()])
         return voices
 
     def say(self, phrase):
         cmd = ['flite']
+        self._logger.info("self.voice = {}".format(self.voice))
         if self.voice:
             cmd.extend(['-voice', self.voice])
+        else:
+            self._logger.info("self.voice is false")
         cmd.extend(['-t', phrase])
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as f:
             fname = f.name

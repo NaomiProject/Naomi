@@ -149,7 +149,7 @@ def compile_dictionary(g2pconverter, words, output_file):
         phonemes = g2pconverter.translate(words)
         logger.debug(phonemes)
     except ValueError as e:
-        if e.message == 'Input symbol not found':
+        if str(e) == 'Input symbol not found':
             logger.debug("Upper failed trying lower()")
             phonemes = g2pconverter.translate([word.lower() for word in words])
         else:

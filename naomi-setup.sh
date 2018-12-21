@@ -18,16 +18,16 @@ sudo apt-get update
 sudo apt-get install libssl-dev gettext portaudio19-dev libasound2-dev -y
 
 # installing python 2.7.13
-echo 'Installing python 2.7.13 to ~/.naomi/local'
+echo 'Installing python 3.5.3 to ~/.naomi/local'
 mkdir -p ~/.naomi/local
 cd ~/.naomi/local
-wget https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz
-tar xvzf Python-2.7.13.tgz
-cd Python-2.7.13
+wget https://www.python.org/ftp/python/3.5.3/Python-3.5.3.tgz
+tar xvzf Python-3.5.3.tgz
+cd Python-3.5.3
 ./configure
 make
 make altinstall prefix=~/.naomi/local  # specify local installation directory
-ln -s ~/.naomi/local/bin/python2.7 ~/.naomi/local/bin/python
+ln -s ~/.naomi/local/bin/python3.5 ~/.naomi/local/bin/python
 cd ..  # ~/.naomi/local
 
 # install setuptools and pip for package management
@@ -40,10 +40,8 @@ cd .. # ~/.naomi/local
 
 # The old version of pip expects to access pypi.org using http. PyPi now
 # requires ssl for all connections.
-wget https://files.pythonhosted.org/packages/45/ae/8a0ad77defb7cc903f09e551d88b443304a9bd6e6f124e75c0fbbf6de8f7/pip-18.1.tar.gz
-tar xvzf pip-18.1.tar.gz
-cd pip-18.1 # ~/.naomi/local/pip-18.1
-~/.naomi/local/bin/python setup.py install  # specify the path to the python you installed above
+wget https://bootstrap.pypa.io/get-pip.py
+~/.naomi/local/bin/python get-pip.py  # specify the path to the python you installed above
 
 # install naomi & dependancies
 echo "Returning to $NAOMI_DIR"
@@ -53,7 +51,7 @@ cd $NAOMI_DIR
 
 # start the naomi setup process
 echo "#!/bin/bash" > Naomi
-echo "~/.naomi/local/bin/python $NAOMI_DIR/Naomi.py $@" >> Naomi
+echo "~/.naomi/local/bin/python $NAOMI_DIR/Naomi.py \$\@" >> Naomi
 chmod a+x Naomi
 echo "In the future, run $NAOMI_DIR/Naomi to start Naomi"
 ./Naomi --repopulate

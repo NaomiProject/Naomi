@@ -64,7 +64,7 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
             stderr=subprocess.PIPE
         )
         while proc.poll() is None:
-            nextline = proc.stderr.readline()
+            nextline = proc.stderr.readline().decode("utf-8")
             logger.debug("NextLine: '%s'" % nextline)
             if(nextline == ''):
                 continue
@@ -73,7 +73,9 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
                 logger.error('%s - Input symbol not found' % nextline)
                 proc.kill()
                 raise ValueError('Input symbol not found')
-        stdoutdata, stderrdata = proc.communicate()
+        stdoutdata_byte, stderrdata_byte = proc.communicate()
+        stdoutdata=stdoutdata_byte.decode("utf-8")
+        stderrdata=stderrdata_byte.decode("utf-8")
         logger.debug("StdOutData: %s" % stdoutdata)
     except OSError:
         logger.error(
@@ -163,7 +165,7 @@ class PhonetisaurusG2P(object):
             # a file descriptor a second time.
             for word in words:
                 self._logger.debug(word)
-                f.write("%s\n" % word)
+                f.write(("%s\n" % word).encode("utf-8"))
             tmp_fname = f.name
         self._logger.debug("Self.executable = %s" % self.executable)
         self._logger.debug("Self.fst_model = %s" % self.fst_model)

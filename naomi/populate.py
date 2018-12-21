@@ -7,7 +7,7 @@ import feedparser
 from getpass import getpass
 import math
 import os
-import paths
+from . import paths
 import pytz
 import re
 import subprocess
@@ -700,7 +700,7 @@ def get_weather_location(profile):
             "?",
             _("What is your location?")
         ),
-        get_profile_var(profile, ["location"])
+        get_profile_var(profile, ["weather","location"])
     )
 
     while location and not verify_location(location):
@@ -719,7 +719,7 @@ def get_weather_location(profile):
             location
         )
     if location:
-        set_profile_var(profile, ['location'], location)
+        set_profile_var(profile, ['weather','location'], location)
 
 
 def get_timezone(profile):
