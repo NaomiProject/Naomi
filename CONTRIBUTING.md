@@ -1,62 +1,93 @@
-# Contributing to Naomi
+# Introduction
 
-Want to contribute to Naomi ? Great ! :tada: We're always happy to have more contributors. Before you start developing, though, we ask that you read through this document in-full. It's full of tips and guidelines--if you skip it, you'll likely miss something important (and your pull request will probably be rejected as a result).
+Want to contribute to Naomi ? Great ! 🎉 We're always happy to have more contributors. Before you start developing, though, we ask that you read through this document in-full. It's full of tips and guidelines--if you skip it, you'll likely miss something important (and your pull request will probably be rejected as a result).
 
-Throughout the process of contributing, there's one thing we'd like you to remember: Naomi, and previously Naomi, was developed (and is maintained) by what might be described as "volunteers". They earn no money for their work here and give their time solely for the advancement of the software and the enjoyment of its users. While they will do their best to get back to you regarding issues and pull requests, **your patience is appreciated**.
+Throughout the process of contributing, there's one thing we'd like you to remember: Naomi is developed (and is maintained) by what might be described as "volunteers". They earn no money for their work here and give their time solely for the advancement of the software and the enjoyment of its users. While they will do their best to get back to you regarding issues and pull requests, your patience is appreciated.
 
-## Reporting Bugs
+Following these guidelines helps to communicate that you respect the time of the developers managing and developing this open source project. In return, they should reciprocate that respect in addressing your issue, assessing changes, and helping you finalize your pull requests.
 
-The [bug tracker](https://github.com/NaomiProject/Naomi/issues) at Github is for reporting bugs in Naomi. If encounter problems during installation or compliation of one of Naomi's dependencies for example, do not create a new issue here. Also, make sure that it's not a usage issue.
+## What kinds of contributions are we looking for
 
-If you think that you found a bug and that you're using the most recent version of Naomi, please include a detailed description what you did and how to reproduce the bug. If Naomi crashes, run it with `--debug` as command line argument and also include the full stacktrace (not just the last line). If you post output, put it into a [fenced code block](https://help.github.com/articles/github-flavored-markdown/#fenced-code-blocks). Last but not least: have a look at [Simon Tatham's "How to Report Bugs Effectively"](http://www.chiark.greenend.org.uk/~sgtatham/bugs.html) to learn how to write a good bug report.
+From Improving documentation, bug triaging, writing tutorials to developing along side the maintainers by submitting bug reports, feature requests, writing code which can be incorporated into Naomi all to help further Naomi.
 
-## Opening Pull Requests
+## Contributions we are NOT looking for
 
-### Philosophies
+As of time of writing, we are open to any ideas or contributions anyone may have. Once the idea or contribution is fleshed out, has no standing issues or pull requests that conflict, and add to the scope of Naomi, it will most likely be approved and we look forward to your contribution.
 
-There are a few key philosophies to preserve while designing features for Naomi:
+## Responsibilities
 
-1. **The core Naomi software (`in ~/Naomi/naomi/`) must remain decoupled from any third-party web services.** For example, the Naomi core should never depend on Google Translate in any way. This is to avoid unnecessary dependences on web services that might change or become paid over time.
-2. **The core Naomi software (`in ~/Naomi/naomi/`) must remain decoupled from any paid software or services.** Of course, you're free to use whatever you'd like when running Naomi locally or in a fork, but the main branch needs to remain _free_ and _open-source_.
-3. **Naomi should be _usable_ by both beginner and expert programmers.** If you make a radical change, in particular one that requires some sort of setup, try to offer an easy-to-run alternative or tutorial. See, for example, the profile populator ([`Naomi/naomi/populate.py`](https://github.com/NaomiProject/Naomi/blob/master/naomi/populate.py)), which abstracts away the difficulty of correctly formatting and populating the user profile.
+* Ensure code compatibility for every change. We do not want to break everything just for one feature. If in testing your contribution causes issues but in its self works as intended, try to fix the issues that have arised. At the end of the day, we are all working towards a better Naomi.
+* Ensure that code that goes into Naomi meets all requirements.
+* Create issues for any changes and enhancements that you wish to make. Discuss things transparently and get community feedback.
 
-### DOs and DON'Ts
+# Your First Contribution
 
-#### Before coding
+Due to the nature of the project and at the time of writing, you can look through [issues](https://www.github.com/naomiproject/naomi/issues) and if there is something that you can aid in, jump right it. Some things might be simple bug fixes that may take only a few lines of code while others may take editing multiple documents and structure already assembled. Those required someone that understands Naomi front to back and has worked on the project for some time. In other words, do not bite off more than you can chew, every little step helps.
 
-You **_should**:
+## Resource for people who have never contributed to open source before.
 
-1. **Watch the [project roadmap](https://github.com/NaomiProject/Naomi/projects) 
-and [milestone](https://github.com/NaomiProject/Naomi/milestones)** in order to find something to work on.
+Working on your first Pull Request? You can learn how from this *free* series, [How to Contribute to an Open Source Project on GitHub](https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github).
 
-2. **Make sure the stuff you want to do is not already done** it would be awful to reivent the wheel 
+At this point, you're ready to make your changes! Feel free to ask for help; everyone is a beginner at first :smile_cat:
 
-3. **In case you want to implement your own ideas**, submit it first [here](https://github.com/NaomiProject/Naomi/issues), we'll have a conversation if this idea respect the project philosophy or explore others options to improve your idea, then may add it to the next milestone and project planning. _Any pull-request that don't follow this rule will be rejected_
+However, if a maintainer asks you to "rebase" your pull request, they're saying that a lot of code has changed since you started working, and that you need to update your branch so it's easier to merge.
 
+# Getting started
 
-#### While developing:
+1. Check open issues that are labeled as available to work on. If it is an idea that has no current issue or pull request related to it, create an issue so that the idea can be fleshed out and approved before starting. Do not want you to reinvent the wheel.
+2. Create your own fork of the code
+3. Do the changes in your fork
+4. If you like the change and think the project could use it:
 
-you **_should_**:
+   * Be sure you have followed the style of code throughout the project. Make it clean and readable!
+   * Test the code on a RaspberryPi
+   * Send a pull request and fillout the template. (All issues and PR have to follow the template or they will not be accepted)
+   * Once the PR has been submitted a bot will ask you to sign a Contribution License Agreement, CLA. (All contributers to the PR has to accept the CLA in order for the PR to be accepted)
+   * The maintainer will review your submission and either ask for clarifications or changes, or approve the PR and it will be merged.
 
-1. **Ensure that the existing unit tests pass.** They can be run via `python2 -m unittest discover` for Naomi's main folder.
-2. **Test _every commit_ on a Raspberry Pi**. Testing locally (i.e., on OS X or Windows or whatnot) is insufficient, as you'll often run into semi-unpredictable issues when you port over to the Pi. You should both run the unit tests described above and do some anecdotal testing (i.e., run Naomi, trigger at least one module).
-3. **Ensure that your code conforms to [PEP8](http://legacy.python.org/dev/peps/pep-0008/) and our existing code standards.** For example, we used camel case in a few places (this could be changed--send in a pull request!). In general, however, defer to PEP8. We also really like Jeff Knupp's [_Writing Idiomatic Python_](http://www.jeffknupp.com/writing-idiomatic-python-ebook/). We use `flake8` to check this, so run it from Naomi's main folder before committing.
-4. Related to the above: **Include docstrings that follow our existing format!** Good documentation is a good thing.
-4. **Add any new Python dependencies to python_requirements.txt.** Make sure that your additional dependencies are dependencies of `Naomi` and not existing packages on your disk image!
-5. **Explain _why_ your change is necessary.** What does it accomplish? Is this something that others will want as well?
-6. Once your pull request has received some positive feedback: **Don't forget to update the [Wiki](https://github.com/NaomiProject/Naomi/wiki)** to keep the docs in sync.
+# Labeling conventions for issues & pull requests
 
-On the other hand, you **_should not_**:
+Our issues and pull request follow a [labeling convention](https://github.com/NaomiProject/Naomi/issues/126) to aid with flow & organization. Please review them so you know what each label means and how they are used.
 
-1. **Commit _any_ modules to the _naomi-client_ repository.** The modules included in _Naomi/modules_ are meant as illustrative examples. Any new modules that you'd like to share should be done so through other means. If you'd like us to [List your module]() on the web site, [submit a pull request here](https://github.com/NaomiProject/Naomi/pulls).
-2. **_Not_ do any of the DOs!**
+# How to report a bug
 
-### TODOs
+## Security Disclosures!
 
-If you're looking for something to do, here are some suggestions:
-1. Improve unit-testing for `naomi-client`. The Naomi modules and `brain.py` have ample testing, but other Python modules (`conversation.py`, `mic.py`, etc.) do not.
-2. Come up with a better way to automate testing on the Pi. This might include spinning up some sort of VM with [Docker](http://docs.docker.io), or take a completely different approach.
-3. Buff up the text-refinement functions in [`alteration.py`](https://github.com/NaomiProject/Naomi/blob/master/naomi/alteration.py). These are meant to convert text to a form that will sound more human-friendly when spoken by your TTS software, but are quite minimal at the moment.
-4. Make Naomi more platform-independent. Currently, Naomi is only supported on Linux (Debian based and Raspberry Pi) and OS X.
+If you find a security vulnerability, do **NOT** open an issue. Email security@projectnaomi.com instead.
 
-### Thanks for reading :grin: :tada:
+Any security issues should be submitted directly to security@projectnaomi.com
+In order to determine whether you are dealing with a security issue, ask yourself these two questions:
+
+ * Can I access something that's not mine, or something I shouldn't have access to?
+ * Can I disable something for other people?
+
+If the answer to either of those two questions are "yes", then you're probably dealing with a security issue. Note that even if you answer "no" to both questions, you may still be dealing with a security issue, so if you're unsure, just email us at security@projectnaomi.com and the lead maintainers will address the issue immediately.
+
+## Bug reports
+
+If you have found a bug, please create an issue using the bug report template and fill out as much information as you can.
+>Note: Again, any issues &/or pull requests that do not follow the template will be asked to resubmit using the template and closed!
+
+## How to suggest a feature or enhancement
+
+If you have an idea that you think will improve upon Naomi, create an issue using the proper template and fill it out to the best of your ability. Once submitted the community will discuss with you about the idea to help flesh it out and give it a base to be built upon. This will allow us to determine whether or not the idea should be implemented, put on hold due to other issues or pull requests that are currently open at that time, or abandoned if it does not fit into the scope of Naomi. Once approved, the idea can either be worked on by either the submittor if they so choose or made available for other developers and maintainers to turn the idea into reality.
+
+If you find yourself wishing for a feature that doesn't exist in Naomi, you are probably not alone. There are bound to be others out there with similar needs. Many of the features that Naomi has today have been added because users saw the need. Open an issue on our issues list on GitHub which describes the feature you would like to see, why you need it, and how it should work.
+
+## Code review process
+
+Someone on the core team is active at most times, expect some sort of response within 24 hours, but please be patient. If a maintainer does not have the knowledge needed for said issue or pull request they will direct attention to another that does. This shows the submitter that the issue or PR is being looked at.
+
+Do note: After feedback has been given and required a response from the submitter, we expect responses within two weeks. After two weeks we may close the pull request if it isn't showing any activity.
+
+If everything up to this point has been done correctly but your PR has not been approved or merged, here are some things to look out for.
+
+* Double check that everything was done correctly.
+* Refernce the status label for the PR, this can give you information that might tell you whats wrong.
+* Make sure you have signed the CLA and your code has been reviewed by at least one maintainer.
+
+By all means if none of this applies and everything is in order, please reach out to one of the core team and we will be happy to look into what the issue is.
+
+# Community
+
+ Naomi is always looking to grow its community whether you are a developer or someone whom has interest in the project. You can join our [forum](https://community.projectnaomi.com) to talk with others as well as spread the work about Naomi. Every small step leads Naomi in the right direction.
