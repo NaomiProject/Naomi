@@ -66,7 +66,7 @@
 
 ## Documentation
 
-All the documentation is available on our [website](https://projectnaomi.com/documentation)!
+All the documentation is available on our [website](https://projectnaomi.com/docs)!
 
 ## Download
 
