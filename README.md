@@ -13,11 +13,8 @@
 	<a href="">
     	<img src="https://img.shields.io/badge/python-v2.7-blue.svg">
     </a>
-    <a href="https://coveralls.io/github/NaomiProject/Naomi?branch=master">
-    	<img src="https://coveralls.io/repos/github/NaomiProject/Naomi/badge.svg?branch=master">
-    </a>
-    <a href="(https://www.codacy.com/app/naomiproject/naomi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=naomiproject/naomi&amp;utm_campaign=Badge_Grade">
-    	<img src="https://api.codacy.com/project/badge/Grade/ee172c51010b469491bf437538cfa5ec">
+    <a href="https://www.codacy.com/app/Longshotpro2/Naomi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=NaomiProject/Naomi&amp;utm_campaign=Badge_Grade">
+      <img src="https://api.codacy.com/project/badge/Grade/1adb77e862b840c5a23bc0381ef25635"/>
     </a>
     <a href="https://requires.io/github/NaomiProject/Naomi/requirements/?branch=master">
     	<img src="https://requires.io/github/NaomiProject/Naomi/requirements.svg?branch=master">
@@ -53,16 +50,15 @@
 ## Key Features
 
 * Control Anything
-  - Use your voice to ask for information, update social networks, control your home, and more.
+  * Use your voice to ask for information, update social networks, control your home, and more.
 * Always Listening
-  - Naomi is always on, always listening for commands, and you can speak from feet away.
+  * Naomi is always on, always listening for commands, and you can speak from feet away.
 * 100% Open Source
-  - Build it yourself with off-the-shelf hardware, and use our documentation to write your own modules.
+  * Build it yourself with off-the-shelf hardware, and use our documentation to write your own modules.
 * Cross Platform Coming Soon
-  - Raspberry Pi and Linux currently.
+  * Raspberry Pi and Linux currently.
 * Thorough Documentation
-  - Documentation is kept up to date.
-
+  * Documentation is kept up to date.
 
 ## Documentation
 
@@ -76,9 +72,8 @@ You can [download](https://projectnaomi.com/download) latest installable version
 
 This software uses code from the initial Jasper Project & the Jasper2fork.
 
-- [JasperProject](http://jasperproject.github.io/)
-- [Jasper2Fork](https://github.com/andweber/j2f)
-
+* [JasperProject](http://jasperproject.github.io/)
+* [Jasper2Fork](https://github.com/andweber/j2f)
 
 ## License
 
