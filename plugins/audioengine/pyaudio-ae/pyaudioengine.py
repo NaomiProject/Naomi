@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
+import os
 import contextlib
 import re
 import slugify
 import pyaudio
 from naomi import plugin
+
 
 PYAUDIO_BIT_MAPPING = {8: pyaudio.paInt8,
                        16: pyaudio.paInt16,
@@ -18,13 +20,27 @@ def bits_to_samplefmt(bits):
 
 
 class PyAudioEnginePlugin(plugin.AudioEnginePlugin):
+
     def __init__(self, *args, **kwargs):
+
         super(PyAudioEnginePlugin, self).__init__(*args, **kwargs)
         self._logger = logging.getLogger(__name__)
         self._logger.info("Initializing PyAudio. ALSA/Jack error messages " +
                           "that pop up during this process are normal and " +
                           "can usually be safely ignored.")
-        self._pyaudio = pyaudio.PyAudio()
+
+        # AaronC Sept 18 2018 Temporarily redirect errors
+        # while instantiating PyAudio object if we are not
+        # in DEBUG mode
+        if (self._logger.getEffectiveLevel() > logging.DEBUG):
+            dev_null = os.open('/dev/null', os.O_WRONLY)
+            std_err = os.dup(2)
+            os.dup2(dev_null, 2)
+            self._pyaudio = pyaudio.PyAudio()
+            os.dup2(std_err, 2)
+        else:
+            self._pyaudio = pyaudio.PyAudio()
+
         self._logger.info("Initialization of PyAudio engine finished")
 
     def __del__(self):

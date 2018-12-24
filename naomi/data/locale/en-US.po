@@ -1,44 +1,603 @@
+# #-#-#-#-#  en-US.po (Naomi 2.2-dev)  #-#-#-#-#
 # Naomi core translations
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
+# Portions copyright (C) 2018 others
 # This file is distributed under the same license as the Naomi package.
 # Jan Holthuis <holthuis.jan@googlemail>, 2015.
 #
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: 2.0-dev\n"
-"Report-Msgid-Bugs-To: \n"
+"#-#-#-#-#  en-US.po (Naomi 2.2-dev)  #-#-#-#-#\n"
+"Project-Id-Version: Naomi 2.2-dev\n"
 "POT-Creation-Date: 2015-10-28 01:17+0100\n"
 "PO-Revision-Date: 2015-10-28 01:23+0100\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 "Last-Translator: Jan Holthuis <holthuis.jan@googlemail.com>\n"
-"Language-Team: Naomi Project\n"
 "Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.8.5\n"
 "X-Poedit-SourceCharset: UTF-8\n"
+"Generated-By: pygettext.py 1.5\n"
 
-#: client/conversation.py:24
+#: client/conversation.py:24 /home/pi/Naomi/naomi/conversation.py:24
 msgid "My name is, %s."
 msgstr ""
 
-#:client/conversation.py:26
+#: client/conversation.py:26 /home/pi/Naomi/naomi/conversation.py:27
 msgid "My name is Naomi"
 msgstr ""
 
-#: client/conversation.py:32
+#: client/conversation.py:32 /home/pi/Naomi/naomi/conversation.py:32
 #, python-format
 msgid "How can I be of service, %s?"
 msgstr ""
 
-#: client/conversation.py:35
+#: client/conversation.py:35 /home/pi/Naomi/naomi/conversation.py:35
 msgid "How can I be of service?"
 msgstr ""
 
 #: client/conversation.py:60
-msgid "I'm sorry. I had some trouble with that operation. Please try again later."
+msgid ""
+"I'm sorry. I had some trouble with that operation. Please try again later."
 msgstr ""
 
-#: client/conversation.py:67
+#: client/conversation.py:67 /home/pi/Naomi/naomi/conversation.py:69
 msgid "Pardon?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/conversation.py:59
+msgid "I'm sorry. I had some trouble with that "
+msgstr ""
+
+#: /home/pi/Naomi/naomi/conversation.py:61
+msgid "operation. Please try again later."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:266 naomi/populate.py:267
+msgid "Location saved as"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:319 naomi/populate.py:320
+msgid "Language Selector"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:328 naomi/populate.py:329
+msgid "Select Language"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:358 naomi/populate.py:359
+msgid "Hello, thank you for selecting me to be your personal assistant."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:364 naomi/populate.py:365
+msgid "Let's populate your profile."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:370 naomi/populate.py:371
+msgid ""
+"If, at any step, you would prefer not to enter the requested information"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:375 naomi/populate.py:376
+msgid "just hit 'Enter' with a blank field to continue."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:390 naomi/populate.py:391
+msgid "First, what name would you like to call me by?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:401 naomi/populate.py:402
+msgid "Now please tell me a little about yourself."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:410 naomi/populate.py:411
+msgid "What is your first name?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:419 naomi/populate.py:420
+msgid "What is your last name?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:428 naomi/populate.py:429
+msgid "I can use an email account to send notifications to you."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:431 /home/pi/Naomi/naomi/populate.py:494
+#: naomi/populate.py:432 naomi/populate.py:495
+msgid "Alternatively, you can skip this step"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:440 naomi/populate.py:441
+msgid "Please enter your imap server as \"server[:port]\""
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:452 naomi/populate.py:453
+msgid "What is your email address?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:471 naomi/populate.py:472
+msgid "What is your email password?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:474 naomi/populate.py:475
+msgid "(just press enter to keep current password)"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:489 naomi/populate.py:490
+msgid "I can use your phone number to send notifications to you."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:499 naomi/populate.py:500
+msgid "No country codes!"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:501 naomi/populate.py:502
+msgid "Any dashes or spaces will be removed for you"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:509 naomi/populate.py:510
+msgid "What is your Phone number?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:523 naomi/populate.py:524
+msgid "What is your phone carrier?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:528 naomi/populate.py:529
+msgid "If you have a US phone number, "
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:529 naomi/populate.py:530
+msgid "you can enter one of the following:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:534 naomi/populate.py:535
+msgid "without the quotes"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:540 naomi/populate.py:541
+msgid "If your carrier isn't listed or you have an international"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:545 naomi/populate.py:546
+msgid "number, go to"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:550
+msgid ""
+"and enter the email suffix for your carrier (e.g., for Virgin Mobile, enter "
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:555
+msgid "'vmobl.com'; for T-Mobile Germany, enter 't-d1-sms.de')."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:562 naomi/populate.py:564
+msgid "What is your Carrier? "
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:614 naomi/populate.py:618
+msgid "Would you prefer to have notifications sent by"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:619
+msgid "email (E) or text message (T)?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:630
+msgid "Email (E) or Text message (T)?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:639
+msgid "Please choose email (E) or text message (T)!"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:653
+msgid ""
+"For weather information, please enter your 5-digit zipcode (e.g., 08544)."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:658
+msgid ""
+"If you are outside the US, insert the name of the nearest big town/city."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:665 /home/pi/Naomi/naomi/populate.py:681
+#: naomi/populate.py:690 naomi/populate.py:706
+msgid "What is your location?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:673 naomi/populate.py:698
+msgid "Weather not found."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:675 naomi/populate.py:700
+msgid "Please try another location."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:696 naomi/populate.py:721
+msgid "Please enter a timezone from the list located in the TZ*"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:701 naomi/populate.py:726
+msgid "column at"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:706 naomi/populate.py:731
+msgid "or none at all."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:717 /home/pi/Naomi/naomi/populate.py:731
+#: naomi/populate.py:742 naomi/populate.py:756
+msgid "What is your timezone?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:727 naomi/populate.py:752
+msgid "Not a valid timezone. Try again."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:751 naomi/populate.py:776
+msgid "Please select a speech to text engine."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:769 naomi/populate.py:794
+msgid "Available choices:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:785 /home/pi/Naomi/naomi/populate.py:1120
+#: naomi/populate.py:810 naomi/populate.py:1183
+msgid "Unrecognized option."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:799 naomi/populate.py:824
+msgid "Please enter your API key:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:811 naomi/populate.py:836
+msgid "Please enter your watson username:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:821 naomi/populate.py:846
+msgid "Please enter your watson password:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:835 naomi/populate.py:860
+msgid "I need your Kaldi g-streamer server url to continue"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:841 naomi/populate.py:866
+msgid "default is"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:858 naomi/populate.py:883
+msgid "Please enter your server url:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:878 naomi/populate.py:903
+msgid "Enter path to julius hmm defs"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:890 naomi/populate.py:915
+msgid "Enter path to julius tied list"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:902 naomi/populate.py:927
+msgid "Enter path to julius lexicon"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:941 naomi/populate.py:966
+msgid "What is the name of your phonetisaurus-g2p program?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1001 naomi/populate.py:1064
+msgid "Please enter the path to your hmm directory"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1066 naomi/populate.py:1129
+msgid "Please enter the path to your fst model"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1101 naomi/populate.py:1164
+msgid "Please select a text to speech (TTS) engine."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1111 naomi/populate.py:1174
+msgid "Available implementations: "
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1127 naomi/populate.py:1190
+msgid "If you would like to alter the espeak voice, you can use"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1132 naomi/populate.py:1195
+msgid "the following options in your config file:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1144 naomi/populate.py:1207
+msgid "Use the festival command to set the default voice."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1152 naomi/populate.py:1215
+msgid "Available voices:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1169 naomi/populate.py:1232
+msgid "Select a voice"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1175 naomi/populate.py:1238
+msgid "FLite does not appear to be installed"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1176 naomi/populate.py:1239
+msgid "Please install it using:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1178
+msgid "then re-run this program with the --repopulate flag"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1185 naomi/populate.py:1250
+msgid "You will now need to enter your Ivona account information."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1191
+msgid "You will need to create an account at"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1198 naomi/populate.py:1266
+msgid "if you haven't already."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1208 naomi/populate.py:1276
+msgid "What is your Access key?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1219 naomi/populate.py:1287
+msgid "What is your Secret key?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1234 naomi/populate.py:1302
+msgid "Which voice do you want"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1235 naomi/populate.py:1303
+msgid "(default is Brian)"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1248 naomi/populate.py:1316
+msgid "Server?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1270 naomi/populate.py:1338
+msgid "Language?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1281 naomi/populate.py:1349
+msgid "Voice?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1292 naomi/populate.py:1360
+msgid "I have two ways to let you know I've heard you; Beep or Voice."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1304
+msgid "(%s) for beeps or (%s) for voice."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1317
+msgid "Please choose beeps (B) or voice (V)"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1326 naomi/populate.py:1404
+#, python-format
+msgid "Type the words I should say after hearing my wake word: %s"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1336 naomi/populate.py:1414
+msgid "Reply"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1344 /home/pi/Naomi/naomi/populate.py:1366
+#: naomi/populate.py:1422 naomi/populate.py:1444
+msgid "Is this correct?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1350 naomi/populate.py:1428
+msgid "Type the words I should say after hearing a command"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1358 naomi/populate.py:1436
+msgid "Response"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1390 naomi/populate.py:1468
+msgid "Please select an audio engine."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1403 naomi/populate.py:1481
+msgid "Available implementations:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1428 naomi/populate.py:1506
+msgid "Please choose an output device"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1433 naomi/populate.py:1511
+msgid "Available output devices:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1462 naomi/populate.py:1540
+msgid "Testing device by playing a sound"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1471
+msgid "Were you able to hear the beep (%s/%s)?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1476 naomi/populate.py:1558
+msgid ""
+"The volume on your device may be too low. You should be able to use "
+"'alsamixer' to set the volume level."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1481 naomi/populate.py:1563
+msgid "Do you want to continue and try to fix the volume later?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1490 naomi/populate.py:1572
+msgid "Output format not supported on this device."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1495 naomi/populate.py:1577
+msgid "Please choose a different device."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1505 naomi/populate.py:1587
+#, python-format
+msgid "Can't locate wav file: %s"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1510 naomi/populate.py:1592
+msgid "Skipping test"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1532 naomi/populate.py:1614
+msgid "Please choose an input device"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1535 naomi/populate.py:1617
+msgid "Available input devices:"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1543 naomi/populate.py:1625
+msgid ""
+"Would you like me to test your selection by recording your voice and playing "
+"it back to you?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1592 naomi/populate.py:1674
+msgid "Please speak into the mic now"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1607 naomi/populate.py:1689
+msgid "Sound detected - recording"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1621
+msgid "No sound detected. Setting threshold from %s to %s"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1635 naomi/populate.py:1729
+#, python-format
+msgid "Recorded %d frames"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1658 naomi/populate.py:1753
+msgid "Did you hear yourself?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1665 naomi/populate.py:1760
+msgid "Replay?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1669 naomi/populate.py:1764
+msgid "Do you want to skip this test and continue?"
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1741 naomi/populate.py:1836
+msgid "Writing to profile..."
+msgstr ""
+
+#: /home/pi/Naomi/naomi/populate.py:1749 naomi/populate.py:1844
+msgid "Done."
+msgstr ""
+
+#: naomi/populate.py:551
+msgid "and enter the email suffix for your carrier"
+msgstr ""
+
+#: naomi/populate.py:552
+msgid "(e.g., for Virgin Mobile, enter 'vmobl.com';"
+msgstr ""
+
+#: naomi/populate.py:557
+msgid "for T-Mobile Germany, enter 't-d1-sms.de')."
+msgstr ""
+
+#: naomi/populate.py:614
+msgid "email"
+msgstr ""
+
+#: naomi/populate.py:615
+msgid "text"
+msgstr ""
+
+#: naomi/populate.py:623
+msgid "email ({email_choice}) or text message ({text_choice})?"
+msgstr ""
+
+#: naomi/populate.py:638
+msgid "Email ({email_choice}) or Text message ({text_choice})?"
+msgstr ""
+
+#: naomi/populate.py:654
+msgid "Please choose email ({email_choice}) or text message ({text_choice})!"
+msgstr ""
+
+#: naomi/populate.py:676
+msgid "For weather information, please enter your 5-digit zipcode"
+msgstr ""
+
+#: naomi/populate.py:677
+msgid "(e.g., 08544)."
+msgstr ""
+
+#: naomi/populate.py:682
+msgid "If you are outside the US,"
+msgstr ""
+
+#: naomi/populate.py:683
+msgid "insert the name of the nearest big town/city."
+msgstr ""
+
+#: naomi/populate.py:1242
+msgid "then re-run Naomi with the --repopulate flag"
+msgstr ""
+
+#: naomi/populate.py:1259
+#, python-format
+msgid "You will need to create an account at %s"
+msgstr ""
+
+#: naomi/populate.py:1365
+msgid "voice"
+msgstr ""
+
+#: naomi/populate.py:1366
+msgid "beep"
+msgstr ""
+
+#: naomi/populate.py:1374
+msgid "({beep_choice}) for beeps or ({voice_choice}) for voice."
+msgstr ""
+
+#: naomi/populate.py:1391
+msgid "Please choose beeps ({beeps_choice}) or voice ({voice_choice})"
+msgstr ""
+
+#: naomi/populate.py:1549
+msgid "Were you able to hear the beep ({y}/{n})?"
+msgstr ""
+
+#: naomi/populate.py:1703
+msgid "No sound detected."
+msgstr ""
+
+#: naomi/populate.py:1704
+msgid "Setting threshold from {t} to {s}"
 msgstr ""

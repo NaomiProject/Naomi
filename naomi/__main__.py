@@ -9,8 +9,16 @@ from application import USE_STANDARD_MIC, USE_TEXT_MIC, USE_BATCH_MIC
 
 def main(args=None):
     parser = argparse.ArgumentParser(description='Naomi Voice Control Center')
-    parser.add_argument('--debug', action='store_true',
-                        help='Show debug messages')
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        help='Show debug messages'
+    )
+    parser.add_argument(
+        '--repopulate',
+        action='store_true',
+        help='Rebuild configuration profile'
+    )
     list_info = parser.add_mutually_exclusive_group(required=False)
     list_info.add_argument('--list-plugins', action='store_true',
                            help='List plugins and exit')
@@ -25,13 +33,17 @@ def main(args=None):
                           'commands audio filenames at each line.')
     p_args = parser.parse_args(args)
 
-    print("***********************************************************")
-    print("*                    Naomi Assistant                      *")
-    print("* Made by the Naomi Community, based on the NaomiProject *")
-    print("***********************************************************")
+    print("************************************************************")
+    print("*                    Naomi Assistant                       *")
+    print("* Made by the Naomi Community, based on the Jasper Project *")
+    print("* Source code available from                               *")
+    print("*    https://github.com/NaomiProject/Naomi                 *")
+    print("************************************************************")
 
     # Set up logging
-    logging.basicConfig(level=logging.DEBUG if p_args.debug else logging.INFO)
+    logging.basicConfig(
+        level=logging.DEBUG if p_args.debug else logging.ERROR
+    )
 
     # Select Mic
     if p_args.local:
@@ -44,8 +56,11 @@ def main(args=None):
         used_mic = USE_STANDARD_MIC
 
     # Run Naomi
-    app = application.Naomi(use_mic=used_mic,
-                             batch_file=p_args.batch_file)
+    app = application.Naomi(
+        use_mic=used_mic,
+        batch_file=p_args.batch_file,
+        repopulate=p_args.repopulate
+    )
     if p_args.list_plugins:
         app.list_plugins()
         sys.exit(1)

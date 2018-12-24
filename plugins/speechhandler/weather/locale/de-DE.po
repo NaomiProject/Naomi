@@ -1,12 +1,15 @@
+# #-#-#-#-#  de-DE.po (Naomi 2.2-dev)  #-#-#-#-#
 # Naomi Weather Plugin
 # Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
+# Portions copyright (C) 2018 others
 # This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Naomi 2.0\n"
-"Report-Msgid-Bugs-To: https://github.com/naomiproject/naomi-client/issues\n"
+"#-#-#-#-#  de-DE.po (Naomi 2.2-dev)  #-#-#-#-#\n"
+"Project-Id-Version: Naomi 2.2-dev\n"
+"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
 "POT-Creation-Date: 2015-12-01 15:10+0100\n"
 "PO-Revision-Date: 2015-12-01 15:10+0100\n"
 "Last-Translator: Jan Holthuis <jan.holthuis@ruhr-uni-bochum.de>\n"
@@ -14,6 +17,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
 
 #: plugins/speechhandler/weather/weather.py:113
 #: plugins/speechhandler/weather/weather.py:230
@@ -65,8 +69,12 @@ msgstr "Willst du die Vorhersage für die nächsten %d Tage hören?"
 
 #: plugins/speechhandler/weather/weather.py:195
 #, python-brace-format
-msgid "Tomorrow in {city}: {text} and temperatures between {temp_low} and {temp_high} degrees."
-msgstr "Morgen in {city}: {text} und Temperaturen zwischen {temp_low} und {temp_high} Grad."
+msgid ""
+"Tomorrow in {city}: {text} and temperatures between {temp_low} and "
+"{temp_high} degrees."
+msgstr ""
+"Morgen in {city}: {text} und Temperaturen zwischen {temp_low} und "
+"{temp_high} Grad."
 
 #: plugins/speechhandler/weather/weather.py:204
 msgid "Sorry, I had a problem retrieving the weather data."
@@ -245,3 +253,7 @@ msgstr "Freitag"
 
 msgid "Saturday"
 msgstr "Samstag"
+
+#: /home/pi/Naomi/plugins/speechhandler/weather/weather.py:223
+msgid "YEAH"
+msgstr ""
