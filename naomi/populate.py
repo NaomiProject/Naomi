@@ -1505,7 +1505,9 @@ def get_audio_engines():
                 os.path.dirname(
                     os.path.abspath(__file__)
                 )
-            )
+            ),
+            "plugins",
+            "audioengine"
         )]
     )
     audioengine_plugins.detect_plugins()

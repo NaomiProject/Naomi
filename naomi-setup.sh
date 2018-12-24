@@ -32,9 +32,9 @@ cd ..  # ~/.naomi/local
 
 # install setuptools and pip for package management
 echo 'Installing setuptools'
-wget https://pypi.python.org/packages/source/s/setuptools/setuptools-0.6c11.tar.gz#md5=7df2a529a074f613b509fb44feefe74e
-tar xvzf setuptools-0.6c11.tar.gz
-cd setuptools-0.6c11 # ~/.naomi/local/setuptools-0.6c11
+wget https://files.pythonhosted.org/packages/37/1b/b25507861991beeade31473868463dad0e58b1978c209de27384ae541b0b/setuptools-40.6.3.zip
+unzip setuptools-40.6.3.zip
+cd setuptools-40.6.3
 ~/.naomi/local/bin/python setup.py install  # specify the path to the python you installed above
 cd .. # ~/.naomi/local
 
