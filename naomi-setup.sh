@@ -15,7 +15,7 @@ echo "Updating apt, preparing to install libssl-dev, gettext, portaudio19-dev an
 # install dependencies
 sudo apt-get update
 # libssl-dev required to get the python _ssl module working
-sudo apt-get install libssl-dev gettext portaudio19-dev libasound2-dev -y
+sudo apt-get install libssl-dev gettext libncurses5-dev portaudio19-dev libasound2-dev -y
 
 # installing python 2.7.13
 echo 'Installing python 2.7.13 to ~/.naomi/local'
@@ -53,7 +53,7 @@ cd $NAOMI_DIR
 
 # start the naomi setup process
 echo "#!/bin/bash" > Naomi
-echo "~/.naomi/local/bin/python $NAOMI_DIR/Naomi.py $@" >> Naomi
+echo "~/.naomi/local/bin/python $NAOMI_DIR/Naomi.py \$@" >> Naomi
 chmod a+x Naomi
 echo "In the future, run $NAOMI_DIR/Naomi to start Naomi"
 ./Naomi --repopulate
