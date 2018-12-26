@@ -33,6 +33,7 @@ class TestMic(object):
         self.idx = 0
         self.outputs = []
 
+    @classmethod
     def wait_for_keyword(self, keyword="NAOMI"):
         return
 

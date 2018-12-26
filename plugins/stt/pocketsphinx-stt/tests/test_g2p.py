@@ -14,7 +14,7 @@ class DummyProc(object):
         self.stderr = mock.Mock()
         self.stderr.readline = mock.Mock(return_value='')
 
-    
+
     def communicate(self):
         if(diagnose.get_profile_value([
             'pocketsphinx',

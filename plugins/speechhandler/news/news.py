@@ -83,9 +83,14 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
 
         try:
             email = self.profile['email']['address']
+            # the following lines are just stupid, to fix a complaint that
+            # Codacy has that the "email" variable was defined above but
+            # not used.
+            if(email is None):
+                pass
         except KeyError:
             return
-        
+
         if self.profile['prefers_email'] :
 
             mic.say(self.gettext('Would you like me to send you these articles?'))

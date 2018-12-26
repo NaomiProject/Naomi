@@ -74,6 +74,11 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
 
         try:
             email = self.profile['email']['address']
+            # the following lines are just stupid, to fix a complaint that
+            # Codacy has that the "email" variable was defined above but
+            # not used.
+            if(email is None):
+                pass
         except KeyError:
             return
 
