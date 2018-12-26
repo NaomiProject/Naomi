@@ -178,7 +178,7 @@ def simple_input(prompt, default=None):
     prompt += input_text()
     # don't use print here so no automatic carriage return
     # sys.stdout.write(prompt)
-    response = raw_input(prompt.encode("utf-8"))
+    response = input(prompt)
     # if the user pressed enter without entering anything,
     # set the response to default
     if(default and not response):
@@ -301,7 +301,7 @@ def select_language(profile):
         u'DE-Deutsch': 'de-DE'
     }
     language = get_profile_var(profile, ["language"], "en-US")
-    selected_language = languages.keys()[languages.values().index(language)]
+    selected_language = list(languages.keys())[list(languages.values()).index(language)]
     translations = i18n.parse_translations(paths.data('locale'))
     translator = i18n.GettextMixin(translations, profile)
     _ = translator.gettext
@@ -324,7 +324,7 @@ def select_language(profile):
         print("")
         print("")
         for language in languages.keys():
-            print("    " + language.encode("utf-8"))
+            print("    {}".format(language))
         print("")
         selected_language = simple_input(
             format_prompt(
@@ -336,16 +336,10 @@ def select_language(profile):
         if(len(selected_language) > 0):
             if(check_for_value(
                 selected_language,
-                [x[:len(selected_language)].lower() for x in languages.keys()]
+                [x[:len(selected_language)].lower() for x in list(languages.keys())]
             )):
                 language = languages[
-                    languages.keys()[
-                        [
-                            x[
-                                :len(selected_language)
-                            ].lower() for x in languages.keys()
-                        ].index(selected_language)
-                    ]
+                    list(languages.keys())[[x[:len(selected_language)].lower() for x in list(languages.keys())].index(selected_language)]
                 ]
                 if(language == 'fr-FR'):
                     affirmative = 'oui'
@@ -744,7 +738,7 @@ def get_timezone(profile):
     tz = get_profile_var(profile, ["timezone"])
     if not tz:
         try:
-            tz = subprocess.check_output(["/bin/cat", "/etc/timezone"]).strip()
+            tz = subprocess.check_output(["/bin/cat", "/etc/timezone"]).decode('utf-8').strip()
         except OSError:
             tz = None
     tz = simple_input(
@@ -788,8 +782,8 @@ def get_stt_engine(profile):
         )
     )
     print("")
-    response = stt_engines.keys()[
-        stt_engines.values().index(
+    response = list(stt_engines.keys())[
+        list(stt_engines.values()).index(
             get_profile_var(
                 profile,
                 ["active_stt", "engine"],
@@ -804,7 +798,7 @@ def get_stt_engine(profile):
             "    " + instruction_text(
                 _("Available choices:")
             ) + " " + choices_text(
-                ("%s. " % stt_engines.keys())
+                ("%s. " % list(stt_engines.keys()))
             ),
             response
         )
@@ -1169,8 +1163,8 @@ def get_tts_engine(profile):
         "Mary": "mary-tts"
     }
     try:
-        response = tts_engines.keys()[
-            tts_engines.values().index(
+        response = list(tts_engines.keys())[
+            list(tts_engines.values()).index(
                 get_profile_var(
                     profile,
                     ['tts_engine']
@@ -1192,7 +1186,7 @@ def get_tts_engine(profile):
             format_prompt(
                 "?",
                 _("Available implementations: ") + choices_text(
-                    "%s. " % tts_engines.keys()
+                    "%s. " % list(tts_engines.keys())
                 )
             ),
             response
@@ -1229,7 +1223,7 @@ def get_tts_engine(profile):
         )
     elif(get_profile_var(profile, ["tts_engine"]) == "flite-tts"):
         try:
-            voices = subprocess.check_output(['flite', '-lv']).split(" ")[2:-1]
+            voices = subprocess.check_output(['flite', '-lv']).decode('utf-8').split(" ")[2:-1]
             print(
                 "    " + instruction_text(
                     _("Available voices:")
@@ -1383,9 +1377,9 @@ def get_beep_or_voice(profile):
     voice_choice = _("voice").lower()[:1]
     beep_choice = _("beep").lower()[:1]
     if(get_profile_var(profile, ["active_stt", "reply"])):
-        temp = voice_choice.encode("utf-8")
+        temp = voice_choice
     else:
-        temp = beep_choice.encode("utf-8")
+        temp = beep_choice
     print(
         _("{beep} for beeps or {voice} for voice.").format(
             beep=choices_text() + beep_choice + instruction_text(),
@@ -1760,7 +1754,7 @@ def get_input_device(profile):
                         wav_fp.setnchannels(input_channels)
                         wav_fp.setsampwidth(int(input_bits / 8))
                         wav_fp.setframerate(input_rate)
-                        fragment = "".join(frames)
+                        fragment = b"".join(frames)
                         wav_fp.writeframes(fragment)
                         wav_fp.close()
                         output_device.play_file(
