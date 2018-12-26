@@ -1,5 +1,5 @@
 [Plugin]
-Name = email
+Name = Check Email
 Version = 1.0.0
 License = MIT
 URL = https://github.com/NaomiProject/Naomi/

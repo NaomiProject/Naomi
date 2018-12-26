@@ -146,7 +146,7 @@ def compile_dictionary(g2pconverter, words, output_file):
     logger = logging.getLogger(__name__)
     logger.debug("Getting phonemes for %d words..." % len(words))
     try:
-        phonemes = g2pconverter.translate(words)
+        phonemes = g2pconverter.translate([word.upper() for word in words])
         logger.debug(phonemes)
     except ValueError as e:
         if str(e) == 'Input symbol not found':

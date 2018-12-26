@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import unittest
 from naomi import testutils, diagnose
-from . import gmail
+from . import check_email
 
 
-class TestGmailPlugin(unittest.TestCase):
+class TestCheckEmailPlugin(unittest.TestCase):
     def setUp(self):
-        self.plugin = testutils.get_plugin_instance(gmail.GmailPlugin)
+        self.plugin = testutils.get_plugin_instance(check_email.CheckEmailPlugin)
 
     def test_is_valid_method(self):
         self.assertTrue(self.plugin.is_valid("Do I have new email?"))
@@ -16,9 +16,9 @@ class TestGmailPlugin(unittest.TestCase):
     @unittest.skipIf(not diagnose.check_network_connection(),
                      "No internet connection")
     def test_handle_method(self):
-        key = 'gmail_password'
+        key = 'email_password'
         if key not in self.plugin.profile or not self.plugin.profile[key]:
-            self.skipTest("Gmail password not available")
+            self.skipTest("Email password not available")
 
         mic = testutils.TestMic()
         self.plugin.handle("Check my email account!", mic)

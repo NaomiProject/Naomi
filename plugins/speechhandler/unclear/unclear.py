@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from sys import maxint
+from sys import maxsize
 import random
 from naomi import plugin
 
 
 class UnclearPlugin(plugin.SpeechHandlerPlugin):
     def get_priority(self):
-        return -(maxint + 1)
+        return -(maxsize + 1)
 
     def get_phrases(self):
         return []

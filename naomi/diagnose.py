@@ -8,6 +8,7 @@ if sys.version_info < (3, 3):
     from distutils.spawn import find_executable
 else:
     from shutil import which as find_executable
+from . import testutils
 
 logger = logging.getLogger(__name__)
 
@@ -102,3 +103,40 @@ def get_git_revision():
         logger.warning("Couldn't detect git revision (not a git repository?)")
         return None
     return output
+
+
+# The following were added to be able to use the user's pocketsphinx
+# settings for testing instead of requiring that a model be included
+# with the Naomi source just for testing
+def check_option_in_profile(path):
+    """
+    Checks if an option exists in the test_profile it is using.
+    Option is passed in as a list so that if we need to check
+    if a suboption exists, we can pass the full path to it.
+    """
+    profile = testutils.test_profile()
+    response = True
+    for branch in path:
+        try:
+            profile = profile[branch]
+        except KeyError:
+            response = False
+            break
+    return response
+
+
+def get_profile_value(path):
+    """
+    Returns the value of a particular option in test_profile.
+    The option is passed in as a list so we can navigate the
+    tree.
+    """
+    profile = testutils.test_profile()
+    for branch in path:
+        try:
+            profile = profile[branch]
+        except KeyError:
+            # set the variable in profile
+            profile = None
+            break
+    return profile
