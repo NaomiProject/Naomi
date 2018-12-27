@@ -6,8 +6,6 @@ pytz==2018.5
 PyYAML==3.13
 requests==2.20.0
 blessings
-nano
-pip
 pyaudio
 pyalsaaudio
 
