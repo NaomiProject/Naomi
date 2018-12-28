@@ -1226,8 +1226,9 @@ def get_tts_engine(profile):
         )
     elif(get_profile_var(profile, ["tts_engine"]) == "flite-tts"):
         try:
+            flite_cmd = ['flite', '-lv']
             voices = subprocess.check_output(
-                ['flite', '-lv'],
+                flite_cmd,
                 shell=False
             ).decode('utf-8').split(" ")[2:-1]
             print(
