@@ -380,7 +380,6 @@ def precheck(config):
             print("Can't continue, so quitting")
             quit()
         audioengines = get_audio_engines()
-        separator()
 
 
 def greet_user():
@@ -1491,7 +1490,7 @@ def get_beep_or_voice(profile):
         set_profile_var(profile, ['active_stt', 'response'], "")
 
 
-# Return a list of currently installed audio engines
+# Return a list of currently installed audio engines.
 def get_audio_engines():
     global audioengine_plugins
     audioengine_plugins = pluginstore.PluginStore(
@@ -1835,6 +1834,7 @@ def run(profile):
     separator()
 
     precheck(profile)
+    separator()
 
     greet_user()
     separator()
