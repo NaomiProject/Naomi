@@ -9,6 +9,7 @@ try:
     import math
     import os
     from . import paths
+    from . import run_command
     import pytz
     import re
     import subprocess
@@ -357,13 +358,6 @@ def select_language(profile):
     translations = i18n.parse_translations(paths.data('locale'))
     translator = i18n.GettextMixin(translations, profile)
     _ = translator.gettext
-
-
-def run_command(command):
-    output = subprocess.check_output(
-        command,shell=False
-    ).decode('utf-8').strip()
-    return output
 
 
 # check and make sure an audio engine is configured before allowing
@@ -767,8 +761,7 @@ def get_timezone(profile):
     tz = get_profile_var(profile, ["timezone"])
     if not tz:
         try:
-            tz_cmd = ["/bin/cat", "/etc/timezone"]
-            tz = run_command(tz_cmd)
+            tz = run_command.run_command(["/bin/cat", "/etc/timezone"])
         except OSError:
             tz = None
     tz = simple_input(
@@ -1247,7 +1240,7 @@ def get_tts_engine(profile):
         )
     elif(get_profile_var(profile, ["tts_engine"]) == "flite-tts"):
         try:
-            voices = run_command(['flite', '-lv']).split(" ")[2:-1]
+            voices = run_command.run_command(['flite', '-lv']).split(" ")[2:-1]
             print(
                 "    " + instruction_text(
                     _("Available voices:")
