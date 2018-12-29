@@ -12,7 +12,6 @@ try:
     from . import run_command
     import pytz
     import re
-    import subprocess
     import tempfile
     import wave
     import yaml
