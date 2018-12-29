@@ -1245,7 +1245,8 @@ def get_tts_engine(profile):
         try:
             flite_cmd = ['flite', '-lv']
             voices = subprocess.check_output(
-                flite_cmd,shell=False
+                flite_cmd,
+                shell=False
             ).decode('utf-8').split(" ")[2:-1]
             print(
                 "    " + instruction_text(
