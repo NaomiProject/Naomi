@@ -760,8 +760,9 @@ def get_timezone(profile):
     tz = get_profile_var(profile, ["timezone"])
     if not tz:
         try:
+            tz_cmd = ["/bin/cat", "/etc/timezone"]
             tz = subprocess.check_output(
-                ["/bin/cat", "/etc/timezone"],
+                tz_cmd,
                 shell=False
             ).decode('utf-8').strip()
         except OSError:
@@ -1243,10 +1244,9 @@ def get_tts_engine(profile):
     elif(get_profile_var(profile, ["tts_engine"]) == "flite-tts"):
         try:
             flite_cmd = ['flite', '-lv']
-            flite_shell = False
             voices = subprocess.check_output(
                 flite_cmd,
-                shell=flite_shell
+                shell=False
             ).decode('utf-8').split(" ")[2:-1]
             print(
                 "    " + instruction_text(
