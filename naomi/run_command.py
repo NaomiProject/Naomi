@@ -2,4 +2,7 @@
 import subprocess
 
 def run_command(command):
-    return subprocess.check_output(command).decode('utf-8').strip()
+    return subprocess.run(
+        command,
+        stdout=subprocess.PIPE
+    ).stdout.decode('utf-8').strip()
