@@ -1,24 +1,29 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-import audioop
-from blessings import Terminal
-import collections
-import feedparser
-from getpass import getpass
-import math
-import os
-from . import paths
-import pytz
-import re
-import subprocess
-import tempfile
-import wave
-import yaml
-from . import i18n
-# Import pluginstore so we can load and query plugins directly
-from . import pluginstore
-from . import audioengine
-
+try:
+    import audioop
+    from blessings import Terminal
+    import collections
+    import feedparser
+    from getpass import getpass
+    import math
+    import os
+    from . import paths
+    import pytz
+    import re
+    import subprocess
+    import tempfile
+    import wave
+    import yaml
+    from . import i18n
+    # Import pluginstore so we can load and query plugins directly
+    from . import pluginstore
+    from . import audioengine
+except SystemError:
+    print("This program can no longer be run directly.")
+    print("Please run the Populate.py program from the")
+    print("Naomi root directory.")
+    quit()
 
 # properties
 t = Terminal()
@@ -317,9 +322,6 @@ def select_language(profile):
         )
     ):
         once = True
-        print("")
-        print("")
-        print("")
         print("    " + instruction_text(_("Language Selector")))
         print("")
         print("")
@@ -357,10 +359,31 @@ def select_language(profile):
     _ = translator.gettext
 
 
+# check and make sure an audio engine is configured before allowing
+# populate.py to continue.
+def precheck(config):
+    global _, affirmative, negative
+    audioengines = get_audio_engines()
+    while(len(audioengines) < 1):
+        print(
+            alert_text(
+                _("You do not appear to have any audio engines configured.")
+            )
+        )
+        print("You should either install the pyaudio or pyalsaaudio")
+        print("python modules. Otherwise Naomi will be unable to speak")
+        print("or listen.")
+        print("")
+        print("Both programs have prerequisites that can most likely")
+        print("be installed using your package manager")
+        if not simple_yes_no(_("Would you like me to check again?")):
+            print("Can't continue, so quitting")
+            quit()
+        audioengines = get_audio_engines()
+        separator()
+
+
 def greet_user():
-    print("")
-    print("")
-    print("")
     print(
         "    " + instruction_text(
             _("Hello, thank you for selecting me to be your personal assistant.")
@@ -834,9 +857,6 @@ def get_stt_engine(profile):
                 get_profile_var(profile, ["keys", "GOOGLE_SPEECH"])
             )
         )
-        print("")
-        print("")
-        print("")
     elif(get_profile_var(profile, ['active_stt', 'engine']) == 'watson-stt'):
         username = simple_input(
             format_prompt(
@@ -854,9 +874,6 @@ def get_stt_engine(profile):
                 _("Please enter your watson password:")
             )
         )
-        print("")
-        print("")
-        print("")
     elif(
         get_profile_var(
             profile,
@@ -1474,8 +1491,8 @@ def get_beep_or_voice(profile):
         set_profile_var(profile, ['active_stt', 'response'], "")
 
 
-def select_audio_engine(profile):
-    # Audio Engine
+# Return a list of currently installed audio engines
+def get_audio_engines():
     global audioengine_plugins
     audioengine_plugins = pluginstore.PluginStore(
         [os.path.join(
@@ -1483,11 +1500,19 @@ def select_audio_engine(profile):
                 os.path.dirname(
                     os.path.abspath(__file__)
                 )
-            )
+            ),
+            "plugins",
+            "audioengine"
         )]
     )
     audioengine_plugins.detect_plugins()
     audioengines = [ae_info.name for ae_info in audioengine_plugins.get_plugins_by_category(category='audioengine')]
+    return audioengines
+
+
+def select_audio_engine(profile):
+    # Audio Engine
+    audioengines = get_audio_engines()
 
     print(instruction_text(_("Please select an audio engine.")))
     try:
@@ -1500,6 +1525,7 @@ def select_audio_engine(profile):
         response = "pyaudio"
     once = False
     while not ((once) and (response in audioengines)):
+        audioengines = get_audio_engines()
         once = True
         response = simple_input(
             "    " + _("Available implementations:") + " " + choices_text(
@@ -1807,6 +1833,8 @@ def run(profile):
 
     select_language(profile)
     separator()
+
+    precheck(profile)
 
     greet_user()
     separator()

@@ -10,7 +10,7 @@ from .g2p import PhonetisaurusG2P
 
 
 def delete_temp_file(file_to_delete):
-    if False:
+    if True:
         os.remove(file_to_delete)
 
 
