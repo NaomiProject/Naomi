@@ -359,6 +359,13 @@ def select_language(profile):
     _ = translator.gettext
 
 
+def run_command(command):
+    output = subprocess.check_output(
+        command,shell=False
+    ).decode('utf-8').strip()
+    return output
+
+
 # check and make sure an audio engine is configured before allowing
 # populate.py to continue.
 def precheck(config):
@@ -761,10 +768,7 @@ def get_timezone(profile):
     if not tz:
         try:
             tz_cmd = ["/bin/cat", "/etc/timezone"]
-            tz = subprocess.check_output(
-                tz_cmd,
-                shell=False
-            ).decode('utf-8').strip()
+            tz = run_command(tz_cmd)
         except OSError:
             tz = None
     tz = simple_input(
@@ -1243,11 +1247,7 @@ def get_tts_engine(profile):
         )
     elif(get_profile_var(profile, ["tts_engine"]) == "flite-tts"):
         try:
-            flite_cmd = ['flite', '-lv']
-            voices = subprocess.check_output(
-                flite_cmd,
-                shell=False
-            ).decode('utf-8').split(" ")[2:-1]
+            voices = run_command(['flite', '-lv']).split(" ")[2:-1]
             print(
                 "    " + instruction_text(
                     _("Available voices:")
