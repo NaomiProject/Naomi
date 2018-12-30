@@ -85,11 +85,11 @@ class Naomi(object):
                 )
                 # raise
                 print("Your config file does not exist.")
-                raw_input = input(
+                text_input = input(
                     "Would you like to answer a few " +
                     "questions to create a new one? "
                 )
-                if(re.match(r'\s*[Yy]', raw_input)):
+                if(re.match(r'\s*[Yy]', text_input)):
                     populate.run({})
                 else:
                     print("Cannot continue. Exiting.")

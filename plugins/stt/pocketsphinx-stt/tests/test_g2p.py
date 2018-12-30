@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
-from naomi import diagnose
+from naomi.profile import get_profile_var,check_profile_var_exists
+from naomi import testutils
 import mock
 from .. import g2p
 
@@ -16,7 +17,7 @@ class DummyProc(object):
 
 
     def communicate(self):
-        if(diagnose.get_profile_value([
+        if(get_profile_var(testutils.test_profile(),[
             'pocketsphinx',
             'phonetisaurus_executable'
         ]) == "phonetisaurus-g2p"):
@@ -63,7 +64,10 @@ class TestPatchedG2P(unittest.TestCase):
         )
 
     @unittest.skipIf(
-        not diagnose.check_option_in_profile(['pocketsphinx']),
+        not check_profile_var_exists(
+            testutils.test_profile(),
+            ['pocketsphinx']
+        ),
         "Pocketsphinx not configured"
     )
     def testTranslateWord(self):

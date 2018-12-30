@@ -9,9 +9,10 @@ try:
     import math
     import os
     from . import paths
-    from . import run_command
+    from .profile import get_profile_var,set_profile_var
     import pytz
     import re
+    from . import run_command
     import tempfile
     import wave
     import yaml
@@ -114,40 +115,6 @@ def _snr(input_bits, threshold, frames):
         return 20.0 * math.log(rms / threshold, 10)
     else:
         return 0
-
-
-# Get a value from the profile, whether it exists or not
-# If the value does not exist in the profile, returns None
-def get_profile_var(profile, path, default=None):
-    response = profile
-    for branch in path:
-        try:
-            response = response[branch]
-        except KeyError:
-            # set the variable in profile
-            response = default
-            if default is not None:
-                set_profile_var(profile, path, default)
-            # break out of the for loop
-            break
-    return response
-
-
-def set_profile_var(profile, path, value):
-        temp = profile
-        if len(path) > 0:
-            last = path[0]
-            if len(path) > 1:
-                for branch in path[1:]:
-                    try:
-                        if not isinstance(temp[last], dict):
-                            temp[last] = {}
-                    except KeyError:
-                        temp[last] = {}
-                    temp = temp[last]
-                    last = branch
-            temp[last] = value
-        # FIXME - Add an error here if someone tries to write to the root of profile.
 
 
 def format_prompt(icon, prompt):
