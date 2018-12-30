@@ -17,7 +17,10 @@ def get_top_articles(num_headlines=5):
     for i, item_id in enumerate(item_ids, start=1):
         r = requests.get(HN_ITEM_URL % item_id)
         item = r.json()
-        articles.append(Article(title=item['title'], link=item['url']))
+        try:
+            articles.append(Article(title=item['title'], link=item['url']))
+        except KeyError as e:
+            print(e)
         if i >= num_headlines:
             break
     return articles
@@ -69,7 +72,14 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
             for i, a in enumerate(articles, start=1))
         mic.say(text)
 
-        if not self.profile['email']['address']:
+        try:
+            email = self.profile['email']['address']
+            # the following lines are just stupid, to fix a complaint that
+            # Codacy has that the "email" variable was defined above but
+            # not used.
+            if(email is None):
+                pass
+        except KeyError:
             return
 
         if self.profile['prefers_email'] :

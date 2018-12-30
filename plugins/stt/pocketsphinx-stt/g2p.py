@@ -64,7 +64,7 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
             stderr=subprocess.PIPE
         )
         while proc.poll() is None:
-            nextline = proc.stderr.readline()
+            nextline = proc.stderr.readline().decode("utf-8")
             logger.debug("NextLine: '%s'" % nextline)
             if(nextline == ''):
                 continue
@@ -73,8 +73,9 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
                 logger.error('%s - Input symbol not found' % nextline)
                 proc.kill()
                 raise ValueError('Input symbol not found')
-        stdoutdata, stderrdata = proc.communicate()
-        logger.debug("StdOutData: %s" % stdoutdata)
+        stdoutdata_byte, stderrdata_byte = proc.communicate()
+        stdoutdata = stdoutdata_byte.decode("utf-8")
+        stderrdata = stderrdata_byte.decode("utf-8")
     except OSError:
         logger.error(
             "Error occured while executing command '%s'" % ' '.join(cmd),
@@ -90,8 +91,10 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
 
     if(proc.returncode != 0):
         logger.error(
-            "Command '%s' return with exit status %d" % ' '.join(cmd),
-            proc.returncode
+            "Command '{command}' return with exit status {code}".format(
+                command = ' '.join(cmd),
+                code = proc.returncode
+            )
         )
         raise OSError("Command execution failed")
 
@@ -132,8 +135,6 @@ class PhonetisaurusG2P(object):
 
     def _convert_phonemes(self, data):
         if(self.fst_model_alphabet == 'xsampa'):
-            print("xsampa: %s" % data)
-            quit()
             for word in data:
                 converted_phonemes = []
                 for phoneme in data[word]:
@@ -142,7 +143,6 @@ class PhonetisaurusG2P(object):
                 data[word] = converted_phonemes
             return data
         elif self.fst_model_alphabet == 'arpabet':
-            print('arpabet: %s' % data)
             return data
         raise ValueError('Invalid FST model alphabet!')
 
@@ -163,12 +163,8 @@ class PhonetisaurusG2P(object):
             # a file descriptor a second time.
             for word in words:
                 self._logger.debug(word)
-                f.write("%s\n" % word)
+                f.write(("%s\n" % word).encode("utf-8"))
             tmp_fname = f.name
-        self._logger.debug("Self.executable = %s" % self.executable)
-        self._logger.debug("Self.fst_model = %s" % self.fst_model)
-        self._logger.debug("tmp_fname = %s" % tmp_fname)
-        self._logger.debug("nbest = %s" % self.nbest)
         self._logger.debug(
             ("%s --model=%s --beam=1000 --thresh=99.0 --accumulate=true " +
             "--pmass=0.85 --nlog_probs=false --wordlist=%s --nbest=%d") %
@@ -187,16 +183,16 @@ class PhonetisaurusG2P(object):
         return output
 
     def translate(self, words):
-        if type(words) is str or len(words) == 1:
-            self._logger.debug('Converting single word to phonemes')
-            output = self._translate_word(
-                words if type(words) is str else words[0]
-            )
-        else:
-            self._logger.debug('Converting %d words to phonemes', len(words))
-            output = self._translate_words(words)
+        self._logger.debug('Converting {} word{} to phonemes'.format(
+            len(words),
+            's' if len(words) > 1 else ''
+        ))
+        output = self._translate_words(words)
         self._logger.debug(
-            'G2P conversion returned phonemes for %d words' % len(output)
+            'G2P conversion returned phonemes for {} word{}'.format(
+                len(output),
+                's' if len(output) > 1 else ''
+            )
         )
         self._logger.debug(output)
 
