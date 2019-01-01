@@ -181,7 +181,7 @@ class Naomi(object):
 
         keyword = profile.get_profile_var(self.config,['keyword'],'NAOMI')
         self._logger.info("Using keyword '{}'".format(keyword))
-        
+
         if(not print_transcript):
             print_transcript = profile.get_profile_flag(
                 self.config,
