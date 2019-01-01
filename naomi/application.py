@@ -13,6 +13,7 @@ from . import populate
 from . import pluginstore
 from . import conversation
 from . import mic
+from . import profile
 from . import local_mic
 from . import batch_mic
 
@@ -26,7 +27,8 @@ class Naomi(object):
         self,
         use_mic=USE_STANDARD_MIC,
         batch_file=None,
-        repopulate=False
+        repopulate=False,
+        print_transcript=False
     ):
         self._logger = logging.getLogger(__name__)
         # Create config dir if it does not exist yet
@@ -99,63 +101,93 @@ class Naomi(object):
                                 e.problem.strip(), str(e.problem_mark).strip())
                 raise
 
-        try:
-            language = self.config['language']
-        except KeyError:
-            self._logger.warning(
-                "language not specified in profile, using 'en-US'")
-        else:
-            self._logger.info("Using language '%s'", language)
+        language = profile.get_profile_var(self.config,['language'])
+        if(not language):
+            language = 'en-US'
+            self._logger.warn(
+                ' '.join([
+                    'language not specified in profile,',
+                    'using default ({})'.format(language)
+                ])
+            )
+        self._logger.info("Using Language '{}'".format(language))
 
-        try:
-            audio_engine_slug = self.config['audio_engine']
-        except KeyError:
+        audio_engine_slug = profile.get_profile_var(self.config,['audio_engine'])
+        if(not audio_engine_slug):
             audio_engine_slug = 'pyaudio'
-            self._logger.info("audio_engine not specified in profile, using " +
-                              "defaults.")
-        self._logger.debug("Using Audio engine '%s'", audio_engine_slug)
+            self._logger.warn(
+                ' '.join([
+                    "audio_engine not specified in profile, using",
+                    "defaults ({}).".format(audio_engine_slug)
+                ])
+            )
+        self._logger.info("Using Audio engine '{}'".format(audio_engine_slug))
 
-        try:
-            active_stt_slug = self.config['active_stt']['engine']
-        except KeyError:
+        active_stt_slug = profile.get_profile_var(
+            self.config,
+            ['active_stt','engine']
+        )
+        if(not active_stt_slug):
             active_stt_slug = 'sphinx'
-            self._logger.warning("stt_engine not specified in profile, " +
-                                 "using defaults.")
-        self._logger.debug("Using STT engine '%s'", active_stt_slug)
-
-        try:
-            active_stt_reply = self.config['active_stt']['reply']
             self._logger.warning(
-                "Using active STT voice reply '%s'", active_stt_reply)
-        except KeyError:
-            pass
+                " ".join([
+                    "stt_engine not specified in profile,",
+                    "using default ({}).".format(active_stt_slug)
+                ])
+            )
+        self._logger.info(
+            "Using STT (speech to text) engine '{}'".format(active_stt_slug)
+        )
 
-        try:
-            active_stt_response = self.config['active_stt']['response']
-            self._logger.warning(
-                "Using active STT voice response '%s'", active_stt_response)
-        except KeyError:
-            pass
+        active_stt_reply = profile.get_profile_var(
+            self.config,
+            ['active_stt','reply']
+        )
+        if(active_stt_reply):
+            self._logger.info(
+                "Using active STT voice reply '{}'".format(active_stt_reply)
+            )
 
-        try:
-            passive_stt_slug = self.config['passive_stt']['engine']
-        except KeyError:
-            passive_stt_slug = active_stt_slug
-        self._logger.debug("Using passive STT engine '%s'", passive_stt_slug)
+        active_stt_response = profile.get_profile_var(
+            self.config,
+            ['active_stt','response']
+        )
+        if(active_stt_response):
+            self._logger.info(
+                "Using active STT voice response '{}'".format(
+                    active_stt_response
+                )
+            )
 
-        try:
-            tts_slug = self.config['tts_engine']
-        except KeyError:
+        passive_stt_slug = profile.get_profile_var(
+            self.config,
+            ['passive_stt','engine'],
+            active_stt_slug
+        )
+        self._logger.info(
+            "Using passive STT engine '{}'".format(passive_stt_slug)
+        )
+
+        tts_slug = profile.get_profile_var(self.config,['tts_engine'])
+        if(not tts_slug):
             tts_slug = 'espeak-tts'
-            self._logger.warning("tts_engine not specified in profile, using" +
-                                 "defaults.")
-        self._logger.debug("Using TTS engine '%s'", tts_slug)
+            self._logger.warning(
+                " ".join([
+                    "tts_engine not specified in profile, using" +
+                    "defaults."
+                ])
+            )
+        self._logger.info("Using TTS engine '{}'".format(tts_slug))
 
-        try:
-            keyword = self.config['keyword']
-        except KeyError:
-            keyword = 'JASPER'
-        self._logger.info("Using keyword '%s'", keyword)
+        keyword = profile.get_profile_var(self.config,['keyword'],'NAOMI')
+        self._logger.info("Using keyword '{}'".format(keyword))
+        
+        if(not print_transcript):
+            print_transcript = profile.get_profile_flag(
+                self.config,
+                ['print_transcript'],
+                False
+            )
 
         # Load plugins
         plugin_directories = [
@@ -166,8 +198,10 @@ class Naomi(object):
         self.plugins.detect_plugins()
 
         # Initialize AudioEngine
-        ae_info = self.plugins.get_plugin(audio_engine_slug,
-                                          category='audioengine')
+        ae_info = self.plugins.get_plugin(
+            audio_engine_slug,
+            category='audioengine'
+        )
         self.audio = ae_info.plugin_class(ae_info, self.config)
 
         # Initialize audio input device
@@ -297,15 +331,26 @@ class Naomi(object):
             self.mic = local_mic.Mic()
             self._logger.info('Using local text input and output')
         elif use_mic == USE_BATCH_MIC:
-            self.mic = batch_mic.Mic(passive_stt_plugin,
-                                     active_stt_plugin, batch_file,
-                                     keyword=keyword)
+            self.mic = batch_mic.Mic(
+                passive_stt_plugin,
+                active_stt_plugin,
+                batch_file,
+                keyword=keyword
+            )
             self._logger.info('Using batched mode')
         else:
             self.mic = mic.Mic(
-                input_device, output_device, active_stt_reply,
-                active_stt_response, passive_stt_plugin, active_stt_plugin,
-                tts_plugin, self.config, keyword=keyword)
+                input_device,
+                output_device,
+                active_stt_reply,
+                active_stt_response,
+                passive_stt_plugin,
+                active_stt_plugin,
+                tts_plugin,
+                self.config,
+                keyword=keyword,
+                print_transcript=print_transcript
+            )
 
         self.conversation = conversation.Conversation(
             self.mic, self.brain, self.config)
