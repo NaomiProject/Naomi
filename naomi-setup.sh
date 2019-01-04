@@ -94,7 +94,7 @@ if [ $OPTION == "1" ]; then
         PATH=$PATH:~/.local/bin mkvirtualenv -p python3 Naomi
         workon Naomi
     fi
-    if [ `which pip` = $HOME/.virtualenvs/Naomi/bin/pip ]; then
+    if [ $(which pip) = $HOME/.virtualenvs/Naomi/bin/pip ]; then
         echo 'in the Naomi virtualenv'
         pip install -r python_requirements.txt
         deactivate
