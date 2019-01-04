@@ -74,7 +74,7 @@ if [ $APT -eq 1 ]; then
 else
     echo "Please ensure that gettext, portaudio and libasound2 are installed on your system"
 fi
-if [ $OPTION == "1" ]; then
+if [ $OPTION = "1" ]; then
     echo 'VirtualEnv setup'
     if [ $APT -eq 1 ]; then
         echo 'Making sure you have the latest python, pip, python3 and pip3 installed on your system'
@@ -108,14 +108,8 @@ if [ $OPTION == "1" ]; then
     echo "workon Naomi" >> Naomi
     echo "python $NAOMI_DIR/Naomi.py \$@" >> Naomi
     echo "deactivate" >> Naomi
-    echo "You will need to activate the Naomi virtual environment when installing"
-    echo "or testing python modules for Naomi using the following command:"
-    echo "  $ workon Naomi"
-    echo "You should add the following lines to your ~/.bashrc script:"
-    echo "  export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv"
-    echo "  source ~/.local/bin/virtualenvwrapper.sh"
 fi
-if [ $OPTION == "2" ] ; then
+if [ $OPTION = "2" ]; then
     if [ $APT -eq "1" ] ; then
         echo "Making sure you have GnuPG and dirmngr installed"
         sudo apt-get install libssl-dev libncurses5-dev gnupg dirmngr
@@ -217,7 +211,7 @@ if [ $OPTION == "2" ] ; then
     echo "#!/bin/bash" > Naomi
     echo "~/.naomi/local/bin/python $NAOMI_DIR/Naomi.py \$@" >> Naomi
 fi
-if [ $OPTION == "3" ] ; then
+if [ $OPTION = "3" ]; then
     if [ $APT -eq 1 ]; then
         echo 'Making sure you have the latest python3 and pip3 installed on your system'
         sudo apt-get install python3 python3-pip
@@ -231,5 +225,21 @@ if [ $OPTION == "3" ] ; then
 fi
 ./compile_translations.sh
 chmod a+x Naomi
+if [ $OPTION = "1" ]; then
+    echo "You will need to activate the Naomi virtual environment when installing"
+    echo "or testing python modules for Naomi using the following command:"
+    echo "  $ workon Naomi"
+    echo "You should add the following lines to your ~/.bashrc script:"
+    echo "  export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv"
+    echo "  source ~/.local/bin/virtualenvwrapper.sh"
+    echo
+fi
+if [ $OPTION = "2" ]; then
+    echo "You will need to use Naomi's special python and pip commands when"
+    echo "installing modules or testing with Naomi:"
+    echo "  ~/.naomi/local/bin/python"
+    echo "  ~/.naomi/local/bin/pip"
+    echo
+fi
 echo "In the future, run $NAOMI_DIR/Naomi to start Naomi"
 ./Naomi --repopulate
