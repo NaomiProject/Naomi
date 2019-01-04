@@ -84,7 +84,6 @@ if [ $OPTION == "1" ]; then
     fi
     pip install --user virtualenvwrapper
     echo 'sourcing virtualenvwrapper.sh'
-    #export VIRTUALENVWRAPPER_PYTHON=`which python3`
     export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv
     source ~/.local/bin/virtualenvwrapper.sh
     echo 'checking if Naomi virtualenv exists'
@@ -104,12 +103,17 @@ if [ $OPTION == "1" ]; then
     fi
     # start the naomi setup process
     echo "#!/bin/bash" > Naomi
-    #echo "export VIRTUALENVWRAPPER_PYTHON=\`which python3\`" >> Naomi
     echo "export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv" >> Naomi
     echo "source ~/.local/bin/virtualenvwrapper.sh" >> Naomi
     echo "workon Naomi" >> Naomi
     echo "python $NAOMI_DIR/Naomi.py \$@" >> Naomi
     echo "deactivate" >> Naomi
+    echo "You will need to activate the Naomi virtual environment when installing"
+    echo "or testing python modules for Naomi using the following command:"
+    echo "  $ workon Naomi"
+    echo "You should add the following lines to your ~/.bashrc script:"
+    echo "  export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv"
+    echo "  source ~/.local/bin/virtualenvwrapper.sh"
 fi
 if [ $OPTION == "2" ] ; then
     if [ $APT -eq "1" ] ; then
