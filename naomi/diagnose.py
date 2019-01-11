@@ -8,6 +8,7 @@ if sys.version_info < (3, 3):
     from distutils.spawn import find_executable
 else:
     from shutil import which as find_executable
+from . import testutils
 
 logger = logging.getLogger(__name__)
 

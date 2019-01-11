@@ -4,7 +4,10 @@ import logging
 import argparse
 
 from . import application
-from application import USE_STANDARD_MIC, USE_TEXT_MIC, USE_BATCH_MIC
+#from application import USE_STANDARD_MIC, USE_TEXT_MIC, USE_BATCH_MIC
+USE_STANDARD_MIC = application.USE_STANDARD_MIC
+USE_TEXT_MIC = application.USE_TEXT_MIC
+USE_BATCH_MIC = application.USE_BATCH_MIC
 
 
 def main(args=None):

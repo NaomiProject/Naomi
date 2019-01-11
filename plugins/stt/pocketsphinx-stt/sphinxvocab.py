@@ -10,7 +10,7 @@ from .g2p import PhonetisaurusG2P
 
 
 def delete_temp_file(file_to_delete):
-    if False:
+    if True:
         os.remove(file_to_delete)
 
 
@@ -146,10 +146,10 @@ def compile_dictionary(g2pconverter, words, output_file):
     logger = logging.getLogger(__name__)
     logger.debug("Getting phonemes for %d words..." % len(words))
     try:
-        phonemes = g2pconverter.translate(words)
+        phonemes = g2pconverter.translate([word.upper() for word in words])
         logger.debug(phonemes)
     except ValueError as e:
-        if e.message == 'Input symbol not found':
+        if str(e) == 'Input symbol not found':
             logger.debug("Upper failed trying lower()")
             phonemes = g2pconverter.translate([word.lower() for word in words])
         else:

@@ -1,24 +1,30 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-import audioop
-from blessings import Terminal
-import collections
-import feedparser
-from getpass import getpass
-import math
-import os
-import paths
-import pytz
-import re
-import subprocess
-import tempfile
-import wave
-import yaml
-from . import i18n
-# Import pluginstore so we can load and query plugins directly
-from . import pluginstore
-from . import audioengine
-
+try:
+    import audioop
+    from blessings import Terminal
+    import collections
+    import feedparser
+    from getpass import getpass
+    import math
+    import os
+    from . import paths
+    from .profile import get_profile_var,set_profile_var
+    import pytz
+    import re
+    from . import run_command
+    import tempfile
+    import wave
+    import yaml
+    from . import i18n
+    # Import pluginstore so we can load and query plugins directly
+    from . import pluginstore
+    from . import audioengine
+except SystemError:
+    print("This program can no longer be run directly.")
+    print("Please run the Populate.py program from the")
+    print("Naomi root directory.")
+    quit()
 
 # properties
 t = Terminal()
@@ -111,40 +117,6 @@ def _snr(input_bits, threshold, frames):
         return 0
 
 
-# Get a value from the profile, whether it exists or not
-# If the value does not exist in the profile, returns None
-def get_profile_var(profile, path, default=None):
-    response = profile
-    for branch in path:
-        try:
-            response = response[branch]
-        except KeyError:
-            # set the variable in profile
-            response = default
-            if default is not None:
-                set_profile_var(profile, path, default)
-            # break out of the for loop
-            break
-    return response
-
-
-def set_profile_var(profile, path, value):
-        temp = profile
-        if len(path) > 0:
-            last = path[0]
-            if len(path) > 1:
-                for branch in path[1:]:
-                    try:
-                        if not isinstance(temp[last], dict):
-                            temp[last] = {}
-                    except KeyError:
-                        temp[last] = {}
-                    temp = temp[last]
-                    last = branch
-            temp[last] = value
-        # FIXME - Add an error here if someone tries to write to the root of profile.
-
-
 def format_prompt(icon, prompt):
     if(icon == "!"):
         prompt = (
@@ -178,7 +150,7 @@ def simple_input(prompt, default=None):
     prompt += input_text()
     # don't use print here so no automatic carriage return
     # sys.stdout.write(prompt)
-    response = raw_input(prompt.encode("utf-8"))
+    response = input(prompt)
     # if the user pressed enter without entering anything,
     # set the response to default
     if(default and not response):
@@ -301,7 +273,7 @@ def select_language(profile):
         u'DE-Deutsch': 'de-DE'
     }
     language = get_profile_var(profile, ["language"], "en-US")
-    selected_language = languages.keys()[languages.values().index(language)]
+    selected_language = list(languages.keys())[list(languages.values()).index(language)]
     translations = i18n.parse_translations(paths.data('locale'))
     translator = i18n.GettextMixin(translations, profile)
     _ = translator.gettext
@@ -317,14 +289,11 @@ def select_language(profile):
         )
     ):
         once = True
-        print("")
-        print("")
-        print("")
         print("    " + instruction_text(_("Language Selector")))
         print("")
         print("")
         for language in languages.keys():
-            print("    " + language.encode("utf-8"))
+            print("    {}".format(language))
         print("")
         selected_language = simple_input(
             format_prompt(
@@ -336,16 +305,10 @@ def select_language(profile):
         if(len(selected_language) > 0):
             if(check_for_value(
                 selected_language,
-                [x[:len(selected_language)].lower() for x in languages.keys()]
+                [x[:len(selected_language)].lower() for x in list(languages.keys())]
             )):
                 language = languages[
-                    languages.keys()[
-                        [
-                            x[
-                                :len(selected_language)
-                            ].lower() for x in languages.keys()
-                        ].index(selected_language)
-                    ]
+                    list(languages.keys())[[x[:len(selected_language)].lower() for x in list(languages.keys())].index(selected_language)]
                 ]
                 if(language == 'fr-FR'):
                     affirmative = 'oui'
@@ -363,10 +326,30 @@ def select_language(profile):
     _ = translator.gettext
 
 
+# check and make sure an audio engine is configured before allowing
+# populate.py to continue.
+def precheck(config):
+    global _, affirmative, negative
+    audioengines = get_audio_engines()
+    while(len(audioengines) < 1):
+        print(
+            alert_text(
+                _("You do not appear to have any audio engines configured.")
+            )
+        )
+        print("You should either install the pyaudio or pyalsaaudio")
+        print("python modules. Otherwise Naomi will be unable to speak")
+        print("or listen.")
+        print("")
+        print("Both programs have prerequisites that can most likely")
+        print("be installed using your package manager")
+        if not simple_yes_no(_("Would you like me to check again?")):
+            print("Can't continue, so quitting")
+            quit()
+        audioengines = get_audio_engines()
+
+
 def greet_user():
-    print("")
-    print("")
-    print("")
     print(
         "    " + instruction_text(
             _("Hello, thank you for selecting me to be your personal assistant.")
@@ -700,7 +683,7 @@ def get_weather_location(profile):
             "?",
             _("What is your location?")
         ),
-        get_profile_var(profile, ["location"])
+        get_profile_var(profile, ["weather","location"])
     )
 
     while location and not verify_location(location):
@@ -719,7 +702,7 @@ def get_weather_location(profile):
             location
         )
     if location:
-        set_profile_var(profile, ['location'], location)
+        set_profile_var(profile, ['weather','location'], location)
 
 
 def get_timezone(profile):
@@ -744,7 +727,7 @@ def get_timezone(profile):
     tz = get_profile_var(profile, ["timezone"])
     if not tz:
         try:
-            tz = subprocess.check_output(["/bin/cat", "/etc/timezone"]).strip()
+            tz = run_command.run_command(["/bin/cat", "/etc/timezone"])
         except OSError:
             tz = None
     tz = simple_input(
@@ -788,8 +771,8 @@ def get_stt_engine(profile):
         )
     )
     print("")
-    response = stt_engines.keys()[
-        stt_engines.values().index(
+    response = list(stt_engines.keys())[
+        list(stt_engines.values()).index(
             get_profile_var(
                 profile,
                 ["active_stt", "engine"],
@@ -804,7 +787,7 @@ def get_stt_engine(profile):
             "    " + instruction_text(
                 _("Available choices:")
             ) + " " + choices_text(
-                ("%s. " % stt_engines.keys())
+                ("%s. " % list(stt_engines.keys()))
             ),
             response
         )
@@ -837,9 +820,6 @@ def get_stt_engine(profile):
                 get_profile_var(profile, ["keys", "GOOGLE_SPEECH"])
             )
         )
-        print("")
-        print("")
-        print("")
     elif(get_profile_var(profile, ['active_stt', 'engine']) == 'watson-stt'):
         username = simple_input(
             format_prompt(
@@ -857,9 +837,6 @@ def get_stt_engine(profile):
                 _("Please enter your watson password:")
             )
         )
-        print("")
-        print("")
-        print("")
     elif(
         get_profile_var(
             profile,
@@ -1169,8 +1146,8 @@ def get_tts_engine(profile):
         "Mary": "mary-tts"
     }
     try:
-        response = tts_engines.keys()[
-            tts_engines.values().index(
+        response = list(tts_engines.keys())[
+            list(tts_engines.values()).index(
                 get_profile_var(
                     profile,
                     ['tts_engine']
@@ -1192,7 +1169,7 @@ def get_tts_engine(profile):
             format_prompt(
                 "?",
                 _("Available implementations: ") + choices_text(
-                    "%s. " % tts_engines.keys()
+                    "%s. " % list(tts_engines.keys())
                 )
             ),
             response
@@ -1229,7 +1206,7 @@ def get_tts_engine(profile):
         )
     elif(get_profile_var(profile, ["tts_engine"]) == "flite-tts"):
         try:
-            voices = subprocess.check_output(['flite', '-lv']).split(" ")[2:-1]
+            voices = run_command.run_command(['flite', '-lv']).split(" ")[2:-1]
             print(
                 "    " + instruction_text(
                     _("Available voices:")
@@ -1383,9 +1360,9 @@ def get_beep_or_voice(profile):
     voice_choice = _("voice").lower()[:1]
     beep_choice = _("beep").lower()[:1]
     if(get_profile_var(profile, ["active_stt", "reply"])):
-        temp = voice_choice.encode("utf-8")
+        temp = voice_choice
     else:
-        temp = beep_choice.encode("utf-8")
+        temp = beep_choice
     print(
         _("{beep} for beeps or {voice} for voice.").format(
             beep=choices_text() + beep_choice + instruction_text(),
@@ -1473,8 +1450,8 @@ def get_beep_or_voice(profile):
         set_profile_var(profile, ['active_stt', 'response'], "")
 
 
-def select_audio_engine(profile):
-    # Audio Engine
+# Return a list of currently installed audio engines.
+def get_audio_engines():
     global audioengine_plugins
     audioengine_plugins = pluginstore.PluginStore(
         [os.path.join(
@@ -1482,11 +1459,19 @@ def select_audio_engine(profile):
                 os.path.dirname(
                     os.path.abspath(__file__)
                 )
-            )
+            ),
+            "plugins",
+            "audioengine"
         )]
     )
     audioengine_plugins.detect_plugins()
     audioengines = [ae_info.name for ae_info in audioengine_plugins.get_plugins_by_category(category='audioengine')]
+    return audioengines
+
+
+def select_audio_engine(profile):
+    # Audio Engine
+    audioengines = get_audio_engines()
 
     print(instruction_text(_("Please select an audio engine.")))
     try:
@@ -1499,6 +1484,7 @@ def select_audio_engine(profile):
         response = "pyaudio"
     once = False
     while not ((once) and (response in audioengines)):
+        audioengines = get_audio_engines()
         once = True
         response = simple_input(
             "    " + _("Available implementations:") + " " + choices_text(
@@ -1760,7 +1746,7 @@ def get_input_device(profile):
                         wav_fp.setnchannels(input_channels)
                         wav_fp.setsampwidth(int(input_bits / 8))
                         wav_fp.setframerate(input_rate)
-                        fragment = "".join(frames)
+                        fragment = b"".join(frames)
                         wav_fp.writeframes(fragment)
                         wav_fp.close()
                         output_device.play_file(
@@ -1803,8 +1789,10 @@ def run(profile):
     # For plugin & general use elsewhere, blessings or
     # coloredformatting.py can be used.
     #
-
     select_language(profile)
+    separator()
+
+    precheck(profile)
     separator()
 
     greet_user()

@@ -15,26 +15,26 @@ echo "Updating apt, preparing to install libssl-dev, gettext, portaudio19-dev an
 # install dependencies
 sudo apt-get update
 # libssl-dev required to get the python _ssl module working
-sudo apt-get install libssl-dev gettext portaudio19-dev libasound2-dev -y
+sudo apt-get install libssl-dev gettext libncurses5-dev portaudio19-dev libasound2-dev -y
 
-# installing python 2.7.13
-echo 'Installing python 2.7.13 to ~/.naomi/local'
+# installing python 3.5.3
+echo 'Installing python 3.5.3 to ~/.naomi/local'
 mkdir -p ~/.naomi/local
 cd ~/.naomi/local
-wget https://www.python.org/ftp/python/2.7.13/Python-2.7.13.tgz
-tar xvzf Python-2.7.13.tgz
-cd Python-2.7.13
+wget https://www.python.org/ftp/python/3.5.3/Python-3.5.3.tgz
+tar xvzf Python-3.5.3.tgz
+cd Python-3.5.3
 ./configure
 make
 make altinstall prefix=~/.naomi/local  # specify local installation directory
-ln -s ~/.naomi/local/bin/python2.7 ~/.naomi/local/bin/python
+ln -s ~/.naomi/local/bin/python3.5 ~/.naomi/local/bin/python
 cd ..  # ~/.naomi/local
 
 # install setuptools and pip for package management
 echo 'Installing setuptools'
-wget https://pypi.python.org/packages/source/s/setuptools/setuptools-0.6c11.tar.gz#md5=7df2a529a074f613b509fb44feefe74e
-tar xvzf setuptools-0.6c11.tar.gz
-cd setuptools-0.6c11 # ~/.naomi/local/setuptools-0.6c11
+wget https://files.pythonhosted.org/packages/37/1b/b25507861991beeade31473868463dad0e58b1978c209de27384ae541b0b/setuptools-40.6.3.zip
+unzip setuptools-40.6.3.zip
+cd setuptools-40.6.3
 ~/.naomi/local/bin/python setup.py install  # specify the path to the python you installed above
 cd .. # ~/.naomi/local
 
@@ -53,7 +53,7 @@ cd $NAOMI_DIR
 
 # start the naomi setup process
 echo "#!/bin/bash" > Naomi
-echo "~/.naomi/local/bin/python $NAOMI_DIR/Naomi.py $@" >> Naomi
+echo "~/.naomi/local/bin/python $NAOMI_DIR/Naomi.py \$@" >> Naomi
 chmod a+x Naomi
 echo "In the future, run $NAOMI_DIR/Naomi to start Naomi"
 ./Naomi --repopulate
