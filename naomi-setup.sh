@@ -55,33 +55,33 @@ for var in "$@"; do
     if [ "$var" = "--virtualenv" ]; then
         OPTION="1"
     fi
-    if [ "$var" = "--local" ]; then
+    if [ "$var" = "--local-compile" ]; then
         OPTION="2"
     fi
-    if [ "$var" = "--primary" ]; then
+    if [ "$var" = "--system" ]; then
         OPTION="3"
     fi
     if [ "$var" = "--help" ]; then
         echo "USAGE: $0 [--virtualenv | --local | --primary | --help]"
         echo
-        echo "  --virtualenv - install Naomi using a virtualenv environment for Naomi"
-        echo "                 (this is the recommended choice. You will need to issue"
-        echo "                 'workon Naomi' before installing additional libraries"
-        echo "                 for Naomi)"
+        echo "  --virtualenv    - install Naomi using a virtualenv environment for Naomi"
+        echo "                    (this is the recommended choice. You will need to issue"
+        echo "                    'workon Naomi' before installing additional libraries"
+        echo "                    for Naomi)"
         echo
-        echo "  --local      - download, compile and install a special copy of Python 3"
-        echo "                 for Naomi (does not work for all distros)"
+        echo "  --local-compile - download, compile and install a special copy of Python 3"
+        echo "                    for Naomi (does not work for all distros)"
         echo
-        echo "  --primary    - use your primary Python 3 environment"
-        echo "                 (this can be dangerous, it can lead to a broken python"
-        echo "                 environment on your system, which other software may"
-        echo "                 depend on. This is the simplest setup, but only recommended"
-        echo "                 when Naomi is the primary program you intend to run on this"
-        echo "                 computer. You will probably need to use the 'pip3' command"
-        echo "                 to install additional libraries for Naomi.)"
-        echo "                 USE AT YOUR OWN RISK!"
+        echo "  --system        - use your primary Python 3 environment"
+        echo "                    (this can be dangerous, it can lead to a broken python"
+        echo "                    environment on your system, which other software may"
+        echo "                    depend on. This is the simplest setup, but only recommended"
+        echo "                    when Naomi is the primary program you intend to run on this"
+        echo "                    computer. You will probably need to use the 'pip3' command"
+        echo "                    to install additional libraries for Naomi.)"
+        echo "                    USE AT YOUR OWN RISK!"
         echo
-        echo "  --help       - Print this message and exit"
+        echo "  --help          - Print this message and exit"
         exit 0
     fi
 done
@@ -231,7 +231,7 @@ if [ $OPTION = "2" ]; then
     if [ ! -f $TARFILE.asc ]; then
         wget $URL.asc
     fi
-    gpg --list-keys $KEYID || gpg --keyserver keys.gnupg.net --recv-keys $KEYID || gpg --keyserver pgp.mit.edu --recv-keys $KEYID
+    gpg --list-keys $KEYID || gpg --keyserver pgp.mit.edu --recv-keys $KEYID || gpg --keyserver keys.gnupg.net --recv-keys $KEYID
     gpg --verify $TARFILE.asc
     if [ $? -eq 0 ]; then
         echo "Python tarball signature verified"
