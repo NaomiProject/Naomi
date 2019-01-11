@@ -1,5 +1,12 @@
 <h1 align="center">
   <br>
+  <a><img src="https://projectnaomi.com/Python3Warning.png" alt="Warning" width="100%"></a>
+  <br>
+  <br>
+</h1>
+
+<h1 align="center">
+  <br>
   <a href="https://projectnaomi.com/"><img src="https://projectnaomi.com/naomi-logo.png" alt="Naomi" width="400"></a>
   <br>
   <br>
