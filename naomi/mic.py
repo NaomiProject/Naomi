@@ -15,19 +15,7 @@ else:  # NOQA
 
 from . import alteration
 from . import paths
-
-
-def get_config_value(config, name, default):
-    logger = logging.getLogger(__name__)
-    try:
-        value = int(config['audio'][name])
-    except KeyError:
-        logger.debug('%s not configured, using default.', name)
-        value = None
-    except ValueError:
-        logger.debug('%s is not an integer, using default.', name)
-        value = None
-    return value if value else default
+from . import profile
 
 
 class Mic(object):
@@ -35,10 +23,19 @@ class Mic(object):
     The Mic class handles all interactions with the microphone and speaker.
     """
 
-    def __init__(self, input_device, output_device,
-                 active_stt_reply, active_stt_response,
-                 passive_stt_engine, active_stt_engine,
-                 tts_engine, config, keyword='JASPER'):
+    def __init__(
+        self,
+        input_device,
+        output_device,
+        active_stt_reply,
+        active_stt_response,
+        passive_stt_engine,
+        active_stt_engine,
+        tts_engine,
+        config,
+        keyword='NAOMI',
+        print_transcript=False
+    ):
         self._logger = logging.getLogger(__name__)
         self._keyword = keyword
         self.tts_engine = tts_engine
@@ -48,23 +45,37 @@ class Mic(object):
         self._output_device = output_device
         self._active_stt_reply = active_stt_reply
         self._active_stt_response = active_stt_response
-        self._input_rate = get_config_value(config, 'input_samplerate', 16000)
-        self._input_bits = get_config_value(config, 'input_samplewidth', 16)
-        self._input_channels = get_config_value(config, 'input_channels', 1)
-        self._input_chunksize = get_config_value(config, 'input_chunksize',
-                                                 1024)
-        self._output_chunksize = get_config_value(config, 'output_chunksize',
-                                                  1024)
-        try:
-            output_padding = config['audio']['output_padding']
-        except KeyError:
-            self._logger.debug('output_padding not configured,' +
-                               'using default.')
-            output_padding = None
-        if output_padding and output_padding.lower() in ('true', 'yes', 'on'):
-            self._output_padding = True
-        else:
-            self._output_padding = False
+        self._input_rate = profile.get_profile_var(
+            config,
+            ['audio','input_samplerate'],
+            16000
+        )
+        self._input_bits = profile.get_profile_var(
+            config,
+            ['audio','input_samplewidth'],
+            16
+        )
+        self._input_channels = profile.get_profile_var(
+            config,
+            ['audio','input_channels'],
+            1
+        )
+        self._input_chunksize = profile.get_profile_var(
+            config,
+            ['audio','input_chunksize'],
+            1024
+        )
+        self._output_chunksize = profile.get_profile_var(
+            config,
+            ['audio','output_chunksize'],
+            1024
+        )
+        self._output_padding = profile.get_profile_flag(
+            config,
+            ['audio','output_padding'],
+            False
+        )
+        self._print_transcript = print_transcript
 
         self._logger.debug('Input sample rate: %d Hz', self._input_rate)
         self._logger.debug('Input sample width: %d bit', self._input_bits)
@@ -137,9 +148,12 @@ class Mic(object):
                     dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                     self._logger.error("Transcription failed!", exc_info=dbg)
                 else:
-                    if transcribed and any([keyword.lower() in t.lower()
+                    if transcribed:
+                        if(self._print_transcript):
+                            print("<  {}".format(transcribed))
+                        if any([keyword.lower() in t.lower()
                                             for t in transcribed if t]):
-                        keyword_uttered.set()
+                            keyword_uttered.set()
                 finally:
                     frame_queue.task_done()
 
@@ -218,13 +232,18 @@ class Mic(object):
             self.play_file(paths.data('audio', 'beep_hi.wav'))
 
         frames = []
-        for frame in self._input_device.record(self._input_chunksize,
-                                               self._input_bits,
-                                               self._input_channels,
-                                               self._input_rate):
+        for frame in self._input_device.record(
+            self._input_chunksize,
+            self._input_bits,
+            self._input_channels,
+            self._input_rate
+        ):
             frames.append(frame)
-            if len(frames) >= 2 * n or (
-                    len(frames) > n and self._snr(frames[-n:]) <= 3):
+            if(
+                len(frames) >= 2 * n
+            )or(
+                    len(frames) > n and self._snr(frames[-n:]) <= 3
+            ):
                 break
 
         if self._active_stt_response:
@@ -236,7 +255,10 @@ class Mic(object):
         with self._write_frames_to_file(
                 frames, self.active_stt_engine._samplerate,
                 self.active_stt_engine._volume_normalization) as f:
-            return self.active_stt_engine.transcribe(f)
+            transcription = self.active_stt_engine.transcribe(f)
+            if(self._print_transcript):
+                print("<< {}".format(transcription))
+            return transcription
 
     # Output methods
     def play_file(self, filename):
@@ -245,6 +267,8 @@ class Mic(object):
                                       add_padding=self._output_padding)
 
     def say(self, phrase):
+        if(self._print_transcript):
+            print(">> {}".format(phrase))
         altered_phrase = alteration.clean(phrase)
         with tempfile.SpooledTemporaryFile() as f:
             f.write(self.tts_engine.say(altered_phrase))

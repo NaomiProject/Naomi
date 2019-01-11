@@ -7,11 +7,24 @@ tell whether an option is configured or not, or the actual value
 def get_profile_var(profile, path, default=None):
     """
     Get a value from the profile, whether it exists or not
-    If the value does not exist in the profile, returns None
+    If the value does not exist in the profile, returns
+    either the default value (if there is one) or None.
     """
     response = _walk_profile(profile, path, True)
     if response is None:
         response = default
+    return response
+
+
+def get_profile_flag(profile, path, default=None):
+    """
+    Get a boolean value from the profile, whether it exists
+    or not. If the value does not exist, returns default or
+    None
+    """
+    response = False
+    if str(_walk_profile(profile, path, True)).strip().lower() in ('true','yes'):
+        response = True
     return response
 
 
