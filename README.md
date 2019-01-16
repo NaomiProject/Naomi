@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="https://projectnaomi.com/"><img src="https://projectnaomi.com/naomi-logo.png" alt="Naomi" width="400"></a>
+  <a href="#"><img src="https://projectnaomi.com/naomi-logo.png" alt="Naomi" width="400"></a>
   <br>
   <br>
 </h1>
@@ -62,11 +62,11 @@
 
 ## Documentation
 
-All the documentation is available on our [website](https://projectnaomi.com/docs)!
+All the documentation is available on our [website](#)!
 
 ## Download
 
-You can [download](https://projectnaomi.com/download) latest installable version of Naomi from our website.
+You can [download](#) latest installable version of Naomi from our website.
 
 ## Credits
 
@@ -81,5 +81,5 @@ MIT
 
 ---
 
-> [projectnaomi.com](https://projectnaomi.com) &nbsp;&middot;&nbsp;
+> [projectnaomi.com](#) &nbsp;&middot;&nbsp;
 > GitHub [@naomiproject](https://github.com/naomiproject)
