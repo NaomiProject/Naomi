@@ -84,7 +84,7 @@ class MaryTTSPlugin(plugin.TTSPlugin):
         return voices
 
     def _makeurl(self, path, query={}):
-        query_s = urllib.urlencode(query)
+        query_s = urllib.parse.urlencode(query)
         urlparts = ('http', self.netloc, path, query_s, '')
         return urllib.parse.urlunsplit(urlparts)
 
