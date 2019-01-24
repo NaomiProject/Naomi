@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="#"><img src="https://projectnaomi.com/naomi-logo.png" alt="Naomi" width="400"></a>
+  <a href="https://naomiproject.github.io/naomi-logo.png"><img src="https://naomiproject.github.io/naomi-logo.png" alt="Naomi" width="400"></a>
   <br>
   <br>
 </h1>
@@ -44,7 +44,7 @@
 </p>
 
 <p align="center">
-	<img src="https://projectnaomi.com/hero.png">
+	<img src="https://naomiproject.github.io/hero.png">
 </p>
 
 ## Key Features
@@ -62,11 +62,11 @@
 
 ## Documentation
 
-All the documentation is available on our [website](#)!
+All the documentation is available on our [website](https://naomiproject.github.io/docs)!
 
 ## Download
 
-You can [download](#) latest installable version of Naomi from our website.
+You can [download](https://naomiproject.github.io/download) latest installable version of Naomi from our website.
 
 ## Credits
 
