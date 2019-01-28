@@ -1,13 +1,13 @@
 <h1 align="center">
   <br>
-  <a><img src="https://naomiproject.github.io/Python3Warning.png" alt="Warning" width="100%"></a>
+  <a><img src="https://projectnaomi.com/Python3Warning.png" alt="Warning" width="100%"></a>
   <br>
   <br>
 </h1>
 
 <h1 align="center">
   <br>
-  <a href="https://naomiproject.github.io/naomi-logo.png"><img src="https://naomiproject.github.io/naomi-logo.png" alt="Naomi" width="400"></a>
+  <a href="https://projectnaomi.com/naomi-logo.png"><img src="https://projectnaomi.com/naomi-logo.png" alt="Naomi" width="400"></a>
   <br>
   <br>
 </h1>
@@ -51,7 +51,7 @@
 </p>
 
 <p align="center">
-	<img src="https://naomiproject.github.io/hero.png">
+	<img src="https://projectnaomi.com/hero.png">
 </p>
 
 ## Key Features
@@ -69,11 +69,11 @@
 
 ## Documentation
 
-All the documentation is available on our [website](https://naomiproject.github.io/docs)!
+All the documentation is available on our [website](https://projectnaomi.com/docs)!
 
 ## Download
 
-You can [download](https://naomiproject.github.io/download) latest installable version of Naomi from our website.
+You can [download](https://projectnaomi.com/download) latest installable version of Naomi from our website.
 
 ## Credits
 
