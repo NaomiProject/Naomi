@@ -350,7 +350,10 @@ class Naomi(object):
             vad_slug,
             category='vad'
         )
-        vad_plugin = vad_info.plugin_class(input_device)
+        vad_config = {}
+        if(vad_slug in self.config):
+            vad_config = self.config[vad_slug]
+        vad_plugin = vad_info.plugin_class(input_device,**vad_config)
 
         # Initialize Brain
         self.brain = brain.Brain(self.config)

@@ -13,19 +13,21 @@
 # over twice the length of timeout, then the recorded audio
 # is returned for processing.
 from naomi import plugin
+from naomi import profile
 import audioop
 import logging
 import math
 
 
 class SNRPlugin(plugin.VADPlugin):
-    def __init__(
-        self,
-        input_device,
-        timeout=1,
-        minimum_capture=0.5,
-        threshold=30
-    ):
+    def __init__(self, input_device, **kwargs):
+        timeout = profile.get_profile_var(kwargs, ["timeout"], 1)
+        minimum_capture = profile.get_profile_var(
+            kwargs,
+            ["minimum_capture"],
+            0.5
+        )
+        threshold = profile.get_profile_var(kwargs, ["threshold"], 30)
         super(SNRPlugin, self).__init__(input_device, timeout, minimum_capture)
         # if the audio decibel is greater than threshold, then consider this
         # having detected a voice.
