@@ -1,0 +1,10 @@
+[Plugin]
+Name = webrtc_vad
+Version = 1.0.0
+License = MIT
+URL = http://naomiproject.github.io/
+Description = VAD using WebRTC VAD module
+
+[Author]
+Name = Naomi Project
+URL = http://naomiproject.github.io/

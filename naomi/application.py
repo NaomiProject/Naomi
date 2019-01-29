@@ -42,28 +42,46 @@ class Naomi(object):
 
         # Check if config dir is writable
         if not os.access(paths.CONFIG_PATH, os.W_OK):
-            self._logger.critical("Config dir %s is not writable. Naomi " +
-                                  "won't work correctly.",
-                                  paths.CONFIG_PATH)
-
-        # FIXME: For backwards compatibility, move old config file to newly
-        #        created config dir
+            self._logger.critical(
+                " ".join([
+                    "Config dir {:s} is not writable. Naomi",
+                    "won't work correctly."
+                ]).format(
+                    paths.CONFIG_PATH
+                )
+            )
+        # For backwards compatibility, move old config file to newly
+        # created config dir
         old_configfile = os.path.join(paths.PKG_PATH, 'profile.yml')
         new_configfile = paths.config('profile.yml')
         if os.path.exists(old_configfile):
             if os.path.exists(new_configfile):
-                self._logger.warning("Deprecated profile file found: '%s'. " +
-                                     "Please remove it.", old_configfile)
+                self._logger.warning(
+                    " ".join([
+                        "Deprecated profile file found: '{:s}'. ",
+                        "Please remove it."
+                    ]).config(old_configfile)
+                )
             else:
-                self._logger.warning("Deprecated profile file found: '%s'. " +
-                                     "Trying to copy it to new location '%s'.",
-                                     old_configfile, new_configfile)
+                self._logger.warning(
+                    " ".join([
+                        "Deprecated profile file found: '{:s}'.",
+                        "Trying to copy it to new location '{:s}'."
+                    ]).format(
+                        old_configfile,
+                        new_configfile
+                    )
+                )
                 try:
                     shutil.copy2(old_configfile, new_configfile)
                 except shutil.Error:
-                    self._logger.error("Unable to copy config file. " +
-                                       "Please copy it manually.",
-                                       exc_info=True)
+                    self._logger.error(
+                        " ".join([
+                            "Unable to copy config file.",
+                            "Please copy it manually."
+                        ]),
+                        exc_info=True
+                    )
                     raise
 
         # Read config
@@ -88,8 +106,10 @@ class Naomi(object):
                 # raise
                 print("Your config file does not exist.")
                 text_input = input(
-                    "Would you like to answer a few " +
-                    "questions to create a new one? "
+                    " ".join([
+                        "Would you like to answer a few ",
+                        "questions to create a new one? "
+                    ])
                 )
                 if(re.match(r'\s*[Yy]', text_input)):
                     populate.run({})
@@ -101,7 +121,7 @@ class Naomi(object):
                                 e.problem.strip(), str(e.problem_mark).strip())
                 raise
 
-        language = profile.get_profile_var(self.config,['language'])
+        language = profile.get_profile_var(self.config, ['language'])
         if(not language):
             language = 'en-US'
             self._logger.warn(
@@ -112,7 +132,10 @@ class Naomi(object):
             )
         self._logger.info("Using Language '{}'".format(language))
 
-        audio_engine_slug = profile.get_profile_var(self.config,['audio_engine'])
+        audio_engine_slug = profile.get_profile_var(
+            self.config,
+            ['audio_engine']
+        )
         if(not audio_engine_slug):
             audio_engine_slug = 'pyaudio'
             self._logger.warn(
@@ -125,7 +148,7 @@ class Naomi(object):
 
         active_stt_slug = profile.get_profile_var(
             self.config,
-            ['active_stt','engine']
+            ['active_stt', 'engine']
         )
         if(not active_stt_slug):
             active_stt_slug = 'sphinx'
@@ -141,7 +164,7 @@ class Naomi(object):
 
         active_stt_reply = profile.get_profile_var(
             self.config,
-            ['active_stt','reply']
+            ['active_stt', 'reply']
         )
         if(active_stt_reply):
             self._logger.info(
@@ -150,7 +173,7 @@ class Naomi(object):
 
         active_stt_response = profile.get_profile_var(
             self.config,
-            ['active_stt','response']
+            ['active_stt', 'response']
         )
         if(active_stt_response):
             self._logger.info(
@@ -161,25 +184,25 @@ class Naomi(object):
 
         passive_stt_slug = profile.get_profile_var(
             self.config,
-            ['passive_stt','engine'],
+            ['passive_stt', 'engine'],
             active_stt_slug
         )
         self._logger.info(
             "Using passive STT engine '{}'".format(passive_stt_slug)
         )
 
-        tts_slug = profile.get_profile_var(self.config,['tts_engine'])
+        tts_slug = profile.get_profile_var(self.config, ['tts_engine'])
         if(not tts_slug):
             tts_slug = 'espeak-tts'
             self._logger.warning(
                 " ".join([
-                    "tts_engine not specified in profile, using" +
+                    "tts_engine not specified in profile, using",
                     "defaults."
                 ])
             )
         self._logger.info("Using TTS engine '{}'".format(tts_slug))
 
-        keyword = profile.get_profile_var(self.config,['keyword'],'NAOMI')
+        keyword = profile.get_profile_var(self.config, ['keyword'], 'NAOMI')
         self._logger.info("Using keyword '{}'".format(keyword))
 
         if(not print_transcript):
@@ -211,9 +234,15 @@ class Naomi(object):
             device_slug = self.config['audio']['input_device']
         except KeyError:
             device_slug = self.audio.get_default_device(output=False).slug
-            self._logger.warning("input_device not specified in profile, " +
-                                 "defaulting to '%s' (Possible values: %s)",
-                                 device_slug, ', '.join(devices))
+            self._logger.warning(
+                " ".join([
+                    "input_device not specified in profile, ",
+                    "defaulting to '{:s}' (Possible values: {:s})"
+                ]).format(
+                    device_slug,
+                    ', '.join(devices)
+                )
+            )
         try:
             input_device = self.audio.get_device_by_slug(device_slug)
             if audioengine.DEVICE_TYPE_INPUT not in input_device.types:
@@ -222,9 +251,49 @@ class Naomi(object):
                     % input_device.slug)
         except (audioengine.DeviceException) as e:
             self._logger.critical(e.args[0])
-            self._logger.warning('Valid output devices: %s',
+            self._logger.warning('Valid input devices: %s',
                                  ', '.join(devices))
             raise
+        input_device._input_rate = profile.get_profile_var(
+            self.config,
+            ['audio', 'input_samplerate'],
+            16000
+        )
+        input_device._input_bits = profile.get_profile_var(
+            self.config,
+            ['audio', 'input_samplewidth'],
+            16
+        )
+        input_device._input_channels = profile.get_profile_var(
+            self.config,
+            ['audio', 'input_channels'],
+            1
+        )
+        input_device._input_chunksize = profile.get_profile_var(
+            self.config,
+            ['audio', 'input_chunksize'],
+            1024
+        )
+        self._logger.debug(
+            'Input sample rate: {:d} Hz'.format(
+                input_device._input_rate
+            )
+        )
+        self._logger.debug(
+            'Input sample width: {:d} bit'.format(
+                input_device._input_bits
+            )
+        )
+        self._logger.debug(
+            'Input channels: {:d}'.format(
+                input_device._input_channels
+            )
+        )
+        self._logger.debug(
+            'Input chunksize: {:d} frames'.format(
+                input_device._input_chunksize
+            )
+        )
 
         # Initialize audio output device
         devices = [device.slug for device in self.audio.get_devices(
@@ -233,20 +302,55 @@ class Naomi(object):
             device_slug = self.config['audio']['output_device']
         except KeyError:
             device_slug = self.audio.get_default_device(output=True).slug
-            self._logger.warning("output_device not specified in profile, " +
-                                 "defaulting to '%s' (Possible values: %s)",
-                                 device_slug, ', '.join(devices))
+            self._logger.warning(
+                " ".join([
+                    "output_device not specified in profile,",
+                    "defaulting to '{0:s}' (Possible values: {1:s})"
+                ]).format(device_slug, ', '.join(devices))
+            )
         try:
             output_device = self.audio.get_device_by_slug(device_slug)
             if audioengine.DEVICE_TYPE_OUTPUT not in output_device.types:
                 raise audioengine.UnsupportedFormat(
-                    "Audio device with slug '%s' is not an output device"
-                    % output_device.slug)
+                    " ".join([
+                        "Audio device with slug '{:s}'",
+                        "is not an output device"
+                    ]).format(output_device.slug)
+                )
         except (audioengine.DeviceException) as e:
             self._logger.critical(e.args[0])
-            self._logger.warning('Valid output devices: %s',
-                                 ', '.join(devices))
+            self._logger.warning(
+                'Valid output devices: {:s}'.format(', '.join(devices))
+            )
             raise
+        output_device._output_chunksize = profile.get_profile_var(
+            self.config,
+            ['audio', 'output_chunksize'],
+            1024
+        )
+        output_device._output_padding = profile.get_profile_flag(
+            self.config,
+            ['audio', 'output_padding'],
+            False
+        )
+        self._logger.debug(
+            'Output chunksize: {:d} frames'.format(
+                output_device._output_chunksize
+            )
+        )
+        self._logger.debug(
+            'Output padding: {:s}'.format(
+                'yes' if output_device._output_padding else 'no'
+            )
+        )
+
+        # Initialize Voice activity detection
+        vad_slug = profile.get_profile_var(self.config, ['vad_engine'], 'snr')
+        vad_info = self.plugins.get_plugin(
+            vad_slug,
+            category='vad'
+        )
+        vad_plugin = vad_info.plugin_class(input_device)
 
         # Initialize Brain
         self.brain = brain.Brain(self.config)
@@ -347,6 +451,7 @@ class Naomi(object):
                 passive_stt_plugin,
                 active_stt_plugin,
                 tts_plugin,
+                vad_plugin,
                 self.config,
                 keyword=keyword,
                 print_transcript=print_transcript
