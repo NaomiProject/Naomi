@@ -345,7 +345,7 @@ class Naomi(object):
         )
 
         # Initialize Voice activity detection
-        vad_slug = profile.get_profile_var(self.config, ['vad_engine'], 'snr')
+        vad_slug = profile.get_profile_var(self.config, ['vad_engine'], 'snr_vad')
         vad_info = self.plugins.get_plugin(
             vad_slug,
             category='vad'
