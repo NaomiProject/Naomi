@@ -23,7 +23,7 @@ msgstr ""
 
 #: clock.py:9 clock.py:35
 msgid "TIME"
-msgstr "UHR"
+msgstr "ZEIT"
 
 #: clock.py:23
 #, python-format
