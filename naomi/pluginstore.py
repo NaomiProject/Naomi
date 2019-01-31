@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 import logging
-import imp
+import importlib
 import inspect
 import sys
-if sys.version_info < (3, 0):  # NOQA
-    import ConfigParser as configparser
-else:  # NOQA
-    import configparser
+import configparser
 
 from . import i18n
 from . import plugin
-
 
 MANDATORY_OPTIONS = (
     ('Plugin', 'Name'),
@@ -47,12 +43,20 @@ def parse_info_file(infofile_path):
 
 
 def parse_plugin_class(module_name, plugin_directory, superclasses):
-    mod = imp.load_module(module_name, None, plugin_directory,
-                          ("py", "r", imp.PKG_DIRECTORY))
+    spec = importlib.util.spec_from_file_location(
+        module_name,
+        plugin_directory + '/__init__.py'
+    )
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
 
     plugin_classes = inspect.getmembers(
-        mod, lambda cls: inspect.isclass(cls) and
-        issubclass(cls, tuple(superclasses)))
+        mod, lambda cls: inspect.isclass(cls) and issubclass(
+            cls,
+            tuple(superclasses)
+        )
+    )
 
     if len(plugin_classes) < 1:
         raise PluginError("Plugin class not found!")
