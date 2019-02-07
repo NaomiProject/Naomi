@@ -55,13 +55,15 @@ class TestInput:
 
 
 def get_plugin_instance(plugin_class, *extra_args):
-    info = type('', (object,),
-                {
-                    'name': 'pluginunittest',
-                    'translations': {
-                        'en-US': gettext.NullTranslations()
-                    }
-                }
-            )()
+    info = type(
+        '',
+        (object,),
+        {
+            'name': 'pluginunittest',
+            'translations': {
+                'en-US': gettext.NullTranslations()
+            }
+        }
+    )()
     args = tuple(extra_args) + (info, test_profile())
     return plugin_class(*args)

@@ -14,7 +14,11 @@ class WebRTCPlugin(plugin.VADPlugin):
         self._logger = logging.getLogger(__name__)
         input_device = args[0]
         timeout = profile.get_profile_var(kwargs, ["timeout"], 1)
-        minimum_capture = profile.get_profile_var(kwargs, ["minimum_capture"], 0.25)
+        minimum_capture = profile.get_profile_var(
+            kwargs,
+            ["minimum_capture"],
+            0.25
+        )
         aggressiveness = profile.get_profile_var(kwargs, ["aggressiveness"], 1)
         self._logger.info("timeout: {}".format(timeout))
         self._logger.info("minimum_capture: {}".format(minimum_capture))
