@@ -2,6 +2,7 @@
 # This allows you to use the webrtcvad plugin.
 # You should be able to install it with a simple
 # pip install webrtcvad
+import logging
 from naomi import plugin
 from naomi import profile
 import webrtcvad
@@ -9,19 +10,21 @@ import webrtcvad
 
 class WebRTCPlugin(plugin.VADPlugin):
     # Timeout in seconds
-    def __init__(self, input_device, **kwargs):
+    def __init__(self, *args, **kwargs):
+        self._logger = logging.getLogger(__name__)
+        input_device = args[0]
         timeout = profile.get_profile_var(kwargs, ["timeout"], 1)
         minimum_capture = profile.get_profile_var(kwargs, ["minimum_capture"], 0.25)
         aggressiveness = profile.get_profile_var(kwargs, ["aggressiveness"], 1)
-        print("timeout: {}".format(timeout))
-        print("minimum_capture: {}".format(minimum_capture))
-        print("aggressiveness: {}".format(aggressiveness))
+        self._logger.info("timeout: {}".format(timeout))
+        self._logger.info("minimum_capture: {}".format(minimum_capture))
+        self._logger.info("aggressiveness: {}".format(aggressiveness))
         super(WebRTCPlugin, self).__init__(
             input_device,
             timeout,
             minimum_capture
         )
-        if aggressiveness not in [2, 3]:
+        if aggressiveness not in [0, 2, 3]:
             aggressiveness = 1
         self._vad = webrtcvad.Vad(aggressiveness)
         if(self._chunktime not in [0.01, 0.02, 0.03]):

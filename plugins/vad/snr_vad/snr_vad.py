@@ -20,7 +20,8 @@ import math
 
 
 class SNRPlugin(plugin.VADPlugin):
-    def __init__(self, input_device, **kwargs):
+    def __init__(self, *args, **kwargs):
+        input_device = args[0]
         timeout = profile.get_profile_var(kwargs, ["timeout"], 1)
         minimum_capture = profile.get_profile_var(
             kwargs,
@@ -57,7 +58,7 @@ class SNRPlugin(plugin.VADPlugin):
             ) / items
             stddev = math.sqrt((sum1 - (items * (mean ** 2))) / (items - 1))
             self._threshold = mean + (stddev * 1.5)
-            if(self._logger.getEffectiveLevel() < logging.ERROR):
+            if(self._logger.getEffectiveLevel() < logging.WARN):
                 print(
                     "\t".join([
                         "snr: {}",

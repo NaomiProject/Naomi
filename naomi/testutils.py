@@ -47,6 +47,13 @@ class TestMic(object):
         self.outputs.append(phrase)
 
 
+class TestInput:
+    def __init__(self, input_rate, input_bits, input_chunksize):
+        self._input_rate = input_rate
+        self._input_bits = input_bits
+        self._input_chunksize = input_chunksize
+
+
 def get_plugin_instance(plugin_class, *extra_args):
     info = type('', (object,),
                 {
