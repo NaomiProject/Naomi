@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import contextlib
 import logging
+import sys
 import unittest
 import wave
 from naomi import testutils
@@ -8,13 +9,21 @@ from . import webrtc_vad
 
 
 class TestWebRTCPlugin(unittest.TestCase):
+    # attributes of the sample we are using
+    # These are standard defaults for Naomi
+    sample_channels = 1  # Mono
     sample_rate = 16000  # Hz
     sample_width = 16    # bits
+    # Standard lengths for an audio clip used for VAD in webrtc are
+    # 10ms, 20ms, or 30ms
     clip_duration = 30   # ms
     clip_bytes = int((sample_width / 8) * (sample_rate * clip_duration / 1000))
 
     def setUp(self):
         self._logger = logging.getLogger(__name__)
+        # Uncomment the following line to see detection timeline for sample
+        # audio file
+        # self._logger.setLevel(logging.INFO)
         _test_input = testutils.TestInput(
             self.sample_rate,
             self.sample_width,
@@ -30,11 +39,8 @@ class TestWebRTCPlugin(unittest.TestCase):
             with contextlib.closing(
                 wave.open("naomi/data/audio/naomi.wav", "rb")
             ) as wf:
-                assert wf.getnchannels() == 1
-                assert wf.getsampwidth() == 2
-                assert wf.getframerate() == 16000
                 audio_data = wf.readframes(wf.getnframes())
-                clip_detect = ""
+                clip_detect = "\n"
                 offset = 0
                 while offset + self.clip_bytes < len(audio_data):
                     result = self.plugin._voice_detected(
@@ -42,7 +48,13 @@ class TestWebRTCPlugin(unittest.TestCase):
                     )
                     clip_detect += "+" if result else "-"
                     offset += self.clip_bytes
+                # unittest appears to do something odd to stderr
+                # to see logger output, have to do this:
+                stream_handler = logging.StreamHandler(sys.stdout)
+                self._logger.addHandler(stream_handler)
+                self._logger.info("")
                 self._logger.info(clip_detect)
+                self._logger.removeHandler(stream_handler)
 
     def test_silence(self):
         self.assertFalse(self.plugin._voice_detected(
@@ -56,9 +68,6 @@ class TestWebRTCPlugin(unittest.TestCase):
         with contextlib.closing(
             wave.open("naomi/data/audio/naomi.wav", "rb")
         ) as wf:
-            assert wf.getnchannels() == 1
-            assert wf.getsampwidth() == 2
-            assert wf.getframerate() == 16000
             position = int(0.84 * wf.getframerate())
             wf.setpos(position)
             clip = wf.readframes(
