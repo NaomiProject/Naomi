@@ -6,8 +6,8 @@ from . import webrtc_vad
 
 class TestWebRTC_VADPlugin(testutils.Test_VADPlugin):
 
-    def setUp(self, *args, **kwargs):
-        super(TestWebRTC_VADPlugin, self).setUp(*args, **kwargs)
+    def setUp(self):
+        super(TestWebRTC_VADPlugin, self).setUp()
         self.plugin = testutils.get_plugin_instance(
             webrtc_vad.WebRTCPlugin,
             self._test_input

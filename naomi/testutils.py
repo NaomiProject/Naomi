@@ -75,11 +75,12 @@ class Test_VADPlugin(unittest.TestCase):
     clip_duration = 30   # ms
     clip_bytes = int((sample_width / 8) * (sample_rate * clip_duration / 1000))
 
-    def setUp(self, *args, **kwargs):
+    def setUp(self):
+        super(Test_VADPlugin, self).setUp()
         self._logger = logging.getLogger(__name__)
         # Uncomment the following line to see detection timeline for sample
         # audio file
-        self._logger.setLevel(logging.INFO)
+        # self._logger.setLevel(logging.INFO)
         # This is necessary because the VAD plugin requires an input
         # device to initialize. These values are only used in the
         # get_audio method, so shouldn't have any real effect on these
