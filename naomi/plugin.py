@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import abc
+import collections
+import logging
 import tempfile
 import wave
 import mad
@@ -124,3 +126,80 @@ class TTSPlugin(GenericPlugin):
             f.seek(0)
             data = f.read()
         return data
+
+
+class VADPlugin(GenericPlugin):
+    def __init__(self, input_device, timeout=1, minimum_capture=0.5):
+        self._logger = logging.getLogger(__name__)
+        # input device
+        self._input_device = input_device
+        # Here is the number of frames that have to pass without
+        # detecing a voice before we respond
+        chunklength = input_device._input_rate / input_device._input_chunksize
+        self._timeout = round(chunklength * timeout)
+        # Mimimum capture frames is the smallest number of frames that will
+        # be recognized as audio. I'm setting this to 1/2 second longer than
+        # the timeout value.
+        self._minimum_capture = round(chunklength * (timeout + minimum_capture))
+        ct = input_device._input_chunksize / input_device._input_rate
+        self._chunktime = ct
+
+    # Override the _voice_detected method with your own method for
+    # detecting whether a voice is detected or not. Return True if
+    # you detect a voice, otherwise False.
+    def _voice_detected(self, frame):
+        pass
+
+    def get_audio(self):
+        frames = collections.deque([], 30)
+        recording = False
+        recording_frames = []
+        self._logger.info("Waiting for voice data")
+        for frame in self._input_device.record(
+            self._input_device._input_chunksize,
+            self._input_device._input_bits,
+            self._input_device._input_channels,
+            self._input_device._input_rate
+        ):
+            frames.append(frame)
+            voice_detected = self._voice_detected(frame)
+            if not recording:
+                if(voice_detected):
+                    # Voice activity detected, start recording and use
+                    # the last 10 frames to start
+                    self._logger.debug(
+                        "Started recording on device '{:s}'".format(
+                            self._input_device.slug
+                        )
+                    )
+                    recording = True
+                    # Include the previous 10 frames in the recording.
+                    recording_frames = list(frames)[-10:]
+                    last_voice_frame = len(recording_frames)
+            else:
+                # We're recording
+                recording_frames.append(frame)
+                if(voice_detected):
+                    last_voice_frame = len(recording_frames)
+                if(last_voice_frame < len(recording_frames) - self._timeout):
+                    # We have waied past the timeout number of frames
+                    # so we believe the speaker has finished speaking.
+                    recording = False
+                    if(len(recording_frames) < self._minimum_capture):
+                        self._logger.debug(
+                            " ".join([
+                                "Recorded {:d} frames, less than threshold",
+                                "of {:d} frames ({:.2f} seconds). Discarding"
+                            ]).format(
+                                len(recording_frames),
+                                self._minimum_capture,
+                                len(recording_frames) * self._chunktime
+                            )
+                        )
+                    else:
+                        self._logger.debug(
+                            "Recorded {:d} frames".format(
+                                len(recording_frames)
+                            )
+                        )
+                        return recording_frames
