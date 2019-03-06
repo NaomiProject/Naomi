@@ -10,16 +10,18 @@ import webrtcvad
 
 class WebRTCPlugin(plugin.VADPlugin):
     # Timeout in seconds
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args):
         self._logger = logging.getLogger(__name__)
         input_device = args[0]
-        timeout = profile.get_profile_var(kwargs, ["timeout"], 1)
+        timeout = profile.get_profile_var(["webrtc_vad", "timeout"], 1)
         minimum_capture = profile.get_profile_var(
-            kwargs,
-            ["minimum_capture"],
+            ["webrtc_vad", "minimum_capture"],
             0.25
         )
-        aggressiveness = profile.get_profile_var(kwargs, ["aggressiveness"], 1)
+        aggressiveness = profile.get_profile_var(
+            ["webrtc_vad", "aggressiveness"],
+            1
+        )
         self._logger.info("timeout: {}".format(timeout))
         self._logger.info("minimum_capture: {}".format(minimum_capture))
         self._logger.info("aggressiveness: {}".format(aggressiveness))

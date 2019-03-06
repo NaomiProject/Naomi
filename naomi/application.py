@@ -88,15 +88,11 @@ class Naomi(object):
         # set a loop so we can keep looping back until the config file exists
         config_read = False
         while(not config_read):
-            self._logger.debug(
-                "Trying to read config file: '%s'" % new_configfile
-            )
             try:
-                with open(new_configfile, "r") as f:
-                    self.config = yaml.safe_load(f)
-                    config_read = True
+                self.config = profile.get_profile()
+                config_read = True
                 if(repopulate):
-                    populate.run(self.config)
+                    populate.run()
             except IOError:
                 # AJC 2018-07-29 Changed this from a warning to debug, since
                 # we attempt to fix the problem right here
@@ -121,7 +117,7 @@ class Naomi(object):
                                 e.problem.strip(), str(e.problem_mark).strip())
                 raise
 
-        language = profile.get_profile_var(self.config, ['language'])
+        language = profile.get_profile_var(['language'])
         if(not language):
             language = 'en-US'
             self._logger.warn(
@@ -132,10 +128,7 @@ class Naomi(object):
             )
         self._logger.info("Using Language '{}'".format(language))
 
-        audio_engine_slug = profile.get_profile_var(
-            self.config,
-            ['audio_engine']
-        )
+        audio_engine_slug = profile.get_profile_var(['audio_engine'])
         if(not audio_engine_slug):
             audio_engine_slug = 'pyaudio'
             self._logger.warn(
@@ -147,7 +140,6 @@ class Naomi(object):
         self._logger.info("Using Audio engine '{}'".format(audio_engine_slug))
 
         active_stt_slug = profile.get_profile_var(
-            self.config,
             ['active_stt', 'engine']
         )
         if(not active_stt_slug):
@@ -163,7 +155,6 @@ class Naomi(object):
         )
 
         active_stt_reply = profile.get_profile_var(
-            self.config,
             ['active_stt', 'reply']
         )
         if(active_stt_reply):
@@ -172,7 +163,6 @@ class Naomi(object):
             )
 
         active_stt_response = profile.get_profile_var(
-            self.config,
             ['active_stt', 'response']
         )
         if(active_stt_response):
@@ -183,7 +173,6 @@ class Naomi(object):
             )
 
         passive_stt_slug = profile.get_profile_var(
-            self.config,
             ['passive_stt', 'engine'],
             active_stt_slug
         )
@@ -191,7 +180,7 @@ class Naomi(object):
             "Using passive STT engine '{}'".format(passive_stt_slug)
         )
 
-        tts_slug = profile.get_profile_var(self.config, ['tts_engine'])
+        tts_slug = profile.get_profile_var(['tts_engine'])
         if(not tts_slug):
             tts_slug = 'espeak-tts'
             self._logger.warning(
@@ -202,12 +191,11 @@ class Naomi(object):
             )
         self._logger.info("Using TTS engine '{}'".format(tts_slug))
 
-        keyword = profile.get_profile_var(self.config, ['keyword'], 'NAOMI')
+        keyword = profile.get_profile_var(['keyword'], 'NAOMI')
         self._logger.info("Using keyword '{}'".format(keyword))
 
         if(not print_transcript):
             print_transcript = profile.get_profile_flag(
-                self.config,
                 ['print_transcript'],
                 False
             )
@@ -231,7 +219,7 @@ class Naomi(object):
         devices = [device.slug for device in self.audio.get_devices(
             device_type=audioengine.DEVICE_TYPE_INPUT)]
         try:
-            device_slug = self.config['audio']['input_device']
+            device_slug = profile.get_profile_var(['audio', 'input_device'])
         except KeyError:
             device_slug = self.audio.get_default_device(output=False).slug
             self._logger.warning(
@@ -255,22 +243,18 @@ class Naomi(object):
                                  ', '.join(devices))
             raise
         input_device._input_rate = profile.get_profile_var(
-            self.config,
             ['audio', 'input_samplerate'],
             16000
         )
         input_device._input_bits = profile.get_profile_var(
-            self.config,
             ['audio', 'input_samplewidth'],
             16
         )
         input_device._input_channels = profile.get_profile_var(
-            self.config,
             ['audio', 'input_channels'],
             1
         )
         input_device._input_chunksize = profile.get_profile_var(
-            self.config,
             ['audio', 'input_chunksize'],
             1024
         )
@@ -324,12 +308,10 @@ class Naomi(object):
             )
             raise
         output_device._output_chunksize = profile.get_profile_var(
-            self.config,
             ['audio', 'output_chunksize'],
             1024
         )
         output_device._output_padding = profile.get_profile_flag(
-            self.config,
             ['audio', 'output_padding'],
             False
         )
@@ -345,15 +327,12 @@ class Naomi(object):
         )
 
         # Initialize Voice activity detection
-        vad_slug = profile.get_profile_var(self.config, ['vad_engine'], 'snr_vad')
+        vad_slug = profile.get_profile_var(['vad_engine'], 'snr_vad')
         vad_info = self.plugins.get_plugin(
             vad_slug,
             category='vad'
         )
-        vad_config = {}
-        if(vad_slug in self.config):
-            vad_config = self.config[vad_slug]
-        vad_plugin = vad_info.plugin_class(input_device,**vad_config)
+        vad_plugin = vad_info.plugin_class(input_device)
 
         # Initialize Brain
         self.brain = brain.Brain(self.config)
@@ -379,56 +358,55 @@ class Naomi(object):
             raise RuntimeError(msg)
 
         active_stt_plugin_info = self.plugins.get_plugin(
-            active_stt_slug, category='stt')
+            active_stt_slug,
+            category='stt'
+        )
         active_stt_plugin = active_stt_plugin_info.plugin_class(
-            'default', self.brain.get_plugin_phrases(), active_stt_plugin_info,
-            self.config)
-
-        try:
-            active_stt_plugin._samplerate =\
-                int(self.config['active_stt']['samplerate'])
-        except KeyError:
-            pass
-
-        try:
-            active_stt_plugin._volume_normalization =\
-                float(self.config['active_stt']['volume_normalization'])
-        except KeyError:
-            pass
+            'default',
+            self.brain.get_plugin_phrases(),
+            active_stt_plugin_info,
+            self.config
+        )
+        if(profile.check_profile_var_exists(['active_stt', 'samplerate'])):
+            active_stt_plugin._samplerate = int(
+                profile.get_profile_var(['active_stt', 'samplerate'])
+            )
+        if(profile.check_profile_var_exists(
+            ['active_stt', 'volume_normalization']
+        )):
+            active_stt_plugin._volume_normalization = float(
+                profile.get_profile_var(['active_stt', 'volume_normalization'])
+            )
 
         if passive_stt_slug != active_stt_slug:
             passive_stt_plugin_info = self.plugins.get_plugin(
-                passive_stt_slug, category='stt')
+                passive_stt_slug, category='stt'
+            )
         else:
             passive_stt_plugin_info = active_stt_plugin_info
 
         passive_stt_plugin = passive_stt_plugin_info.plugin_class(
-            'keyword', self.brain.get_standard_phrases() + [keyword],
-            passive_stt_plugin_info, self.config)
+            'keyword',
+            self.brain.get_standard_phrases() + [keyword],
+            passive_stt_plugin_info,
+            self.config
+        )
 
-        try:
-            passive_stt_plugin._samplerate =\
-                int(self.config['passive_stt']['samplerate'])
-        except KeyError:
-            pass
+        if(profile.check_profile_var_exists(['passive_stt', 'samplerate'])):
+            passive_stt_plugin._samplerate = int(
+                profile.get_profile_var(['passive_stt', 'samplerate'])
+            )
+        if(profile.check_profile_var_exists(
+            ['passive_stt', 'volume_normalization']
+        )):
+            passive_stt_plugin._volume_normalization = float(
+                profile.get_profile_var(['passive_stt', 'volume_normalization'])
+            )
 
-        try:
-            passive_stt_plugin._volume_normalization =\
-                float(self.config['passive_stt']['volume_normalization'])
-        except KeyError:
-            pass
-
-        try:
-            active_stt_reply = self.config['active_stt']['reply']
-        except KeyError:
-            self._logger.info(KeyError)
-            active_stt_reply = None
-
-        try:
-            active_stt_response = self.config['active_stt']['response']
-        except KeyError:
-            self._logger.info(KeyError)
-            active_stt_response = None
+        active_stt_reply = profile.get_profile_var(['active_stt', 'reply'])
+        active_stt_response = profile.get_profile_var(
+            ['active_stt', 'response']
+        )
 
         tts_plugin_info = self.plugins.get_plugin(tts_slug, category='tts')
         tts_plugin = tts_plugin_info.plugin_class(tts_plugin_info, self.config)
