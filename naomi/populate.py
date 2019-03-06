@@ -1559,11 +1559,11 @@ def get_output_device():
                 )
                 if not (heard):
                     print(
-                        instruction_text(" ".join(
+                        instruction_text(" ".join([
                             _("The volume on your device may be too low."),
                             _("You should be able to use 'alsamixer'"),
                             _("to set the volume level.")
-                        ))
+                        ]))
                     )
                     heard = simple_yes_no(
                         instruction_text(
@@ -1713,13 +1713,13 @@ def get_input_device():
                         # Threshold not reached. Update.
                         soundlevel = float(audioop.rms("".join(frames), 2))
                         if (soundlevel < threshold):
-                            print(alert_text(" ".join(
+                            print(alert_text(" ".join([
                                 _("No sound detected."),
                                 _("Setting threshold from {t} to {s}").format(
                                     t=threshold,
                                     s=soundlevel
                                 )
-                            )))
+                            ])))
                             threshold = soundlevel
                 else:
                     recording_frames.append(frame)
