@@ -21,16 +21,18 @@ class Conversation(i18n.GettextMixin):
     # Add way for the system to ask for name if is not found in the config
     def askName(self):
         if 'keyword' in self.profile:
-            salutation = (self.gettext("My name is, %s.")
-                          % self.profile['keyword'])
+            salutation = self.gettext("My name is {}.").config(
+                self.profile['keyword']
+            )
         else:
             salutation = self.gettext("My name is Naomi")
         self.mic.say(salutation)
 
     def greet(self):
         if 'first_name' in self.profile:
-            salutation = (self.gettext("How can I be of service, %s?")
-                          % self.profile["first_name"])
+            salutation = self.gettext("How can I be of service, {}?").config(
+                self.profile["first_name"]
+            )
         else:
             salutation = self.gettext("How can I be of service?")
         self.mic.say(salutation)
@@ -62,8 +64,14 @@ class Conversation(i18n.GettextMixin):
                             "operation. Please try again later.")
                         )
                     else:
-                        self._logger.debug("Handling of phrase '%s' by " +
-                                           "module '%s' completed", text,
-                                           plugin.info.name)
+                        self._logger.debug(
+                            " ".join([
+                                "Handling of phrase '{}'",
+                                "by module '{}' completed"
+                            ]).config(
+                                text,
+                                plugin.info.name
+                            )
+                        )
             else:
                 self.mic.say(self.gettext("Pardon?"))
