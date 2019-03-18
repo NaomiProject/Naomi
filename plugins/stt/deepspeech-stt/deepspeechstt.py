@@ -9,7 +9,7 @@ try:
     deepspeech_available = True
 except ImportError:
     try:
-        from deepspeech import Model # v0.4.1
+        from deepspeech import Model  # v0.4.1
         deepspeech_available = True
     except ImportError:
         deepspeech_available = False
@@ -33,29 +33,34 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
             self._logger.warning("DeepSpeech import error!")
             raise ImportError("DeepSpeech not installed!")
 
-        self._logger.warning("This STT plugin doesn't have multilanguage " +
-                             "support!")
+        self._logger.warning(
+            "This STT plugin doesn't have multilanguage support!"
+        )
         # Beam width used in the CTC decoder when building candidate
         # transcriptions
         self._BEAM_WIDTH = profile.get_profile_var(
-            self.profile,['deepspeech','beam_width'],500
+            ['deepspeech', 'beam_width'],
+            500
         )
 
         # The alpha hyperparameter of the CTC decoder. Language Model weight
         self._LM_WEIGHT = profile.get_profile_var(
-            self.profile,['deepspeech','lm_weight'],1.75
+            ['deepspeech', 'lm_weight'],
+            1.75
         )
 
         # The beta hyperparameter of the CTC decoder. Word insertion weight
         # (penalty)
         self._WORD_COUNT_WEIGHT = profile.get_profile_var(
-            self.profile,['deepspeech','word_count_weight'],1.00
+            ['deepspeech', 'word_count_weight'],
+            1.00
         )
 
         # Valid word insertion weight. This is used to lessen the word
         # insertion penalty when the inserted word is part of the vocabulary
         self._VALID_WORD_COUNT_WEIGHT = profile.get_profile_var(
-            self.profile,['deepspeech','valid_word_count_weight'],1.00
+            ['deepspeech', 'valid_word_count_weight'],
+            1.00
         )
 
         # These constants are tied to the shape of the graph used (changing
@@ -64,18 +69,21 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
 
         # Number of MFCC features to use
         self._N_FEATURES = profile.get_profile_var(
-            self.profile,['deepspeech','n_features'],26
+            ['deepspeech', 'n_features'],
+            26
         )
 
         # Size of the context window used for producing timesteps in the
         # input vector
         self._N_CONTEXT = profile.get_profile_var(
-            self.profile,['deepspeech','n_context'],9
+            ['deepspeech', 'n_context'],
+            9
         )
 
         # Only 16KHz files are currently supported
         self._FS = profile.get_profile_var(
-            self.profile,['deepspeech','fs'],16000
+            ['deepspeech', 'fs'],
+            16000
         )
 
         # These are paths. They are required
@@ -83,45 +91,45 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
         # Path to the model (protocol buffer binary file)
         self._MODEL = os.path.expanduser(
             profile.get_profile_var(
-                self.profile,['deepspeech','model']
+                ['deepspeech', 'model']
             )
         )
         if(not os.path.exists(self._MODEL)):
-            msg = (
-                "DeepSpeech model '%s' does not exist! "
-                + "Please make sure that you have set the "
-                + "correct deepspeech: model in your profile."
-            ) % self._MODEL
+            msg = " ".join([
+                "DeepSpeech model '{}' does not exist!",
+                "Please make sure that you have set the",
+                "correct deepspeech: model in your profile."
+            ]).format(self._MODEL)
             self._logger.error(msg)
             raise RuntimeError(msg)
 
         # Path to the configuration file specifying the alphabet used
         self._ALPHABET = os.path.expanduser(
             profile.get_profile_var(
-                self.profile,["deepspeech","alphabet"]
+                ["deepspeech", "alphabet"]
             )
         )
         if(not os.path.exists(self._ALPHABET)):
-            msg = (
-                "DeepSpeech alphabet '%s' does not exist! "
-                + "Please make sure that you have set the "
-                + "correct deepspeech: alphabet in your profile."
-            ) % self._ALPHABET
+            msg = " ".join([
+                "DeepSpeech alphabet '{}' does not exist!",
+                "Please make sure that you have set the",
+                "correct deepspeech: alphabet in your profile."
+            ]).format(self._ALPHABET)
             self._logger.error(msg)
             raise RuntimeError(msg)
 
         # Path to the language model binary file
         self._LM = os.path.expanduser(
             profile.get_profile_var(
-                self.profile,["deepspeech","language_model"]
+                ["deepspeech", "language_model"]
             )
         )
         if(not os.path.exists(self._LM)):
-            msg = (
-                "DeepSpeech language model '%s' does not exist! "
-                + "Please make sure that you have set the correct "
-                + "deepspeech: language_model in your profile."
-            ) % self._LM
+            msg = " ".join([
+                "DeepSpeech language model '{}' does not exist!",
+                "Please make sure that you have set the correct",
+                "deepspeech: language_model in your profile."
+            ]).format(self._LM)
             self._logger.error(msg)
             raise RuntimeError(msg)
 
@@ -129,15 +137,15 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
         # native_client/generate_trie
         self._TRIE = os.path.expanduser(
             profile.get_profile_var(
-                self.profile,["deepspeech","trie"]
+                ["deepspeech", "trie"]
             )
         )
         if(not os.path.exists(self._TRIE)):
-            msg = (
-                "DeepSpeech trie '%s' does not exist! "
-                + "Please make sure that you have set the "
-                + "correct deepspeech: trie in your profile."
-            ) % self._TRIE
+            msg = " ".join([
+                "DeepSpeech trie '{}' does not exist!",
+                "Please make sure that you have set the",
+                "correct deepspeech: trie in your profile."
+            ]).format(self._TRIE)
             self._logger.error(msg)
             raise RuntimeError(msg)
         self._ds = Model(

@@ -22,13 +22,12 @@ import math
 class SNRPlugin(plugin.VADPlugin):
     def __init__(self, *args, **kwargs):
         input_device = args[0]
-        timeout = profile.get_profile_var(kwargs, ["timeout"], 1)
+        timeout = profile.get_profile_var(["snr_vad", "timeout"], 1)
         minimum_capture = profile.get_profile_var(
-            kwargs,
-            ["minimum_capture"],
+            ["snr_vad", "minimum_capture"],
             0.5
         )
-        threshold = profile.get_profile_var(kwargs, ["threshold"], 30)
+        threshold = profile.get_profile_var(["snr_vad", "threshold"], 30)
         super(SNRPlugin, self).__init__(input_device, timeout, minimum_capture)
         # if the audio decibel is greater than threshold, then consider this
         # having detected a voice.

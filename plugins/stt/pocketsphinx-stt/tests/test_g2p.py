@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
-from naomi.profile import get_profile_var,check_profile_var_exists
+from naomi import profile
 from naomi import testutils
 import mock
 from .. import g2p
@@ -11,13 +11,13 @@ WORDS = ['GOOD', 'BAD', 'UGLY']
 
 class DummyProc(object):
     def __init__(self, *args, **kwargs):
+        profile.set_profile(testutils.test_profile())
         self.returncode = 0
         self.stderr = mock.Mock()
         self.stderr.readline = mock.Mock(return_value='')
 
-
     def communicate(self):
-        if(get_profile_var(testutils.test_profile(),[
+        if(profile.get_profile_var([
             'pocketsphinx',
             'phonetisaurus_executable'
         ]) == "phonetisaurus-g2p"):
@@ -64,14 +64,14 @@ class TestPatchedG2P(unittest.TestCase):
         )
 
     @unittest.skipIf(
-        not check_profile_var_exists(
-            testutils.test_profile(),
+        not profile.check_profile_var_exists(
             ['pocketsphinx']
         ),
         "Pocketsphinx not configured"
     )
     def testTranslateWord(self):
-        with mock.patch('subprocess.Popen',
+        with mock.patch(
+            'subprocess.Popen',
             return_value=DummyProc()
         ):
             for word in WORDS:
