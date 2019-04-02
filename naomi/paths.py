@@ -7,7 +7,7 @@ PKG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 DATA_PATH = os.path.join(PKG_PATH, "data")
 PLUGIN_PATH = os.path.normpath(os.path.join(PKG_PATH, os.pardir, "plugins"))
 
-CONFIG_PATH = os.path.expanduser(os.getenv('NAOMI_CONFIG', '~/.naomi/configs'))
+CONFIG_PATH = os.path.expanduser(os.getenv('NAOMI_CONFIG', '~/.naomi'))
 
 
 def config(*fname):
