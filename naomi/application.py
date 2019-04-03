@@ -50,7 +50,6 @@ class Naomi(object):
                     paths.SUB_PATH
                 )
             )
-        
         # Create .naomi/configs dir if it does not exist yet
         if not os.path.exists(paths.CONFIG_PATH):
             try:
