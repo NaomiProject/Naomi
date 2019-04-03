@@ -98,7 +98,7 @@ class VocabularyCompiler(object):
         """
         return (self.compiled_revision == phrases_to_revision(phrases))
 
-    def compile(self, config, compilation_func, phrases, force=False):
+    def compile(self, sub, compilation_func, phrases, force=False):
         """
         Compiles this vocabulary. If the force argument is True, compilation
         will be forced regardless of necessity (which means that the
@@ -138,7 +138,7 @@ class VocabularyCompiler(object):
         else:
             self._logger.info('Starting compilation...')
             try:
-                compilation_func(config, self.path, phrases)
+                compilation_func(sub, self.path, phrases)
             except Exception as e:
                 msg = "Fatal compilation error occured"
                 if hasattr(e, 'message') and len(e.message) > 0:
