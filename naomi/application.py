@@ -70,7 +70,6 @@ class Naomi(object):
                     paths.CONFIG_PATH
                 )
             )
-        
         # For backwards compatibility, move old profile.yml to newly
         # created config dir
         old_configfile = paths.sub('profile.yml')
