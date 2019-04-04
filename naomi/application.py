@@ -72,14 +72,14 @@ class Naomi(object):
         # For backwards compatibility, move old profile.yml to newly
         # created config dir
         old_configfile = paths.sub('profile.yml')
-        new_configfile = os.path.join('configs','profile.yml')
+        new_configfile = paths.sub(os.path.join('configs','profile.yml'))
         if os.path.exists(old_configfile):
             if os.path.exists(new_configfile):
                 self._logger.warning(
                     " ".join([
                         "Deprecated profile file found: '{:s}'. ",
                         "Please remove it."
-                    ]).sub(old_configfile)
+                    ]).format(old_configfile)
                 )
             else:
                 self._logger.warning(
@@ -98,7 +98,7 @@ class Naomi(object):
                         " ".join([
                             "Unable to move config file.",
                             "Please move it manually.",
-                            "~/.naomi/profile.yml -> ~/.naomi/configs/profile.yml"
+                            “{} → {}”.format(old_configfile,new_configfile)
                         ]),
                         exc_info=True
                     )
