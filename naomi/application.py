@@ -31,54 +31,74 @@ class Naomi(object):
         print_transcript=False
     ):
         self._logger = logging.getLogger(__name__)
-        # Create config dir if it does not exist yet
+        # Create .naomi dir if it does not exist yet
+        if not os.path.exists(paths.SUB_PATH):
+            try:
+                os.makedirs(paths.SUB_PATH)
+            except OSError:
+                self._logger.error("Could not create .naomi dir: '%s'",
+                                   paths.SUB_PATH, exc_info=True)
+                raise
+
+        # Check if .naomi dir is writable
+        if not os.access(paths.SUB_PATH, os.W_OK):
+            self._logger.critical(
+                " ".join([
+                    ".naomi dir {:s} is not writable. Naomi",
+                    "won't work correctly."
+                ]).format(
+                    paths.SUB_PATH
+                )
+            )
+        # Create .naomi/configs dir if it does not exist yet
         if not os.path.exists(paths.CONFIG_PATH):
             try:
                 os.makedirs(paths.CONFIG_PATH)
             except OSError:
-                self._logger.error("Could not create config dir: '%s'",
+                self._logger.error("Could not create .naomi/configs dir: '%s'",
                                    paths.CONFIG_PATH, exc_info=True)
                 raise
 
-        # Check if config dir is writable
+        # Check if .naomi/configs dir is writable
         if not os.access(paths.CONFIG_PATH, os.W_OK):
             self._logger.critical(
                 " ".join([
-                    "Config dir {:s} is not writable. Naomi",
+                    ".naomi/configs dir {:s} is not writable. Naomi",
                     "won't work correctly."
                 ]).format(
                     paths.CONFIG_PATH
                 )
             )
-        # For backwards compatibility, move old config file to newly
+        # For backwards compatibility, move old profile.yml to newly
         # created config dir
-        old_configfile = os.path.join(paths.PKG_PATH, 'profile.yml')
-        new_configfile = paths.config('profile.yml')
+        old_configfile = paths.sub('profile.yml')
+        new_configfile = paths.sub(os.path.join('configs','profile.yml'))
         if os.path.exists(old_configfile):
             if os.path.exists(new_configfile):
                 self._logger.warning(
                     " ".join([
                         "Deprecated profile file found: '{:s}'. ",
                         "Please remove it."
-                    ]).config(old_configfile)
+                    ]).format(old_configfile)
                 )
             else:
                 self._logger.warning(
                     " ".join([
                         "Deprecated profile file found: '{:s}'.",
-                        "Trying to copy it to new location '{:s}'."
+                        "Trying to move it to new location '{:s}'."
                     ]).format(
                         old_configfile,
                         new_configfile
                     )
                 )
                 try:
-                    shutil.copy2(old_configfile, new_configfile)
+                    shutil.move(old_configfile, new_configfile)
                 except shutil.Error:
                     self._logger.error(
                         " ".join([
-                            "Unable to copy config file.",
-                            "Please copy it manually."
+                            "Unable to move config file.",
+                            "Please move it manually.",
+                            "“{} → {}”".format(old_configfile,new_configfile)
                         ]),
                         exc_info=True
                     )
