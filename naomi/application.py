@@ -98,7 +98,7 @@ class Naomi(object):
                         " ".join([
                             "Unable to move config file.",
                             "Please move it manually.",
-                            “{} → {}”.format(old_configfile,new_configfile)
+                            "“{} → {}”".format(old_configfile,new_configfile)
                         ]),
                         exc_info=True
                     )
