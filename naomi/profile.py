@@ -3,6 +3,7 @@
 These functions "walk" the profile, and return either a boolean variable to
 tell whether an option is configured or not, or the actual value
 """
+import logging
 from naomi import paths
 import os
 from . import populate
@@ -26,6 +27,7 @@ def set_profile(custom_profile):
 
 def get_profile(command=""):
     global _profile, _profile_read, _test_profile
+    _logger = logging.getLogger(__name__)
     command = command.strip().lower()
     if command == "reload":
         _profile_read = False
@@ -38,13 +40,13 @@ def get_profile(command=""):
             try:
                 os.makedirs(paths.SUB_PATH)
             except OSError:
-                self._logger.error("Could not create .naomi dir: '%s'",
+                _logger.error("Could not create .naomi dir: '%s'",
                                    paths.SUB_PATH, exc_info=True)
                 raise
 
         # Check if .naomi dir is writable
         if not os.access(paths.SUB_PATH, os.W_OK):
-            self._logger.critical(
+            _logger.critical(
                 " ".join([
                     ".naomi dir {:s} is not writable. Naomi",
                     "won't work correctly."
@@ -57,13 +59,13 @@ def get_profile(command=""):
             try:
                 os.makedirs(paths.CONFIG_PATH)
             except OSError:
-                self._logger.error("Could not create .naomi/configs dir: '%s'",
+                _logger.error("Could not create .naomi/configs dir: '%s'",
                                    paths.CONFIG_PATH, exc_info=True)
                 raise
 
         # Check if .naomi/configs dir is writable
         if not os.access(paths.CONFIG_PATH, os.W_OK):
-            self._logger.critical(
+            _logger.critical(
                 " ".join([
                     ".naomi/configs dir {:s} is not writable. Naomi",
                     "won't work correctly."
@@ -77,14 +79,14 @@ def get_profile(command=""):
         new_configfile = paths.sub(os.path.join('configs','profile.yml'))
         if os.path.exists(old_configfile):
             if os.path.exists(new_configfile):
-                self._logger.warning(
+                _logger.warning(
                     " ".join([
                         "Deprecated profile file found: '{:s}'. ",
                         "Please remove it."
                     ]).format(old_configfile)
                 )
             else:
-                self._logger.warning(
+                _logger.warning(
                     " ".join([
                         "Deprecated profile file found: '{:s}'.",
                         "Trying to move it to new location '{:s}'."
@@ -96,7 +98,7 @@ def get_profile(command=""):
                 try:
                     shutil.move(old_configfile, new_configfile)
                 except shutil.Error:
-                    self._logger.error(
+                    _logger.error(
                         " ".join([
                             "Unable to move config file.",
                             "Please move it manually.",
@@ -131,7 +133,7 @@ def get_profile(command=""):
                     print("Cannot continue. Exiting.")
                     quit()
             except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
-                self._logger.error("Unable to parse config file: %s %s",
+                _logger.error("Unable to parse config file: %s %s",
                                 e.problem.strip(), str(e.problem_mark).strip())
                 raise
         configfile = paths.config('profile.yml')

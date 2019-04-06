@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import os
-import re
-import shutil
-import yaml
 import pkg_resources
 
 from . import audioengine

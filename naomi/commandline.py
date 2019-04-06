@@ -38,7 +38,10 @@ def get_language(language=None):
             )and(
                 check_for_value(
                     selected_language.strip().lower(),
-                    [x[:len(selected_language)].lower() for x in languages.keys()]
+                    [
+                        x[:len(selected_language)].lower()
+                        for x in languages.keys()
+                    ]
                 )
             )
         ):
@@ -248,3 +251,9 @@ def simple_yes_no(prompt):
         return True
     else:
         return False
+
+
+def separator():
+    print("")
+    print("")
+    print("")
