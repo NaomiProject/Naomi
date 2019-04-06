@@ -2,13 +2,16 @@
 # -*- coding: utf-8 -*-
 try:
     import audioop
+    import pdb
     from blessings import Terminal
     import collections
+    from .commandline import *
     import feedparser
     from getpass import getpass
     import math
     import os
     from . import paths
+    import platform
     from . import profile
     import pytz
     import re
@@ -25,172 +28,23 @@ except SystemError:
     print("Naomi root directory.")
     quit()
 
+
 # properties
 t = Terminal()
 # given values in select_language()
 _ = None
 affirmative = ""
 negative = ""
-
 audioengine_plugins = None
 
 
-# AaronC 2018-09-14
-# Colors
-# This returns to whatever the default color is in the terminal
-def normal_text(text=""):
-    return t.normal + text
-
-
-# this is for instructions
-def instruction_text(text=""):
-    return t.bold_blue + text
-
-
-# This is for the brackets surrounding the icon
-def icon_text(text=""):
-    return t.bold_cyan + text
-
-
-# This is for question text
-def question_text(text=""):
-    return t.bold_blue + text
-
-
-# This is for the question icon
-def question_icon(text=""):
-    return t.bold_yellow + text
-
-
-# This is for alert text
-def alert_text(text=""):
-    return t.bold_red + text
-
-
-# This is for the alert icon
-def alert_icon(text=""):
-    return t.bold_cyan + text
-
-
-# This is for listing choices available to choose from
-def choices_text(text=""):
-    return t.bold_cyan + text
-
-
-# This is for displaying the default choice when there is a default
-def default_text(text=""):
-    return t.normal + text
-
-
-# This is for the prompt after the default text
-def default_prompt(text="// "):
-    return t.bold_blue + text
-
-
-# This is the color for the text as the user is entering a choice
-def input_text(text=""):
-    return t.normal + text
-
-
-# This is text for a url
-def url_text(text=""):
-    return t.bold_cyan + t.underline + text + t.normal
-
-
-# This is for a status message
-def status_text(text=""):
-    return t.bold_magenta + text
-
-
-# This is a positive alert
-def success_text(text=""):
-    return t.bold_green + text
-
-
-# AaronC
+# AaronC = for detecting audio. Switch to using VAD engine.
 def _snr(input_bits, threshold, frames):
     rms = audioop.rms(b''.join(frames), int(input_bits / 8))
     if ((threshold > 0) and (rms > threshold)):
         return 20.0 * math.log(rms / threshold, 10)
     else:
         return 0
-
-
-def format_prompt(icon, prompt):
-    if(icon == "!"):
-        prompt = "".join([
-            icon_text('['),
-            alert_icon('!'),
-            icon_text('] '),
-            question_text(prompt)
-        ])
-    elif(icon == "?"):
-        prompt = "".join([
-            icon_text('['),
-            question_icon('?'),
-            icon_text('] '),
-            question_text(prompt)
-        ])
-    return prompt
-
-
-# AaronC - simple_input is a lot like raw_input, just adds
-# a colon and space at the end. If a default value is
-# passed in, then adds that to the end followed by two slashes.
-# This used to be one of several standard ways of indicating
-# a default. If you want to override the behavior, of course,
-# then that can be done here.
-# Part of the purpose is to provide a way of overriding
-# raw_input easily without hunting down every reference
-def simple_input(prompt, default=None):
-    prompt += ": "
-    if(default):
-        prompt += default_text(default) + default_prompt()
-    prompt += input_text()
-    # don't use print here so no automatic carriage return
-    # sys.stdout.write(prompt)
-    response = input(prompt)
-    # if the user pressed enter without entering anything,
-    # set the response to default
-    if(default and not response):
-        response = default
-    return response.strip()
-
-
-# AaronC - simple_request is more complicated, and populates
-# the profile variable directly
-def simple_request(path, prompt, cleanInput=None):
-    input_str = simple_input(prompt, profile.get_profile_var(path))
-    if input_str:
-        if cleanInput:
-            input_str = cleanInput(input_str)
-        profile.set_profile_var(path, input_str)
-
-
-# AaronC Sept 18 2018 This uses affirmative/negative to ask
-# a yes/no question. Returns True for yes and False for no.
-def simple_yes_no(prompt):
-    response = ""
-    while(response not in (affirmative.lower()[:1], negative.lower()[:1])):
-        response = simple_input(
-            format_prompt(
-                "?",
-                prompt + instruction_text(" (") + choices_text(
-                    affirmative.upper()[:1]
-                ) + instruction_text("/") + choices_text(
-                    negative.upper()[:1]
-                ) + instruction_text(")")
-            )
-        ).strip().lower()[:1]
-        if response not in (affirmative.lower()[:1], negative.lower()[:1]):
-            print(alert_text("Please select '{}' or '{}'.").config(
-                affirmative.upper()[:1],
-                negative.upper()[:1]
-            ))
-    if response == affirmative.lower()[:1]:
-        return True
-    else:
-        return False
 
 
 # AaronC - This is currently used to clean phone numbers
@@ -247,103 +101,44 @@ def verify_location(place):
         return True
 
 
-# If value exists in list, return the index
-# of that value (+ 1 so that the first item
-# does not return zero which is interpreted
-# as false), otherwise return None
-def check_for_value(_value, _list):
-    try:
-        temp = _list.index(_value) + 1
-    except ValueError:
-        temp = None
-    return temp
-
-
 def separator():
     print("")
     print("")
     print("")
 
 
-def select_language():
-    global _, affirmative, negative
-    #
-    # AustinC; can't use français due to the special char "ç"
-    # it breaks due to it being out of range for ascii
-    #
-    languages = {
-        u'EN-English': 'en-US',
-        u'FR-Français': 'fr-FR',
-        u'DE-Deutsch': 'de-DE'
-    }
-    language = profile.get_profile_var(["language"], "en-US")
-    selected_language = list(languages.keys())[
-        list(languages.values()).index(language)
-    ]
-    translations = i18n.parse_translations(paths.data('locale'))
-    translator = i18n.GettextMixin(translations, profile.get_profile())
-    _ = translator.gettext
-    once = False
-    while not (
-        (
-            once
-        )and(
-            check_for_value(
-                selected_language.strip().lower(),
-                [x[:len(selected_language)].lower() for x in languages.keys()]
-            )
-        )
-    ):
-        once = True
-        print("    " + instruction_text(_("Language Selector")))
-        print("")
-        print("")
-        for language in languages.keys():
-            print("    {}".format(language))
-        print("")
-        selected_language = simple_input(
-            format_prompt(
-                "?",
-                _('Select Language')
-            ),
-            selected_language
-        ).strip().lower()
-        if(len(selected_language) > 0):
-            if(check_for_value(
-                selected_language,
-                [x[
-                    :len(selected_language)
-                ].lower() for x in list(
-                    languages.keys()
-                )]
-            )):
-                language = languages[
-                    list(languages.keys())[[x[
-                        :len(selected_language)
-                    ].lower() for x in list(
-                        languages.keys()
-                    )].index(selected_language)]
-                ]
-                if(language == 'fr-FR'):
-                    affirmative = 'oui'
-                    negative = 'non'
-                elif(language == 'de-DE'):
-                    affirmative = "ja"
-                    negative = "nein"
-                else:
-                    affirmative = 'yes'
-                    negative = 'no'
-
-    profile.set_profile_var(['language'], language)
-    translations = i18n.parse_translations(paths.data('locale'))
-    translator = i18n.GettextMixin(translations, profile.get_profile())
-    _ = translator.gettext
-
-
+# check and make sure the user has walked through the instructions
+# and configured both a STT and TTS engine.
 # check and make sure an audio engine is configured before allowing
 # populate.py to continue.
 def precheck():
     global _, affirmative, negative
+    if not profile.check_profile_var_exists(["active_stt","engine"]):
+        if(not simple_yes_no(
+            _("Have you set up at least one stt (speech to text) engine?")
+        )):
+            print(instruction_text(" ".join([
+                _("You will need to choose and configure at least"),
+                _("one stt engine. Instructions are available at")
+            ])))
+            print(url_text("https://projectnaomi.com/docs/configuration/stt.html"))
+            print(instruction_text(" ".join([
+                _("Please re-run Naomi after you have configured an STT engine.")
+            ])))
+            quit()
+    if not profile.check_profile_var_exists(["tts_engine"]):
+        if(not simple_yes_no(
+            _("Have you set up at least one tts (text to speech) engine?")
+        )):
+            print(instruction_text(" ".join([
+                _("You will need to choose and configure at least"),
+                _("one tts engine. Instructions are available at")
+            ])))
+            print(url_text("https://projectnaomi.com/docs/configuration/tts.html"))
+            print(instruction_text(" ".join([
+                _("Please re-run Naomi after you have configured a TTS engine.")
+            ])))
+            quit()
     audioengines = get_audio_engines()
     while(len(audioengines) < 1):
         print(
@@ -351,6 +146,7 @@ def precheck():
                 _("You do not appear to have any audio engines configured.")
             )
         )
+        print(default_text())
         print("You should either install the pyaudio or pyalsaaudio")
         print("python modules. Otherwise Naomi will be unable to speak")
         print("or listen.")
@@ -375,7 +171,7 @@ def greet_user():
     )
     print("")
     print(
-        "    " + instruction_text("".join([
+        "    " + instruction_text(" ".join([
             _("If, at any step, you would prefer not"),
             _("to enter the requested information")
         ]))
@@ -1147,198 +943,244 @@ def get_tts_engine():
         "Ivona": "ivona-tts",
         "Mary": "mary-tts"
     }
-    try:
-        response = list(tts_engines.keys())[
-            list(tts_engines.values()).index(
-                profile.get_profile_var(
-                    ['tts_engine']
-                )
-            )
-        ]
-    except (KeyError, ValueError):
-        response = "Festival"
-    print(
-        "    " + instruction_text(
-            _("Please select a text to speech (TTS) engine.")
-        )
-    )
-    print("")
-    once = False
-    while not ((once) and (response in tts_engines.keys())):
-        once = True
-        response = simple_input(
-            format_prompt(
-                "?",
-                _("Available implementations: ") + choices_text(
-                    "%s. " % list(tts_engines.keys())
+    # Prepare the tts_plugins object so we can
+    # instantiate and test the chosen plugin.
+    tts_plugins = pluginstore.PluginStore(
+        [os.path.join(
+            os.path.dirname(
+                os.path.dirname(
+                    os.path.abspath(__file__)
                 )
             ),
-            response
-        )
+            "plugins",
+            "tts"
+        )]
+    )
+    tts_plugins.detect_plugins()
+    voice_chosen = False
+    while not voice_chosen:
         try:
-            profile.set_profile_var(['tts_engine'], tts_engines[response])
-        except KeyError:
-            print(alert_text(_("Unrecognized option.")))
-    print("")
-    # Deal with special cases
-    if(profile.get_profile_var(["tts_engine"]) == "espeak-tts"):
-        # tts_engine: espeak-tts
+            response = list(tts_engines.keys())[
+                list(tts_engines.values()).index(
+                    profile.get_profile_var(
+                        ['tts_engine']
+                    )
+                )
+            ]
+        except (KeyError, ValueError):
+            response = "Festival"
         print(
             "    " + instruction_text(
-                _("If you would like to alter the espeak voice, you can use")
-            )
-        )
-        print(
-            "    " + instruction_text(
-                _("the following options in your config file:")
+                _("Please select a text to speech (TTS) engine.")
             )
         )
         print("")
-        print("    espeak-tts:")
-        print("        voice: 'default+m3'   # optional")
-        print("        pitch_adjustment: 40  # optional")
-        print("        words_per_minute: 160 # optional")
-    elif(profile.get_profile_var(["tts_engine"]) == "festival-tts"):
-        # tts_engine: festival-tts
-        print(
-            "    " + instruction_text(
-                _("Use the festival command to set the default voice.")
+        once = False
+        while not ((once) and (response in tts_engines.keys())):
+            once = True
+            response = simple_input(
+                format_prompt(
+                    "?",
+                    _("Available implementations: ") + choices_text(
+                        "%s. " % list(tts_engines.keys())
+                    )
+                ),
+                response
             )
-        )
-    elif(profile.get_profile_var(["tts_engine"]) == "flite-tts"):
-        try:
-            voices = run_command.run_command(['flite', '-lv']).split(" ")[2:-1]
+            try:
+                profile.set_profile_var(['tts_engine'], tts_engines[response])
+            except KeyError:
+                print(alert_text(_("Unrecognized option.")))
+        print("")
+        # Deal with special cases
+        if(profile.get_profile_var(["tts_engine"]) == "espeak-tts"):
+            # tts_engine: espeak-tts
+            voice_chosen = True
             print(
                 "    " + instruction_text(
-                    _("Available voices:")
-                ) + " " + choices_text(
-                    "%s. " % voices
+                    _("If you would like to alter the espeak voice, you can use")
                 )
             )
-            voice = profile.get_profile_var(["flite-tts", "voice"])
-            if not voice:
-                try:
-                    voice = voices[voices.index("slt")]
-                except ValueError:
-                    voice = None
-            profile.set_profile_var(
-                ["flite-tts", "voice"],
-                simple_input(
+            print(
+                "    " + instruction_text(
+                    _("the following options in your config file:")
+                )
+            )
+            print("")
+            print("    espeak-tts:")
+            print("        voice: 'default+m3'   # optional")
+            print("        pitch_adjustment: 40  # optional")
+            print("        words_per_minute: 160 # optional")
+        elif(profile.get_profile_var(["tts_engine"]) == "festival-tts"):
+            # tts_engine: festival-tts
+            voice_chosen = True
+            print(
+                "    " + instruction_text(
+                    _("Use the festival command to set the default voice.")
+                )
+            )
+        elif(profile.get_profile_var(["tts_engine"]) == "flite-tts"):
+            try:
+                # pdb.set_trace()
+                flite_info = tts_plugins.get_plugin('flite-tts', category='tts')
+                flite_plugin = flite_info.plugin_class(flite_info,{"flite-tts":{"voice":"slt"}})
+                voices = flite_plugin.get_voices()
+                print(
+                    "    " + instruction_text(
+                        _("Available voices:")
+                    ) + " " + choices_text(
+                        "%s. " % voices
+                    )
+                )
+                voice = profile.get_profile_var(["flite-tts", "voice"])
+                if not voice:
+                    try:
+                        voice = voices[voices.index("slt")]
+                    except ValueError:
+                        voice = None
+                voice = simple_input(
                     format_prompt(
                         "?",
                         _("Select a voice")
                     ),
                     voice
                 )
+                # Test the voice
+                ae_info = audioengine_plugins.get_plugin(
+                    profile.get_profile_var(['audio_engine']),
+                    category='audioengine'
+                )
+                audio_engine = ae_info.plugin_class(ae_info, profile.get_profile())
+                output_device_slug = profile.get_profile_var(["audio", "output_device"])
+                output_device = audio_engine.get_device_by_slug(output_device_slug)
+                with tempfile.SpooledTemporaryFile() as f:
+                    f.write(
+                        flite_plugin.say(
+                            _('Is this the voice you would like me to use?'),
+                            voice
+                        )
+                    )
+                    f.seek(0)
+                    output_device.play_fp(f)
+                if simple_yes_no(
+                    _("Is this the voice you would like me to use?")
+                ):
+                    profile.set_profile_var(
+                        ["flite-tts", "voice"],
+                        voice
+                    )
+                    voice_chosen = True
+            except OSError:
+                print(alert_text(_("FLite does not appear to be installed")))
+                print(instruction_text(_("Please install it using:")))
+                print("  $ " + success_text("sudo apt install flite"))
+                print(instruction_text(
+                    _("then re-run Naomi with the --repopulate flag")
+                ))
+                print("  $ " + success_text("./Naomi.py --repopulate"))
+        elif(profile.get_profile_var(["tts_engine"]) == "pico-tts"):
+            voice_chosen = True
+            pass
+        elif(profile.get_profile_var(["tts_engine"]) == "ivona-tts"):
+            voice_chosen = True
+            print(
+                "    " + instruction_text(
+                    _("You will now need to enter your Ivona account information.")
+                )
             )
-        except OSError:
-            print(alert_text(_("FLite does not appear to be installed")))
-            print(instruction_text(_("Please install it using:")))
-            print("  $ " + success_text("sudo apt install flite"))
-            print(instruction_text(
-                _("then re-run Naomi with the --repopulate flag")
-            ))
-            print("  $ " + success_text("./Naomi.py --repopulate"))
-    elif(profile.get_profile_var(["tts_engine"]) == "pico-tts"):
-        pass
-    elif(profile.get_profile_var(["tts_engine"]) == "ivona-tts"):
-        print(
-            "    " + instruction_text(
-                _("You will now need to enter your Ivona account information.")
+            print("")
+            url = url_text(
+                "https://www.ivona.com/us/account/speechcloud/creation/"
             )
-        )
-        print("")
-        url = url_text(
-            "https://www.ivona.com/us/account/speechcloud/creation/"
-        )
-        print(
-            "    " + instruction_text(
-                _("You will need to create an account at %s") % url_text(url)
+            print(
+                "    " + instruction_text(
+                    _("You will need to create an account at %s") % url_text(url)
+                )
             )
-        )
-        print(
-            " " + instruction_text(
-                _("if you haven't already.")
+            print(
+                " " + instruction_text(
+                    _("if you haven't already.")
+                )
             )
-        )
-        print("")
-        profile.set_profile_var(
-            ["ivona-tts", "access_key"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("What is your Access key?")
-                ),
-                profile.get_profile_var(["ivona-tts", "access_key"])
+            print("")
+            profile.set_profile_var(
+                ["ivona-tts", "access_key"],
+                simple_input(
+                    format_prompt(
+                        "?",
+                        _("What is your Access key?")
+                    ),
+                    profile.get_profile_var(["ivona-tts", "access_key"])
+                )
             )
-        )
-        profile.set_profile_var(
-            ["ivona-tts", "secret_key"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("What is your Secret key?")
-                ),
-                profile.get_profile_var(["ivona-tts", "secret_key"])
+            profile.set_profile_var(
+                ["ivona-tts", "secret_key"],
+                simple_input(
+                    format_prompt(
+                        "?",
+                        _("What is your Secret key?")
+                    ),
+                    profile.get_profile_var(["ivona-tts", "secret_key"])
+                )
             )
-        )
-        # ivona-tts voice
-        temp = profile.get_profile_var(["ivona-tts", "voice"])
-        if(not temp):
-            temp = "Brian"
-        profile.set_profile_var(
-            ["ivona-tts", "voice"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("Which voice do you want") + " " + default_text(
-                        _("(default is Brian)")
-                    ) + question_text("?")
-                ),
-                temp
+            # ivona-tts voice
+            temp = profile.get_profile_var(["ivona-tts", "voice"])
+            if(not temp):
+                temp = "Brian"
+            profile.set_profile_var(
+                ["ivona-tts", "voice"],
+                simple_input(
+                    format_prompt(
+                        "?",
+                        _("Which voice do you want") + " " + default_text(
+                            _("(default is Brian)")
+                        ) + question_text("?")
+                    ),
+                    temp
+                )
             )
-        )
-    elif(profile.get_profile_var(["tts_engine"]) == "mary-tts"):
-        profile.set_profile_var(
-            ["mary-tts", "server"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("Server?")
-                ),
-                profile.get_profile_var(["mary-tts", "server"])
+        elif(profile.get_profile_var(["tts_engine"]) == "mary-tts"):
+            voice_chosen = True
+            profile.set_profile_var(
+                ["mary-tts", "server"],
+                simple_input(
+                    format_prompt(
+                        "?",
+                        _("Server?")
+                    ),
+                    profile.get_profile_var(["mary-tts", "server"])
+                )
             )
-        )
-        profile.set_profile_var(
-            ["mary-tts", "port"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    "Port?"
-                ),
-                profile.get_profile_var(["mary-tts", "port"])
+            profile.set_profile_var(
+                ["mary-tts", "port"],
+                simple_input(
+                    format_prompt(
+                        "?",
+                        "Port?"
+                    ),
+                    profile.get_profile_var(["mary-tts", "port"])
+                )
             )
-        )
-        profile.set_profile_var(
-            ["mary-tts", "language"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("Language?")
-                ),
-                profile.get_profile_var(["mary-tts", "language"])
+            profile.set_profile_var(
+                ["mary-tts", "language"],
+                simple_input(
+                    format_prompt(
+                        "?",
+                        _("Language?")
+                    ),
+                    profile.get_profile_var(["mary-tts", "language"])
+                )
             )
-        )
-        profile.set_profile_var(
-            ["mary-tts", "voice"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("Voice?")
-                ),
-                profile.get_profile_var(["mary-tts", "voice"])
+            profile.set_profile_var(
+                ["mary-tts", "voice"],
+                simple_input(
+                    format_prompt(
+                        "?",
+                        _("Voice?")
+                    ),
+                    profile.get_profile_var(["mary-tts", "voice"])
+                )
             )
-        )
 
 
 def get_beep_or_voice():
@@ -1477,13 +1319,18 @@ def select_audio_engine():
 
     print(instruction_text(_("Please select an audio engine.")))
     try:
+        default = "pyaudio"
+        if re.match(r'linux', platform.system().lower()):
+            default = "alsa"
+        if default not in audioengines:
+            default = audioengines[0]
         response = audioengines[
             audioengines.index(
-                profile.get_profile_var(['audio_engine'])
+                profile.get_profile_var(['audio_engine'],default)
             )
         ]
     except (ValueError):
-        response = "pyaudio"
+        response = audioengines[0]
     once = False
     while not ((once) and (response in audioengines)):
         audioengines = get_audio_engines()
@@ -1505,9 +1352,16 @@ def get_output_device():
     )
     # AaronC 2018-09-14 Get a list of available output devices
     audio_engine = ae_info.plugin_class(ae_info, profile.get_profile())
-    output_devices = [device.slug for device in audio_engine.get_devices(
+    output_devices = []
+    print(instruction_text("Checking devices for compatibility"))
+    for output_device_slug in [device.slug for device in audio_engine.get_devices(
         device_type=audioengine.DEVICE_TYPE_OUTPUT
-    )]
+    )]:
+        output_device = audio_engine.get_device_by_slug(output_device_slug)
+        if output_device.supports_format(16, 1, 16000, output=True):
+            output_devices.append(output_device_slug)
+            
+    
     output_device_slug = profile.get_profile_var(["audio", "output_device"])
     if not output_device_slug:
         output_device_slug = audio_engine.get_default_device(output=True).slug
@@ -1530,7 +1384,7 @@ def get_output_device():
         # FIXME Set the following defaults to what is in the
         # configuration file
         output_chunksize = profile.get_profile_var(
-            ['output_chunksize'],
+            ['audio', 'output_chunksize'],
             1024
         )
         output_add_padding = profile.get_profile_var(
@@ -1548,15 +1402,17 @@ def get_output_device():
         if(os.path.isfile(filename)):
             print(instruction_text(_("Testing device by playing a sound")))
             output_device = audio_engine.get_device_by_slug(output_device_slug)
+            output_device.play_file(
+                filename,
+                chunksize=output_chunksize,
+                add_padding=output_add_padding
+            )
+            # pdb.set_trace()
+            heard = simple_yes_no(
+                _("Were you able to hear the beep?")
+            )
+            print("Heard = '{}'".format(heard))
             try:
-                output_device.play_file(
-                    filename,
-                    chunksize=output_chunksize,
-                    add_padding=output_add_padding
-                )
-                heard = simple_yes_no(
-                    _("Were you able to hear the beep?")
-                )
                 if not (heard):
                     print(
                         instruction_text(" ".join([
@@ -1586,6 +1442,8 @@ def get_output_device():
                 )
                 print("")
                 once = False
+            except:
+                raise
         else:
             print(
                 alert_text(
@@ -1789,6 +1647,7 @@ def get_input_device():
 
 
 def run():
+    global _, affirmative, negative
     #
     # AustinC; Implemented new UX for the population process.
     # For population blessings is used to handle colors,
@@ -1797,8 +1656,13 @@ def run():
     # For plugin & general use elsewhere, blessings or
     # coloredformatting.py can be used.
     #
-    select_language()
+    # select_language()
+    get_language()
     separator()
+    language = profile.get_profile_var(["language"], "en-US")
+    translations = i18n.parse_translations(paths.data('locale'))
+    translator = i18n.GettextMixin(translations, profile.get_profile())
+    _ = translator.gettext
 
     precheck()
     separator()
@@ -1807,6 +1671,24 @@ def run():
     separator()
 
     get_wakeword()
+    separator()
+
+    select_audio_engine()
+    separator()
+
+    get_output_device()
+    separator()
+
+    get_input_device()
+    separator()
+
+    get_stt_engine()
+    separator()
+
+    get_tts_engine()
+    separator()
+
+    get_beep_or_voice()
     separator()
 
     get_user_name()
@@ -1821,28 +1703,12 @@ def run():
     get_notification_info()
     separator()
 
-    get_weather_location()
-    separator()
+    # comment out the following two lines as the weather location service
+    # at weather underground has now been shut down. AaronC 2019-03-25
+    # get_weather_location()
+    # separator()
 
     get_timezone()
-    separator()
-
-    get_stt_engine()
-    separator()
-
-    get_tts_engine()
-    separator()
-
-    get_beep_or_voice()
-    separator()
-
-    select_audio_engine()
-    separator()
-
-    get_output_device()
-    separator()
-
-    get_input_device()
     separator()
 
     # write to profile
