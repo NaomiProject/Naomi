@@ -8,6 +8,7 @@ from naomi import paths
 import os
 from . import populate
 import re
+import shutil
 import yaml
 
 _profile = {}
@@ -40,8 +41,12 @@ def get_profile(command=""):
             try:
                 os.makedirs(paths.SUB_PATH)
             except OSError:
-                _logger.error("Could not create .naomi dir: '%s'",
-                                   paths.SUB_PATH, exc_info=True)
+                _logger.error(
+                    "Could not create .naomi dir: '{}'".format(
+                        paths.SUB_PATH
+                    ),
+                    exc_info=True
+                )
                 raise
 
         # Check if .naomi dir is writable
@@ -59,8 +64,12 @@ def get_profile(command=""):
             try:
                 os.makedirs(paths.CONFIG_PATH)
             except OSError:
-                _logger.error("Could not create .naomi/configs dir: '%s'",
-                                   paths.CONFIG_PATH, exc_info=True)
+                _logger.error(
+                    "Could not create .naomi/configs dir: '{}'".format(
+                        paths.CONFIG_PATH
+                    ),
+                    exc_info=True
+                )
                 raise
 
         # Check if .naomi/configs dir is writable
@@ -76,7 +85,7 @@ def get_profile(command=""):
         # For backwards compatibility, move old profile.yml to newly
         # created config dir
         old_configfile = paths.sub('profile.yml')
-        new_configfile = paths.sub(os.path.join('configs','profile.yml'))
+        new_configfile = paths.sub(os.path.join('configs', 'profile.yml'))
         if os.path.exists(old_configfile):
             if os.path.exists(new_configfile):
                 _logger.warning(
@@ -102,7 +111,7 @@ def get_profile(command=""):
                         " ".join([
                             "Unable to move config file.",
                             "Please move it manually.",
-                            "“{} → {}”".format(old_configfile,new_configfile)
+                            "“{} → {}”".format(old_configfile, new_configfile)
                         ]),
                         exc_info=True
                     )
@@ -133,8 +142,12 @@ def get_profile(command=""):
                     print("Cannot continue. Exiting.")
                     quit()
             except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
-                _logger.error("Unable to parse config file: %s %s",
-                                e.problem.strip(), str(e.problem_mark).strip())
+                _logger.error(
+                    "Unable to parse config file: {} {}".format(
+                        e.problem.strip(),
+                        str(e.problem_mark).strip()
+                    )
+                )
                 raise
         configfile = paths.config('profile.yml')
         with open(configfile, "r") as f:
