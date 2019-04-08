@@ -4,11 +4,13 @@ try:
     import audioop
     from blessings import Terminal
     import collections
+    from . import commandline as interface
     import feedparser
     from getpass import getpass
     import math
     import os
     from . import paths
+    import platform
     from . import profile
     import pytz
     import re
@@ -25,172 +27,23 @@ except SystemError:
     print("Naomi root directory.")
     quit()
 
+
 # properties
 t = Terminal()
 # given values in select_language()
 _ = None
 affirmative = ""
 negative = ""
-
 audioengine_plugins = None
 
 
-# AaronC 2018-09-14
-# Colors
-# This returns to whatever the default color is in the terminal
-def normal_text(text=""):
-    return t.normal + text
-
-
-# this is for instructions
-def instruction_text(text=""):
-    return t.bold_blue + text
-
-
-# This is for the brackets surrounding the icon
-def icon_text(text=""):
-    return t.bold_cyan + text
-
-
-# This is for question text
-def question_text(text=""):
-    return t.bold_blue + text
-
-
-# This is for the question icon
-def question_icon(text=""):
-    return t.bold_yellow + text
-
-
-# This is for alert text
-def alert_text(text=""):
-    return t.bold_red + text
-
-
-# This is for the alert icon
-def alert_icon(text=""):
-    return t.bold_cyan + text
-
-
-# This is for listing choices available to choose from
-def choices_text(text=""):
-    return t.bold_cyan + text
-
-
-# This is for displaying the default choice when there is a default
-def default_text(text=""):
-    return t.normal + text
-
-
-# This is for the prompt after the default text
-def default_prompt(text="// "):
-    return t.bold_blue + text
-
-
-# This is the color for the text as the user is entering a choice
-def input_text(text=""):
-    return t.normal + text
-
-
-# This is text for a url
-def url_text(text=""):
-    return t.bold_cyan + t.underline + text + t.normal
-
-
-# This is for a status message
-def status_text(text=""):
-    return t.bold_magenta + text
-
-
-# This is a positive alert
-def success_text(text=""):
-    return t.bold_green + text
-
-
-# AaronC
+# AaronC = for detecting audio. Switch to using VAD engine.
 def _snr(input_bits, threshold, frames):
     rms = audioop.rms(b''.join(frames), int(input_bits / 8))
     if ((threshold > 0) and (rms > threshold)):
         return 20.0 * math.log(rms / threshold, 10)
     else:
         return 0
-
-
-def format_prompt(icon, prompt):
-    if(icon == "!"):
-        prompt = "".join([
-            icon_text('['),
-            alert_icon('!'),
-            icon_text('] '),
-            question_text(prompt)
-        ])
-    elif(icon == "?"):
-        prompt = "".join([
-            icon_text('['),
-            question_icon('?'),
-            icon_text('] '),
-            question_text(prompt)
-        ])
-    return prompt
-
-
-# AaronC - simple_input is a lot like raw_input, just adds
-# a colon and space at the end. If a default value is
-# passed in, then adds that to the end followed by two slashes.
-# This used to be one of several standard ways of indicating
-# a default. If you want to override the behavior, of course,
-# then that can be done here.
-# Part of the purpose is to provide a way of overriding
-# raw_input easily without hunting down every reference
-def simple_input(prompt, default=None):
-    prompt += ": "
-    if(default):
-        prompt += default_text(default) + default_prompt()
-    prompt += input_text()
-    # don't use print here so no automatic carriage return
-    # sys.stdout.write(prompt)
-    response = input(prompt)
-    # if the user pressed enter without entering anything,
-    # set the response to default
-    if(default and not response):
-        response = default
-    return response.strip()
-
-
-# AaronC - simple_request is more complicated, and populates
-# the profile variable directly
-def simple_request(path, prompt, cleanInput=None):
-    input_str = simple_input(prompt, profile.get_profile_var(path))
-    if input_str:
-        if cleanInput:
-            input_str = cleanInput(input_str)
-        profile.set_profile_var(path, input_str)
-
-
-# AaronC Sept 18 2018 This uses affirmative/negative to ask
-# a yes/no question. Returns True for yes and False for no.
-def simple_yes_no(prompt):
-    response = ""
-    while(response not in (affirmative.lower()[:1], negative.lower()[:1])):
-        response = simple_input(
-            format_prompt(
-                "?",
-                prompt + instruction_text(" (") + choices_text(
-                    affirmative.upper()[:1]
-                ) + instruction_text("/") + choices_text(
-                    negative.upper()[:1]
-                ) + instruction_text(")")
-            )
-        ).strip().lower()[:1]
-        if response not in (affirmative.lower()[:1], negative.lower()[:1]):
-            print(alert_text("Please select '{}' or '{}'.").config(
-                affirmative.upper()[:1],
-                negative.upper()[:1]
-            ))
-    if response == affirmative.lower()[:1]:
-        return True
-    else:
-        return False
 
 
 # AaronC - This is currently used to clean phone numbers
@@ -237,7 +90,7 @@ def verify_location(place):
         return False
     else:
         print(
-            success_text(
+            interface.success_text(
                 " ".join([
                     _("Location saved as"),
                     feed['feed']['description'][33:]
@@ -247,141 +100,81 @@ def verify_location(place):
         return True
 
 
-# If value exists in list, return the index
-# of that value (+ 1 so that the first item
-# does not return zero which is interpreted
-# as false), otherwise return None
-def check_for_value(_value, _list):
-    try:
-        temp = _list.index(_value) + 1
-    except ValueError:
-        temp = None
-    return temp
-
-
-def separator():
-    print("")
-    print("")
-    print("")
-
-
-def select_language():
-    global _, affirmative, negative
-    #
-    # AustinC; can't use français due to the special char "ç"
-    # it breaks due to it being out of range for ascii
-    #
-    languages = {
-        u'EN-English': 'en-US',
-        u'FR-Français': 'fr-FR',
-        u'DE-Deutsch': 'de-DE'
-    }
-    language = profile.get_profile_var(["language"], "en-US")
-    selected_language = list(languages.keys())[
-        list(languages.values()).index(language)
-    ]
-    translations = i18n.parse_translations(paths.data('locale'))
-    translator = i18n.GettextMixin(translations, profile.get_profile())
-    _ = translator.gettext
-    once = False
-    while not (
-        (
-            once
-        )and(
-            check_for_value(
-                selected_language.strip().lower(),
-                [x[:len(selected_language)].lower() for x in languages.keys()]
-            )
-        )
-    ):
-        once = True
-        print("    " + instruction_text(_("Language Selector")))
-        print("")
-        print("")
-        for language in languages.keys():
-            print("    {}".format(language))
-        print("")
-        selected_language = simple_input(
-            format_prompt(
-                "?",
-                _('Select Language')
-            ),
-            selected_language
-        ).strip().lower()
-        if(len(selected_language) > 0):
-            if(check_for_value(
-                selected_language,
-                [x[
-                    :len(selected_language)
-                ].lower() for x in list(
-                    languages.keys()
-                )]
-            )):
-                language = languages[
-                    list(languages.keys())[[x[
-                        :len(selected_language)
-                    ].lower() for x in list(
-                        languages.keys()
-                    )].index(selected_language)]
-                ]
-                if(language == 'fr-FR'):
-                    affirmative = 'oui'
-                    negative = 'non'
-                elif(language == 'de-DE'):
-                    affirmative = "ja"
-                    negative = "nein"
-                else:
-                    affirmative = 'yes'
-                    negative = 'no'
-
-    profile.set_profile_var(['language'], language)
-    translations = i18n.parse_translations(paths.data('locale'))
-    translator = i18n.GettextMixin(translations, profile.get_profile())
-    _ = translator.gettext
-
-
+# check and make sure the user has walked through the instructions
+# and configured both a STT and TTS engine.
 # check and make sure an audio engine is configured before allowing
 # populate.py to continue.
 def precheck():
     global _, affirmative, negative
+    if not profile.check_profile_var_exists(["active_stt", "engine"]):
+        if(not interface.simple_yes_no(
+            _("Have you set up at least one stt (speech to text) engine?")
+        )):
+            print(interface.instruction_text(" ".join([
+                _("You will need to choose and configure at least"),
+                _("one stt engine. Instructions are available at")
+            ])))
+            print(interface.url_text(
+                "https://projectnaomi.com/docs/configuration/stt.html")
+            )
+            print(interface.instruction_text(" ".join([_(
+                "Please re-run Naomi after you have configured an STT engine."
+            )])))
+            quit()
+    if not profile.check_profile_var_exists(["tts_engine"]):
+        if(not interface.simple_yes_no(
+            _("Have you set up at least one tts (text to speech) engine?")
+        )):
+            print(interface.instruction_text(" ".join([
+                _("You will need to choose and configure at least"),
+                _("one tts engine. Instructions are available at")
+            ])))
+            print(interface.url_text(
+                "https://projectnaomi.com/docs/configuration/tts.html"
+            ))
+            print(interface.instruction_text(" ".join([
+                _("Please re-run Naomi after you have configured a TTS engine.")
+            ])))
+            quit()
     audioengines = get_audio_engines()
     while(len(audioengines) < 1):
         print(
-            alert_text(
+            interface.alert_text(
                 _("You do not appear to have any audio engines configured.")
             )
         )
-        print("You should either install the pyaudio or pyalsaaudio")
-        print("python modules. Otherwise Naomi will be unable to speak")
-        print("or listen.")
+        print(interface.default_text())
+        print(_("You should either install the pyaudio or pyalsaaudio"))
+        print(_("python modules. Otherwise Naomi will be unable to speak"))
+        print(_("or listen."))
         print("")
-        print("Both programs have prerequisites that can most likely")
-        print("be installed using your package manager")
-        if not simple_yes_no(_("Would you like me to check again?")):
-            print("Can't continue, so quitting")
+        print(_("Both programs have prerequisites that can most likely"))
+        print(_("be installed using your package manager"))
+        if not interface.simple_yes_no(_("Would you like me to check again?")):
+            print(_("Can't continue, so quitting"))
             quit()
         audioengines = get_audio_engines()
 
 
 def greet_user():
-    print("    " + instruction_text(
+    print("    " + interface.instruction_text(
         _("Hello, thank you for selecting me to be your personal assistant.")
     ))
     print("")
     print(
-        "    " + instruction_text(
+        "    " + interface.instruction_text(
             _("Let's populate your profile.")
         )
     )
     print("")
     print(
-        "    " + instruction_text("".join([
+        "    " + interface.instruction_text(" ".join([
             _("If, at any step, you would prefer not"),
             _("to enter the requested information")
         ]))
     )
     print(
-        "    " + instruction_text(
+        "    " + interface.instruction_text(
             _("just hit 'Enter' with a blank field to continue.")
         )
     )
@@ -393,8 +186,8 @@ def get_wakeword():
     keyword = profile.get_profile_var(["keyword"], "Naomi")
     profile.set_profile_var(
         ["keyword"],
-        simple_input(
-            format_prompt(
+        interface.simple_input(
+            interface.format_prompt(
                 "?",
                 _("First, what name would you like to call me by?")
             ),
@@ -406,22 +199,22 @@ def get_wakeword():
 def get_user_name():
     # your name
     print(
-        "    " + instruction_text(
+        "    " + interface.instruction_text(
             _("Now please tell me a little about yourself.")
         )
     )
     print("")
-    simple_request(
+    interface.simple_request(
         ["first_name"],
-        format_prompt(
+        interface.format_prompt(
             "?",
             _("What is your first name?")
         )
     )
     print("")
-    simple_request(
+    interface.simple_request(
         ['last_name'],
-        format_prompt(
+        interface.format_prompt(
             "?",
             _('What is your last name?')
         )
@@ -431,7 +224,7 @@ def get_user_name():
 def get_email_info():
     # email
     print(
-        "    " + instruction_text(
+        "    " + interface.interface.instruction_text(
             _("I can use an email account to send notifications to you.")
         )
     )
@@ -440,8 +233,8 @@ def get_email_info():
     # email
     profile.set_profile_var(
         ["email", "imap"],
-        simple_input(
-            format_prompt(
+        interface.simple_input(
+            interface.format_prompt(
                 "?",
                 _('Please enter your imap server as "server[:port]"')
             ),
@@ -451,8 +244,8 @@ def get_email_info():
 
     profile.set_profile_var(
         ["email", "address"],
-        simple_input(
-            format_prompt(
+        interface.simple_input(
+            interface.format_prompt(
                 "?",
                 _('What is your email address?')
             ),
@@ -476,11 +269,11 @@ def get_email_info():
     if(profile.get_profile_var(["email", "address"])):
         prompt = _("What is your email password?") + ": "
         if(profile.get_profile_var(["email", "password"])):
-            prompt += default_text(
+            prompt += interface.default_text(
                 _("(just press enter to keep current password)")
-            ) + default_prompt()
-        temp = getpass(
-            format_prompt(
+            ) + interface.default_prompt()
+        temp = interface.getpass(
+            interface.format_prompt(
                 "?",
                 prompt
             )
@@ -491,7 +284,7 @@ def get_email_info():
 
 def get_phone_info():
     print(
-        "    " + instruction_text(
+        "    " + interface.interface.instruction_text(
             _("I can use your phone number to send notifications to you.")
         )
     )
@@ -501,16 +294,16 @@ def get_phone_info():
     ]))
     print("")
     print(
-        "    " + alert_text(
+        "    " + interface.alert_text(
             _("No country codes!")
-        ) + " " + instruction_text(
+        ) + " " + interface.instruction_text(
             _("Any dashes or spaces will be removed for you")
         )
     )
     print("")
     phone_number = clean_number(
-        simple_input(
-            format_prompt(
+        interface.simple_input(
+            interface.format_prompt(
                 "?",
                 _("What is your Phone number?")
             ),
@@ -521,51 +314,53 @@ def get_phone_info():
 
     # carrier
     if(profile.get_profile_var(['phone_number'])):
-        separator()
+        interface.separator()
         # If the phone number is blank, it makes no sense to ask
         # for the carrier.
         print(
-            "    " + instruction_text(
+            "    " + interface.instruction_text(
                 _("What is your phone carrier?")
             )
         )
         print(
-            "    " + instruction_text(" ".join([
+            "    " + interface.instruction_text(" ".join([
                 _("If you have a US phone number,"),
                 _("you can enter one of the following:")
             ]))
         )
         print(
-            choices_text("    'AT&T', 'Verizon', 'T-Mobile' ") + alert_text(
+            interface.choices_text(
+                "    'AT&T', 'Verizon', 'T-Mobile' "
+            ) + interface.alert_text(
                 "(" + _("without the quotes") + ")."
             )
         )
         print("")
         print(
-            "    " + instruction_text(
+            "    " + interface.instruction_text(
                 _("If your carrier isn't listed or you have an international")
             )
         )
         print(
-            "    " + instruction_text(
+            "    " + interface.instruction_text(
                 _("number, go to") + " "
-            ) + url_text("http://www.emailtextmessages.com")
+            ) + interface.url_text("http://www.emailtextmessages.com")
         )
         print(
-            "    " + instruction_text(" ".join([
+            "    " + interface.instruction_text(" ".join([
                 _("and enter the email suffix for your carrier"),
                 _("(e.g., for Virgin Mobile, enter 'vmobl.com';"),
                 ""
             ]))
         )
         print(
-            "    " + instruction_text(
+            "    " + interface.instruction_text(
                 _("for T-Mobile Germany, enter 't-d1-sms.de').")
             )
         )
         print("")
-        carrier = simple_input(
-            format_prompt(
+        carrier = interface.simple_input(
+            interface.format_prompt(
                 "?",
                 _("What is your Carrier? ")
             ),
@@ -616,12 +411,12 @@ def get_notification_info():
         email_choice = _("email").lower()[:1]
         text_choice = _("text").lower()[:1]
         print(
-            "    " + instruction_text(
+            "    " + interface.instruction_text(
                 _("Would you prefer to have notifications sent by")
             )
         )
         print(
-            "    " + instruction_text(
+            "    " + interface.instruction_text(
                 _("email ({e}) or text message ({t})?").format(
                     e=email_choice.upper(),
                     t=text_choice.upper()
@@ -633,8 +428,8 @@ def get_notification_info():
             temp = email_choice
         else:
             temp = text_choice
-        response = simple_input(
-            format_prompt(
+        response = interface.simple_input(
+            interface.format_prompt(
                 "?",
                 _("Email ({e}) or Text message ({t})?").format(
                     e=email_choice.upper(),
@@ -652,8 +447,8 @@ def get_notification_info():
             )
         ):
             print("")
-            response = simple_input(
-                alert_text(
+            response = interface.simple_input(
+                interface.alert_text(
                     _(
                         "Please choose email ({e}) or text message ({t})!"
                     ).format(
@@ -675,20 +470,20 @@ def get_notification_info():
 def get_weather_location():
     # Weather
     print(
-        "    " + instruction_text(" ".join([
+        "    " + interface.instruction_text(" ".join([
             _("For weather information, please enter your 5-digit zipcode"),
             _("(e.g., 08544).")
         ]))
     )
     print(
-        "    " + instruction_text(" ".join([
+        "    " + interface.instruction_text(" ".join([
             _("If you are outside the US,"),
             _("insert the name of the nearest big town/city.")
         ]))
     )
     print("")
-    location = simple_input(
-        format_prompt(
+    location = interface.simple_input(
+        interface.format_prompt(
             "?",
             _("What is your location?")
         ),
@@ -697,14 +492,14 @@ def get_weather_location():
 
     while location and not verify_location(location):
         print(
-            alert_text(
+            interface.alert_text(
                 _("Weather not found.")
-            ) + " " + instruction_text(
+            ) + " " + interface.instruction_text(
                 _("Please try another location.")
             )
         )
-        location = simple_input(
-            format_prompt(
+        location = interface.simple_input(
+            interface.format_prompt(
                 "?",
                 _("What is your location?")
             ),
@@ -720,18 +515,18 @@ def get_timezone():
     # able to work out the time zone.
     # Also, sending me to a wikipedia page to configure this? Really?
     print(
-        "    " + instruction_text(
+        "    " + interface.instruction_text(
             _("Please enter a timezone from the list located in the TZ*")
         )
     )
     print(
-        "    " + instruction_text(
+        "    " + interface.instruction_text(
             _("column at")
-        ) + " " + url_text(
+        ) + " " + interface.url_text(
             "http://en.wikipedia.org/wiki/List_of_tz_database_time_zones"
         )
     )
-    print("    " + instruction_text(_("or none at all.")))
+    print("    " + interface.instruction_text(_("or none at all.")))
     print("")
     tz = profile.get_profile_var(["timezone"])
     if not tz:
@@ -739,8 +534,8 @@ def get_timezone():
             tz = run_command.run_command(["/bin/cat", "/etc/timezone"])
         except OSError:
             tz = None
-    tz = simple_input(
-        format_prompt(
+    tz = interface.simple_input(
+        interface.format_prompt(
             "?",
             _("What is your timezone?")
         ),
@@ -752,9 +547,9 @@ def get_timezone():
             profile.set_profile_var(['timezone'], tz)
             break
         except pytz.exceptions.UnknownTimeZoneError:
-            print(alert_text(_("Not a valid timezone. Try again.")))
-            tz = simple_input(
-                format_prompt(
+            print(interface.alert_text(_("Not a valid timezone. Try again.")))
+            tz = interface.simple_input(
+                interface.format_prompt(
                     "?",
                     _("What is your timezone?")
                 ),
@@ -775,7 +570,7 @@ def get_stt_engine():
     }
 
     print(
-        "    " + instruction_text(
+        "    " + interface.instruction_text(
             _("Please select a speech to text engine.")
         )
     )
@@ -791,10 +586,10 @@ def get_stt_engine():
     once = False
     while not ((once) and (response in stt_engines.keys())):
         once = True
-        response = simple_input(
-            "    " + instruction_text(
+        response = interface.simple_input(
+            "    " + interface.instruction_text(
                 _("Available choices:")
-            ) + " " + choices_text(
+            ) + " " + interface.choices_text(
                 ("%s. " % list(stt_engines.keys()))
             ),
             response
@@ -807,7 +602,7 @@ def get_stt_engine():
             )
         except KeyError:
             print(
-                alert_text(
+                interface.alert_text(
                     _("Unrecognized option.")
                 )
             )
@@ -818,8 +613,8 @@ def get_stt_engine():
         # need to test)
         profile.set_profile_var(
             ['keys', 'GOOGLE_SPEECH'],
-            simple_input(
-                format_prompt(
+            interface.simple_input(
+                interface.format_prompt(
                     "!",
                     _("Please enter your API key:")
                 ),
@@ -827,8 +622,8 @@ def get_stt_engine():
             )
         )
     elif(profile.get_profile_var(['active_stt', 'engine']) == 'watson-stt'):
-        username = simple_input(
-            format_prompt(
+        username = interface.simple_input(
+            interface.format_prompt(
                 "!",
                 _("Please enter your watson username:")
             )
@@ -848,17 +643,17 @@ def get_stt_engine():
         ) == 'kaldigstserver-stt'
     ):
         print(
-            "    " + instruction_text(
+            "    " + interface.instruction_text(
                 _("I need your Kaldi g-streamer server url to continue")
             )
         )
         default = "http://localhost:8888/client/dynamic/recognize"
         print(
-            "    " + instruction_text(
+            "    " + interface.instruction_text(
                 "(" + _("default is") + " "
-            ) + url_text(
+            ) + interface.url_text(
                 "%s" % default
-            ) + instruction_text(
+            ) + interface.instruction_text(
                 ")"
             )
         )
@@ -868,8 +663,8 @@ def get_stt_engine():
             temp = default
         profile.set_profile_var(
             ['kaldigstserver-stt', 'url'],
-            simple_input(
-                format_prompt(
+            interface.simple_input(
+                interface.format_prompt(
                     "!",
                     _("Please enter your server url:")
                 ),
@@ -887,8 +682,8 @@ def get_stt_engine():
         # hmmdefs
         profile.set_profile_var(
             ["julius", "hmmdefs"],
-            simple_input(
-                format_prompt(
+            interface.simple_input(
+                interface.format_prompt(
                     "!",
                     _("Enter path to julius hmm defs")
                 ),
@@ -898,8 +693,8 @@ def get_stt_engine():
         # tiedlist
         profile.set_profile_var(
             ["julius", "tiedlist"],
-            simple_input(
-                format_prompt(
+            interface.simple_input(
+                interface.format_prompt(
                     "!",
                     _("Enter path to julius tied list")
                 ),
@@ -909,8 +704,8 @@ def get_stt_engine():
         # lexicon
         profile.set_profile_var(
             ["julius", "lexicon"],
-            simple_input(
-                format_prompt(
+            interface.simple_input(
+                interface.format_prompt(
                     "!",
                     _("Enter path to julius lexicon")
                 ),
@@ -929,8 +724,8 @@ def get_stt_engine():
             "VoxForge/VoxForgeDict"
         )
     elif(profile.get_profile_var(['active_stt', 'engine']) == 'witai-stt'):
-        witai_token = simple_input(
-            format_prompt(
+        witai_token = interface.simple_input(
+            interface.format_prompt(
                 "!",
                 _("Please enter your Wit.AI token")
             ),
@@ -955,8 +750,8 @@ def get_stt_engine():
                     phonetisaurus_executable = 'phonetisaurus-g2pfst'
                 elif(check_program_exists('phonetisaurus-g2p')):
                     phonetisaurus_executable = 'phonetisaurus-g2p'
-            phonetisaurus_executable = simple_input(
-                format_prompt(
+            phonetisaurus_executable = interface.simple_input(
+                interface.format_prompt(
                     "?",
                     _("What is the name of your phonetisaurus-g2p program?")
                 ),
@@ -1058,8 +853,8 @@ def get_stt_engine():
                         "en_US",
                         "hub4wsj_sc_8k"
                     )
-            hmm_dir = simple_input(
-                format_prompt(
+            hmm_dir = interface.simple_input(
+                interface.format_prompt(
                     "!",
                     _("Please enter the path to your hmm directory")
                 ),
@@ -1123,8 +918,8 @@ def get_stt_engine():
                     "phonetisaurus",
                     "g014b2b.fst"
                 )
-            fst_model = simple_input(
-                format_prompt(
+            fst_model = interface.simple_input(
+                interface.format_prompt(
                     "!",
                     _("Please enter the path to your fst model")
                 ),
@@ -1147,204 +942,273 @@ def get_tts_engine():
         "Ivona": "ivona-tts",
         "Mary": "mary-tts"
     }
-    try:
-        response = list(tts_engines.keys())[
-            list(tts_engines.values()).index(
-                profile.get_profile_var(
-                    ['tts_engine']
-                )
-            )
-        ]
-    except (KeyError, ValueError):
-        response = "Festival"
-    print(
-        "    " + instruction_text(
-            _("Please select a text to speech (TTS) engine.")
-        )
-    )
-    print("")
-    once = False
-    while not ((once) and (response in tts_engines.keys())):
-        once = True
-        response = simple_input(
-            format_prompt(
-                "?",
-                _("Available implementations: ") + choices_text(
-                    "%s. " % list(tts_engines.keys())
+    # Prepare the tts_plugins object so we can
+    # instantiate and test the chosen plugin.
+    tts_plugins = pluginstore.PluginStore(
+        [os.path.join(
+            os.path.dirname(
+                os.path.dirname(
+                    os.path.abspath(__file__)
                 )
             ),
-            response
-        )
+            "plugins",
+            "tts"
+        )]
+    )
+    tts_plugins.detect_plugins()
+    voice_chosen = False
+    while not voice_chosen:
         try:
-            profile.set_profile_var(['tts_engine'], tts_engines[response])
-        except KeyError:
-            print(alert_text(_("Unrecognized option.")))
-    print("")
-    # Deal with special cases
-    if(profile.get_profile_var(["tts_engine"]) == "espeak-tts"):
-        # tts_engine: espeak-tts
+            response = list(tts_engines.keys())[
+                list(tts_engines.values()).index(
+                    profile.get_profile_var(
+                        ['tts_engine']
+                    )
+                )
+            ]
+        except (KeyError, ValueError):
+            response = "Festival"
         print(
-            "    " + instruction_text(
-                _("If you would like to alter the espeak voice, you can use")
-            )
-        )
-        print(
-            "    " + instruction_text(
-                _("the following options in your config file:")
+            "    " + interface.instruction_text(
+                _("Please select a text to speech (TTS) engine.")
             )
         )
         print("")
-        print("    espeak-tts:")
-        print("        voice: 'default+m3'   # optional")
-        print("        pitch_adjustment: 40  # optional")
-        print("        words_per_minute: 160 # optional")
-    elif(profile.get_profile_var(["tts_engine"]) == "festival-tts"):
-        # tts_engine: festival-tts
-        print(
-            "    " + instruction_text(
-                _("Use the festival command to set the default voice.")
+        once = False
+        while not ((once) and (response in tts_engines.keys())):
+            once = True
+            response = interface.simple_input(
+                interface.format_prompt(
+                    "?",
+                    _("Available implementations: ") + interface.choices_text(
+                        "%s. " % list(tts_engines.keys())
+                    )
+                ),
+                response
             )
-        )
-    elif(profile.get_profile_var(["tts_engine"]) == "flite-tts"):
-        try:
-            voices = run_command.run_command(['flite', '-lv']).split(" ")[2:-1]
+            try:
+                profile.set_profile_var(['tts_engine'], tts_engines[response])
+            except KeyError:
+                print(interface.alert_text(_("Unrecognized option.")))
+        print("")
+        # Deal with special cases
+        if(profile.get_profile_var(["tts_engine"]) == "espeak-tts"):
+            # tts_engine: espeak-tts
+            voice_chosen = True
             print(
-                "    " + instruction_text(
-                    _("Available voices:")
-                ) + " " + choices_text(
-                    "%s. " % voices
+                "    " + interface.instruction_text(
+                    _("If you would like to alter the espeak voice,")
                 )
             )
-            voice = profile.get_profile_var(["flite-tts", "voice"])
-            if not voice:
-                try:
-                    voice = voices[voices.index("slt")]
-                except ValueError:
-                    voice = None
-            profile.set_profile_var(
-                ["flite-tts", "voice"],
-                simple_input(
-                    format_prompt(
+            print(
+                "    " + interface.instruction_text(
+                    _("you can use the following options in your config file:")
+                )
+            )
+            print("")
+            print("    espeak-tts:")
+            print("        voice: 'default+m3'   # optional")
+            print("        pitch_adjustment: 40  # optional")
+            print("        words_per_minute: 160 # optional")
+        elif(profile.get_profile_var(["tts_engine"]) == "festival-tts"):
+            # tts_engine: festival-tts
+            voice_chosen = True
+            print(
+                "    " + interface.instruction_text(
+                    _("Use the festival command to set the default voice.")
+                )
+            )
+        elif(profile.get_profile_var(["tts_engine"]) == "flite-tts"):
+            try:
+                # pdb.set_trace()
+                flite_info = tts_plugins.get_plugin(
+                    'flite-tts',
+                    category='tts'
+                )
+                flite_plugin = flite_info.plugin_class(
+                    flite_info,
+                    {"flite-tts": {"voice": "slt"}}
+                )
+                voices = flite_plugin.get_voices()
+                print(
+                    "    " + interface.instruction_text(
+                        _("Available voices:")
+                    ) + " " + interface.choices_text(
+                        "%s. " % voices
+                    )
+                )
+                voice = profile.get_profile_var(["flite-tts", "voice"])
+                if not voice:
+                    try:
+                        voice = voices[voices.index("slt")]
+                    except ValueError:
+                        voice = None
+                voice = interface.simple_input(
+                    interface.format_prompt(
                         "?",
                         _("Select a voice")
                     ),
                     voice
                 )
+                # Test the voice
+                ae_info = audioengine_plugins.get_plugin(
+                    profile.get_profile_var(['audio_engine']),
+                    category='audioengine'
+                )
+                audio_engine = ae_info.plugin_class(
+                    ae_info,
+                    profile.get_profile()
+                )
+                output_device_slug = profile.get_profile_var(
+                    ["audio", "output_device"]
+                )
+                output_device = audio_engine.get_device_by_slug(
+                    output_device_slug
+                )
+                with tempfile.SpooledTemporaryFile() as f:
+                    f.write(
+                        flite_plugin.say(
+                            _('Is this the voice you would like me to use?'),
+                            voice
+                        )
+                    )
+                    f.seek(0)
+                    output_device.play_fp(f)
+                if interface.simple_yes_no(
+                    _("Is this the voice you would like me to use?")
+                ):
+                    profile.set_profile_var(
+                        ["flite-tts", "voice"],
+                        voice
+                    )
+                    voice_chosen = True
+            except OSError:
+                print(interface.alert_text(
+                    _("FLite does not appear to be installed")
+                ))
+                print(interface.instruction_text(_("Please install it using:")))
+                print("  $ " + interface.success_text("sudo apt install flite"))
+                print(interface.instruction_text(
+                    _("then re-run Naomi with the --repopulate flag")
+                ))
+                print(" ".join([
+                    "  $ ",
+                    interface.success_text("./Naomi.py --repopulate")
+                ]))
+        elif(profile.get_profile_var(["tts_engine"]) == "pico-tts"):
+            voice_chosen = True
+        elif(profile.get_profile_var(["tts_engine"]) == "ivona-tts"):
+            voice_chosen = True
+            print(
+                "    " + interface.instruction_text(" ".join([
+                    _("You will now need to enter"),
+                    _("your Ivona account information.")
+                ]))
             )
-        except OSError:
-            print(alert_text(_("FLite does not appear to be installed")))
-            print(instruction_text(_("Please install it using:")))
-            print("  $ " + success_text("sudo apt install flite"))
-            print(instruction_text(
-                _("then re-run Naomi with the --repopulate flag")
-            ))
-            print("  $ " + success_text("./Naomi.py --repopulate"))
-    elif(profile.get_profile_var(["tts_engine"]) == "pico-tts"):
-        pass
-    elif(profile.get_profile_var(["tts_engine"]) == "ivona-tts"):
-        print(
-            "    " + instruction_text(
-                _("You will now need to enter your Ivona account information.")
+            print("")
+            url = interface.url_text(
+                "https://www.ivona.com/us/account/speechcloud/creation/"
             )
-        )
-        print("")
-        url = url_text(
-            "https://www.ivona.com/us/account/speechcloud/creation/"
-        )
-        print(
-            "    " + instruction_text(
-                _("You will need to create an account at %s") % url_text(url)
+            print(
+                "    " + interface.instruction_text(
+                    _("You will need to create an account at {}").format(
+                        interface.interface.url_text(url)
+                    )
+                )
             )
-        )
-        print(
-            " " + instruction_text(
-                _("if you haven't already.")
+            print(
+                " " + interface.instruction_text(
+                    _("if you haven't already.")
+                )
             )
-        )
-        print("")
-        profile.set_profile_var(
-            ["ivona-tts", "access_key"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("What is your Access key?")
-                ),
-                profile.get_profile_var(["ivona-tts", "access_key"])
+            print("")
+            profile.set_profile_var(
+                ["ivona-tts", "access_key"],
+                interface.simple_input(
+                    interface.format_prompt(
+                        "?",
+                        _("What is your Access key?")
+                    ),
+                    profile.get_profile_var(["ivona-tts", "access_key"])
+                )
             )
-        )
-        profile.set_profile_var(
-            ["ivona-tts", "secret_key"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("What is your Secret key?")
-                ),
-                profile.get_profile_var(["ivona-tts", "secret_key"])
+            profile.set_profile_var(
+                ["ivona-tts", "secret_key"],
+                interface.simple_input(
+                    interface.format_prompt(
+                        "?",
+                        _("What is your Secret key?")
+                    ),
+                    profile.get_profile_var(["ivona-tts", "secret_key"])
+                )
             )
-        )
-        # ivona-tts voice
-        temp = profile.get_profile_var(["ivona-tts", "voice"])
-        if(not temp):
-            temp = "Brian"
-        profile.set_profile_var(
-            ["ivona-tts", "voice"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("Which voice do you want") + " " + default_text(
-                        _("(default is Brian)")
-                    ) + question_text("?")
-                ),
-                temp
+            # ivona-tts voice
+            temp = profile.get_profile_var(["ivona-tts", "voice"])
+            if(not temp):
+                temp = "Brian"
+            profile.set_profile_var(
+                ["ivona-tts", "voice"],
+                interface.simple_input(
+                    interface.format_prompt(
+                        "?",
+                        " ".join([
+                            _("Which voice do you want"),
+                            interface.default_text(
+                                _("(default is Brian)")
+                            ) + interface.question_text("?")
+                        ])
+                    ),
+                    temp
+                )
             )
-        )
-    elif(profile.get_profile_var(["tts_engine"]) == "mary-tts"):
-        profile.set_profile_var(
-            ["mary-tts", "server"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("Server?")
-                ),
-                profile.get_profile_var(["mary-tts", "server"])
+        elif(profile.get_profile_var(["tts_engine"]) == "mary-tts"):
+            voice_chosen = True
+            profile.set_profile_var(
+                ["mary-tts", "server"],
+                interface.simple_input(
+                    interface.format_prompt(
+                        "?",
+                        _("Server?")
+                    ),
+                    profile.get_profile_var(["mary-tts", "server"])
+                )
             )
-        )
-        profile.set_profile_var(
-            ["mary-tts", "port"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    "Port?"
-                ),
-                profile.get_profile_var(["mary-tts", "port"])
+            profile.set_profile_var(
+                ["mary-tts", "port"],
+                interface.simple_input(
+                    interface.format_prompt(
+                        "?",
+                        "Port?"
+                    ),
+                    profile.get_profile_var(["mary-tts", "port"])
+                )
             )
-        )
-        profile.set_profile_var(
-            ["mary-tts", "language"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("Language?")
-                ),
-                profile.get_profile_var(["mary-tts", "language"])
+            profile.set_profile_var(
+                ["mary-tts", "language"],
+                interface.simple_input(
+                    interface.format_prompt(
+                        "?",
+                        _("Language?")
+                    ),
+                    profile.get_profile_var(["mary-tts", "language"])
+                )
             )
-        )
-        profile.set_profile_var(
-            ["mary-tts", "voice"],
-            simple_input(
-                format_prompt(
-                    "?",
-                    _("Voice?")
-                ),
-                profile.get_profile_var(["mary-tts", "voice"])
+            profile.set_profile_var(
+                ["mary-tts", "voice"],
+                interface.simple_input(
+                    interface.format_prompt(
+                        "?",
+                        _("Voice?")
+                    ),
+                    profile.get_profile_var(["mary-tts", "voice"])
+                )
             )
-        )
 
 
 def get_beep_or_voice():
     # Getting information to beep or not beep
     print(
-        "    " + instruction_text(
+        "    " + interface.instruction_text(
             _("I have two ways to let you know I've heard you; Beep or Voice.")
         )
     )
@@ -1358,16 +1222,32 @@ def get_beep_or_voice():
         temp = beep_choice
     print(
         _("{beep} for beeps or {voice} for voice.").format(
-            beep=choices_text() + beep_choice + instruction_text(),
-            voice=choices_text() + voice_choice + instruction_text()
+            beep="".join([
+                interface.choices_text(),
+                beep_choice,
+                interface.instruction_text()
+            ]),
+            voice="".join([
+                interface.choices_text(),
+                voice_choice,
+                interface.instruction_text()
+            ])
         )
     )
-    response = simple_input(
-        format_prompt(
+    response = interface.simple_input(
+        interface.format_prompt(
             "?",
             _("({beep}) for beeps or ({voice}) for voice.").format(
-                beep=choices_text() + beep_choice + instruction_text(),
-                voice=choices_text() + voice_choice + instruction_text()
+                beep="".join([
+                    interface.choices_text(),
+                    beep_choice,
+                    interface.instruction_text()
+                ]),
+                voice="".join([
+                    interface.choices_text(),
+                    voice_choice,
+                    interface.instruction_text()
+                ])
             )
         ),
         temp
@@ -1383,8 +1263,8 @@ def get_beep_or_voice():
             )
         )
     ):
-        response = simple_input(
-            alert_text(
+        response = interface.simple_input(
+            interface.alert_text(
                 _("Please choose beeps ({b}) or voice ({v})").format(
                     b=beep_choice.upper(),
                     v=voice_choice.upper()
@@ -1396,7 +1276,7 @@ def get_beep_or_voice():
         print("")
         print("")
         print(
-            "    " + instruction_text(
+            "    " + interface.instruction_text(
                 _("Type the words I should say after hearing my wake word: %s")
                 % profile.get_profile_var(["keyword"])
             )
@@ -1404,8 +1284,8 @@ def get_beep_or_voice():
         print("")
         areplyRespon = None
         while(not areplyRespon):
-            areply = simple_input(
-                format_prompt(
+            areply = interface.simple_input(
+                interface.format_prompt(
                     "?",
                     _("Reply")
                 ),
@@ -1414,20 +1294,20 @@ def get_beep_or_voice():
             areplyRespon = None
             while(areplyRespon is None):
                 print("")
-                areplyRespon = simple_yes_no(
+                areplyRespon = interface.simple_yes_no(
                     areply + " - " + _("Is this correct?")
                 )
         profile.set_profile_var(['active_stt', 'reply'], areply)
-        separator()
+        interface.separator()
         print(
-            "    " + instruction_text(
+            "    " + interface.instruction_text(
                 _("Type the words I should say after hearing a command")
             )
         )
         aresponseRespon = None
         while(not aresponseRespon):
-            aresponse = simple_input(
-                format_prompt(
+            aresponse = interface.simple_input(
+                interface.format_prompt(
                     "?",
                     _("Response")
                 ),
@@ -1436,7 +1316,7 @@ def get_beep_or_voice():
             print("")
             aresponseRespon = None
             while(aresponseRespon is None):
-                aresponseRespon = simple_yes_no(
+                aresponseRespon = interface.simple_yes_no(
                     aresponse + " - " + _("Is this correct?")
                 )
         profile.set_profile_var(['active_stt', 'response'], aresponse)
@@ -1475,23 +1355,33 @@ def select_audio_engine():
     # Audio Engine
     audioengines = get_audio_engines()
 
-    print(instruction_text(_("Please select an audio engine.")))
+    print(interface.instruction_text(_("Please select an audio engine.")))
     try:
+        default = "pyaudio"
+        if re.match(r'linux', platform.system().lower()):
+            default = "alsa"
+        if default not in audioengines:
+            default = audioengines[0]
         response = audioengines[
             audioengines.index(
-                profile.get_profile_var(['audio_engine'])
+                profile.get_profile_var(['audio_engine'], default)
             )
         ]
     except (ValueError):
-        response = "pyaudio"
+        response = audioengines[0]
     once = False
     while not ((once) and (response in audioengines)):
         audioengines = get_audio_engines()
         once = True
-        response = simple_input(
-            "    " + _("Available implementations:") + " " + choices_text(
-                ("%s" % audioengines)
-            ) + instruction_text("."),
+        response = interface.simple_input(
+            " ".join([
+                "   ",
+                _("Available implementations:"),
+                interface.choices_text(
+                    ("{}".format(audioengines))
+                ),
+                interface.instruction_text(".")
+            ]),
             response
         )
     profile.set_profile_var(['audio_engine'], response)
@@ -1505,22 +1395,30 @@ def get_output_device():
     )
     # AaronC 2018-09-14 Get a list of available output devices
     audio_engine = ae_info.plugin_class(ae_info, profile.get_profile())
-    output_devices = [device.slug for device in audio_engine.get_devices(
-        device_type=audioengine.DEVICE_TYPE_OUTPUT
-    )]
+    output_devices = []
+    print(interface.instruction_text("Checking devices for compatibility"))
+    for output_device_slug in [
+        device.slug for device in audio_engine.get_devices(
+            device_type=audioengine.DEVICE_TYPE_OUTPUT
+        )
+    ]:
+        output_device = audio_engine.get_device_by_slug(output_device_slug)
+        if output_device.supports_format(16, 1, 16000, output=True):
+            output_devices.append(output_device_slug)
+
     output_device_slug = profile.get_profile_var(["audio", "output_device"])
     if not output_device_slug:
         output_device_slug = audio_engine.get_default_device(output=True).slug
     heard = None
     once = False
     while not (once and heard):
-        print(instruction_text(_("Please choose an output device")))
+        print(interface.instruction_text(_("Please choose an output device")))
         while not ((once) and (output_device_slug in output_devices)):
             once = True
-            output_device_slug = simple_input(
-                instruction_text(
+            output_device_slug = interface.simple_input(
+                interface.instruction_text(
                     _("Available output devices:") + " "
-                ) + choices_text(
+                ) + interface.choices_text(
                     ", ".join(output_devices)
                 ),
                 output_device_slug
@@ -1530,7 +1428,7 @@ def get_output_device():
         # FIXME Set the following defaults to what is in the
         # configuration file
         output_chunksize = profile.get_profile_var(
-            ['output_chunksize'],
+            ['audio', 'output_chunksize'],
             1024
         )
         output_add_padding = profile.get_profile_var(
@@ -1546,41 +1444,48 @@ def get_output_device():
             "beep_lo.wav"
         )
         if(os.path.isfile(filename)):
-            print(instruction_text(_("Testing device by playing a sound")))
+            print(interface.instruction_text(
+                _("Testing device by playing a sound")
+            ))
             output_device = audio_engine.get_device_by_slug(output_device_slug)
+            output_device.play_file(
+                filename,
+                chunksize=output_chunksize,
+                add_padding=output_add_padding
+            )
+            # pdb.set_trace()
+            heard = interface.simple_yes_no(
+                _("Were you able to hear the beep?")
+            )
+            print("Heard = '{}'".format(heard))
             try:
-                output_device.play_file(
-                    filename,
-                    chunksize=output_chunksize,
-                    add_padding=output_add_padding
-                )
-                heard = simple_yes_no(
-                    _("Were you able to hear the beep?")
-                )
                 if not (heard):
                     print(
-                        instruction_text(" ".join([
+                        interface.instruction_text(" ".join([
                             _("The volume on your device may be too low."),
                             _("You should be able to use 'alsamixer'"),
                             _("to set the volume level.")
                         ]))
                     )
-                    heard = simple_yes_no(
-                        instruction_text(
-                            _("Do you want to continue now and fix the volume later?")
+                    heard = interface.simple_yes_no(
+                        interface.instruction_text(
+                            " ".join([
+                                _("Do you want to continue now"),
+                                _("and fix the volume later?")
+                            ])
                         )
                     )
                     if not (heard):
                         once = False
             except audioengine.UnsupportedFormat as e:
-                print(alert_text(str(e)))
+                print(interface.alert_text(str(e)))
                 print(
-                    instruction_text(
+                    interface.instruction_text(
                         _("Output format not supported on this device.")
                     )
                 )
                 print(
-                    instruction_text(
+                    interface.instruction_text(
                         _("Please choose a different device.")
                     )
                 )
@@ -1588,12 +1493,12 @@ def get_output_device():
                 once = False
         else:
             print(
-                alert_text(
+                interface.alert_text(
                     _("Can't locate wav file: %s") % filename
                 )
             )
             print(
-                instruction_text(
+                interface.instruction_text(
                     _("Skipping test")
                 )
             )
@@ -1616,19 +1521,20 @@ def get_input_device():
         input_device_slug = audio_engine.get_default_device(output=False).slug
     once = False
     while not (once):
-        print(instruction_text(_("Please choose an input device")))
+        print(interface.instruction_text(_("Please choose an input device")))
         once = True
-        input_device_slug = simple_input(
-            _("Available input devices:") + " " + choices_text(
+        input_device_slug = interface.simple_input(
+            _("Available input devices:") + " " + interface.choices_text(
                 ", ".join(input_devices)
             ),
             input_device_slug
         )
         profile.set_profile_var(["audio", "input_device"], input_device_slug)
         # try recording a sample
-        test = simple_yes_no(
-            _("Would you like me to test your selection by recording your voice and playing it back to you?")
-        )
+        test = interface.simple_yes_no(" ".join([
+            _("Would you like me to test your selection"),
+            _("by recording your voice and playing it back to you?")
+        ]))
         while test:
             test = False
             # FIXME AaronC Sept 16 2018
@@ -1685,7 +1591,7 @@ def get_input_device():
                     add_padding=output_add_padding
                 )
             print(
-                instruction_text(
+                interface.instruction_text(
                     _("Please speak into the mic now")
                 )
             )
@@ -1700,7 +1606,7 @@ def get_input_device():
                     snr = _snr(input_bits, threshold, [frame])
                     if snr >= threshold:
                         print(
-                            alert_text(
+                            interface.alert_text(
                                 _("Sound detected - recording")
                             )
                         )
@@ -1713,7 +1619,7 @@ def get_input_device():
                         # Threshold not reached. Update.
                         soundlevel = float(audioop.rms("".join(frames), 2))
                         if (soundlevel < threshold):
-                            print(alert_text(" ".join([
+                            print(interface.alert_text(" ".join([
                                 _("No sound detected."),
                                 _("Setting threshold from {t} to {s}").format(
                                     t=threshold,
@@ -1738,7 +1644,7 @@ def get_input_device():
                             # stop recording
                             recording = False
                             print(
-                                success_text(
+                                interface.success_text(
                                     _("Recorded %d frames")
                                     % len(recording_frames)
                                 )
@@ -1762,18 +1668,18 @@ def get_input_device():
                             chunksize=output_chunksize,
                             add_padding=output_add_padding
                         )
-                    heard = simple_yes_no(
+                    heard = interface.simple_yes_no(
                         _("Did you hear yourself?")
                     )
                     if (heard):
                         replay = False
                         once = True
                     else:
-                        replay = simple_yes_no(
+                        replay = interface.simple_yes_no(
                             _("Replay?")
                         )
                         if (not replay):
-                            skip = simple_yes_no(
+                            skip = interface.simple_yes_no(
                                 _("Do you want to skip this test and continue?")
                             )
                             if (skip):
@@ -1789,6 +1695,7 @@ def get_input_device():
 
 
 def run():
+    global _, affirmative, negative
     #
     # AustinC; Implemented new UX for the population process.
     # For population blessings is used to handle colors,
@@ -1797,63 +1704,73 @@ def run():
     # For plugin & general use elsewhere, blessings or
     # coloredformatting.py can be used.
     #
-    select_language()
-    separator()
+    # select_language()
+    interface.get_language()
+    interface.separator()
+    translations = i18n.parse_translations(paths.data('locale'))
+    translator = i18n.GettextMixin(translations, profile.get_profile())
+    _ = translator.gettext
 
     precheck()
-    separator()
+    interface.separator()
 
     greet_user()
-    separator()
+    interface.separator()
 
     get_wakeword()
-    separator()
-
-    get_user_name()
-    separator()
-
-    get_email_info()
-    separator()
-
-    get_phone_info()
-    separator()
-
-    get_notification_info()
-    separator()
-
-    get_weather_location()
-    separator()
-
-    get_timezone()
-    separator()
-
-    get_stt_engine()
-    separator()
-
-    get_tts_engine()
-    separator()
-
-    get_beep_or_voice()
-    separator()
+    interface.separator()
 
     select_audio_engine()
-    separator()
+    interface.separator()
 
     get_output_device()
-    separator()
+    interface.separator()
 
     get_input_device()
-    separator()
+    interface.separator()
+
+    get_stt_engine()
+    interface.separator()
+
+    get_tts_engine()
+    interface.separator()
+
+    get_beep_or_voice()
+    interface.separator()
+
+    get_user_name()
+    interface.separator()
+
+    get_email_info()
+    interface.separator()
+
+    get_phone_info()
+    interface.separator()
+
+    get_notification_info()
+    interface.separator()
+
+    # comment out the following two lines as the weather location service
+    # at weather underground has now been shut down. AaronC 2019-03-25
+    # get_weather_location()
+    # interface.separator()
+
+    get_timezone()
+    interface.separator()
 
     # write to profile
     print(
-        "    " + status_text(
+        "    " + interface.status_text(
             _("Writing to profile...")
         )
     )
     profile.save_profile()
-    separator()
-    print("    " + success_text(_("Done.")) + normal_text())
+    interface.separator()
+    print("".join([
+        "    ",
+        interface.success_text(_("Done.")),
+        interface.normal_text()
+    ]))
 
 
 if __name__ == "__main__":
