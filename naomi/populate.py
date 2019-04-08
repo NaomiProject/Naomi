@@ -224,7 +224,7 @@ def get_user_name():
 def get_email_info():
     # email
     print(
-        "    " + interface.interface.instruction_text(
+        "    " + interface.instruction_text(
             _("I can use an email account to send notifications to you.")
         )
     )
@@ -284,7 +284,7 @@ def get_email_info():
 
 def get_phone_info():
     print(
-        "    " + interface.interface.instruction_text(
+        "    " + interface.instruction_text(
             _("I can use your phone number to send notifications to you.")
         )
     )
@@ -1112,7 +1112,7 @@ def get_tts_engine():
             print(
                 "    " + interface.instruction_text(
                     _("You will need to create an account at {}").format(
-                        interface.interface.url_text(url)
+                        interface.url_text(url)
                     )
                 )
             )
