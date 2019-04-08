@@ -29,8 +29,7 @@ class Naomi(object):
         self._logger = logging.getLogger(__name__)
         if repopulate:
             populate.run()
-        else:
-            self.config = profile.get_profile()
+        self.config = profile.get_profile()
         language = profile.get_profile_var(['language'])
         if(not language):
             language = 'en-US'
