@@ -1,7 +1,6 @@
 import json
 import logging
 import urllib
-import urlparse
 import wave
 import requests
 from naomi import plugin
@@ -85,7 +84,7 @@ class GoogleSTTPlugin(plugin.STTPlugin):
                                       'lang': self.language,
                                       'maxresults': 6,
                                       'pfilter': 2})
-            self._request_url = urlparse.urlunparse(
+            self._request_url = urllib.parse.urlunparse(
                 ('https', 'www.google.com', '/speech-api/v2/recognize', '',
                  query, ''))
         else:

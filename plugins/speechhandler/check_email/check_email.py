@@ -44,7 +44,7 @@ def get_most_recent_date(emails):
     return None
 
 
-class EmailPlugin(plugin.SpeechHandlerPlugin):
+class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
     def get_phrases(self):
         return [self.gettext("EMAIL"), self.gettext("INBOX")]
 

@@ -172,6 +172,9 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
                 mic.say(_('Playing {song.title} by {song.artist}...').format(
                     song=song))
         elif any(cmd.upper() in command for cmd in (_('CLOSE'), _('EXIT'))):
+            if _('EXIT').upper() in command:
+                self._music.stop()
+                mic.say(_('Music stopped.'))
             return False
 
         return True

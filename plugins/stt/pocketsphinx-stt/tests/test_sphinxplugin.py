@@ -14,12 +14,12 @@ class TestPocketsphinxSTTPlugin(unittest.TestCase):
         try:
             self.passive_stt_engine = testutils.get_plugin_instance(
                 sphinxplugin.PocketsphinxSTTPlugin,
-                'unittest-passive', ['JASPER'])
+                'unittest-passive', ['NAOMI'])
             self.active_stt_engine = testutils.get_plugin_instance(
-                sphinxplugin.PocketSphinxSTTPlugin,
+                sphinxplugin.PocketsphinxSTTPlugin,
                 'unittest-active', ['TIME'])
         except ImportError:
-            self.skipTest("Pockersphinx not installed!")
+            self.skipTest("Pocketsphinx not installed!")
 
     def testTranscribeNaomi(self):
         """
@@ -27,7 +27,7 @@ class TestPocketsphinxSTTPlugin(unittest.TestCase):
         """
         with open(self.naomi_clip, mode="rb") as f:
             transcription = self.passive_stt_engine.transcribe(f)
-        self.assertIn("JASPER", transcription)
+        self.assertIn("NAOMI", transcription)
 
     def testTranscribe(self):
         """
