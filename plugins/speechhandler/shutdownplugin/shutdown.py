@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
-from naomi import plugin
+from naomi import plugin,profile
 import subprocess
 
 
@@ -20,7 +20,7 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         text -- user-input, typically transcribed speech
         mic -- used to interact with the user (for both input and output)
         """
-        name = self.profile['first_name']
+        name = profile.get_profile_var(self.profile,['first_name'],'')
 
         messages = [
             self.gettext("I'm going down."),

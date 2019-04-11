@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import smtplib
-from email.MIMEText import MIMEText
-from email.MIMEMultipart import MIMEMultipart
-import urllib2
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from urllib import request as urllib_request
 import re
 from pytz import timezone
 import logging
@@ -110,7 +110,7 @@ def generate_tiny_URL(URL):
         URL -- the original URL to-be compressed
     """
     target = "http://tinyurl.com/api-create.php?url=" + URL
-    response = urllib2.urlopen(target)
+    response = urllib_request.urlopen(target)
     return response.read()
 
 

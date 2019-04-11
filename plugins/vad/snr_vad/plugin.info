@@ -1,0 +1,10 @@
+[Plugin]
+Name = snr_vad
+Version = 1.0.0
+License = MIT
+URL = http://naomiproject.github.io/
+Description = VAD using Signal to Noise Ratio
+
+[Author]
+Name = Naomi Project
+URL = http://naomiproject.github.io/

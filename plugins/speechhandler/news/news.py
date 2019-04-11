@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import collections
 import urllib
-import urlparse
 import feedparser
 from naomi import plugin
 from naomi import app_utils
@@ -14,7 +13,7 @@ Article = collections.namedtuple('Article', ['title', 'link'])
 def get_top_articles(language='en', num_headlines=5):
     feed = feedparser.parse("{url}?{query}".format(
         url=FEED_URL,
-        query=urllib.urlencode({
+        query=urllib.parse.urlencode({
             'ned': language,
             'output': 'rss',
         })))
@@ -30,8 +29,8 @@ def get_top_articles(language='en', num_headlines=5):
         title = ''.join([s.strip() for s in title.split('+++')])
 
         try:
-            link = urlparse.parse_qs(
-                urlparse.urlsplit(entry.link).query)['url'][0]
+            link = urllib.parse.parse_qs(
+                urllib.parse.urlsplit(entry.link).query)['url'][0]
         except Exception:
             link = entry['link']
         articles.append(Article(title=title, link=link))
@@ -82,7 +81,14 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
             for i, a in enumerate(articles, start=1))
         mic.say(text)
 
-        if not self.profile['email']['address']:
+        try:
+            email = self.profile['email']['address']
+            # the following lines are just stupid, to fix a complaint that
+            # Codacy has that the "email" variable was defined above but
+            # not used.
+            if(email is None):
+                pass
+        except KeyError:
             return
 
         if self.profile['prefers_email'] :
