@@ -48,12 +48,12 @@ class FestivalTTSPlugin(plugin.TTSPlugin):
         cmd = ['festival', '--pipe']
         self._logger.debug("Executing festival command '%s'", command)
         with tempfile.SpooledTemporaryFile() as in_f:
-            in_f.write(command)
+            in_f.write(command.encode("utf-8"))
             in_f.seek(0)
             with tempfile.SpooledTemporaryFile() as out_f:
                 subprocess.call(cmd, stdin=in_f, stdout=out_f)
                 out_f.seek(0)
-                output = out_f.read().strip()
+                output = out_f.read().decode("utf-8").strip()
         self._logger.debug("Festival command output '%s'",
                            output.replace('\n', '\\n'))
         return output
@@ -73,7 +73,7 @@ class FestivalTTSPlugin(plugin.TTSPlugin):
         cmd = ['text2wave', '-eval', '(voice_%s)' % self.voice]
         with tempfile.SpooledTemporaryFile() as out_f:
             with tempfile.SpooledTemporaryFile() as in_f:
-                in_f.write(phrase)
+                in_f.write(phrase.encode("utf-8"))
                 in_f.seek(0)
                 with tempfile.SpooledTemporaryFile() as err_f:
                     self._logger.debug(

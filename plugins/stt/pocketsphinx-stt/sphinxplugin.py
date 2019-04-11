@@ -5,16 +5,19 @@ from naomi import plugin
 from . import sphinxvocab
 try:
     try:
-        import pocketsphinx
+        from pocketsphinx import pocketsphinx
     except ValueError:
         # Fixes a quirky bug when first import doesn't work.
         # See http://sourceforge.net/p/cmusphinx/bugs/284/ for details.
-        import pocketsphinx
+        from pocketsphinx import pocketsphinx
     pocketsphinx_available = True
+    # Why do we have to import sphinxbase.sphinxbase.*?
+    # otherwise, when we create pocketsphinx.Decoder.default_config()
+    # we get the wrong object for some reason.
+    from sphinxbase.sphinxbase import *
 except ImportError:
     pocketsphinx = None
     pocketsphinx_available = False
-
 
 class PocketsphinxSTTPlugin(plugin.STTPlugin):
     """
@@ -80,7 +83,6 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                                  "make sure that you have set the correct " +
                                  "hmm_dir in your profile.",
                                  hmm_dir, ', '.join(missing_hmm_files))
-
         self._pocketsphinx_v5 = hasattr(pocketsphinx.Decoder, 'default_config')
 
         with tempfile.NamedTemporaryFile(prefix='psdecoder_',
@@ -98,7 +100,11 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
         else:
             # Pocketsphinx v4 or sooner
             self._decoder = pocketsphinx.Decoder(
-                hmm=hmm_dir, logfn=self._logfile, lm=lm_path, dict=dict_path)
+                hmm=hmm_dir,
+                logfn=self._logfile,
+                lm=lm_path,
+                dict=dict_path
+            )
 
     def __del__(self):
         if self._logfile is not None:
