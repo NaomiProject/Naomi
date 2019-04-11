@@ -108,6 +108,17 @@ class Naomi(object):
             self._logger.info("Using language '%s'", language)
 
         try:
+           loglevel = self.config['loglevel']
+        except KeyError:
+            self._logger.warning(
+                "loglevel not specified in profile, using 'INFO'")
+            loglevel = 'WARNING'
+
+        logLevelName = logging.getLevelName(loglevel)
+        self._logger.setLevel(logLevelName)
+        self._logger.info("Using loglevel '%s'", loglevel)
+
+        try:
             audio_engine_slug = self.config['audio_engine']
         except KeyError:
             audio_engine_slug = 'pyaudio'
