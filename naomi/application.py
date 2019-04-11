@@ -226,7 +226,9 @@ class Naomi(object):
                     exc_info=(
                         self._logger.getEffectiveLevel() == logging.DEBUG))
             else:
-                self.brain.add_plugin(plugin)
+                if 'speechhandlers' not in self.config or info.name in self.config['speechhandlers']:
+                  self._logger.info('Activate speechhandler plugin %s', info.name)
+                  self.brain.add_plugin(plugin)
 
         if len(self.brain.get_plugins()) == 0:
             msg = 'No plugins for handling speech found!'
