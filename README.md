@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a href="https://projectnaomi.com/naomi-logo.png"><img src="https://projectnaomi.com/naomi-logo.png" alt="Naomi" width="400"></a>
+  <a href="https://projectnaomi.com/"><img src="https://projectnaomi.com/naomi-logo.png" alt="Naomi" width="400"></a>
   <br>
   <br>
 </h1>
@@ -81,5 +81,5 @@ MIT
 
 ---
 
-> [projectnaomi.com](#) &nbsp;&middot;&nbsp;
+> [projectnaomi.com](https://projectnaomi.com) &nbsp;&middot;&nbsp;
 > GitHub [@naomiproject](https://github.com/naomiproject)
