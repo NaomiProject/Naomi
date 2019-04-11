@@ -17,10 +17,10 @@ class Mic(object):
         return
 
     def active_listen(self, timeout=3):
-        input = raw_input("YOU: ").decode('utf8')
-        unicodedata.normalize('NFD', input).encode('ascii', 'ignore')
-        self.prev = input
-        return [input]
+        input_text = input("YOU: ")
+        unicodedata.normalize('NFD', input_text).encode('ascii', 'ignore')
+        self.prev = input_text
+        return [input_text]
 
     def listen(self):
         return self.active_listen(timeout=3)

@@ -2,6 +2,7 @@
 import collections
 import datetime
 import dateutil
+import logging
 import requests
 from naomi import plugin
 
@@ -141,6 +142,7 @@ def get_weather(woeid, unit="f"):
 
 class WeatherPlugin(plugin.SpeechHandlerPlugin):
     def __init__(self, *args, **kwargs):
+        self._logger = logging.getLogger(__name__)
         super(WeatherPlugin, self).__init__(*args, **kwargs)
         try:
             self._woeid = self.profile['weather']['woeid']
@@ -150,6 +152,9 @@ class WeatherPlugin(plugin.SpeechHandlerPlugin):
             except KeyError:
                 raise ValueError('Weather location not configured!')
             self._woeid = get_woeid(location)
+            self._logger.info(
+                "set weather: woeid: {} in profile.yml".format(self._woeid)
+            )
 
         if not self._woeid:
             raise ValueError('Weather location (woeid) invalid!')

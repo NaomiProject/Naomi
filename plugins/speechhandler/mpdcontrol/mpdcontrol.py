@@ -30,11 +30,22 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
         except KeyError:
             password = ''
 
+        try:
+            self._autoplay = self.profile['mpdclient']['autoplay']
+        except KeyError:
+            self._autoplay = False
+
+        try:
+            self._reticient = self.profile['mpdclient']['reticient']
+        except KeyError:
+            self._reticient = False
+
         self._music = mpdclient.MPDClient(server=server, port=port,
                                           password=password)
 
     def get_phrases(self):
         return [self.gettext('MUSIC'), self.gettext('SPOTIFY')]
+
 
     def handle(self, text, mic):
         """
@@ -47,7 +58,7 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
 
         _ = self.gettext  # Alias for better readability
 
-        mic.say(_("Please give me a moment, I'm starting the music mode."))
+        mic.say(_("Wait, I'm starting the music mode."))
 
         phrases = [
             _('PLAY'), _('PAUSE'), _('STOP'),
@@ -59,6 +70,13 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
 
         self._logger.debug('Loading playlists...')
         phrases.extend([pl.upper() for pl in self._music.get_playlists()])
+
+        if self._autoplay:
+            self._music.play()
+            song = self._music.get_current_song()
+            if song and not self._reticient:
+                mic.say(_('Playing {song.title} by {song.artist}...').format(
+                    song=song))
 
         self._logger.debug('Starting music mode...')
         with mic.special_mode('music', phrases):
@@ -123,7 +141,7 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
         elif _('PLAY').upper() in command:
             self._music.play()
             song = self._music.get_current_song()
-            if song:
+            if song and not self._reticient:
                 mic.say(_('Playing {song.title} by {song.artist}...').format(
                     song=song))
         elif _('PAUSE').upper() in command:
@@ -150,10 +168,13 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
                 self._music.play()  # backwards necessary to get mopidy to work
                 self._music.previous()
             song = self._music.get_current_song()
-            if song:
+            if song and not self._reticient:
                 mic.say(_('Playing {song.title} by {song.artist}...').format(
                     song=song))
         elif any(cmd.upper() in command for cmd in (_('CLOSE'), _('EXIT'))):
+            if _('EXIT').upper() in command:
+                self._music.stop()
+                mic.say(_('Music stopped.'))
             return False
 
         return True

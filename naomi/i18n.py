@@ -12,8 +12,10 @@ def parse_translations(translations_path):
             if not os.path.isdir(os.path.join(translations_path, content)):
                 lang, ext = os.path.splitext(content)
                 if ext == (os.extsep + 'mo') and RE_TRANSLATIONS.match(lang):
-                    with open(os.path.join(translations_path, content),
-                              mode="rb") as f:
+                    with open(
+                        os.path.join(translations_path, content),
+                        mode="rb"
+                    ) as f:
                         translations[lang] = gettext.GNUTranslations(f)
     if not translations:
         # Untranslated module, assume hardcoded en-US strings
@@ -39,8 +41,7 @@ class GettextMixin(object):
         return self.__translations[language]
 
     def gettext(self, *args, **kwargs):
-        return self.__get_translations().gettext(*args, **kwargs).decode(
-            'utf-8')
+        return self.__get_translations().gettext(*args, **kwargs)
 
     def ngettext(self, *args, **kwargs):
         return self.__get_translations().ngettext(*args, **kwargs)

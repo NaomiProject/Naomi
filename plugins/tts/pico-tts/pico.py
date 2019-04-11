@@ -40,7 +40,7 @@ class PicoTTSPlugin(plugin.TTSPlugin):
         with tempfile.SpooledTemporaryFile() as f:
             subprocess.call(cmd, stderr=f)
             f.seek(0)
-            output = f.read()
+            output = f.read().decode('utf-8')
         pattern = re.compile(r'Unknown language: NULL\nValid languages:\n' +
                              r'((?:[a-z]{2}-[A-Z]{2}\n)+)')
         matchobj = pattern.match(output)
