@@ -7,7 +7,7 @@ import contextlib
 
 from . import alteration
 from . import paths
-
+from . import profile
 
 class Mic(object):
     """
@@ -114,7 +114,20 @@ class Mic(object):
                             keyword.lower() in t.lower()
                             for t in transcribed if t
                         ]):
-                            return
+                            if(profile.get_profile_flag(["passive_listen"])):
+                                # Take the same block of audio and put it
+                                # through the active listener
+                                try:
+                                    transcribed = self.active_stt_engine.transcribe(f)
+                                except Exception:
+                                    dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
+                                    self._logger.error("Active transcription failed!", exc_info=dbg)
+                                else:
+                                    if(self._print_transcript):
+                                        print("<< {}".format(transcribed))
+                                return transcribed
+                            else:
+                                return False
                     else:
                         if(self._print_transcript):
                             print("<  <noise>")
@@ -132,11 +145,11 @@ class Mic(object):
             self.active_stt_engine._samplerate,
             self.active_stt_engine._volume_normalization
         ) as f:
-            if self._active_stt_reply:
-                self.say(self._active_stt_reply)
+            if self._active_stt_response:
+                self.say(self._active_stt_response)
             else:
                 self._logger.debug("No text to respond with using beep")
-                self.play_file(paths.data('audio', 'beep_hi.wav'))
+                self.play_file(paths.data('audio', 'beep_lo.wav'))
             try:
                 transcribed = self.active_stt_engine.transcribe(f)
             except Exception:
@@ -148,8 +161,12 @@ class Mic(object):
         return transcribed
 
     def listen(self):
-        self.wait_for_keyword(self._keyword)
-        return self.active_listen()
+        if(profile.get_profile_flag(["passive_listen"])):
+            self._logger.info("[passive_listen]")
+            return self.wait_for_keyword(self._keyword)
+        else:
+            self.wait_for_keyword(self._keyword)
+            return self.active_listen()
 
     # Output methods
     def play_file(self, filename):
