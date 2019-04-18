@@ -9,6 +9,7 @@ from . import alteration
 from . import paths
 from . import profile
 
+
 class Mic(object):
     """
     The Mic class handles all interactions with the microphone and speaker.
