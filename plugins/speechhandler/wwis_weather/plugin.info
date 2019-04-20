@@ -1,0 +1,10 @@
+[Plugin]
+Name = WWIS Weather
+Version = 1.0.0
+License = MIT
+URL = https://ProjectNaomi.com/
+Description = Shutdown Naomi
+
+[Author]
+Name = Naomi Project
+URL = https://ProjectNaomi.com/
