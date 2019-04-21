@@ -13,6 +13,8 @@ from . import profile
 from . import local_mic
 from . import batch_mic
 
+import pdb
+
 USE_STANDARD_MIC = 0
 USE_TEXT_MIC = 1
 USE_BATCH_MIC = 2
@@ -259,9 +261,15 @@ class Naomi(object):
                     exc_info=(
                         self._logger.getEffectiveLevel() == logging.DEBUG))
             else:
+                if( hasattr(plugin, 'settings') ):
+                    self._logger.debug(plugin.settings)
+                    # Step through the settings and check for any missing fields
+                    for setting in plugin.settings:
+                        if not profile.check_profile_var_exists(setting):
+                            self._logger.debug("{} setting does not exist".format(setting))
                 if 'speechhandlers' not in self.config or info.name in self.config['speechhandlers']:
-                  self._logger.info('Activate speechhandler plugin %s', info.name)
-                  self.brain.add_plugin(plugin)
+                    self._logger.info('Activate speechhandler plugin %s', info.name)
+                    self.brain.add_plugin(plugin)
 
         if len(self.brain.get_plugins()) == 0:
             msg = 'No plugins for handling speech found!'
