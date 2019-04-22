@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 import pkg_resources
-
 from . import audioengine
 from . import brain
 from . import commandline
@@ -13,8 +12,6 @@ from . import mic
 from . import profile
 from . import local_mic
 from . import batch_mic
-
-import pdb
 
 USE_STANDARD_MIC = 0
 USE_TEXT_MIC = 1
@@ -264,7 +261,7 @@ class Naomi(object):
                     )
                 )
             else:
-                if( hasattr(plugin, 'settings') ):
+                if(hasattr(plugin, 'settings')):
                     # set a variable here to tell us if all settings are completed or not
                     # If all settings do not currently exist, go ahead and re-query all
                     # settings for this plugin
