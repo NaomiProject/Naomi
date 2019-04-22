@@ -4,6 +4,7 @@ import pkg_resources
 
 from . import audioengine
 from . import brain
+from . import commandline
 from . import paths
 from . import pluginstore
 from . import populate
@@ -259,14 +260,27 @@ class Naomi(object):
                     "Plugin '%s' skipped! (Reason: %s)", info.name,
                     e.message if hasattr(e, 'message') else 'Unknown',
                     exc_info=(
-                        self._logger.getEffectiveLevel() == logging.DEBUG))
+                        self._logger.getEffectiveLevel() == logging.DEBUG
+                    )
+                )
             else:
                 if( hasattr(plugin, 'settings') ):
+                    # set a variable here to tell us if all settings are completed or not
+                    # If all settings do not currently exist, go ahead and re-query all
+                    # settings for this plugin
+                    settings_complete = True
                     self._logger.debug(plugin.settings)
-                    # Step through the settings and check for any missing fields
+                    # Step through the settings and check for any missing settings
                     for setting in plugin.settings:
                         if not profile.check_profile_var_exists(setting):
                             self._logger.debug("{} setting does not exist".format(setting))
+                            # Go ahead and pull the setting
+                            settings_complete = False
+                    if(repopulate or not settings_complete):
+                        for setting in plugin.settings:
+                            commandline.get_setting(setting, plugin.settings[setting])
+                    # Save the profile with the new settings
+                    profile.save_profile()
                 if 'speechhandlers' not in self.config or info.name in self.config['speechhandlers']:
                     self._logger.info('Activate speechhandler plugin %s', info.name)
                     self.brain.add_plugin(plugin)

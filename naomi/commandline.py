@@ -11,7 +11,7 @@ audioengine_plugins = None
 t = None
 
 
-def get_language(language=None):
+def get_language(language=None, once=False):
     global _, t, affirmative, negative
     t = Terminal()
     if language is None:
@@ -31,7 +31,6 @@ def get_language(language=None):
         selected_language = list(languages.keys())[
             list(languages.values()).index(language)
         ]
-        once = False
         while not (
             (
                 once
@@ -251,6 +250,86 @@ def simple_yes_no(prompt):
         return True
     else:
         return False
+
+
+# This is a higher level control that takes a "setting" as input
+def get_setting(setting,definition):
+    # If the language has already been set, no need to change it.
+    get_language(once=True)
+    active = True
+    if( "active" in definition ):
+        try:
+            active = definition["active"]()
+        except TypeError:
+            active = definition["active"]
+    if(active):
+        controltype = "textbox"
+        if( "type" in definition ):
+            controltype = definition["type"].lower()
+        if(controltype == "listbox"):
+            default = ""
+            if( "default" in definition ):
+                default = definition["default"]
+            value = profile.get_profile_var(setting,default)
+            try:
+                options = definition["options"]()
+            except TypeError:
+                options = definition["options"]
+            print(
+                "    " + instruction_text(
+                    definition["title"]
+                )
+            )
+            print("")
+            response = value
+            once = False
+            while not ((once) and (validate(definition,response))):
+                once = True
+                tmp_response = simple_input(
+                    "    " + instruction_text(
+                        _("Available choices:")
+                    ) + " " + choices_text(
+                        ("{}. ".format(", ".join(sorted(list(options.keys())))))
+                    ) + instruction_text('"?" for help'),
+                    response
+                )
+                if( tmp_response.strip() == "?" ):
+                    # Print the description plus any help text for the control
+                    print("")
+                    print( instruction_text(definition["description"]) )
+                    once = False
+                    continue
+                response = tmp_response
+                print("")
+                try:
+                    profile.set_profile_var(
+                        setting,
+                        options[response]
+                    )
+                except KeyError:
+                    print(
+                        alert_text(
+                            _("Unrecognized option.")
+                        )
+                    )
+            print("")
+    else:
+        # Just set the value to an empty value so we know we don't need to
+        # address this again.
+        profile.set_profile_var(setting,"")
+
+
+def validate(definition,response):
+    valid = False
+    if(len(response.strip()) == 0):
+        valid = True
+    else:
+        try:
+            valid = definition["validation"](response)
+        except TypeError:
+            # Not a function
+            valid = definition["validation"]
+    return valid
 
 
 def separator():

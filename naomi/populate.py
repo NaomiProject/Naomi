@@ -1617,7 +1617,7 @@ def get_input_device():
                             recording_frames = list(frames)
                     elif len(frames) >= frames.maxlen:
                         # Threshold not reached. Update.
-                        soundlevel = float(audioop.rms("".join(frames), 2))
+                        soundlevel = float(audioop.rms(b"".join(frames), 2))
                         if (soundlevel < threshold):
                             print(interface.alert_text(" ".join([
                                 _("No sound detected."),
