@@ -1741,8 +1741,8 @@ def run():
     get_user_name()
     interface.separator()
 
-    get_email_info()
-    interface.separator()
+    # get_email_info()
+    # interface.separator()
 
     get_phone_info()
     interface.separator()

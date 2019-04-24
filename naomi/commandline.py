@@ -1,6 +1,8 @@
-from . import profile
 from . import i18n
 from . import paths
+from . import profile
+from getpass import getpass
+import re
 from blessings import Terminal
 
 
@@ -216,6 +218,22 @@ def simple_input(prompt, default=None):
     return response.strip()
 
 
+# AaronC - simple_password is a lot like simple_input, just uses
+# getpass instead of input. It does not encrypt the password. That
+# happens after the password has been validated.
+def simple_password(prompt, default=None):
+    prompt += ": "
+    prompt += input_text()
+    # don't use print here so no automatic carriage return
+    # sys.stdout.write(prompt)
+    response = getpass(prompt)
+    # if the user pressed enter without entering anything,
+    # set the response to default
+    if(default and not response):
+        response = default
+    return response.strip()
+
+
 # AaronC - simple_request is more complicated, and populates
 # the profile variable directly
 def simple_request(path, prompt, cleanInput=None):
@@ -313,22 +331,93 @@ def get_setting(setting, definition):
                         )
                     )
             print("")
+        elif(controltype == "password"):
+            default = ""
+            if("default" in definition):
+                default = definition["default"]
+            value = profile.get_profile_password(setting, default)
+            print("")
+            response = value
+            once = False
+            while not ((once) and (validate(definition, response))):
+                once = True
+                tmp_response = simple_password(
+                    "    " + instruction_text('{} ("?" for help)'.format(definition["title"])),
+                    response
+                )
+                if(tmp_response.strip() == "?"):
+                    # Print the description plus any help text for the control
+                    print("")
+                    print(instruction_text(definition["description"]))
+                    once = False
+                    continue
+                response = tmp_response
+                print("")
+                profile.set_profile_password(
+                    setting,
+                    response
+                )
+        else:
+            # this is the default (textbox)
+            default = ""
+            if("default" in definition):
+                default = definition["default"]
+            value = profile.get_profile_var(setting, default)
+            print("")
+            response = value
+            once = False
+            while not ((once) and (validate(definition, response))):
+                once = True
+                tmp_response = simple_input(
+                    "    " + instruction_text('{} ("?" for help)'.format(definition["title"])),
+                    response
+                )
+                if(tmp_response.strip() == "?"):
+                    # Print the description plus any help text for the control
+                    print("")
+                    print(instruction_text(definition["description"]))
+                    once = False
+                    continue
+                response = tmp_response
+                print("")
+                profile.set_profile_var(
+                    setting,
+                    response
+                )
     else:
         # Just set the value to an empty value so we know we don't need to
         # address this again.
         profile.set_profile_var(setting, "")
 
 
+# FIXME I should put a default for listboxes here so that by default
+# any value chosen has to be a member of the options.key() list.
 def validate(definition, response):
     valid = False
     if(len(response.strip()) == 0):
         valid = True
     else:
         try:
-            valid = definition["validation"](response)
+            validfunction = definition["validation"]
+            valid = validfunction(response)
+        except KeyError:
+            # there is no "validation" property, so anything validates
+            valid = True
         except TypeError:
             # Not a function
-            valid = definition["validation"]
+            validstr = str(definition["validation"]).strip().lower()
+            # Is it a boolean?
+            if validstr in ('true', 'yes', 'on'):
+                valid = True
+            elif validstr in ('false', 'no', 'off'):
+                valid = False
+            elif validstr == 'email':
+                valid = True if re.match('^[^@]+@[^@]+\\.[^@\\.]+$', response) else False
+            elif validstr in ('int', 'integer'):
+                try:
+                    valid = str(int(response)) == response
+                except ValueError:
+                    valid = False
     return valid
 
 
