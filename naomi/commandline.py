@@ -20,10 +20,7 @@ def get_language(language=None, once=False):
         translations = i18n.parse_translations(paths.data('locale'))
         translator = i18n.GettextMixin(translations, profile.get_profile())
         _ = translator.gettext
-        #
-        # AustinC; can't use français due to the special char "ç"
-        # it breaks due to it being out of range for ascii
-        #
+
         languages = {
             u'EN-English': 'en-US',
             u'FR-Français': 'fr-FR',
@@ -281,14 +278,17 @@ def get_setting(setting, definition):
         except TypeError:
             active = definition["active"]
     if(active):
+        description = _("Sorry, no additional information is available about this setting")
+        if("description" in definition):
+            description = definition["description"]
+        default = ""
+        if("default" in definition):
+            default = definition["default"]
+        value = profile.get_profile_var(setting, default)
         controltype = "textbox"
         if("type" in definition):
             controltype = definition["type"].lower()
         if(controltype == "listbox"):
-            default = ""
-            if("default" in definition):
-                default = definition["default"]
-            value = profile.get_profile_var(setting, default)
             try:
                 options = definition["options"]()
             except TypeError:
@@ -314,7 +314,7 @@ def get_setting(setting, definition):
                 if(tmp_response.strip() == "?"):
                     # Print the description plus any help text for the control
                     print("")
-                    print(instruction_text(definition["description"]))
+                    print(instruction_text(description))
                     once = False
                     continue
                 response = tmp_response
@@ -332,11 +332,8 @@ def get_setting(setting, definition):
                     )
             print("")
         elif(controltype == "password"):
-            default = ""
-            if("default" in definition):
-                default = definition["default"]
-            value = profile.get_profile_password(setting, default)
             print("")
+            value = profile.get_profile_password(setting, default)
             response = value
             once = False
             while not ((once) and (validate(definition, response))):
@@ -359,10 +356,6 @@ def get_setting(setting, definition):
                 )
         else:
             # this is the default (textbox)
-            default = ""
-            if("default" in definition):
-                default = definition["default"]
-            value = profile.get_profile_var(setting, default)
             print("")
             response = value
             once = False
@@ -401,8 +394,20 @@ def validate(definition, response):
             validfunction = definition["validation"]
             valid = validfunction(response)
         except KeyError:
-            # there is no "validation" property, so anything validates
-            valid = True
+            try:
+                if(definition["type"] in ["listbox"]):
+                    # Use the default validation, which is to make sure whatever
+                    # is selected is a member of options
+                    try:
+                        valid = response in definition["options"]()
+                    except TypeError:
+                        # must not be a function, assume it is a list
+                        valid = response in definition["options"]
+                else:
+                    valid = True
+            except KeyError:
+                # must be a textbox with no validation
+                valid = True
         except TypeError:
             # Not a function
             validstr = str(definition["validation"]).strip().lower()

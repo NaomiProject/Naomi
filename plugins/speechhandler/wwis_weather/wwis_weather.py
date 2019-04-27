@@ -39,8 +39,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                         'description': "".join([
                             _('This value is being used to help locate your Area ID, which will be used to provide weather information')
                         ]),
-                        'options': self.get_countries,
-                        'validation': lambda country: country in self.get_countries()
+                        'options': self.get_countries
                     }
                 ),
                 (
@@ -49,7 +48,6 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                         'title': _('Please select your region or city from the list'),
                         'description': _('Please select your region or city from the list, which will be used to provide weather information'),
                         'options': self.get_regions,
-                        'validation': lambda region: True if region in self.get_regions() else False,
                         'active': lambda: True if profile.check_profile_var_exists(['wwis_weather', 'country']) and len(profile.get_profile_var(["wwis_weather", "country"])) > 0 else False
                     }
                 ),
@@ -57,9 +55,8 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                     ('wwis_weather', 'city'), {
                         'type': 'listbox',
                         'title': _('Please select your city from the list'),
-                        'description': _('Please select your city from the list, which will be used as the default location when providing weather information'),
+                        'description': _('Please select your city from the list. This will be used as the default location when providing weather information'),
                         'options': self.get_cities,
-                        'validation': lambda city: True if city in self.get_cities() else False,
                         # This is only active if the currently selected region is a dictionary and not a city
                         'active': lambda: True if isinstance(self.locations[profile.get_profile_var(["wwis_weather", "country"])][profile.get_profile_var(["wwis_weather", "region"])], dict) else False
                     }
@@ -122,10 +119,16 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         city = profile.get_profile_var(['wwis_weather', 'city'], "")
         # check if we have a city or region
         if(isinstance((self.locations[country][region]), dict)):
-            cityId = self.locations[country][region][city]
+            try:
+                cityId = self.locations[country][region][city]
+            except KeyError:
+                city = None
         else:
-            cityId = self.locations[country][region]
-            city = region
+            try:
+                cityId = self.locations[country][region]
+                city = region
+            except KeyError:
+                city = None
         return city, cityId
 
     def get_phrases(self):
