@@ -77,7 +77,7 @@ class STTPlugin(GenericPlugin):
 
         vocabulary = vocabcompiler.VocabularyCompiler(
             self.info.name, self._vocabulary_name,
-            path=paths.config('vocabularies', language))
+            path=paths.sub('vocabularies', language))
 
         if not vocabulary.matches_phrases(self._vocabulary_phrases):
             vocabulary.compile(

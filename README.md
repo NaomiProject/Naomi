@@ -1,6 +1,6 @@
 <h1 align="center">
   <br>
-  <a><img src="https://projectnaomi.com/Python3Warning.png" alt="Warning" width="100%"></a>
+  <a><img src="https://projectnaomi.com/python3warning.png" alt="Warning" width="100%"></a>
   <br>
   <br>
 </h1>

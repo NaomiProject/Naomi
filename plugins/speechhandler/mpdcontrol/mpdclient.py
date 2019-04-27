@@ -76,10 +76,24 @@ class MPDClient(object):
                 item = conn.playlistinfo(index)[0]
 
         if item:
-            return Song(id=item['id'],
-                        title=item['title'],
-                        artist=item['artist'],
-                        album=item['album'])
+            title='unknown'
+            if 'title' in item:
+              title=item['title']
+
+            artist='unknown'
+            if 'artist' in item:
+              artist=item['artist']
+
+            album='unknown'
+            if 'album' in item:
+              album=item['album']
+
+            song=Song(id=item['id'],
+                      title=title,
+                      artist=artist,
+                      album=album)
+
+            return song
 
         return None
 

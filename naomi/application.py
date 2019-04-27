@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
-import os
-import re
-import shutil
-import yaml
 import pkg_resources
 
 from . import audioengine
 from . import brain
 from . import paths
-from . import populate
 from . import pluginstore
+from . import populate
 from . import conversation
 from . import mic
 from . import profile
@@ -31,97 +27,10 @@ class Naomi(object):
         print_transcript=False
     ):
         self._logger = logging.getLogger(__name__)
-        # Create config dir if it does not exist yet
-        if not os.path.exists(paths.CONFIG_PATH):
-            try:
-                os.makedirs(paths.CONFIG_PATH)
-            except OSError:
-                self._logger.error("Could not create config dir: '%s'",
-                                   paths.CONFIG_PATH, exc_info=True)
-                raise
-
-        # Check if config dir is writable
-        if not os.access(paths.CONFIG_PATH, os.W_OK):
-            self._logger.critical(
-                " ".join([
-                    "Config dir {:s} is not writable. Naomi",
-                    "won't work correctly."
-                ]).format(
-                    paths.CONFIG_PATH
-                )
-            )
-        # For backwards compatibility, move old config file to newly
-        # created config dir
-        old_configfile = os.path.join(paths.PKG_PATH, 'profile.yml')
-        new_configfile = paths.config('profile.yml')
-        if os.path.exists(old_configfile):
-            if os.path.exists(new_configfile):
-                self._logger.warning(
-                    " ".join([
-                        "Deprecated profile file found: '{:s}'. ",
-                        "Please remove it."
-                    ]).config(old_configfile)
-                )
-            else:
-                self._logger.warning(
-                    " ".join([
-                        "Deprecated profile file found: '{:s}'.",
-                        "Trying to copy it to new location '{:s}'."
-                    ]).format(
-                        old_configfile,
-                        new_configfile
-                    )
-                )
-                try:
-                    shutil.copy2(old_configfile, new_configfile)
-                except shutil.Error:
-                    self._logger.error(
-                        " ".join([
-                            "Unable to copy config file.",
-                            "Please copy it manually."
-                        ]),
-                        exc_info=True
-                    )
-                    raise
-
-        # Read config
-        # set a loop so we can keep looping back until the config file exists
-        config_read = False
-        while(not config_read):
-            self._logger.debug(
-                "Trying to read config file: '%s'" % new_configfile
-            )
-            try:
-                with open(new_configfile, "r") as f:
-                    self.config = yaml.safe_load(f)
-                    config_read = True
-                if(repopulate):
-                    populate.run(self.config)
-            except IOError:
-                # AJC 2018-07-29 Changed this from a warning to debug, since
-                # we attempt to fix the problem right here
-                self._logger.debug(
-                    "Can't open config file: '%s'" % new_configfile
-                )
-                # raise
-                print("Your config file does not exist.")
-                text_input = input(
-                    " ".join([
-                        "Would you like to answer a few ",
-                        "questions to create a new one? "
-                    ])
-                )
-                if(re.match(r'\s*[Yy]', text_input)):
-                    populate.run({})
-                else:
-                    print("Cannot continue. Exiting.")
-                    quit()
-            except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
-                self._logger.error("Unable to parse config file: %s %s",
-                                e.problem.strip(), str(e.problem_mark).strip())
-                raise
-
-        language = profile.get_profile_var(self.config, ['language'])
+        if repopulate:
+            populate.run()
+        self.config = profile.get_profile()
+        language = profile.get_profile_var(['language'])
         if(not language):
             language = 'en-US'
             self._logger.warn(
@@ -132,10 +41,7 @@ class Naomi(object):
             )
         self._logger.info("Using Language '{}'".format(language))
 
-        audio_engine_slug = profile.get_profile_var(
-            self.config,
-            ['audio_engine']
-        )
+        audio_engine_slug = profile.get_profile_var(['audio_engine'])
         if(not audio_engine_slug):
             audio_engine_slug = 'pyaudio'
             self._logger.warn(
@@ -147,7 +53,6 @@ class Naomi(object):
         self._logger.info("Using Audio engine '{}'".format(audio_engine_slug))
 
         active_stt_slug = profile.get_profile_var(
-            self.config,
             ['active_stt', 'engine']
         )
         if(not active_stt_slug):
@@ -163,7 +68,6 @@ class Naomi(object):
         )
 
         active_stt_reply = profile.get_profile_var(
-            self.config,
             ['active_stt', 'reply']
         )
         if(active_stt_reply):
@@ -172,7 +76,6 @@ class Naomi(object):
             )
 
         active_stt_response = profile.get_profile_var(
-            self.config,
             ['active_stt', 'response']
         )
         if(active_stt_response):
@@ -183,7 +86,6 @@ class Naomi(object):
             )
 
         passive_stt_slug = profile.get_profile_var(
-            self.config,
             ['passive_stt', 'engine'],
             active_stt_slug
         )
@@ -191,7 +93,7 @@ class Naomi(object):
             "Using passive STT engine '{}'".format(passive_stt_slug)
         )
 
-        tts_slug = profile.get_profile_var(self.config, ['tts_engine'])
+        tts_slug = profile.get_profile_var(['tts_engine'])
         if(not tts_slug):
             tts_slug = 'espeak-tts'
             self._logger.warning(
@@ -202,12 +104,11 @@ class Naomi(object):
             )
         self._logger.info("Using TTS engine '{}'".format(tts_slug))
 
-        keyword = profile.get_profile_var(self.config, ['keyword'], 'NAOMI')
+        keyword = profile.get_profile_var(['keyword'], 'NAOMI')
         self._logger.info("Using keyword '{}'".format(keyword))
 
         if(not print_transcript):
             print_transcript = profile.get_profile_flag(
-                self.config,
                 ['print_transcript'],
                 False
             )
@@ -231,7 +132,7 @@ class Naomi(object):
         devices = [device.slug for device in self.audio.get_devices(
             device_type=audioengine.DEVICE_TYPE_INPUT)]
         try:
-            device_slug = self.config['audio']['input_device']
+            device_slug = profile.get_profile_var(['audio', 'input_device'])
         except KeyError:
             device_slug = self.audio.get_default_device(output=False).slug
             self._logger.warning(
@@ -255,22 +156,18 @@ class Naomi(object):
                                  ', '.join(devices))
             raise
         input_device._input_rate = profile.get_profile_var(
-            self.config,
             ['audio', 'input_samplerate'],
             16000
         )
         input_device._input_bits = profile.get_profile_var(
-            self.config,
             ['audio', 'input_samplewidth'],
             16
         )
         input_device._input_channels = profile.get_profile_var(
-            self.config,
             ['audio', 'input_channels'],
             1
         )
         input_device._input_chunksize = profile.get_profile_var(
-            self.config,
             ['audio', 'input_chunksize'],
             1024
         )
@@ -324,12 +221,10 @@ class Naomi(object):
             )
             raise
         output_device._output_chunksize = profile.get_profile_var(
-            self.config,
             ['audio', 'output_chunksize'],
             1024
         )
         output_device._output_padding = profile.get_profile_flag(
-            self.config,
             ['audio', 'output_padding'],
             False
         )
@@ -345,15 +240,12 @@ class Naomi(object):
         )
 
         # Initialize Voice activity detection
-        vad_slug = profile.get_profile_var(self.config, ['vad_engine'], 'snr_vad')
+        vad_slug = profile.get_profile_var(['vad_engine'], 'snr_vad')
         vad_info = self.plugins.get_plugin(
             vad_slug,
             category='vad'
         )
-        vad_config = {}
-        if(vad_slug in self.config):
-            vad_config = self.config[vad_slug]
-        vad_plugin = vad_info.plugin_class(input_device,**vad_config)
+        vad_plugin = vad_info.plugin_class(input_device)
 
         # Initialize Brain
         self.brain = brain.Brain(self.config)
@@ -367,7 +259,9 @@ class Naomi(object):
                     exc_info=(
                         self._logger.getEffectiveLevel() == logging.DEBUG))
             else:
-                self.brain.add_plugin(plugin)
+                if 'speechhandlers' not in self.config or info.name in self.config['speechhandlers']:
+                  self._logger.info('Activate speechhandler plugin %s', info.name)
+                  self.brain.add_plugin(plugin)
 
         if len(self.brain.get_plugins()) == 0:
             msg = 'No plugins for handling speech found!'
@@ -379,56 +273,55 @@ class Naomi(object):
             raise RuntimeError(msg)
 
         active_stt_plugin_info = self.plugins.get_plugin(
-            active_stt_slug, category='stt')
+            active_stt_slug,
+            category='stt'
+        )
         active_stt_plugin = active_stt_plugin_info.plugin_class(
-            'default', self.brain.get_plugin_phrases(), active_stt_plugin_info,
-            self.config)
-
-        try:
-            active_stt_plugin._samplerate =\
-                int(self.config['active_stt']['samplerate'])
-        except KeyError:
-            pass
-
-        try:
-            active_stt_plugin._volume_normalization =\
-                float(self.config['active_stt']['volume_normalization'])
-        except KeyError:
-            pass
+            'default',
+            self.brain.get_plugin_phrases(),
+            active_stt_plugin_info,
+            self.config
+        )
+        if(profile.check_profile_var_exists(['active_stt', 'samplerate'])):
+            active_stt_plugin._samplerate = int(
+                profile.get_profile_var(['active_stt', 'samplerate'])
+            )
+        if(profile.check_profile_var_exists(
+            ['active_stt', 'volume_normalization']
+        )):
+            active_stt_plugin._volume_normalization = float(
+                profile.get_profile_var(['active_stt', 'volume_normalization'])
+            )
 
         if passive_stt_slug != active_stt_slug:
             passive_stt_plugin_info = self.plugins.get_plugin(
-                passive_stt_slug, category='stt')
+                passive_stt_slug, category='stt'
+            )
         else:
             passive_stt_plugin_info = active_stt_plugin_info
 
         passive_stt_plugin = passive_stt_plugin_info.plugin_class(
-            'keyword', self.brain.get_standard_phrases() + [keyword],
-            passive_stt_plugin_info, self.config)
+            'keyword',
+            self.brain.get_standard_phrases() + [keyword],
+            passive_stt_plugin_info,
+            self.config
+        )
 
-        try:
-            passive_stt_plugin._samplerate =\
-                int(self.config['passive_stt']['samplerate'])
-        except KeyError:
-            pass
+        if(profile.check_profile_var_exists(['passive_stt', 'samplerate'])):
+            passive_stt_plugin._samplerate = int(
+                profile.get_profile_var(['passive_stt', 'samplerate'])
+            )
+        if(profile.check_profile_var_exists(
+            ['passive_stt', 'volume_normalization']
+        )):
+            passive_stt_plugin._volume_normalization = float(
+                profile.get_profile_var(['passive_stt', 'volume_normalization'])
+            )
 
-        try:
-            passive_stt_plugin._volume_normalization =\
-                float(self.config['passive_stt']['volume_normalization'])
-        except KeyError:
-            pass
-
-        try:
-            active_stt_reply = self.config['active_stt']['reply']
-        except KeyError:
-            self._logger.info(KeyError)
-            active_stt_reply = None
-
-        try:
-            active_stt_response = self.config['active_stt']['response']
-        except KeyError:
-            self._logger.info(KeyError)
-            active_stt_response = None
+        active_stt_reply = profile.get_profile_var(['active_stt', 'reply'])
+        active_stt_response = profile.get_profile_var(
+            ['active_stt', 'response']
+        )
 
         tts_plugin_info = self.plugins.get_plugin(tts_slug, category='tts')
         tts_plugin = tts_plugin_info.plugin_class(tts_plugin_info, self.config)
