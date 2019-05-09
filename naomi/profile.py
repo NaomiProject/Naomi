@@ -3,6 +3,7 @@
 These functions "walk" the profile, and return either a boolean variable to
 tell whether an option is configured or not, or the actual value
 """
+from cryptography.fernet import Fernet
 import logging
 from naomi import paths
 import os
@@ -181,6 +182,21 @@ def get_profile_var(path, default=None):
     return response
 
 
+def get_profile_password(path, default=None):
+    """
+    Get a value from the profile, whether it exists or not
+    If the value does not exist in the profile, returns
+    either the default value (if there is one) or None.
+    """
+    key = get_profile_var(["key"]).encode("utf-8")
+    cipher_suite = Fernet(key)
+    response = _walk_profile(path, True)
+    if response is None:
+        response = default
+    response = cipher_suite.decrypt(response.encode("utf-8")).decode("utf-8")
+    return response
+
+
 def get_profile_flag(path, default=None):
     """
     Get a boolean value from the profile, whether it exists
@@ -244,3 +260,26 @@ def set_profile_var(path, value):
         temp[last] = value
     else:
         raise KeyError("Can't write to profile root")
+
+
+def set_profile_password(path, value):
+    global _profile
+    # Encrypt value
+    if not check_profile_var_exists(["key"]):
+        set_profile_var(["key"], Fernet.generate_key().decode("utf-8"))
+    key = get_profile_var(["key"]).encode("utf-8")
+    cipher_suite = Fernet(key)
+    cipher_text = cipher_suite.encrypt(value.encode("utf-8")).decode("utf-8")
+    temp = _profile
+    if len(path) > 0:
+        last = path[0]
+        if len(path) > 1:
+            for branch in path[1:]:
+                try:
+                    if not isinstance(temp[last], dict):
+                        temp[last] = {}
+                except KeyError:
+                    temp[last] = {}
+                temp = temp[last]
+                last = branch
+            temp[last] = cipher_text

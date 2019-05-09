@@ -19,7 +19,10 @@ class Brain(object):
     def add_plugin(self, plugin):
         self._plugins.append(plugin)
         self._plugins = sorted(
-            self._plugins, key=lambda p: p.get_priority(), reverse=True)
+            self._plugins,
+            key=lambda p: p.get_priority(),
+            reverse=True
+        )
 
     def get_plugins(self):
         return self._plugins
