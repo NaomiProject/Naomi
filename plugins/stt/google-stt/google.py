@@ -25,7 +25,7 @@ class GoogleSTTPlugin(plugin.STTPlugin):
         # FIXME: get init args from config
 
         self._logger = logging.getLogger(__name__)
-        self._language = None
+        self._language = 'en-US'
         self._client = speech.SpeechClient()
         self._config = None
         try:
@@ -33,7 +33,6 @@ class GoogleSTTPlugin(plugin.STTPlugin):
         except KeyError:
             language = 'en-US'
 
-        self.language = language.lower()
 
         self._regenerate_config()
 
@@ -44,7 +43,7 @@ class GoogleSTTPlugin(plugin.STTPlugin):
 
     @language.setter
     def language(self, value):
-        self._language = value
+        self._language = value.lower()
         self._regenerate_config()
 
     def _regenerate_config(self):
@@ -57,7 +56,7 @@ class GoogleSTTPlugin(plugin.STTPlugin):
         self._config = types.RecognitionConfig(
                            encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
                            language_code=self.language,
-                           speech_contexts=[speech.types.SpeechContext(phrases=[keyword])],
+                           speech_contexts=[speech.types.SpeechContext(phrases=[keyword])] if keyword else None,
                            model="command_and_search"
                        )
 
