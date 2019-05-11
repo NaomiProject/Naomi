@@ -6,6 +6,8 @@ from google.cloud.speech import enums
 from google.cloud.speech import types
 from google.api_core.exceptions import GoogleAPICallError,RetryError
 
+from google.oauth2 import service_account
+
 
 class GoogleSTTPlugin(plugin.STTPlugin):
     """
@@ -18,6 +20,9 @@ class GoogleSTTPlugin(plugin.STTPlugin):
 
     https://cloud.google.com/speech-to-text/docs/quickstart-protocol
 
+    The python api for google stt is documented here:
+    https://googleapis.github.io/google-cloud-python/latest/speech/index.html
+
     """
 
     def __init__(self, *args, **kwargs):
@@ -26,14 +31,21 @@ class GoogleSTTPlugin(plugin.STTPlugin):
 
         self._logger = logging.getLogger(__name__)
         self._language = 'en-US'
-        self._client = speech.SpeechClient()
         self._config = None
         try:
             language = self.profile['language']
         except KeyError:
             language = 'en-US'
 
+        # retrieve the location of the crediantials json from the user settings
+        try:
+            credentials_json = self.profile['google']['credentials_json']
+        except KeyError:
+            credentials_json = None
 
+        # set up the google speech client
+        cred = service_account.Credentials.from_service_account_file(credentials_json)
+        self._client = speech.SpeechClient(credentials=cred)
         self._regenerate_config()
 
 
