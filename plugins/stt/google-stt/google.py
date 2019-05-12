@@ -1,7 +1,8 @@
 import logging
+from collections import OrderedDict
 from naomi import plugin
 from naomi import profile
-from os import environ
+import os
 
 from google.cloud import speech
 from google.cloud.speech import enums
@@ -30,6 +31,21 @@ class GoogleSTTPlugin(plugin.STTPlugin):
 
     """
 
+    settings = OrderedDict(
+        [
+            (
+                ("google", "authentication_json"), {
+                    "type": "file",
+                    "title": "Google application credentials (*.json)",
+                    "description": "This is a json file that allows your assistant to use the Google Speech API for converting speech to text. You need to generate and download an google cloud API key. Details here: https://cloud.google.com/speech-to-text/docs/quickstart-protocol",
+                    "validation": lambda filename: os.path.exists(os.path.expanduser(filename)),
+                    "invalidmsg": lambda filename: "File {} does not exist".format(filename),
+                    "default": os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+                }
+            )
+        ]
+    )
+
     def __init__(self, *args, **kwargs):
         plugin.STTPlugin.__init__(self, *args, **kwargs)
         # FIXME: get init args from config
@@ -38,7 +54,7 @@ class GoogleSTTPlugin(plugin.STTPlugin):
         self._language = profile.get_profile_var(['language'], 'en-US')
         self._config = None
 
-        if(google_env_var in environ):
+        if(google_env_var in os.environ):
             self._client = speech.SpeechClient()
         else:
             credentials_json = profile.get_profile_var(["google", "credentials_json"])
