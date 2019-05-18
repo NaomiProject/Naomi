@@ -39,7 +39,7 @@ class GoogleSTTPlugin(plugin.STTPlugin):
                     "title": "Google application credentials (*.json)",
                     "description": "This is a json file that allows your assistant to use the Google Speech API for converting speech to text. You need to generate and download an google cloud API key. Details here: https://cloud.google.com/speech-to-text/docs/quickstart-protocol",
                     "validation": lambda filename: os.path.exists(os.path.expanduser(filename)),
-                    "invalidmsg": lambda filename: "File {} does not exist".format(filename),
+                    "invalidmsg": "File {} does not exist".format,
                     "default": os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
                 }
             )
