@@ -36,4 +36,10 @@ google-api-core==1.9.0
 google-auth==1.6.3
 google-cloud-speech==1.0.0
 googleapis-common-protos==1.5.9
+grpcio
 
+# webrtcvad
+webrtcvad
+
+# audiolog
+sqlite3

@@ -109,6 +109,11 @@ def normal_text(text=""):
     return t.normal + text
 
 
+# this is for emphasis
+def strong_text(text=""):
+    return t.bold_cyan + text
+
+
 # this is for instructions
 def instruction_text(text=""):
     return t.bold_blue + text

@@ -24,7 +24,12 @@ class Naomi(object):
         use_mic=USE_STANDARD_MIC,
         batch_file=None,
         repopulate=False,
-        print_transcript=False
+        print_transcript=False,
+        passive_listen=False,
+        save_audio=False,
+        save_passive_audio=False,
+        save_active_audio=False,
+        save_noise=False
     ):
         self._logger = logging.getLogger(__name__)
         if repopulate:
@@ -93,6 +98,14 @@ class Naomi(object):
             "Using passive STT engine '{}'".format(passive_stt_slug)
         )
 
+        special_stt_slug = profile.get_profile_var(
+            ['special_stt', 'engine'],
+            active_stt_slug
+        )
+        self._logger.info(
+            "Using special STT engine '{}'".format(special_stt_slug)
+        )
+
         tts_slug = profile.get_profile_var(['tts_engine'])
         if(not tts_slug):
             tts_slug = 'espeak-tts'
@@ -113,6 +126,31 @@ class Naomi(object):
                 False
             )
 
+        # passive_listen
+        if(not passive_listen):
+            passive_listen = profile.get_profile_flag(["passive_listen"])
+
+        # Audiolog settings
+        if(save_audio):
+            save_passive_audio = True
+            save_active_audio = True
+            save_noise = True
+        elif(not(save_passive_audio or save_active_audio or save_noise)):
+            # get the settings from the profile
+            if(profile.get_profile_flag(['audiolog', 'save_audio'], False)):
+                save_passive_audio = True
+                save_active_audio = True
+                save_noise = True
+            else:
+                save_passive_audio = profile.get_profile_flag(
+                    ['audiolog', 'save_passive_audio']
+                )
+                save_active_audio = profile.get_profile_flag(
+                    ['audiolog', 'save_active_audio']
+                )
+                save_noise = profile.get_profile_flag(
+                    ['audiolog', 'save_noise']
+                )
         # Load plugins
         plugin_directories = [
             paths.config('plugins'),
@@ -262,24 +300,37 @@ class Naomi(object):
                 )
             else:
                 if(hasattr(plugin, 'settings')):
-                    # set a variable here to tell us if all settings are completed or not
-                    # If all settings do not currently exist, go ahead and re-query all
-                    # settings for this plugin
+                    # set a variable here to tell us if all settings are
+                    # completed or not
+                    # If all settings do not currently exist, go ahead and
+                    # re-query all settings for this plugin
                     settings_complete = True
                     self._logger.debug(plugin.settings)
-                    # Step through the settings and check for any missing settings
+                    # Step through the settings and check for
+                    # any missing settings
                     for setting in plugin.settings:
                         if not profile.check_profile_var_exists(setting):
-                            self._logger.debug("{} setting does not exist".format(setting))
+                            self._logger.debug(
+                                "{} setting does not exist".format(setting)
+                            )
                             # Go ahead and pull the setting
                             settings_complete = False
                     if(repopulate or not settings_complete):
                         for setting in plugin.settings:
-                            commandline.get_setting(setting, plugin.settings[setting])
+                            commandline.get_setting(
+                                setting, plugin.settings[setting]
+                            )
                     # Save the profile with the new settings
                     profile.save_profile()
-                if 'speechhandlers' not in self.config or info.name in self.config['speechhandlers']:
-                    self._logger.info('Activate speechhandler plugin %s', info.name)
+                if((
+                    'speechhandlers' not in self.config
+                ) or (
+                    info.name in self.config['speechhandlers']
+                )):
+                    self._logger.info(
+                        'Activate speechhandler plugin %s',
+                        info.name
+                    )
                     self.brain.add_plugin(plugin)
 
         if len(self.brain.get_plugins()) == 0:
@@ -295,9 +346,12 @@ class Naomi(object):
             active_stt_slug,
             category='stt'
         )
+        active_phrases = self.brain.get_plugin_phrases()
+        if(passive_listen):
+            active_phrases.append(keyword)
         active_stt_plugin = active_stt_plugin_info.plugin_class(
             'default',
-            self.brain.get_plugin_phrases(),
+            active_phrases,
             active_stt_plugin_info,
             self.config
         )
@@ -312,6 +366,18 @@ class Naomi(object):
                 profile.get_profile_var(['active_stt', 'volume_normalization'])
             )
 
+        # passive speech to text engine
+        # Here we are checking to see if passive and
+        # active modes are both using the same plugin.
+        # If they are, then we create the passive plugin
+        # from the active plugin for some reason, which
+        # I assume means that the volume normalization
+        # and samplerate settings come over as well.
+        # I would think that if you have defined these
+        # settings for active_stt, then simply requested
+        # the same engine for passive_stt, it might be
+        # confusing why these other settings are being
+        # overridden as well.
         if passive_stt_slug != active_stt_slug:
             passive_stt_plugin_info = self.plugins.get_plugin(
                 passive_stt_slug, category='stt'
@@ -353,6 +419,8 @@ class Naomi(object):
             self.mic = batch_mic.Mic(
                 passive_stt_plugin,
                 active_stt_plugin,
+                special_stt_slug,
+                self.plugins,
                 batch_file,
                 keyword=keyword
             )
@@ -365,11 +433,18 @@ class Naomi(object):
                 active_stt_response,
                 passive_stt_plugin,
                 active_stt_plugin,
+                special_stt_slug,
+                self.plugins,
                 tts_plugin,
                 vad_plugin,
                 self.config,
                 keyword=keyword,
-                print_transcript=print_transcript
+                print_transcript=print_transcript,
+                passive_listen=passive_listen,
+                save_audio=save_audio,
+                save_passive_audio=save_passive_audio,
+                save_active_audio=save_active_audio,
+                save_noise=save_noise
             )
 
         self.conversation = conversation.Conversation(

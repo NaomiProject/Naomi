@@ -2,9 +2,9 @@
 import sys
 import logging
 import argparse
-
 from . import application
-#from application import USE_STANDARD_MIC, USE_TEXT_MIC, USE_BATCH_MIC
+
+
 USE_STANDARD_MIC = application.USE_STANDARD_MIC
 USE_TEXT_MIC = application.USE_TEXT_MIC
 USE_BATCH_MIC = application.USE_BATCH_MIC
@@ -21,6 +21,34 @@ def main(args=None):
         '--repopulate',
         action='store_true',
         help='Rebuild configuration profile'
+    )
+    parser.add_argument(
+        '--passive-listen',
+        action='store_true',
+        help='Check for keyword and command in same input'
+    )
+    parser.add_argument(
+        '--save-passive-audio',
+        action='store_true',
+        help='Save passive recordings and transcripts for training'
+    )
+    parser.add_argument(
+        '--save-active-audio',
+        action='store_true',
+        help='Save active recordings and transcripts for training'
+    )
+    parser.add_argument(
+        '--save-noise',
+        action='store_true',
+        help='Save noise recordings for training'
+    )
+    parser.add_argument(
+        '--save-audio',
+        action='store_true',
+        help=' '.join([
+            'Save passive, active and noise audio recordings',
+            'and transcripts for training'
+        ])
     )
     list_info = parser.add_mutually_exclusive_group(required=False)
     list_info.add_argument(
@@ -82,7 +110,12 @@ def main(args=None):
         use_mic=used_mic,
         batch_file=p_args.batch_file,
         repopulate=p_args.repopulate,
-        print_transcript=p_args.print_transcript
+        print_transcript=p_args.print_transcript,
+        passive_listen=p_args.passive_listen,
+        save_audio=p_args.save_audio,
+        save_passive_audio=p_args.save_passive_audio,
+        save_active_audio=p_args.save_active_audio,
+        save_noise=p_args.save_noise
     )
     if p_args.list_plugins:
         app.list_plugins()

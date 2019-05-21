@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-import logging
-import tempfile
-import wave
-import audioop
-import contextlib
-
 from . import alteration
 from . import paths
 from . import profile
+from datetime import datetime
+import audioop
+import contextlib
+import logging
+import os
+import sqlite3
+import tempfile
+import wave
 
 
 class Mic(object):
@@ -23,34 +25,164 @@ class Mic(object):
         active_stt_response,
         passive_stt_engine,
         active_stt_engine,
+        special_stt_slug,
+        plugins,
         tts_engine,
         vad_plugin,
         config,
         keyword='NAOMI',
-        print_transcript=False
+        print_transcript=False,
+        passive_listen=False,
+        save_audio=False,
+        save_passive_audio=False,
+        save_active_audio=False,
+        save_noise=False
     ):
         self._logger = logging.getLogger(__name__)
         self._keyword = keyword
         self.tts_engine = tts_engine
         self.passive_stt_engine = passive_stt_engine
         self.active_stt_engine = active_stt_engine
+        self.special_stt_slug = special_stt_slug
+        self.plugins = plugins
         self._input_device = input_device
         self._output_device = output_device
         self._vad_plugin = vad_plugin
         self._active_stt_reply = active_stt_reply
         self._active_stt_response = active_stt_response
+        self.passive_listen = passive_listen
+        # transcript for monitoring
         self._print_transcript = print_transcript
+        # audiolog for training
+        if(save_audio):
+            self._save_passive_audio = True
+            self._save_active_audio = True
+            self._save_noise = True
+        else:
+            self._save_passive_audio = save_passive_audio
+            self._save_active_audio = save_active_audio
+            self._save_noise = save_noise
+        if(
+            (
+                self._save_active_audio
+            )or(
+                self._save_passive_audio
+            )or(
+                self._save_noise
+            )
+        ):
+            self._audiolog = paths.sub("audiolog")
+            self._logger.info(
+                "Checking audio log directory %s" % self._audiolog
+            )
+            if not os.path.exists(self._audiolog):
+                self._logger.info(
+                    "Creating audio log directory %s" % self._audiolog
+                )
+                os.makedirs(self._audiolog)
+            self._audiolog_db = os.path.join(self._audiolog, "audiolog.db")
+            self._conn = sqlite3.connect(self._audiolog_db)
+
+    # Copies a file pointed to by a file pointer to a permanent
+    # file for training purposes
+    def _log_audio(self, fp, transcription, sample_type="unknown"):
+        if(
+            (
+                sample_type.lower() == "noise" and self._save_noise
+            )or(
+                sample_type.lower() == "passive" and self._save_passive_audio
+            )or(
+                sample_type.lower() == "active" and self._save_active_audio
+            )
+        ):
+            fp.seek(0)
+            # Get the slug from the engine
+            if(sample_type.lower() == "active"):
+                engine = type(self.active_stt_engine).__name__
+            else:
+                # noise (empty transcript) response is only from passive engine
+                engine = type(self.passive_stt_engine).__name__
+            # Now, it is very possible that the file might already exist
+            # since the same file could be used for both passive and active
+            # parsing. Should we check to see if the file already exists
+            # or just go ahead and write over it?
+            filename = os.path.basename(fp.name)
+            self._logger.info("Audiofile saved as: {}".format(
+                os.path.join(self._audiolog, filename)
+            ))
+            with open(os.path.join(self._audiolog, filename), "wb") as f:
+                f.write(fp.read())
+            # Also add a line to the sqlite database
+            c = self._conn.cursor()
+            c.execute(" ".join([
+                "create table if not exists audiolog(",
+                "   datetime,",
+                "   engine,",
+                "   filename,",
+                "   type,",
+                "   transcription,",
+                "   verified_transcription,",
+                "   speaker,",
+                "   reviewed,",
+                "   wer",
+                ")"
+            ]))
+            self._conn.commit()
+            c.execute(
+                '''insert into audiolog values(?,?,?,?,?,'','','','')''',
+                (
+                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    engine,
+                    filename,
+                    sample_type,
+                    " ".join(transcription)
+                )
+            )
+            self._conn.commit()
 
     @contextlib.contextmanager
     def special_mode(self, name, phrases):
-        plugin_info = self.active_stt_engine.info
-        plugin_config = self.active_stt_engine.profile
+        plugin_info = self.plugins.get_plugin(
+            self.special_stt_slug,
+            category='stt'
+        )
+        plugin_config = profile.get_profile()
 
         original_stt_engine = self.active_stt_engine
 
+        # If the special_mode engine is not specifically set,
+        # copy the settings from the active stt engine.
         try:
             mode_stt_engine = plugin_info.plugin_class(
-                name, phrases, plugin_info, plugin_config)
+                name,
+                phrases,
+                plugin_info,
+                plugin_config
+            )
+            if(profile.check_profile_var_exists(['special_stt'])):
+                if(profile.check_profile_var_exists([
+                    'special_stt',
+                    'samplerate'
+                ])):
+                    mode_stt_engine._samplerate = int(
+                        profile.get_profile_var([
+                            'special_stt',
+                            'samplerate'
+                        ])
+                    )
+                if(profile.check_profile_var_exists([
+                    'special_stt',
+                    'volume_normalization'
+                ])):
+                    mode_stt_engine._volume_normalization = float(
+                        profile.get_profile_var([
+                            'special_stt',
+                            'volume_normalization'
+                        ])
+                    )
+            else:
+                mode_stt_engine._samplerate = original_stt_engine._samplerate
+                mode_stt_engine._volume_normalization = original_stt_engine._volume_normalization
             self.active_stt_engine = mode_stt_engine
             yield
         finally:
@@ -58,7 +190,11 @@ class Mic(object):
 
     @contextlib.contextmanager
     def _write_frames_to_file(self, frames, framerate, volume):
-        with tempfile.NamedTemporaryFile(mode='w+b') as f:
+        with tempfile.NamedTemporaryFile(
+            mode='w+b',
+            suffix=".wav",
+            prefix=datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        ) as f:
             wav_fp = wave.open(f, 'wb')
             wav_fp.setnchannels(self._input_device._input_channels)
             wav_fp.setsampwidth(int(self._input_device._input_bits / 8))
@@ -111,11 +247,12 @@ class Mic(object):
                     if(len(transcribed)):
                         if(self._print_transcript):
                             print("<  {}".format(transcribed))
+                            self._log_audio(f, transcribed, "passive")
                         if any([
                             keyword.lower() in t.lower()
                             for t in transcribed if t
                         ]):
-                            if(profile.get_profile_flag(["passive_listen"])):
+                            if(self.passive_listen):
                                 # Take the same block of audio and put it
                                 # through the active listener
                                 try:
@@ -126,12 +263,15 @@ class Mic(object):
                                 else:
                                     if(self._print_transcript):
                                         print("<< {}".format(transcribed))
+                                    if(self._save_active_audio):
+                                        self._log_audio(f, transcribed, "active")
                                 return transcribed
                             else:
                                 return False
                     else:
                         if(self._print_transcript):
                             print("<  <noise>")
+                            self._log_audio(f, "", "noise")
 
     def active_listen(self, timeout=3):
         transcribed = []
@@ -159,10 +299,11 @@ class Mic(object):
             else:
                 if(self._print_transcript):
                     print("<< {}".format(transcribed))
+                    self._log_audio(f, transcribed, "active")
         return transcribed
 
     def listen(self):
-        if(profile.get_profile_flag(["passive_listen"])):
+        if(self.passive_listen):
             self._logger.info("[passive_listen]")
             return self.wait_for_keyword(self._keyword)
         else:
