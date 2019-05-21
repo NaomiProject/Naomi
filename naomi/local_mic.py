@@ -17,8 +17,9 @@ class Mic(object):
         self._keyword = profile.get_profile_var(['keyword'], 'NAOMI')
         return
 
+    @staticmethod
     @contextlib.contextmanager
-    def special_mode(self, name, phrases):
+    def special_mode(name, phrases):
         yield
 
     def wait_for_keyword(self, keyword="NAOMI"):
