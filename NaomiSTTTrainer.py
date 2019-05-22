@@ -449,7 +449,7 @@ def application(environ, start_response):
                             )
                         conn.commit()
                         # fetch the next unreviewed rowid
-                        rowID = fetch_next_rowID(c, rowID)
+                        rowID = fetch_next_unreviewed_rowID(c, rowID)
                     else:
                         ErrorMessage = "Row ID {} does not exist".format(
                             str(rowID)
@@ -634,11 +634,11 @@ def application(environ, start_response):
                         ).encode("utf-8"))
                     ret.append(
                         " ".join([
-                            '<audio'
-                            'controls="controls"'
-                            'type="audio/wav"'
-                            'style="width:100%%">'
-                            '<source src="?wavfile={}" />'
+                            '<audio',
+                            'controls="controls"',
+                            'type="audio/wav"',
+                            'style="width:100%%">',
+                            '<source src="?wavfile={}" />',
                             '</audio><br />'
                         ]).format(Current_record["Filename"]).encode("utf-8")
                     )
