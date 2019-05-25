@@ -115,9 +115,11 @@ class Mic(object):
                             keyword.lower() in t.lower()
                             for t in transcribed if t
                         ]):
+                            self._logger.debug("Passive listen: {}".format(profile.get_profile_flag(["passive_listen"])))
                             if(profile.get_profile_flag(["passive_listen"])):
                                 # Take the same block of audio and put it
                                 # through the active listener
+                                f.seek(0)
                                 try:
                                     transcribed = self.active_stt_engine.transcribe(f)
                                 except Exception:
