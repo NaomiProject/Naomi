@@ -255,6 +255,7 @@ class Mic(object):
                             if(self.passive_listen):
                                 # Take the same block of audio and put it
                                 # through the active listener
+                                f.seek(0)
                                 try:
                                     transcribed = self.active_stt_engine.transcribe(f)
                                 except Exception:
