@@ -9,7 +9,7 @@ from . import paths
 from . import vocabcompiler
 from . import audioengine
 from . import i18n
-from . import commandline
+from . import commandline as interface
 from . import profile
 
 
@@ -17,7 +17,11 @@ class GenericPlugin(object):
     def __init__(self, info, config):
         self._plugin_config = config
         self._plugin_info = info
-        self._logger = logging.getLogger(__name__)
+        if(not hasattr(self,'_logger')):
+            self._logger = logging.getLogger(__name__)
+        translations = i18n.parse_translations(paths.data('locale'))
+        translator = i18n.GettextMixin(translations, profile.get_profile())
+        _ = translator.gettext
         if hasattr(self,'settings'):
             # set a variable here to tell us if all settings are
             # completed or not
@@ -34,8 +38,13 @@ class GenericPlugin(object):
                     # Go ahead and pull the setting
                     settings_complete = False
             if(profile.get_arg("repopulate") or not settings_complete):
+                print(interface.status_text(_(
+                    "Configuring {}"
+                ).format(
+                    self._plugin_info.name
+                )));
                 for setting in self.settings:
-                    commandline.get_setting(
+                    interface.get_setting(
                         setting, self.settings[setting]
                     )
                 # Save the profile with the new settings

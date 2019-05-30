@@ -1846,18 +1846,12 @@ def run():
     interface.separator()
 
     # write to profile
-    print(
-        "    " + interface.status_text(
-            _("Writing to profile...")
-        )
-    )
     profile.save_profile()
+
     interface.separator()
-    print("".join([
-        "    ",
-        interface.success_text(_("Done.")),
+    print(
         interface.normal_text()
-    ]))
+    )
 
 
 if __name__ == "__main__":

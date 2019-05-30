@@ -24,9 +24,11 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
     def __init__(self, *args, **kwargs):
         global _
         self._logger = logging.getLogger(__name__)
+        self._logger.debug("WWIS_Weather INIT")
         translations = i18n.parse_translations(paths.data('locale'))
         translator = i18n.GettextMixin(translations, profile.get_profile())
         _ = translator.gettext
+        self.get_location_data()
         # Here we have to put settings into the init since we are using self
         # to reference functions, and if you try to put this into the static
         # variables before init, there is no self to reference.
@@ -67,8 +69,6 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
             ]
         )
         super(WWISWeatherPlugin, self).__init__(*args, **kwargs)
-        self._logger.debug("WWIS_Weather INIT")
-        self.get_location_data()
 
     def get_location_data(self):
         # Set the language used for the location data
