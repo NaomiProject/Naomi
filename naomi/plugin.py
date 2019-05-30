@@ -19,8 +19,6 @@ class GenericPlugin(object):
         self._plugin_info = info
         self._logger = logging.getLogger(__name__)
         if hasattr(self,'settings'):
-            print("Handling settings in plugin init")
-            print(self.settings)
             # set a variable here to tell us if all settings are
             # completed or not
             # If all settings do not currently exist, go ahead and

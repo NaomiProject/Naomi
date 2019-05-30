@@ -690,18 +690,22 @@ def get_stt_engine(prompt, default):
     print("")
     # Handle special cases here
     if(response == 'google'):
-        # Set the api key (I'm not sure this actually works anymore,
-        # need to test)
-        profile.set_profile_var(
-            ["google", "credentials_json"],
-            interface.simple_input(
-                interface.format_prompt(
-                    "!",
-                    _("Please enter the location of your Google API key .json file:")
-                ),
-                profile.get_profile_var(["google", "credentials_json"])
-            )
-        )
+        # This section has moved into the setting attribute of the
+        # plugin itself, so no need to repeat it here. Keep this here
+        # until I can move all of these settings into the plugins.
+        # # Set the api key (I'm not sure this actually works anymore,
+        # # need to test)
+        # profile.set_profile_var(
+        #    ["google", "credentials_json"],
+        #     interface.simple_input(
+        #         interface.format_prompt(
+        #             "!",
+        #             _("Please enter the location of your Google API key .json file:")
+        #         ),
+        #         profile.get_profile_var(["google", "credentials_json"])
+        #     )
+        # )
+        pass
     elif(response == 'watson-stt'):
         username = interface.simple_input(
             interface.format_prompt(
