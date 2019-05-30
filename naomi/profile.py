@@ -15,6 +15,23 @@ import yaml
 _profile = {}
 _profile_read = False
 _test_profile = False
+_args = {}
+
+
+# Store an argument in a static location so it is
+# available to every module
+def set_arg(name,value):
+    global _args
+    _args.update({name:value})
+
+
+# Retrieve an argument. Return None if the
+# argument is not set.
+def get_arg(name):
+    value = None
+    if(name in _args.keys()):
+        value = _args[name]
+    return value
 
 
 def set_profile(custom_profile):

@@ -43,3 +43,9 @@ webrtcvad
 
 # audiolog
 sqlite3
+
+# NaomiSTTTrain
+sqlite3
+cython
+pandas
+sklearn

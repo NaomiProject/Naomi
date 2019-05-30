@@ -3,6 +3,7 @@ import sys
 import logging
 import argparse
 from . import application
+from . import profile
 
 
 USE_STANDARD_MIC = application.USE_STANDARD_MIC
@@ -104,6 +105,15 @@ def main(args=None):
     elif p_args.batch_file is not None:
         # Use batched mode mic, pass a file too
         used_mic = USE_BATCH_MIC
+
+    # AaronC 2019-05-29
+    # This keeps an argument in a static location
+    # so we don't have to keep passing it from library
+    # to library. We need to know if the user wants to
+    # re-run populate.py when we examine the settings
+    # variable while instantiating plugin objects
+    # in plugin.GenericPlugin.__init__()
+    profile.set_arg("repopulate",p_args.repopulate)
 
     # Run Naomi
     app = application.Naomi(

@@ -34,7 +34,7 @@ class GoogleSTTPlugin(plugin.STTPlugin):
     settings = OrderedDict(
         [
             (
-                ("google", "authentication_json"), {
+                ("google", "credentials_json"), {
                     "type": "file",
                     "title": "Google application credentials (*.json)",
                     "description": "This is a json file that allows your assistant to use the Google Speech API for converting speech to text. You need to generate and download an google cloud API key. Details here: https://cloud.google.com/speech-to-text/docs/quickstart-protocol",

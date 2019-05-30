@@ -670,7 +670,7 @@ def get_stt_engine(prompt, default):
     once = False
     while not ((once) and (temp in stt_engines.keys())):
         once = True
-        response = interface.simple_input(
+        temp = interface.simple_input(
             "    " + interface.instruction_text(
                 _("Available choices:")
             ) + " " + interface.choices_text(
@@ -693,13 +693,13 @@ def get_stt_engine(prompt, default):
         # Set the api key (I'm not sure this actually works anymore,
         # need to test)
         profile.set_profile_var(
-            ['keys', 'GOOGLE_SPEECH'],
+            ["google", "credentials_json"],
             interface.simple_input(
                 interface.format_prompt(
                     "!",
                     _("Please enter the location of your Google API key .json file:")
                 ),
-                profile.get_profile_var(["google", "authentication_json"])
+                profile.get_profile_var(["google", "credentials_json"])
             )
         )
     elif(response == 'watson-stt'):

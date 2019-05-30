@@ -165,6 +165,7 @@ class Naomi(object):
             category='audioengine'
         )
         self.audio = ae_info.plugin_class(ae_info, self.config)
+        # self.check_settings(self.audio, repopulate)
 
         # Initialize audio input device
         devices = [device.slug for device in self.audio.get_devices(
@@ -299,39 +300,7 @@ class Naomi(object):
                     )
                 )
             else:
-                if(hasattr(plugin, 'settings')):
-                    # set a variable here to tell us if all settings are
-                    # completed or not
-                    # If all settings do not currently exist, go ahead and
-                    # re-query all settings for this plugin
-                    settings_complete = True
-                    self._logger.debug(plugin.settings)
-                    # Step through the settings and check for
-                    # any missing settings
-                    for setting in plugin.settings:
-                        if not profile.check_profile_var_exists(setting):
-                            self._logger.debug(
-                                "{} setting does not exist".format(setting)
-                            )
-                            # Go ahead and pull the setting
-                            settings_complete = False
-                    if(repopulate or not settings_complete):
-                        for setting in plugin.settings:
-                            commandline.get_setting(
-                                setting, plugin.settings[setting]
-                            )
-                    # Save the profile with the new settings
-                    profile.save_profile()
-                if((
-                    'speechhandlers' not in self.config
-                ) or (
-                    info.name in self.config['speechhandlers']
-                )):
-                    self._logger.info(
-                        'Activate speechhandler plugin %s',
-                        info.name
-                    )
-                    self.brain.add_plugin(plugin)
+                self.brain.add_plugin(plugin)
 
         if len(self.brain.get_plugins()) == 0:
             msg = 'No plugins for handling speech found!'

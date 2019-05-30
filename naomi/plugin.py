@@ -9,12 +9,39 @@ from . import paths
 from . import vocabcompiler
 from . import audioengine
 from . import i18n
+from . import commandline
+from . import profile
 
 
 class GenericPlugin(object):
     def __init__(self, info, config):
         self._plugin_config = config
         self._plugin_info = info
+        self._logger = logging.getLogger(__name__)
+        if hasattr(self,'settings'):
+            print("Handling settings in plugin init")
+            print(self.settings)
+            # set a variable here to tell us if all settings are
+            # completed or not
+            # If all settings do not currently exist, go ahead and
+            # re-query all settings for this plugin
+            settings_complete = True
+            # Step through the settings and check for
+            # any missing settings
+            for setting in self.settings:
+                if not profile.check_profile_var_exists(setting):
+                    self._logger.info(
+                        "{} setting does not exist".format(setting)
+                    )
+                    # Go ahead and pull the setting
+                    settings_complete = False
+            if(profile.get_arg("repopulate") or not settings_complete):
+                for setting in self.settings:
+                    commandline.get_setting(
+                        setting, self.settings[setting]
+                    )
+                # Save the profile with the new settings
+                profile.save_profile()
 
     @property
     def profile(self):
