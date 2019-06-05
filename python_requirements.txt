@@ -49,3 +49,4 @@ sqlite3
 cython
 pandas
 sklearn
+jiwer
