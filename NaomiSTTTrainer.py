@@ -15,19 +15,18 @@ import re
 import shutil
 import socket
 import sqlite3
-import subprocess
-import tarfile
 from urllib.parse import unquote
 from urllib.request import urlretrieve
 import os
 from naomi import paths
 from naomi import profile
 from naomi import pluginstore
+from naomi import run_command
 import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
-import pdb
 import json
 from jiwer import wer
+import glob
 
 
 # Set Debug to True to see debugging information
@@ -394,7 +393,8 @@ def application(environ, start_response):
                                     # No need to copy file, just leave it in audiolog
                                     f.write("{}\n".format(filename.rsplit(".",1)[0]))
                             with open(os.path.join(working_dir,"naomi.transcription"),"w+") as f:
-                                [f.write("<s> {} </s>\n".format(t.lower())) for t in df['transcription']]
+                                for t in df['transcription']
+                                    f.write("<s> {} </s>\n".format(t.lower()))
                             nextcommand = "featureextraction"
                         else:
                             response.append("Error: failed to populate working model")
@@ -505,8 +505,12 @@ def application(environ, start_response):
                             for line in in_file:
                                 # Remove whitespace at beginning and end
                                 line = line.strip()
+                                # remove the number in parentheses (if there is one) 
+                                line = re.sub('([^\\(]+)\\(\\d+\\)', '\\1', line)
+                                # compress all multiple whitespaces into a single whitespace
                                 line = re.sub('\s+', ' ', line)
-                                line = re.sub('([^\(]+)\(\d+\)', '\1', line)
+                                # replace the first whitespace with a tab
+                                line = line.replace(' ','\t',1)
                                 print(line, file=out_file)
                     # Use phonetisaurus to prepare an fst model
                     cmd = [
@@ -584,16 +588,32 @@ def application(environ, start_response):
                         description.append("adding {} new phrases".format(len(new_phrases)))
                         if(len(new_phrases)>0):
                             table = "<table><tr><th>new phrase</th></tr>"
-                            # append the new phrases to 
-                            for word in new_phrases:
-                                table += "<tr><td>{}</td></tr>".format(word)
+                            # Append the new phrases to the standard_phrases\{language}.txt file
+                            with open(paths.data('standard_phrases', "%s.txt" % language),mode="a+") as f:
+                                for word in new_phrases:
+                                    table += "<tr><td>{}</td></tr>".format(word)
+                                    print(word, file=f)
                             table += "</table>"
                             response.append(table)
+                        '''
                         table="<table><tr><th>old phrase</th></tr>"
                         for word in phrases:
                             table+="<tr><td>{}</td></tr>".format(word)
                         table += "</table>"
                         response.append(table)
+                        '''
+                        # Finally, force naomi to regenerate all of the
+                        # pocketsphinx vocabularies by deleting all the
+                        # vocabularies/{language}/sphinx/{}/revision
+                        # files:
+                        for revision_file in glob.glob(paths.sub(
+                            'vocabularies',
+                            language,
+                            'sphinx',
+                            "*",
+                            "revision"
+                        )):
+                            os.remove(revision_file)
                     else:
                         continue_next = False
             elif(engine=="pocketsphinx_train"):
