@@ -93,7 +93,7 @@ class PluginInfo(object):
     @plugin_class.setter
     def plugin_class(self, value):
         if self._plugin_class is not None:
-            raise RuntimeError('Changing a plugin class it not allowed!')
+            raise RuntimeError('Changing a plugin class is not allowed!')
         self._plugins_class = value
 
     @property
