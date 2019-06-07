@@ -3,7 +3,7 @@
 These functions "walk" the profile, and return either a boolean variable to
 tell whether an option is configured or not, or the actual value
 """
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 import logging
 from naomi import paths
 import os
@@ -20,9 +20,9 @@ _args = {}
 
 # Store an argument in a static location so it is
 # available to every module
-def set_arg(name,value):
+def set_arg(name, value):
     global _args
-    _args.update({name:value})
+    _args.update({name: value})
 
 
 # Retrieve an argument. Return None if the
@@ -205,12 +205,17 @@ def get_profile_password(path, default=None):
     If the value does not exist in the profile, returns
     either the default value (if there is one) or None.
     """
-    key = get_profile_var(["key"]).encode("utf-8")
+    key = get_profile_key()
     cipher_suite = Fernet(key)
     response = _walk_profile(path, True)
+    try:
+        response = cipher_suite.decrypt(
+            response.encode("utf-8")
+        ).decode("utf-8")
+    except InvalidToken:
+        response = None
     if response is None:
         response = default
-    response = cipher_suite.decrypt(response.encode("utf-8")).decode("utf-8")
     return response
 
 
@@ -279,12 +284,16 @@ def set_profile_var(path, value):
         raise KeyError("Can't write to profile root")
 
 
+def get_profile_key():
+    if not check_profile_var_exists(["key"]):
+        set_profile_var(["key"], Fernet.generate_key().decode("utf-8"))
+    return get_profile_var(["key"]).encode("utf-8")
+
+
 def set_profile_password(path, value):
     global _profile
     # Encrypt value
-    if not check_profile_var_exists(["key"]):
-        set_profile_var(["key"], Fernet.generate_key().decode("utf-8"))
-    key = get_profile_var(["key"]).encode("utf-8")
+    key = get_profile_key()
     cipher_suite = Fernet(key)
     cipher_text = cipher_suite.encrypt(value.encode("utf-8")).decode("utf-8")
     temp = _profile
