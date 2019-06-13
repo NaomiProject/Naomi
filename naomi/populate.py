@@ -557,7 +557,96 @@ def get_timezone():
             )
 
 
-def get_stt_engine():
+# All three of these speech to text engines
+# pull from the same group of stt engines
+def get_passive_stt_engine():
+    print(
+        interface.instruction_text(
+            """
+The passive speech to text engine listens to everything you say to see if it
+can hear the wakeword. It also will pick up some loud noises. Thus, the
+passive speech to text engine may hear things in your home that are not meant
+for or addressed to your personal assistant. We strongly recommend that you use
+a local speech to text engine such as PocketSphinx, DeepSpeech, Kaldi or Julius.
+Of these, Naomi's support for PocketSphinx is the best developed and easiest to
+set up. Pocketsphinx will directly on a Raspberry Pi and uses statistics to
+calculate the best match between what it hears and a list of words. It is very
+fast and lightweight, but not very accurate."""
+        )
+    )
+    profile.set_profile_var(
+        ['passive_stt', 'engine'],
+        get_stt_engine(
+            _("Please select a passive speech to text engine"),
+            profile.get_profile_var(
+                ["passive_stt", "engine"],
+                profile.get_profile_var(
+                    ["active_stt", "engine"],
+                    "sphinx"
+                )
+            )
+        )
+    )
+
+
+def get_active_stt_engine():
+    print(
+        interface.instruction_text(
+            """
+The active speech to text engine will only listen to audio once the passive
+speech to text engine reports that someone has spoken the keyword. Thus, almost
+everything this engine processes will be audio that is addressed towards your
+personal assistant. We still recommend a local speech to text engine, but at
+this level, DeepSpeech, Kaldi or Julius might be a better choice. DeepSpeech
+and Julius can run directly on a Raspberry Pi, although they will be slower
+than PocketSphinx, resulting in some significant pauses. Kaldi may require you
+to set up an additional server for speech to text processing. Google Cloud STT
+is very accurate and easy to set up but does require that you open a google
+account and set up credit card payments (in case you run over your free
+allotment) and, of course, send audio from your home to Google for processing.
+"""
+        )
+    )
+    profile.set_profile_var(
+        ['active_stt', 'engine'],
+        get_stt_engine(
+            _("Please select an active speech to text engine"),
+            profile.get_profile_var(
+                ["active_stt", "engine"],
+                "sphinx"
+            )
+        )
+    )
+
+
+def get_special_stt_engine():
+    print(
+        interface.instruction_text(
+            """
+The special speech to text engine is used in place of the active speech to text
+engine in special circumstances where a specific domain of words can be used,
+such as when controlling an mpd player, or playing a guessing game or text
+adventure. Because of the small domain, we strongly recommend a local speech to
+text engine. PocketSphinx should give good results here. We are currently
+working to train DeepSpeech, Kaldi and Julius for smaller domains."""
+        )
+    )
+    profile.set_profile_var(
+        ['special_stt', 'engine'],
+        get_stt_engine(
+            _("Please select a special speech to text engine"),
+            profile.get_profile_var(
+                ["special_stt", "engine"],
+                profile.get_profile_var(
+                    ["active_stt", "engine"],
+                    "sphinx"
+                )
+            )
+        )
+    )
+
+
+def get_stt_engine(prompt, default):
     # Get a list of STT engines
     stt_engines = {
         "PocketSphinx": "sphinx",
@@ -570,58 +659,54 @@ def get_stt_engine():
     }
 
     print(
-        "    " + interface.instruction_text(
-            _("Please select a speech to text engine.")
-        )
+        "    " + interface.strong_text(prompt)
     )
     print("")
-    response = list(stt_engines.keys())[
+    temp = list(stt_engines.keys())[
         list(stt_engines.values()).index(
-            profile.get_profile_var(
-                ["active_stt", "engine"],
-                "sphinx"
-            )
+            default
         )
     ]
     once = False
-    while not ((once) and (response in stt_engines.keys())):
+    while not ((once) and (temp in stt_engines.keys())):
         once = True
-        response = interface.simple_input(
+        temp = interface.simple_input(
             "    " + interface.instruction_text(
                 _("Available choices:")
             ) + " " + interface.choices_text(
                 ("%s. " % list(stt_engines.keys()))
             ),
-            response
+            temp
         )
-        print("")
         try:
-            profile.set_profile_var(
-                ['active_stt', 'engine'],
-                stt_engines[response]
-            )
+            response = stt_engines[temp]
         except KeyError:
             print(
                 interface.alert_text(
                     _("Unrecognized option.")
                 )
             )
+
     print("")
     # Handle special cases here
-    if(profile.get_profile_var(['active_stt', 'engine']) == 'google'):
-        # Set the api key (I'm not sure this actually works anymore,
-        # need to test)
-        profile.set_profile_var(
-            ['keys', 'GOOGLE_SPEECH'],
-            interface.simple_input(
-                interface.format_prompt(
-                    "!",
-                    _("Please enter your API key:")
-                ),
-                profile.get_profile_var(["keys", "GOOGLE_SPEECH"])
-            )
-        )
-    elif(profile.get_profile_var(['active_stt', 'engine']) == 'watson-stt'):
+    if(response == 'google'):
+        # This section has moved into the setting attribute of the
+        # plugin itself, so no need to repeat it here. Keep this here
+        # until I can move all of these settings into the plugins.
+        # # Set the api key (I'm not sure this actually works anymore,
+        # # need to test)
+        # profile.set_profile_var(
+        #    ["google", "credentials_json"],
+        #     interface.simple_input(
+        #         interface.format_prompt(
+        #             "!",
+        #             _("Please enter the location of your Google API key .json file:")
+        #         ),
+        #         profile.get_profile_var(["google", "credentials_json"])
+        #     )
+        # )
+        pass
+    elif(response == 'watson-stt'):
         username = interface.simple_input(
             interface.format_prompt(
                 "!",
@@ -637,11 +722,7 @@ def get_stt_engine():
                 _("Please enter your watson password:")
             )
         )
-    elif(
-        profile.get_profile_var(
-            ['active_stt', 'engine']
-        ) == 'kaldigstserver-stt'
-    ):
+    elif(response == 'kaldigstserver-stt'):
         print(
             "    " + interface.instruction_text(
                 _("I need your Kaldi g-streamer server url to continue")
@@ -671,7 +752,7 @@ def get_stt_engine():
                 temp
             )
         )
-    elif(profile.get_profile_var(['active_stt', 'engine']) == 'julius-stt'):
+    elif(response == 'julius-stt'):
         # stt_engine: julius
         # julius:
         #     hmmdefs:  '/path/to/your/hmmdefs'
@@ -723,7 +804,7 @@ def get_stt_engine():
             ["julius", "lexicon_archive_member"],
             "VoxForge/VoxForgeDict"
         )
-    elif(profile.get_profile_var(['active_stt', 'engine']) == 'witai-stt'):
+    elif(response == 'witai-stt'):
         witai_token = interface.simple_input(
             interface.format_prompt(
                 "!",
@@ -929,6 +1010,7 @@ def get_stt_engine():
                 ["pocketsphinx", "fst_model"],
                 fst_model
             )
+    return response
 
 
 def get_tts_engine():
@@ -1457,7 +1539,6 @@ def get_output_device():
             heard = interface.simple_yes_no(
                 _("Were you able to hear the beep?")
             )
-            print("Heard = '{}'".format(heard))
             try:
                 if not (heard):
                     print(
@@ -1729,7 +1810,13 @@ def run():
     get_input_device()
     interface.separator()
 
-    get_stt_engine()
+    get_passive_stt_engine()
+    interface.separator()
+
+    get_active_stt_engine()
+    interface.separator()
+
+    get_special_stt_engine()
     interface.separator()
 
     get_tts_engine()
@@ -1759,18 +1846,12 @@ def run():
     interface.separator()
 
     # write to profile
-    print(
-        "    " + interface.status_text(
-            _("Writing to profile...")
-        )
-    )
     profile.save_profile()
+
     interface.separator()
-    print("".join([
-        "    ",
-        interface.success_text(_("Done.")),
+    print(
         interface.normal_text()
-    ]))
+    )
 
 
 if __name__ == "__main__":
