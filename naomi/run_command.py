@@ -3,7 +3,7 @@ import subprocess
 
 
 # This program is just so we can avoid calling subprocess directly, which
-# always causes Codacy to flag the pull request. 
+# always causes Codacy to flag the pull request.
 # The first parameter is an array containing a command, flags and arguments.
 # The second, optional parameter determines how the output of the command is
 # handled:
