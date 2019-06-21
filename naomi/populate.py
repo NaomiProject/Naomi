@@ -14,7 +14,7 @@ try:
     from . import profile
     import pytz
     import re
-    from . import run_command
+    from .run_command import run_command
     import tempfile
     import wave
     from . import i18n
@@ -531,7 +531,10 @@ def get_timezone():
     tz = profile.get_profile_var(["timezone"])
     if not tz:
         try:
-            tz = run_command.run_command(["/bin/cat", "/etc/timezone"])
+            tz = run_command(
+                ["/bin/cat", "/etc/timezone"],
+                capture=1
+            ).stdout.decode('utf-8').strip()
         except OSError:
             tz = None
     tz = interface.simple_input(
@@ -1049,7 +1052,7 @@ def get_tts_engine():
                 )
             ]
         except (KeyError, ValueError):
-            response = "Festival"
+            response = "Flite"
         print(
             "    " + interface.instruction_text(
                 _("Please select a text to speech (TTS) engine.")
