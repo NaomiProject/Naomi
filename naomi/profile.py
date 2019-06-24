@@ -190,7 +190,7 @@ def get_profile_var(path, default=None):
     If the value does not exist in the profile, returns
     either the default value (if there is one) or None.
     """
-    if(type(path) is str):
+    if(isinstance(path, str)):
         path = [path]
     response = _walk_profile(path, True)
     if response is None:
@@ -208,7 +208,7 @@ def get_profile_password(path, default=None):
     If the value does not exist in the profile, returns
     either the default value (if there is one) or None.
     """
-    if(type(path) is str):
+    if(isinstance(path, str)):
         path = [path]
     key = get_profile_key()
     cipher_suite = Fernet(key)
@@ -231,7 +231,7 @@ def get_profile_flag(path, default=None):
     or not. If the value does not exist, returns default or
     None
     """
-    if(type(path) is str):
+    if(isinstance(path, str)):
         path = [path]
     # Get the variable value
     temp = str(_walk_profile(path, True))
@@ -254,7 +254,7 @@ def check_profile_var_exists(path):
     Option is passed in as a list so that if we need to check
     if a suboption exists, we can pass the full path to it.
     """
-    if(type(path) is str):
+    if(isinstance(path, str)):
         path = [path]
     return _walk_profile(path, False)
 
@@ -263,7 +263,7 @@ def _walk_profile(path, returnValue):
     """
     Function to walk the profile
     """
-    if(type(path) is str):
+    if(isinstance(path, str)):
         path = [path]
     profile = get_profile()
     found = True
