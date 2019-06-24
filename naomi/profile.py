@@ -289,7 +289,7 @@ def _walk_profile(path, returnValue):
 def set_profile_var(path, value):
     global _profile
     temp = _profile
-    if(type(path) is str):
+    if(isinstance(path, str)):
         path = [path]
     if len(path) > 0:
         last = path[0]

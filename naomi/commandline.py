@@ -99,7 +99,7 @@ class commandline(object):
     # of that value (+ 1 so that the first item
     # does not return zero which is interpreted
     # as false), otherwise return None
-    @classmethod
+    @staticmethod
     def check_for_value(_value, _list):
         try:
             temp = _list.index(_value) + 1
@@ -111,77 +111,77 @@ class commandline(object):
     # Colors
     # This returns to whatever the default color is in the terminal
     # properties
-    @classmethod
+    @staticmethod
     def normal_text(text=""):
         return t.normal + text
 
     # this is for emphasis
-    @classmethod
+    @staticmethod
     def strong_text(text=""):
         return t.bold_cyan + text
 
     # this is for instructions
-    @classmethod
+    @staticmethod
     def instruction_text(text=""):
         return t.bold_blue + text
 
     # This is for the brackets surrounding the icon
-    @classmethod
+    @staticmethod
     def icon_text(text=""):
         return t.bold_cyan + text
 
     # This is for question text
-    @classmethod
+    @staticmethod
     def question_text(text=""):
         return t.bold_blue + text
 
     # This is for the question icon
-    @classmethod
+    @staticmethod
     def question_icon(text=""):
         return t.bold_yellow + text
 
     # This is for alert text
-    @classmethod
+    @staticmethod
     def alert_text(text=""):
         return t.bold_red + text
 
     # This is for the alert icon
-    @classmethod
+    @staticmethod
     def alert_icon(text=""):
         return t.bold_cyan + text
 
     # This is for listing choices available to choose from
-    @classmethod
+    @staticmethod
     def choices_text(text=""):
         return t.bold_cyan + text
 
     # This is for displaying the default choice when there is a default
-    @classmethod
+    @staticmethod
     def default_text(text=""):
         return t.normal + text
 
     # This is for the prompt after the default text
-    @classmethod
+    @staticmethod
     def default_prompt(text="// "):
         return t.bold_blue + text
 
     # This is the color for the text as the user is entering a choice
-    @classmethod
+    @staticmethod
     def input_text(text=""):
         return t.normal + text
 
     # This is text for a url
-    @classmethod
+    @staticmethod
     def url_text(text=""):
         return t.bold_cyan + t.underline + text + t.normal
 
     # This is for a status message
-    @classmethod
+    @staticmethod
     def status_text(text=""):
         return t.bold_magenta + text
 
     # This is a positive alert
-    @classmethod
+    @staticmethod
     def success_text(text=""):
         return t.bold_green + text
 
@@ -227,8 +227,7 @@ class commandline(object):
     # AaronC - simple_password is a lot like simple_input, just uses
     # getpass instead of input. It does not encrypt the password. That
     # happens after the password has been validated.
-    @classmethod
-    def simple_password(prompt, default=None):
+    def simple_password(self, prompt, default=None):
         prompt += ": "
         prompt += self.input_text()
         # don't use print here so no automatic carriage return
@@ -400,7 +399,7 @@ class commandline(object):
 
     # FIXME I should put a default for listboxes here so that by default
     # any value chosen has to be a member of the options.key() list.
-    @classmethod
+    @staticmethod
     def validate(definition, response):
         valid = False
         if(len(response.strip()) == 0):
@@ -441,7 +440,7 @@ class commandline(object):
                         valid = False
         return valid
 
-    @classmethod
+    @staticmethod
     def separator():
         print("")
         print("")
