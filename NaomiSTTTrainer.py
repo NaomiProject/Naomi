@@ -842,7 +842,6 @@ if __name__ == '__main__':
     p_args = parser.parse_args()
     if p_args.debug:
         Debug = True
-        profile.set_arg
         print("Setting logging level to DEBUG")
         logging.basicConfig(
             level=logging.DEBUG

@@ -405,13 +405,6 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                                 print(word, file=f)
                         table += "</table>"
                         response.append(table)
-                    '''
-                    table="<table><tr><th>old phrase</th></tr>"
-                    for word in phrases:
-                        table+="<tr><td>{}</td></tr>".format(word)
-                    table += "</table>"
-                    response.append(table)
-                    '''
                     # Finally, force naomi to regenerate all of the
                     # pocketsphinx vocabularies by deleting all the
                     # vocabularies/{language}/sphinx/{}/revision

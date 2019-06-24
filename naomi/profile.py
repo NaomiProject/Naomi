@@ -272,7 +272,7 @@ def _walk_profile(path, returnValue):
             # This happens if a value that was a string
             # is converted to a list. So overwrite the
             # string value with an array.
-            if(type(profile) is not dict):
+            if(not isinstance(profile, dict)):
                 profile = {}
             profile = profile[branch]
         except KeyError:
@@ -315,7 +315,7 @@ def get_profile_key():
 
 def set_profile_password(path, value):
     global _profile
-    if(type(path) is str):
+    if(isinstance(path, str)):
         path = [path]
     # Encrypt value
     key = get_profile_key()

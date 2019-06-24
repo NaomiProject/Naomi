@@ -99,8 +99,8 @@ class commandline(object):
     # of that value (+ 1 so that the first item
     # does not return zero which is interpreted
     # as false), otherwise return None
-    def check_for_value(self, _value, _list):
-
+    @classmethod
+    def check_for_value(_value, _list):
         try:
             temp = _list.index(_value) + 1
         except ValueError:
@@ -111,63 +111,78 @@ class commandline(object):
     # Colors
     # This returns to whatever the default color is in the terminal
     # properties
-    def normal_text(self, text=""):
+    @classmethod
+    def normal_text(text=""):
         return t.normal + text
 
     # this is for emphasis
-    def strong_text(self, text=""):
+    @classmethod
+    def strong_text(text=""):
         return t.bold_cyan + text
 
     # this is for instructions
-    def instruction_text(self, text=""):
+    @classmethod
+    def instruction_text(text=""):
         return t.bold_blue + text
 
     # This is for the brackets surrounding the icon
-    def icon_text(self, text=""):
+    @classmethod
+    def icon_text(text=""):
         return t.bold_cyan + text
 
     # This is for question text
-    def question_text(self, text=""):
+    @classmethod
+    def question_text(text=""):
         return t.bold_blue + text
 
     # This is for the question icon
-    def question_icon(self, text=""):
+    @classmethod
+    def question_icon(text=""):
         return t.bold_yellow + text
 
     # This is for alert text
-    def alert_text(self, text=""):
+    @classmethod
+    def alert_text(text=""):
         return t.bold_red + text
 
     # This is for the alert icon
-    def alert_icon(self, text=""):
+    @classmethod
+    def alert_icon(text=""):
         return t.bold_cyan + text
 
     # This is for listing choices available to choose from
-    def choices_text(self, text=""):
+    @classmethod
+    def choices_text(text=""):
         return t.bold_cyan + text
 
     # This is for displaying the default choice when there is a default
-    def default_text(self, text=""):
+    @classmethod
+    def default_text(text=""):
         return t.normal + text
 
     # This is for the prompt after the default text
-    def default_prompt(self, text="// "):
+    @classmethod
+    def default_prompt(text="// "):
         return t.bold_blue + text
 
     # This is the color for the text as the user is entering a choice
-    def input_text(self, text=""):
+    @classmethod
+    def input_text(text=""):
         return t.normal + text
 
     # This is text for a url
-    def url_text(self, text=""):
+    @classmethod
+    def url_text(text=""):
         return t.bold_cyan + t.underline + text + t.normal
 
     # This is for a status message
-    def status_text(self, text=""):
+    @classmethod
+    def status_text(text=""):
         return t.bold_magenta + text
 
     # This is a positive alert
-    def success_text(self, text=""):
+    @classmethod
+    def success_text(text=""):
         return t.bold_green + text
 
     def format_prompt(self, icon, prompt):
@@ -212,7 +227,8 @@ class commandline(object):
     # AaronC - simple_password is a lot like simple_input, just uses
     # getpass instead of input. It does not encrypt the password. That
     # happens after the password has been validated.
-    def simple_password(self, prompt, default=None):
+    @classmethod
+    def simple_password(prompt, default=None):
         prompt += ": "
         prompt += self.input_text()
         # don't use print here so no automatic carriage return
@@ -384,7 +400,8 @@ class commandline(object):
 
     # FIXME I should put a default for listboxes here so that by default
     # any value chosen has to be a member of the options.key() list.
-    def validate(self, definition, response):
+    @classmethod
+    def validate(definition, response):
         valid = False
         if(len(response.strip()) == 0):
             valid = True
@@ -424,7 +441,8 @@ class commandline(object):
                         valid = False
         return valid
 
-    def separator(self):
+    @classmethod
+    def separator():
         print("")
         print("")
         print("")
