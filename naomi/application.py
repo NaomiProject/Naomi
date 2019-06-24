@@ -3,7 +3,6 @@ import logging
 import pkg_resources
 from . import audioengine
 from . import brain
-from . import commandline
 from . import paths
 from . import pluginstore
 from . import populate
@@ -34,6 +33,21 @@ class Naomi(object):
         self._logger = logging.getLogger(__name__)
         if repopulate:
             populate.run()
+        if(profile.get_arg("Profile_missing", False)):
+            print("Your config file does not exist.")
+            text_input = input(
+                " ".join([
+                    "Would you like to answer a few ",
+                    "questions to create a new one? (y/N): "
+                ])
+            )
+            if(text_input.strip()[:1].upper() == "Y"):
+                populate.run()
+            else:
+                print("Cannot continue. Exiting.")
+                quit()
+        # FIXME We still need this next line because a lot of
+        # plugins still use self.config
         self.config = profile.get_profile()
         language = profile.get_profile_var(['language'])
         if(not language):
@@ -315,9 +329,7 @@ class Naomi(object):
             active_stt_slug,
             category='stt'
         )
-        active_phrases = self.brain.get_plugin_phrases()
-        if(passive_listen):
-            active_phrases.append(keyword)
+        active_phrases = self.brain.get_plugin_phrases(passive_listen)
         active_stt_plugin = active_stt_plugin_info.plugin_class(
             'default',
             active_phrases,
