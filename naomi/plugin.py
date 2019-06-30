@@ -9,7 +9,7 @@ from . import paths
 from . import vocabcompiler
 from . import audioengine
 from . import i18n
-from . import commandline as interface
+from . import commandline
 from . import profile
 
 
@@ -17,12 +17,14 @@ class GenericPlugin(object):
     def __init__(self, info, config):
         self._plugin_config = config
         self._plugin_info = info
-        if(not hasattr(self,'_logger')):
+        if(not hasattr(self, '_logger')):
             self._logger = logging.getLogger(__name__)
+        interface = commandline.commandline()
+        self.language = interface.get_language(once=True)
         translations = i18n.parse_translations(paths.data('locale'))
-        translator = i18n.GettextMixin(translations, profile.get_profile())
+        translator = i18n.GettextMixin(translations)
         _ = translator.gettext
-        if hasattr(self,'settings'):
+        if hasattr(self, 'settings'):
             # set a variable here to tell us if all settings are
             # completed or not
             # If all settings do not currently exist, go ahead and
@@ -42,7 +44,7 @@ class GenericPlugin(object):
                     "Configuring {}"
                 ).format(
                     self._plugin_info.name
-                )));
+                )))
                 for setting in self.settings:
                     interface.get_setting(
                         setting, self.settings[setting]
@@ -70,7 +72,9 @@ class SpeechHandlerPlugin(GenericPlugin, i18n.GettextMixin):
     def __init__(self, *args, **kwargs):
         GenericPlugin.__init__(self, *args, **kwargs)
         i18n.GettextMixin.__init__(
-            self, self.info.translations, self.profile)
+            self,
+            self.info.translations
+        )
 
     @abc.abstractmethod
     def get_phrases(self):
@@ -237,3 +241,7 @@ class VADPlugin(GenericPlugin):
                             )
                         )
                         return recording_frames
+
+
+class STTTrainerPlugin(GenericPlugin):
+    pass

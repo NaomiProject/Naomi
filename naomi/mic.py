@@ -128,6 +128,14 @@ class Mic(object):
                 ")"
             ]))
             self._conn.commit()
+            c.execute(" ".join([
+                "create table if not exists trainings(",
+                "   datetime,",
+                "   engine,",
+                "   description",
+                ")"
+            ]))
+            self._conn.commit()
             c.execute(
                 '''insert into audiolog values(?,?,?,?,?,'','','','')''',
                 (

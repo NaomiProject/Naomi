@@ -7,8 +7,6 @@ from cryptography.fernet import Fernet, InvalidToken
 import logging
 from naomi import paths
 import os
-from . import populate
-import re
 import shutil
 import yaml
 
@@ -27,8 +25,8 @@ def set_arg(name, value):
 
 # Retrieve an argument. Return None if the
 # argument is not set.
-def get_arg(name):
-    value = None
+def get_arg(name, default=None):
+    value = default
     if(name in _args.keys()):
         value = _args[name]
     return value
@@ -145,20 +143,15 @@ def get_profile(command=""):
                     _profile_read = True
                     config_read = True
             except IOError:
-                print("Your config file does not exist.")
-                text_input = input(
-                    " ".join([
-                        "Would you like to answer a few ",
-                        "questions to create a new one? "
-                    ])
+                _logger.info(
+                    "{} is missing".format(new_configfile)
                 )
-                if(re.match(r'\s*[Yy]', text_input)):
-                    _profile_read = True
-                    populate.run()
-                    config_read = True
-                else:
-                    print("Cannot continue. Exiting.")
-                    quit()
+                # set up a temporary profile just to be able to ask the
+                # question of which language the user wants.
+                _profile = {'language': 'en-US'}
+                _profile_read = True
+                set_arg("Profile_missing", True)
+                raise
             except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
                 _logger.error(
                     "Unable to parse config file: {} {}".format(
@@ -187,16 +180,26 @@ def save_profile():
         yaml.dump(get_profile(), outputFile, default_flow_style=False)
 
 
+def get(path, default=None):
+    return get_profile_var(path, default)
+
+
 def get_profile_var(path, default=None):
     """
     Get a value from the profile, whether it exists or not
     If the value does not exist in the profile, returns
     either the default value (if there is one) or None.
     """
+    if(isinstance(path, str)):
+        path = [path]
     response = _walk_profile(path, True)
     if response is None:
         response = default
     return response
+
+
+def get_password(path, default=None):
+    return get_profile_password(path, default)
 
 
 def get_profile_password(path, default=None):
@@ -205,13 +208,16 @@ def get_profile_password(path, default=None):
     If the value does not exist in the profile, returns
     either the default value (if there is one) or None.
     """
+    if(isinstance(path, str)):
+        path = [path]
     key = get_profile_key()
     cipher_suite = Fernet(key)
     response = _walk_profile(path, True)
     try:
-        response = cipher_suite.decrypt(
-            response.encode("utf-8")
-        ).decode("utf-8")
+        if(hasattr(response, "encode")):
+            response = cipher_suite.decrypt(
+                response.encode("utf-8")
+            ).decode("utf-8")
     except InvalidToken:
         response = None
     if response is None:
@@ -225,6 +231,8 @@ def get_profile_flag(path, default=None):
     or not. If the value does not exist, returns default or
     None
     """
+    if(isinstance(path, str)):
+        path = [path]
     # Get the variable value
     temp = str(_walk_profile(path, True))
     if(temp is None):
@@ -236,12 +244,18 @@ def get_profile_flag(path, default=None):
     return response
 
 
+def exists(path):
+    return check_profile_var_exists(path)
+
+
 def check_profile_var_exists(path):
     """
     Checks if an option exists in the test_profile it is using.
     Option is passed in as a list so that if we need to check
     if a suboption exists, we can pass the full path to it.
     """
+    if(isinstance(path, str)):
+        path = [path]
     return _walk_profile(path, False)
 
 
@@ -249,10 +263,17 @@ def _walk_profile(path, returnValue):
     """
     Function to walk the profile
     """
+    if(isinstance(path, str)):
+        path = [path]
     profile = get_profile()
     found = True
     for branch in path:
         try:
+            # This happens if a value that was a string
+            # is converted to a list. So overwrite the
+            # string value with an array.
+            if(not isinstance(profile, dict)):
+                profile = {}
             profile = profile[branch]
         except KeyError:
             found = False
@@ -268,6 +289,8 @@ def _walk_profile(path, returnValue):
 def set_profile_var(path, value):
     global _profile
     temp = _profile
+    if(isinstance(path, str)):
+        path = [path]
     if len(path) > 0:
         last = path[0]
         if len(path) > 1:
@@ -292,6 +315,8 @@ def get_profile_key():
 
 def set_profile_password(path, value):
     global _profile
+    if(isinstance(path, str)):
+        path = [path]
     # Encrypt value
     key = get_profile_key()
     cipher_suite = Fernet(key)

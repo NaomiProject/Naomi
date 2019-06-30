@@ -61,19 +61,26 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
                 }
             ),
             (
-                ("email", "imap"), {
+                ("email", "imap", "server"), {
                     "title": _("Please enter your IMAP email server url"),
                     "description": _("I need to know the url of your email server if you want me to check your emails for you"),
                     "active": lambda: True if len(profile.get_profile_var(["email", "address"]).strip()) > 0 else False
                 }
             ),
             (
-                ("email", "port"), {
+                ("email", "imap", "port"), {
                     "title": _("Please enter your IMAP email server port"),
                     "description": _("I need to know I have the correct port to access your email"),
                     "default": "993",
                     "validation": "int",
                     "active": lambda: True if(len(profile.get_profile_var(["email", "address"]).strip()) > 0) and (len(profile.get_profile_var(["email", "imap"])) > 0) else False
+                }
+            ),
+            (
+                ("email", "username"), {
+                    "title": _("Please enter your IMAP email server username"),
+                    "description": _("Your username is normally either your full email address or just the part before the '@' symbol"),
+                    "active": lambda: True if len(profile.get_profile_var(["email", "address"]).strip()) > 0 else False
                 }
             ),
             (
@@ -88,7 +95,7 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
     )
 
     def get_phrases(self):
-        return [self.gettext("EMAIL"), self.gettext("INBOX")]
+        return [self.gettext("CHECK EMAIL"), self.gettext("CHECK INBOX")]
 
     def fetch_unread_emails(self, since=None, markRead=False, limit=None):
         """
@@ -102,14 +109,14 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
             Returns:
             A list of unread email objects.
         """
-        host = profile.get_profile_var(['email', 'imap'])
-        port = int(profile.get_profile_var(['email', 'port'], "993"))
+        host = profile.get_profile_var(['email', 'imap', 'server'])
+        port = int(profile.get_profile_var(['email', 'imap', 'port'], "993"))
         conn = imaplib.IMAP4_SSL(host, port)
         conn.debug = 0
 
         password = profile.get_profile_password(['email', 'password'])
         conn.login(
-            profile.get_profile_var(['email', 'address']),
+            profile.get_profile_var(['email', 'username']),
             password
         )
         conn.select(readonly=(not markRead))
@@ -197,4 +204,4 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
         Arguments:
         text -- user-input, typically transcribed speech
         """
-        return any(p.lower() in text.lower() for p in self.get_phrases())
+        return any(p.lower() in text.lower() for p in ['EMAIL', 'INBOX'])
