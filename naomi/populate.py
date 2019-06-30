@@ -4,7 +4,7 @@ try:
     import audioop
     from blessings import Terminal
     import collections
-    from . import commandline as interface
+    from . import commandline
     import feedparser
     from getpass import getpass
     import math
@@ -26,15 +26,6 @@ except SystemError:
     print("Please run the Populate.py program from the")
     print("Naomi root directory.")
     quit()
-
-
-# properties
-t = Terminal()
-# given values in select_language()
-_ = None
-affirmative = ""
-negative = ""
-audioengine_plugins = None
 
 
 # AaronC = for detecting audio. Switch to using VAD engine.
@@ -1538,7 +1529,6 @@ def get_output_device():
                 chunksize=output_chunksize,
                 add_padding=output_add_padding
             )
-            # pdb.set_trace()
             heard = interface.simple_yes_no(
                 _("Were you able to hear the beep?")
             )
@@ -1792,7 +1782,7 @@ def run():
     interface.get_language()
     interface.separator()
     translations = i18n.parse_translations(paths.data('locale'))
-    translator = i18n.GettextMixin(translations, profile.get_profile())
+    translator = i18n.GettextMixin(translations)
     _ = translator.gettext
 
     precheck()
@@ -1856,6 +1846,30 @@ def run():
         interface.normal_text()
     )
 
+
+# properties
+t = Terminal()
+# given values in select_language()
+_ = None
+affirmative = ""
+negative = ""
+audioengine_plugins = None
+try:
+    interface = commandline.commandline()
+except FileNotFoundError:
+    # Here I am catching what should be that the
+    # profile.yml file is not found.
+    # The first call to commandline() would have
+    # set up a temporary profile in the catch in
+    # profile.get_profile(), so this second
+    # call should work now and set up the commandline
+    # object so we can interact with the user
+    # Eventually, once all the settings have been
+    # pulled into the settings system, we won't need
+    # to explicitely run populate.run() anymore,
+    # the settings will be requested just because they
+    # are missing.
+    interface = commandline.commandline()
 
 if __name__ == "__main__":
     print("This program can no longer be run directly.")
