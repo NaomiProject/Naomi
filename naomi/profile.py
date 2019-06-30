@@ -177,6 +177,8 @@ def get_profile(command=""):
 
 def save_profile():
     global _profile, _profile_read, _test_profile
+    if not _profile_read:
+        get_profile()
     # I want to make sure the user's profile is never accidentally overwritten
     # with a test profile.
     if not _test_profile:
@@ -193,6 +195,8 @@ def get_profile_var(path, default=None):
     If the value does not exist in the profile, returns
     either the default value (if there is one) or None.
     """
+    if not _profile_read:
+        get_profile()
     response = _walk_profile(path, True)
     if response is None:
         response = default
@@ -205,6 +209,8 @@ def get_profile_password(path, default=None):
     If the value does not exist in the profile, returns
     either the default value (if there is one) or None.
     """
+    if not _profile_read:
+        get_profile()
     key = get_profile_key()
     cipher_suite = Fernet(key)
     response = _walk_profile(path, True)
@@ -226,6 +232,8 @@ def get_profile_flag(path, default=None):
     None
     """
     # Get the variable value
+    if not _profile_read:
+        get_profile()
     temp = str(_walk_profile(path, True))
     if(temp is None):
         # the variable is not defined
@@ -242,6 +250,8 @@ def check_profile_var_exists(path):
     Option is passed in as a list so that if we need to check
     if a suboption exists, we can pass the full path to it.
     """
+    if not _profile_read:
+        get_profile()
     return _walk_profile(path, False)
 
 
@@ -267,6 +277,8 @@ def _walk_profile(path, returnValue):
 
 def set_profile_var(path, value):
     global _profile
+    if not _profile_read:
+        get_profile()
     temp = _profile
     if len(path) > 0:
         last = path[0]
@@ -285,6 +297,8 @@ def set_profile_var(path, value):
 
 
 def get_profile_key():
+    if not _profile_read:
+        get_profile()
     if not check_profile_var_exists(["key"]):
         set_profile_var(["key"], Fernet.generate_key().decode("utf-8"))
     return get_profile_var(["key"]).encode("utf-8")
