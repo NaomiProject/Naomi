@@ -1,0 +1,9 @@
+[Plugin]
+Name = Adapt Pocketsphinx
+Version = 1.0.0
+URL = http://naomiproject.github.io/
+Description = Adapt a Pockesphinx model to respond to your voice
+
+[Author]
+Name = Naomi Project
+URL = http://naomiproject.github.io/

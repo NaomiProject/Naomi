@@ -1,3 +1,4 @@
+from naomi import profile
 import gettext
 import os.path
 import re
@@ -24,16 +25,14 @@ def parse_translations(translations_path):
 
 
 class GettextMixin(object):
-    def __init__(self, translations, config):
-        self.__config = config
+    # *args below because we used to have to push the profile in each time
+    # the config variable is no longer used, so these can be removed now.
+    def __init__(self, translations, *args):
         self.__translations = translations
         self.__get_translations()
 
     def __get_translations(self):
-        try:
-            language = self.__config['language']
-        except KeyError:
-            language = 'en-US'
+        language = profile.get(['language'], 'en-US')
 
         if language not in self.__translations:
             raise ValueError('Unsupported Language!')

@@ -1,6 +1,6 @@
 import os
-import tempfile
 import logging
+from collections import OrderedDict
 from naomi import plugin
 from naomi import profile
 
@@ -36,7 +36,7 @@ class GoogleTTSPlugin(plugin.TTSPlugin):
 
         self.language = profile.get_profile_var(['language'], 'en-US')
         self.client   = texttospeech.TextToSpeechClient()
-        # Build the voice request, select the language code and the ssml
+        # Build the voice request, select the language code and 
         # voice gender ("neutral")
         self.voice =    texttospeech.types.VoiceSelectionParams(
                         language_code=self.language,
@@ -56,16 +56,4 @@ class GoogleTTSPlugin(plugin.TTSPlugin):
                                                 self.voice, 
                                                 self.audio_config
                                                 )
-
-        # The response's audio_content is binary.
-        #with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as f:
-        #    tmpfile = f.name
-        #    with open(tmpfile, 'wb') as out:
-        #        # Write the response to the output file.
-        #        out.write(response.audio_content)
-        #        print('Audio content written to file ' + tmpfile)
-
-            #data = self.mp3_to_wave(tmpfile)
-        #os.remove(tmpfile)
-        #return data
         return response.audio_content
