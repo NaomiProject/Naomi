@@ -5,18 +5,17 @@ import importlib
 import inspect
 import sys
 import configparser
-
 from . import i18n
 from . import plugin
 
 MANDATORY_OPTIONS = (
     ('Plugin', 'Name'),
-    ('Plugin', 'Version'),
-    ('Plugin', 'License')
+    ('Plugin', 'Version')
 )
-
+LICENSE_OPTION = ('Plugin', 'License')
 PLUGIN_INFO_FILENAME = "plugin.info"
 PLUGIN_TRANSLATIONS_DIRNAME = "locale"
+PLUGIN_LICENSE_FILENAME = "LICENSE"
 
 
 class PluginError(Exception):
@@ -32,9 +31,34 @@ def parse_info_file(infofile_path):
     for option in MANDATORY_OPTIONS:
         if not cp.has_option(*option):
             options_missing = True
-            logger.debug("Plugin info file '%s' missing value '%s'",
-                         infofile_path, option)
-
+            logger.debug(
+                "Plugin info file '{}' missing value '{}'".format(
+                    infofile_path,
+                    option
+                )
+            )
+    # Check to see if the LICENSE.txt file exists
+    # in the plugin directory
+    license_file_full_path = os.path.join(
+        os.path.dirname(infofile_path),
+        PLUGIN_LICENSE_FILENAME
+    )
+    if(
+        not os.path.isfile(license_file_full_path)
+    )and(
+        not os.path.isfile(license_file_full_path + ".md")
+    )and(
+        not os.path.isfile(license_file_full_path + ".txt")
+    )and(
+        not cp.has_option(*LICENSE_OPTION)
+    ):
+        options_missing = True
+        logger.debug(
+            "Missing license. Add file {} or 'License' value to '{}'".format(
+                license_file_full_path,
+                infofile_path
+            )
+        )
     if options_missing:
         raise PluginError("Info file is missing values!")
 
@@ -93,7 +117,7 @@ class PluginInfo(object):
     @plugin_class.setter
     def plugin_class(self, value):
         if self._plugin_class is not None:
-            raise RuntimeError('Changing a plugin class it not allowed!')
+            raise RuntimeError('Changing a plugin class is not allowed!')
         self._plugins_class = value
 
     @property
@@ -146,6 +170,7 @@ class PluginStore(object):
             'speechhandler': plugin.SpeechHandlerPlugin,
             'tts': plugin.TTSPlugin,
             'stt': plugin.STTPlugin,
+            'stt_trainer': plugin.STTTrainerPlugin,
             'vad': plugin.VADPlugin
         }
 
