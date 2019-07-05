@@ -5,6 +5,9 @@ from naomi import plugin
 from naomi import profile
 
 from google.cloud import texttospeech
+from google.oauth2 import service_account
+
+google_env_var = "GOOGLE_APPLICATION_CREDENTIALS"
 
 
 class GoogleTTSPlugin(plugin.TTSPlugin):
@@ -16,18 +19,17 @@ class GoogleTTSPlugin(plugin.TTSPlugin):
     """
 
     settings = OrderedDict(
-                [(
-                ("google", "authentication_json"), {
-                     "type": "file",
-                     "title": "Google application credentials (*.json)",
-                     "description": "This is a json file that allows your assistant to use the Google Speech API for converting speech to text. You need to generate and download an google cloud API key. Details here: https://cloud.google.com/speech-to-text/docs/quickstart-protocol",                                                                                                                                                
-                     "validation": lambda filename: os.path.exists(os.path.expanduser(filename)),
-                     "invalidmsg": "File {} does not exist".format,
-                     "default": os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-                    }
-                 )]
-                )
-
+        [(
+            ("google", "credentials_json"), {
+                "type": "file",
+                "title": "Google application credentials (*.json)",
+                "description": "This is a json file that allows your assistant to use the Google Speech API for converting speech to text. You need to generate and download an google cloud API key. Details here: https://cloud.google.com/speech-to-text/docs/quickstart-protocol",
+                "validation": lambda filename: os.path.exists(os.path.expanduser(filename)),
+                "invalidmsg": "File {} does not exist".format,
+                "default": os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+            }
+        )]
+    )
 
     def __init__(self, *args, **kwargs):
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
@@ -35,8 +37,18 @@ class GoogleTTSPlugin(plugin.TTSPlugin):
         self._logger = logging.getLogger(__name__)
 
         self.language = profile.get_profile_var(['language'], 'en-US')
-        self.client   = texttospeech.TextToSpeechClient()
-        # Build the voice request, select the language code and 
+
+        if(google_env_var in os.environ):
+            self.client = texttospeech.TextToSpeechClient()
+        else:
+            credentials_json = profile.get_profile_var(
+                ["google", "credentials_json"]
+            )
+            cred = service_account.Credentials.from_service_account_file(
+                credentials_json
+            )
+            self.client = texttospeech.TextToSpeechClient(credentials=cred)
+        # Build the voice request, select the language code and
         # voice gender ("neutral")
         self.voice =    texttospeech.types.VoiceSelectionParams(
                         language_code=self.language,
@@ -52,8 +64,8 @@ class GoogleTTSPlugin(plugin.TTSPlugin):
 
         # Perform the text-to-speech request on the text input with the selected
         # voice parameters and audio file type
-        response = self.client.synthesize_speech(synthesis_input, 
-                                                self.voice, 
+        response = self.client.synthesize_speech(synthesis_input,
+                                                self.voice,
                                                 self.audio_config
                                                 )
         return response.audio_content

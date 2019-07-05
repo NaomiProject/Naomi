@@ -557,13 +557,14 @@ def get_passive_stt_engine():
     print(
         interface.instruction_text(
             """
-The passive speech to text engine listens to everything you say to see if it
-can hear the wakeword. It also will pick up some loud noises. Thus, the
-passive speech to text engine may hear things in your home that are not meant
-for or addressed to your personal assistant. We strongly recommend that you use
-a local speech to text engine such as PocketSphinx, DeepSpeech, Kaldi or Julius.
+The passive speech to text engine listens to everything you say scanning for
+its keyphrase. It also will pick up some loud noises. Thus, the passive speech
+to text engine may hear things in your home that are not meant for or addressed
+to your personal assistant. We strongly recommend that you use a local speech
+to text engine such as PocketSphinx, DeepSpeech, Kaldi or Julius.
+
 Of these, Naomi's support for PocketSphinx is the best developed and easiest to
-set up. Pocketsphinx will directly on a Raspberry Pi and uses statistics to
+set up. Pocketsphinx will run directly on a Raspberry Pi and uses statistics to
 calculate the best match between what it hears and a list of words. It is very
 fast and lightweight, but not very accurate."""
         )
@@ -588,16 +589,21 @@ def get_active_stt_engine():
         interface.instruction_text(
             """
 The active speech to text engine will only listen to audio once the passive
-speech to text engine reports that someone has spoken the keyword. Thus, almost
-everything this engine processes will be audio that is addressed towards your
-personal assistant. We still recommend a local speech to text engine, but at
-this level, DeepSpeech, Kaldi or Julius might be a better choice. DeepSpeech
+speech to text engine reports hearing the keyword. Thus, almost everything
+this engine processes will be audio that is addressed towards your
+personal assistant.
+
+We still recommend a local speech to text engine, but at this level,
+DeepSpeech, Kaldi or Julius might be a better choice. DeepSpeech
 and Julius can run directly on a Raspberry Pi, although they will be slower
 than PocketSphinx, resulting in some significant pauses. Kaldi may require you
-to set up an additional server for speech to text processing. Google Cloud STT
-is very accurate and easy to set up but does require that you open a google
-account and set up credit card payments (in case you run over your free
-allotment) and, of course, send audio from your home to Google for processing.
+to set up an additional server for speech to text processing.
+
+Google Cloud STT is very accurate and easy to set up but does require that you
+open a google account and set up credit card payments (in case you run over
+your free allotment) and, of course, send audio from your home to Google for
+processing. Only use Google Cloud STT if you are comfortable with Google
+personell having access to things spoken in your home.
 """
         )
     )
@@ -646,7 +652,7 @@ def get_stt_engine(prompt, default):
         "PocketSphinx": "sphinx",
         "DeepSpeech": "deepspeech-stt",
         "Wit.AI": "witai-stt",
-        "Google Voice": "google",
+        "Google Voice": "google-stt",
         "Watson": "watson-stt",
         "Kaldi": "kaldigstserver-stt",
         "Julius": "julius-stt"
@@ -683,22 +689,7 @@ def get_stt_engine(prompt, default):
 
     print("")
     # Handle special cases here
-    if(response == 'google'):
-        # This section has moved into the setting attribute of the
-        # plugin itself, so no need to repeat it here. Keep this here
-        # until I can move all of these settings into the plugins.
-        # # Set the api key (I'm not sure this actually works anymore,
-        # # need to test)
-        # profile.set_profile_var(
-        #    ["google", "credentials_json"],
-        #     interface.simple_input(
-        #         interface.format_prompt(
-        #             "!",
-        #             _("Please enter the location of your Google API key .json file:")
-        #         ),
-        #         profile.get_profile_var(["google", "credentials_json"])
-        #     )
-        # )
+    if(response == 'google-stt'):
         pass
     elif(response == 'watson-stt'):
         username = interface.simple_input(
@@ -1051,7 +1042,7 @@ def get_tts_engine():
         )
         print("")
         once = False
-        while not ((once) and (response in tts_engines.keys())):
+        while not ((once) and (response in tts_engines)):
             once = True
             response = interface.simple_input(
                 interface.format_prompt(
@@ -1172,6 +1163,8 @@ def get_tts_engine():
                     interface.success_text("./Naomi.py --repopulate")
                 ]))
         elif(profile.get_profile_var(["tts_engine"]) == "pico-tts"):
+            voice_chosen = True
+        elif(profile.get_profile_var(["tts_engine"]) == "google-tts"):
             voice_chosen = True
         elif(profile.get_profile_var(["tts_engine"]) == "ivona-tts"):
             voice_chosen = True
