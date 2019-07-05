@@ -1,5 +1,5 @@
 [Plugin]
-Name = google
+Name = google-stt
 Version = 1.0.0
 License = MIT
 URL = http://naomiproject.github.io/
