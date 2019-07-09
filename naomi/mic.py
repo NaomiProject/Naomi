@@ -99,6 +99,10 @@ class Mic(object):
             # Get the slug from the engine
             if(sample_type.lower() == "active"):
                 engine = type(self.active_stt_engine).__name__
+                if(self.active_stt_engine._vocabulary_name != "default"):
+                    # we are in a special mode. We don't want to put words
+                    # from this sample into the default standard_phrases
+                    sample_type = self.active_stt_engine._vocabulary_name
             else:
                 # noise (empty transcript) response is only from passive engine
                 engine = type(self.passive_stt_engine).__name__

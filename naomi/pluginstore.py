@@ -5,8 +5,9 @@ import importlib
 import inspect
 import sys
 import configparser
-from . import i18n
-from . import plugin
+from naomi import i18n
+from naomi import plugin
+from naomi import profile
 
 MANDATORY_OPTIONS = (
     ('Plugin', 'Name'),
@@ -64,6 +65,28 @@ def parse_info_file(infofile_path):
 
     logger.debug("Plugin info file '%s' parsed successfully!", infofile_path)
     return cp
+
+
+# Standardize printing of a plugin row from the repository CSV
+def printplugin(plugin, installed_plugins, *args, **kwargs):
+    version = ""
+    message = " [{}]".format(plugin["Version"])
+    if(plugin["Category"] in installed_plugins):
+        if(plugin["Name"] in installed_plugins[plugin["Category"]]):
+            version = installed_plugins[plugin["Category"]][plugin["Name"]]
+            if(plugin["Version"] == version):
+                message = " [{} installed]".format(plugin["Version"])
+            else:
+                message = " [{} installed: {}]".format(
+                    plugin["Version"],
+                    version
+                )
+    print("{} ({}{}) - {}".format(
+        plugin["Name"],
+        plugin["Category"],
+        message,
+        plugin["Description"]
+    ))
 
 
 def parse_plugin_class(module_name, plugin_directory, superclasses):
@@ -160,8 +183,9 @@ class PluginInfo(object):
 class PluginStore(object):
     def __init__(self, plugin_dirs):
         self._logger = logging.getLogger(__name__)
-        self._plugin_dirs = [os.path.abspath(os.path.expanduser(d))
-                             for d in plugin_dirs]
+        self._plugin_dirs = [
+            os.path.abspath(os.path.expanduser(d)) for d in plugin_dirs
+        ]
         self._plugins = {}
         self._info_fname = PLUGIN_INFO_FILENAME
         self._translations_dirname = PLUGIN_TRANSLATIONS_DIRNAME
@@ -175,40 +199,83 @@ class PluginStore(object):
         }
 
     def detect_plugins(self):
+        # Set a flag to let ourselves know if we
+        # detected any new plugins this launch,
+        # so we can save the changes to the profile.
+        save_profile = False
         for plugin_dir in self._plugin_dirs:
             for root, dirs, files in os.walk(plugin_dir, topdown=True):
                 for name in files:
                     if name != self._info_fname:
                         continue
-                    try:
-                        self._logger.debug("Found plugin candidate at: %s",
-                                           root)
-                        plugin_info = self.parse_plugin(root)
-                    except Exception as e:
-                        reason = ''
-                        if hasattr(e, 'strerror') and e.strerror:
-                            reason = e.strerror
-                            if hasattr(e, 'errno') and e.errno:
-                                reason += ' [Errno %d]' % e.errno
-                        elif hasattr(e, 'message'):
-                            reason = e.message
-                        elif hasattr(e, 'msg'):
-                            reason = e.msg
-                        if not reason:
-                            reason = 'Unknown'
-                        self._logger.warning(
-                            "Plugin at '%s' skipped! (Reason: %s)",
-                            root, reason,
-                            exc_info=self._logger.isEnabledFor(logging.DEBUG))
-                    else:
-                        if plugin_info.name in self._plugins:
-                            self._logger.warning("Duplicate plugin: %s",
-                                                 plugin_info.name)
+                    category = os.path.split(root[len(plugin_dir) + 1:])[0]
+                    cp = parse_info_file(os.path.join(root, name))
+                    if not profile.check_profile_var_exists(
+                        ['plugins', category, cp['Plugin']['name']]
+                    ):
+                        profile.set_profile_var(
+                            ['plugins', category, cp['Plugin']['name']],
+                            'Enabled'
+                        )
+                        save_profile = True
+                    self._logger.debug(
+                        "Found plugin candidate at: {}".format(root)
+                    )
+                    if(profile.get_profile_flag(
+                        ['plugins', category, cp['Plugin']['name']],
+                        False
+                    )):
+                        try:
+                            plugin_info = self.parse_plugin(root)
+                        except Exception as e:
+                            reason = ''
+                            if hasattr(e, 'strerror') and e.strerror:
+                                reason = e.strerror
+                                if hasattr(e, 'errno') and e.errno:
+                                    reason += ' [Errno %d]' % e.errno
+                            elif hasattr(e, 'message'):
+                                reason = e.message
+                            elif hasattr(e, 'msg'):
+                                reason = e.msg
+                            if not reason:
+                                reason = 'Unknown'
+                            if self._logger.isEnabledFor(logging.DEBUG):
+                                self._logger.warning(
+                                    "Plugin at '{}' skipped! (Reason: {})".format(
+                                        root,
+                                        reason
+                                    ),
+                                    exc_info=True
+                                )
+                            else:
+                                print("Plugin at '{}' skipped! (Reason: {})".format(
+                                    root,
+                                    reason
+                                ))
                         else:
-                            self._plugins[plugin_info.name] = plugin_info
-                            self._logger.debug("Found valid plugin: %s %s",
-                                               plugin_info.name,
-                                               plugin_info.version)
+                            if plugin_info.name in self._plugins:
+                                self._logger.warning(
+                                    "Duplicate plugin: {}".format(
+                                        plugin_info.name
+                                    )
+                                )
+                            else:
+                                self._plugins[plugin_info.name] = plugin_info
+                                self._logger.debug(
+                                    "Found valid plugin: {} {}".format(
+                                        plugin_info.name,
+                                        plugin_info.version
+                                    )
+                                )
+                    else:
+                        self._logger.debug(
+                            "{} plugin {} disabled".format(
+                                category,
+                                cp['Plugin']['name']
+                            )
+                        )
+        if(save_profile):
+            profile.save_profile()
 
     def parse_plugin(self, plugin_directory):
         infofile_path = os.path.join(plugin_directory, self._info_fname)
