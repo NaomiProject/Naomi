@@ -481,7 +481,10 @@ class Naomi(object):
         # It would be good if we could actually read the csv file line by line
         # rather than reading it all into memory, but that might require some
         # custom code. For right now, we'll use the python tools.
-        with urllib.request.urlopen(url) as f:
+        # I should set up a context manager for this anyway, since I want to
+        # turn this into a routine that processes multiple urls from a
+        # text file, instead of repeating the same code three times
+        with urllib.request.urlopen(urllib.request.Request(url)) as f:  #nosec
             file_contents = f.read().decode('utf-8')
         csvfile = csv.DictReader(
             io.StringIO(file_contents),
