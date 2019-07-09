@@ -508,10 +508,11 @@ class Naomi(object):
     def install_plugins(self, plugins):
         flat_plugins = [y for x in plugins for y in x]
         url = "https://raw.githubusercontent.com/aaronchantrill/naomi-plugins/master/plugins.csv"
+        urlreq = urllib.request.Request(url)
         # It would be good if we could actually read the csv file line by line
         # rather than reading it all into memory, but that might require some
         # custom code. For right now, we'll use the python tools.
-        with urllib.request.urlopen(url) as f:
+        with urllib.request.urlopen(urlreq) as f:
             file_contents = f.read().decode('utf-8')
         csvfile = csv.DictReader(io.StringIO(file_contents))
         for row in csvfile:
@@ -604,7 +605,7 @@ class Naomi(object):
                             break
                     else:
                         rev += 1
-                        install_to = "_".join(install_to_base, str(rev))
+                        install_to = "_".join([install_to_base, str(rev)])
                 if(fail):
                     continue
                 if(not os.path.isdir(install_to)):
@@ -674,11 +675,12 @@ class Naomi(object):
     def update_plugins(self, plugins):
         flat_plugins = [y for x in plugins for y in x]
         url = "https://raw.githubusercontent.com/aaronchantrill/naomi-plugins/master/plugins.csv"
+        urlreq = urllib.request.Request(url)
         if len(flat_plugins) == 0:
             # Get a list of all the currently installed plugins
             for info in self.plugins._plugins.values():
                 flat_plugins.append(info.name)
-        with urllib.request.urlopen(url) as f:
+        with urllib.request.urlopen(urlreq) as f:
             file_contents = f.read().decode('utf-8')
         csvfile = csv.DictReader(io.StringIO(file_contents))
         for row in csvfile:
@@ -796,7 +798,8 @@ class Naomi(object):
                     "has it been disabled?"
                 ))
 
-    def enable_plugins(self, plugins):
+    @staticmethod
+    def enable_plugins(plugins):
         flat_plugins = [y for x in plugins for y in x]
         plugins_enabled = 0
         for plugin in flat_plugins:
