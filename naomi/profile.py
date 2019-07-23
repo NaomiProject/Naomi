@@ -172,7 +172,7 @@ def save_profile():
     global _profile, _profile_read, _test_profile
     # I want to make sure the user's profile is never accidentally overwritten
     # with a test profile.
-    if not _test_profile:
+    if((_profile_read)and(not _test_profile)):
         # Save the profile
         if not os.path.exists(paths.CONFIG_PATH):
             os.makedirs(paths.CONFIG_PATH)
@@ -239,7 +239,7 @@ def get_profile_flag(path, default=None):
         # the variable is not defined
         temp = default
     response = False
-    if str(temp).strip().lower() in ('true', 'yes', 'on'):
+    if str(temp).strip().lower() in ('true', 'yes', 'on', 'enabled'):
         response = True
     return response
 
@@ -307,6 +307,27 @@ def set_profile_var(path, value):
         raise KeyError("Can't write to profile root")
 
 
+def remove_profile_var(path):
+    global _profile
+    if(isinstance(path, str)):
+        path = [path]
+    temp = get_profile()
+    if len(path) > 0:
+        last = path[0]
+        if len(path) > 1:
+            for branch in path[1:]:
+                try:
+                    if not isinstance(temp[last], dict):
+                        return
+                except KeyError:
+                    return
+                temp = temp[last]
+                last = branch
+        del temp[last]
+    else:
+        raise KeyError("Can't remove profile root")
+
+
 def get_profile_key():
     if not check_profile_var_exists(["key"]):
         set_profile_var(["key"], Fernet.generate_key().decode("utf-8"))
@@ -321,7 +342,7 @@ def set_profile_password(path, value):
     key = get_profile_key()
     cipher_suite = Fernet(key)
     cipher_text = cipher_suite.encrypt(value.encode("utf-8")).decode("utf-8")
-    temp = _profile
+    temp = get_profile()
     if len(path) > 0:
         last = path[0]
         if len(path) > 1:
