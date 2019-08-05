@@ -56,7 +56,12 @@ class SNRPlugin(plugin.VADPlugin):
                 [key * value for key, value in self.distribution.items()]
             ) / items
             stddev = math.sqrt((sum1 - (items * (mean ** 2))) / (items - 1))
-            self._threshold = mean + (stddev * 1.5)
+            self._threshold = mean + (
+                stddev * profile.get(
+                    ['snr_vad', 'tolerance'],
+                    1
+                )
+            )
             if(self._logger.getEffectiveLevel() < logging.WARN):
                 print(
                     "\t".join([

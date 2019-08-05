@@ -347,19 +347,8 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                                 if phrase:
                                     phrases.append(phrase)
                     # Get all the phrases that the plugins are looking for
-                    # There are two locations where plugins can be stored,
-                    # either in the plugins directory, or in the
-                    # ~/.naomi/plugins/ directory.
-                    # Right now, we always put plugins directly into the
-                    # plugins directory, but when we get to the point where
-                    # Naomi can be installed as a package, we will want to
-                    # put user plugins into the user config directory when
-                    # using the plugin manager
-                    ps = pluginstore.PluginStore([
-                        paths.config("plugins"),
-                        "plugins"
-                    ])
-                    ps.detect_plugins()
+                    ps = pluginstore.PluginStore()
+                    ps.detect_plugins("speechhandler")
                     for info in ps.get_plugins_by_category("speechhandler"):
                         try:
                             plugin = info.plugin_class(
