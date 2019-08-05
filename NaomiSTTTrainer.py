@@ -847,8 +847,12 @@ if __name__ == '__main__':
             level=logging.DEBUG
         )
     # Load the STT_Trainer plugins
-    plugins = pluginstore.PluginStore()
-    plugins.detect_plugins('stt_trainer')
+    plugin_directories = [
+        paths.config('plugins', 'stt_trainer'),
+        pkg_resources.resource_filename(__name__, os.path.join('plugins', 'stt_trainer'))
+    ]
+    plugins = pluginstore.PluginStore(plugin_directories)
+    plugins.detect_plugins()
     port = 8080
     url = "http://{}:{}".format(socket.getfqdn(), str(port))
     print("Listening on port {}".format(str(port)))
