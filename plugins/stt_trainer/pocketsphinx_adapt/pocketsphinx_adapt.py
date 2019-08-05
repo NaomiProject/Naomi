@@ -122,7 +122,7 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                         'clone',
                         '-b',
                         self.language,
-                        'git@github.com:aaronchantrill/CMUSphinx_standard_language_models.git',
+                        'git@github.com:NaomiProject/CMUSphinx_standard_language_models.git',
                         self.standard_dir
                     ]
                     completedprocess = run_command(cmd)

@@ -9,7 +9,8 @@ import shutil
 import urllib
 from . import audioengine
 from . import brain
-from . import commandline
+from . import commandline as interface
+from . import i18n
 from . import paths
 from . import pluginstore
 from . import populate
@@ -24,6 +25,14 @@ from .strcmpci import strcmpci
 USE_STANDARD_MIC = 0
 USE_TEXT_MIC = 1
 USE_BATCH_MIC = 2
+DEFAULT_PLUGIN_URL = "/".join([
+    "https://raw.githubusercontent.com",
+    "NaomiProject",
+    "naomi-plugins",
+    "master",
+    "plugins.csv"
+])
+_ = None
 
 
 class Naomi(object):
@@ -39,8 +48,9 @@ class Naomi(object):
         save_active_audio=False,
         save_noise=False
     ):
+        global _
         self._logger = logging.getLogger(__name__)
-        self._interface = commandline.commandline()
+        self._interface = interface.commandline()
         if repopulate:
             populate.run()
         if(profile.get_arg("Profile_missing", False)):
@@ -59,6 +69,10 @@ class Naomi(object):
         # FIXME We still need this next line because a lot of
         # plugins still use self.config
         self.config = profile.get_profile()
+        translations = i18n.parse_translations(paths.data('locale'))
+        translator = i18n.GettextMixin(translations)
+        _ = translator.gettext
+
         language = profile.get_profile_var(['language'])
         if(not language):
             language = 'en-US'
@@ -441,6 +455,48 @@ class Naomi(object):
         self.conversation = conversation.Conversation(
             self.mic, self.brain, self.config)
 
+    def list_audio_devices(self):
+        for device in self.audio.get_devices():
+            device.print_device_info(
+                verbose=(self._logger.getEffectiveLevel() == logging.DEBUG))
+
+    # This is a standardized function for getting all the plugins available
+    # from all the repositories the user has enabled in their profile
+    @staticmethod
+    def get_remote_plugin_repositories(plugins=None):
+        csvfile = []
+        repositories = profile.get(
+            ['plugin_repositories'],
+            {DEFAULT_PLUGIN_URL: "Enabled"}
+        )
+        for url in repositories:
+            if repositories[url] == 'Enabled':
+                # It would be good if we could actually read the csv file line
+                # by line rather than reading it all into memory, but that
+                # might require some custom code. For right now, we'll use the
+                # python tools.
+                # I should set up a context manager for this anyway, since I
+                # am processing multiple urls.
+                # The nosec comment on the next line has to be there to say
+                # "Yes, I know I'm doing something unsecure" or codacy has a
+                # fit
+                with urllib.request.urlopen(urllib.request.Request(url)) as f:  #nosec
+                    file_contents = f.read().decode('utf-8')
+                for line in csv.DictReader(
+                    io.StringIO(file_contents),
+                    delimiter=',',
+                    quotechar='"'
+                ):
+                    if line not in csvfile:
+                        csvfile.append(line)
+        # Because the plugin information can be coming from multiple sources,
+        # we are now in a situation where different versions of a plugin can
+        # be listed in multiple repositories, and there is definitely the
+        # possibility of two different repositories having different plugins
+        # with the same name, or different versions of the same plugin.
+        return csvfile
+
+    # Functions for plugin management
     def list_active_plugins(self):
         plugins = self.plugins.get_plugins()
         len_name = max(len(info.name) for info in plugins)
@@ -457,12 +513,6 @@ class Naomi(object):
                 info.description
             ))
 
-    def list_audio_devices(self):
-        for device in self.audio.get_devices():
-            device.print_device_info(
-                verbose=(self._logger.getEffectiveLevel() == logging.DEBUG))
-
-    # Functions for plugin management
     def list_available_plugins(self, categories):
         installed_plugins = {}
         for category in self.plugins._categories_map:
@@ -473,24 +523,11 @@ class Naomi(object):
                     if(category not in installed_plugins):
                         installed_plugins[category] = {}
                     installed_plugins[category][info.name] = info.version
-        print("Available Plugins:")
+        print(_("Available Plugins:"))
         # Get the list of available plugins:
         # NaomiProject: https://raw.githubusercontent.com/NaomiProject/naomi-plugins/master/plugins.csv
         # aaronchantrill: https://raw.githubusercontent.com/aaronchantrill/naomi-plugins/master/plugins.csv
-        url = "https://raw.githubusercontent.com/aaronchantrill/naomi-plugins/master/plugins.csv"
-        # It would be good if we could actually read the csv file line by line
-        # rather than reading it all into memory, but that might require some
-        # custom code. For right now, we'll use the python tools.
-        # I should set up a context manager for this anyway, since I want to
-        # turn this into a routine that processes multiple urls from a
-        # text file, instead of repeating the same code three times
-        with urllib.request.urlopen(urllib.request.Request(url)) as f:  #nosec
-            file_contents = f.read().decode('utf-8')
-        csvfile = csv.DictReader(
-            io.StringIO(file_contents),
-            delimiter=',',
-            quotechar='"'
-        )
+        csvfile = self.get_remote_plugin_repositories()
         print_plugins = {}
         flat_cat = [y for x in categories for y in x]
         for row in csvfile:
@@ -500,7 +537,7 @@ class Naomi(object):
             else:
                 print_plugins[row["Name"].lower()] = row
         if(len(print_plugins) == 0):
-            print("Sorry, no plugins matched")
+            print(_("Sorry, no plugins matched"))
         else:
             for name in sorted(print_plugins):
                 pluginstore.printplugin(print_plugins[name], installed_plugins)
@@ -510,20 +547,12 @@ class Naomi(object):
     # is one, or python_requirements.txt if there is one.
     def install_plugins(self, plugins):
         flat_plugins = [y for x in plugins for y in x]
-        url = "https://raw.githubusercontent.com/aaronchantrill/naomi-plugins/master/plugins.csv"
-        # It would be good if we could actually read the csv file line by line
-        # rather than reading it all into memory, but that might require some
-        # custom code. For right now, we'll use the python tools.
-        # Codacy, I understand that the user can put something dumb into
-        # url. Chill.
-        with urllib.request.urlopen(urllib.request.Request(url)) as f:  #nosec
-            file_contents = f.read().decode('utf-8')
-        csvfile = csv.DictReader(io.StringIO(file_contents))
+        csvfile = self.get_remote_plugin_repositories(flat_plugins)
         for row in csvfile:
             # Keeps track of any failure inside the naming while loop
             fail = False
             if(row['Name'] in flat_plugins):
-                print('Installing {}...'.format(row['Name']))
+                print(_('Installing {}...').format(row['Name']))
                 # install it to the user's plugin directory
                 install_dir = paths.sub(
                     os.path.join(
@@ -584,7 +613,7 @@ class Naomi(object):
                             # break out of the loop
                             break
                         else:
-                            print('Unable to reset plugin "{}": {}'.format(
+                            print(_('Unable to reset plugin "{}": {}').format(
                                 row['Name'],
                                 completed_process.stderr.decode("UTF-8")
                             ))
@@ -601,7 +630,7 @@ class Naomi(object):
                             # break out of the while loop
                             break
                         else:
-                            print('Unable to update plugin "{}": {}'.format(
+                            print(_('Unable to update plugin "{}": {}').format(
                                 row['Name'],
                                 completed_process.stderr.decode("UTF-8")
                             ))
@@ -642,8 +671,8 @@ class Naomi(object):
                         # repository. At that point, anyone who installed
                         # the plugin would get whatever the current state
                         # is.
-                        print("Failed to set head to the vetted commit")
-                        print("Deleting {}".format(install_to))
+                        print(_("Failed to set head to the vetted commit"))
+                        print(_("Deleting {}".format(install_to)))
                         shutil.rmtree(install_to)
                     else:
                         # check and see if there is an install.py file
@@ -671,55 +700,42 @@ class Naomi(object):
                         # that up now.
                         self.plugins.detect_plugins()
                         self.enable_plugins([[row['Name']]])
-                        print('Plugin "{}" installed to {}'.format(
+                        print(_('Plugin "{}" installed to {}').format(
                             row['Name'],
                             install_to
                         ))
 
     def update_plugins(self, plugins):
         flat_plugins = [y for x in plugins for y in x]
-        url = "https://raw.githubusercontent.com/aaronchantrill/naomi-plugins/master/plugins.csv"
-        if len(flat_plugins) == 0:
-            # Get a list of all the currently installed plugins
-            for info in self.plugins._plugins.values():
-                flat_plugins.append(info.name)
-        # For Codacy:
-        # I understand that the following line can be an issue, and as the
-        # moment I might be able to appease you by copying the url into the
-        # line below, but eventually I want to read the location of the
-        # repository from a text file so the user can control what store
-        # they are using, so eventually the URL will not be hard coded.
-        # Yes, a user could put something dumb in there. That is up to the
-        # user.
-        with urllib.request.urlopen(urllib.request.Request(url)) as f:  #nosec
-            file_contents = f.read().decode('utf-8')
-        csvfile = csv.DictReader(io.StringIO(file_contents))
+        csvfile = self.get_remote_plugin_repositories()
         for row in csvfile:
             if(row['Name'] in flat_plugins):
-                print("Updating {}".format(row["Name"]))
                 # Find the plugin
+                found_plugin = False
                 for info in self.plugins._plugins.values():
                     if(info.name == row["Name"]):
+                        found_plugin = True
+                        plugin_dir = info._path
+                        # FIXME check if the urls are the same, if not, then
+                        # this is probably a different plugin with the same
+                        # name.
+                        # It probably makes the most sense to check the
+                        # git remote -v origin url, since that is the one
+                        # actually used, and the url in info may be unreliable
+                        print(_("Updating {}").format(row["Name"]))
                         if(info.version == row['Version']):
                             print(
-                                "{} versions identical, updating anyway".format(
-                                    row['Name']
+                                _("{} versions identical ({}), updating anyway").format(
+                                    row['Name'],
+                                    info.version
                                 )
                             )
                         else:
-                            print("Updating {} from {} to {}".format(
+                            print(_("Updating {} from {} to {}").format(
                                 row["Name"],
                                 info.version,
                                 row["Version"]
                             ))
-                        # There is some duplication of effort here.
-                        # Basically everything below this point
-                        # is identical to parts of the install
-                        # script. This could be solved by generating
-                        # an error if attempting to install a plugin
-                        # that is already installed rather than updating
-                        # it.
-                        plugin_dir = info._path
                         # checkout the specific commit
                         cmd = [
                             'git',
@@ -731,17 +747,7 @@ class Naomi(object):
                         completed_process = run_command(cmd, 2)
                         if(completed_process.returncode != 0):
                             print(completed_process.stderr.decode("UTF-8"))
-                            # At this point, we have a potentially rogue
-                            # copy of the plugin, with code that has not
-                            # been vetted.
-                            # A developer could easily force this condition
-                            # by simply deleting the vetted commit from their
-                            # repository. At that point, anyone who installed
-                            # the plugin would get whatever the current state
-                            # is.
-                            print("Failed to set head to the vetted commit")
-                            print("Deleting {}".format(plugin_dir))
-                            shutil.rmtree(plugin_dir)
+                            print(_("Failed to set head to the vetted commit"))
                         else:
                             # check and see if there is an install.py file
                             install_file = os.path.join(
@@ -771,12 +777,17 @@ class Naomi(object):
                             # need to set that up now.
                             self.plugins.detect_plugins()
                             self.enable_plugins([[row['Name']]])
-                            print('Plugin "{}" Updated'.format(row['Name']))
+                            print(_('Plugin "{}" Updated').format(row['Name']))
+                if not found_plugin:
+                    print(_("Plugin {} was not found.").format(row["Name"]))
+                    print(_("Are you sure it is installed?"))
 
     # I don't know what we want this to do. If this is a plugin in the user's
     # directory, then delete it. If it is a directory in the main naomi dir,
     # then disable it.
-    def remove_plugins(self, plugins):
+    # If silent is set to True, then do not prompt the user. This allows
+    # this function to be used from a script.
+    def remove_plugins(self, plugins, silent=False):
         flat_plugins = [y for x in plugins for y in x]
         for plugin in flat_plugins:
             plugin_found = False
@@ -785,12 +796,12 @@ class Naomi(object):
                     plugin_found = True
                     if(paths.sub() == info._path[:len(paths.sub())]):
                         print('Removing plugin "{}"'.format(info.name))
-                        if(self._interface.simple_yes_no("Are you sure?")):
+                        if(silent or self._interface.simple_yes_no("Are you sure?")):
                             # FIXME Remove the plugin line from profile.yml
                             # This would require using del or pop to remove
                             # the key, but would have to traverse the tree
                             # until we reach the key first.
-                            print("Removing directory: {}".format(info._path))
+                            print(_("Removing directory: {}").format(info._path))
                             shutil.rmtree(info._path)
                             plugin_category = info._path.split(os.path.sep)[
                                 len(info._path.split(os.path.sep)) - 2
@@ -804,9 +815,9 @@ class Naomi(object):
                     else:
                         self.disable_plugins([[info.name]])
             if(not plugin_found):
-                print('Could not locate plugin "{}" ({})'.format(
+                print(_('Could not locate plugin "{}" ({})').format(
                     plugin,
-                    "has it been disabled?"
+                    _("has it been disabled?")
                 ))
 
     @staticmethod
@@ -824,7 +835,7 @@ class Naomi(object):
                         category,
                         plugin
                     ]) == 'Enabled'):
-                        print('Plugin "{}" is enabled'.format(plugin))
+                        print(_('Plugin "{}" is enabled').format(plugin))
                         plugin_enabled = True
                     else:
                         profile.set_profile_var(
@@ -835,11 +846,11 @@ class Naomi(object):
                             ],
                             'Enabled'
                         )
-                        print('Enabled plugin "{}"'.format(plugin))
+                        print(_('Enabled plugin "{}"').format(plugin))
                         plugin_enabled = True
                         plugins_enabled += 1
             if(not plugin_enabled):
-                print('Unable to enable plugin "{}"'.format(plugin))
+                print(_('Unable to enable plugin "{}"').format(plugin))
         if(plugins_enabled > 0):
             profile.save_profile()
 
@@ -873,7 +884,7 @@ class Naomi(object):
                     plugin_category,
                     plugin
                 ]) == 'Disabled'):
-                    print('Plugin "{}" is disabled'.format(plugin))
+                    print(_('Plugin "{}" is disabled').format(plugin))
                     plugin_disabled = True
                 else:
                     profile.set_profile_var(
@@ -884,11 +895,11 @@ class Naomi(object):
                         ],
                         'Disabled'
                     )
-                    print('Disabled plugin "{}"'.format(plugin))
+                    print(_('Disabled plugin "{}"').format(plugin))
                     plugin_disabled = True
                     plugins_disabled += 1
             if(not plugin_disabled):
-                print('Unable to disable plugin "{}"'.format(plugin))
+                print(_('Unable to disable plugin "{}"').format(plugin))
         if(plugins_disabled > 0):
             profile.save_profile()
 
