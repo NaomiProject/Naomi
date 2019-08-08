@@ -2,11 +2,13 @@ import logging
 import re
 import subprocess
 import tempfile
+import unittest
 from naomi import diagnose
 from naomi import plugin
 from . import juliusvocab
 
 if not diagnose.check_executable('julius'):
+    raise unittest.SkipTest("Skipping julius, 'julius' executable not found")
     raise ImportError("Can't find julius executable")
 
 

@@ -4,10 +4,12 @@ import pipes
 import re
 import subprocess
 import tempfile
+import unittest
 from naomi import diagnose
 from naomi import plugin
 
 if not diagnose.check_executable('espeak'):
+    raise unittest.SkipTest("Skipping espeak, executable not found")
     raise ImportError("espeak executable not found!")
 
 

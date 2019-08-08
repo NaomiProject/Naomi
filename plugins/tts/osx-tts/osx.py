@@ -4,23 +4,24 @@ import pipes
 import platform
 import subprocess
 import tempfile
+import unittest
 from naomi import diagnose
 from naomi import plugin
 
+
 EXECUTABLE = 'say'
 
-if not platform.system().lower() == 'darwin':
-    raise ImportError('Invalid platform!')
 
-if not diagnose.check_executable(EXECUTABLE):
-    raise ImportError("Executable '%s' not found!" % EXECUTABLE)
-
-
+@unittest.skipIf(not platform.system().lower() == 'darwin', "Skipping test, not running on OSX")
 class MacOSXTTSPlugin(plugin.TTSPlugin):
     """
     Uses the OS X built-in 'say' command
     """
     def __init__(self, *args, **kwargs):
+        if not platform.system().lower() == 'darwin':
+            raise ImportError('Invalid platform!')
+        if not diagnose.check_executable(EXECUTABLE):
+            raise ImportError("Executable '%s' not found!" % EXECUTABLE)
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
         self._logger = logging.getLogger(__name__)
         self._logger.warning("This TTS plugin doesn't have multilanguage " +
