@@ -85,6 +85,7 @@ class TestBrain(unittest.TestCase):
     #            extracted_phrases = my_brain.get_standard_phrases()
     #    self.assertEqual(expected_phrases, extracted_phrases)
 
-    def assertListContains(self, child_list, parent_list):
+    @staticmethod
+    def assertListContains(child_list, parent_list):
         if not all(elem in parent_list for elem in child_list):
             raise AttributeError("list does not contain elements of other list")
