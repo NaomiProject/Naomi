@@ -6,6 +6,7 @@ import inspect
 import sys
 import configparser
 from naomi import i18n
+from naomi import paths
 from naomi import plugin
 from naomi import profile
 
@@ -181,8 +182,20 @@ class PluginInfo(object):
 
 
 class PluginStore(object):
-    def __init__(self, plugin_dirs):
+    def __init__(self, plugin_dirs=None):
         self._logger = logging.getLogger(__name__)
+        if(plugin_dirs is None):
+            plugin_dirs = [
+                paths.sub('plugins'),
+                os.path.join(
+                    os.path.dirname(
+                        os.path.dirname(
+                            os.path.abspath(__file__)
+                        )
+                    ),
+                    "plugins"
+                )
+            ]
         self._plugin_dirs = [
             os.path.abspath(os.path.expanduser(d)) for d in plugin_dirs
         ]
@@ -198,7 +211,7 @@ class PluginStore(object):
             'vad': plugin.VADPlugin
         }
 
-    def detect_plugins(self):
+    def detect_plugins(self, category=None):
         # Set a flag to let ourselves know if we
         # detected any new plugins this launch,
         # so we can save the changes to the profile.
@@ -208,72 +221,81 @@ class PluginStore(object):
                 for name in files:
                     if name != self._info_fname:
                         continue
-                    category = os.path.split(root[len(plugin_dir) + 1:])[0]
-                    cp = parse_info_file(os.path.join(root, name))
-                    if not profile.check_profile_var_exists(
-                        ['plugins', category, cp['Plugin']['name']]
+                    current_category = os.path.split(
+                        root[len(plugin_dir) + 1:]
+                    )[0]
+                    if current_category == (
+                        current_category if category is None else category
                     ):
-                        profile.set_profile_var(
-                            ['plugins', category, cp['Plugin']['name']],
-                            'Enabled'
+                        cp = parse_info_file(os.path.join(root, name))
+                        if not profile.check_profile_var_exists(
+                            ['plugins', current_category, cp['Plugin']['name']]
+                        ):
+                            profile.set_profile_var(
+                                [
+                                    'plugins',
+                                    current_category,
+                                    cp['Plugin']['name']
+                                ],
+                                'Enabled'
+                            )
+                            save_profile = True
+                        self._logger.debug(
+                            "Found plugin candidate at: {}".format(root)
                         )
-                        save_profile = True
-                    self._logger.debug(
-                        "Found plugin candidate at: {}".format(root)
-                    )
-                    if(profile.get_profile_flag(
-                        ['plugins', category, cp['Plugin']['name']],
-                        False
-                    )):
-                        try:
-                            plugin_info = self.parse_plugin(root)
-                        except Exception as e:
-                            reason = ''
-                            if hasattr(e, 'strerror') and e.strerror:
-                                reason = e.strerror
-                                if hasattr(e, 'errno') and e.errno:
-                                    reason += ' [Errno %d]' % e.errno
-                            elif hasattr(e, 'message'):
-                                reason = e.message
-                            elif hasattr(e, 'msg'):
-                                reason = e.msg
-                            if not reason:
-                                reason = 'Unknown'
-                            if self._logger.isEnabledFor(logging.DEBUG):
-                                self._logger.warning(
-                                    "Plugin at '{}' skipped! (Reason: {})".format(
+                        if(profile.get_profile_flag(
+                            ['plugins', current_category, cp['Plugin']['name']],
+                            False
+                        )):
+                            try:
+                                plugin_info = self.parse_plugin(root)
+                            except Exception as e:
+                                reason = ''
+                                if hasattr(e, 'strerror') and e.strerror:
+                                    reason = e.strerror
+                                    if hasattr(e, 'errno') and e.errno:
+                                        reason += ' [Errno %d]' % e.errno
+                                elif hasattr(e, 'message'):
+                                    reason = e.message
+                                elif hasattr(e, 'msg'):
+                                    reason = e.msg
+                                if not reason:
+                                    reason = 'Unknown'
+                                if self._logger.isEnabledFor(logging.DEBUG):
+                                    self._logger.warning(
+                                        "Plugin at '{}' skipped! (Reason: {})".format(
+                                            root,
+                                            reason
+                                        ),
+                                        exc_info=True
+                                    )
+                                else:
+                                    print("Plugin at '{}' skipped! (Reason: {})".format(
                                         root,
                                         reason
-                                    ),
-                                    exc_info=True
-                                )
+                                    ))
                             else:
-                                print("Plugin at '{}' skipped! (Reason: {})".format(
-                                    root,
-                                    reason
-                                ))
+                                if plugin_info.name in self._plugins:
+                                    self._logger.warning(
+                                        "Duplicate plugin: {}".format(
+                                            plugin_info.name
+                                        )
+                                    )
+                                else:
+                                    self._plugins[plugin_info.name] = plugin_info
+                                    self._logger.debug(
+                                        "Found valid plugin: {} {}".format(
+                                            plugin_info.name,
+                                            plugin_info.version
+                                        )
+                                    )
                         else:
-                            if plugin_info.name in self._plugins:
-                                self._logger.warning(
-                                    "Duplicate plugin: {}".format(
-                                        plugin_info.name
-                                    )
+                            self._logger.debug(
+                                "{} plugin {} disabled".format(
+                                    current_category,
+                                    cp['Plugin']['name']
                                 )
-                            else:
-                                self._plugins[plugin_info.name] = plugin_info
-                                self._logger.debug(
-                                    "Found valid plugin: {} {}".format(
-                                        plugin_info.name,
-                                        plugin_info.version
-                                    )
-                                )
-                    else:
-                        self._logger.debug(
-                            "{} plugin {} disabled".format(
-                                category,
-                                cp['Plugin']['name']
                             )
-                        )
         if(save_profile):
             profile.save_profile()
 

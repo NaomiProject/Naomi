@@ -60,8 +60,55 @@ class WebRTCPlugin(plugin.VADPlugin):
             )
 
     def _voice_detected(self, frame):
+        self._logger.info("Frame length: {} bytes".format(len(frame)))
+        # The frame length must be either .01, .02 or .02 ms.
+        # Sometimes the audio card will refuse to obey the chunksize
+        # directive. In this case, we have to cut down the sample to
+        # fit the next smaller unit
+        sample_rate = self._input_device._input_rate
+        input_bytes = self._input_device._input_bits / 8
+        sample_length = len(frame) / input_bytes / sample_rate
+        if not((
+            sample_length == 0.01
+        )or(
+            sample_length == 0.02
+        )or(
+            sample_length == 0.03
+        )):
+            if(sample_length > 0.03):
+                self._logger.info(
+                    "Reducing buf length from {} to {} (0.03 seconds)".format(
+                        len(frame),
+                        int(sample_rate * input_bytes * 0.03)
+                    )
+                )
+                frame = frame[:int(sample_rate * input_bytes * 0.03)]
+            elif(sample_length > 0.02):
+                self._logger.info(
+                    "Reducing buf length from {} to {} (0.02 seconds)".format(
+                        len(frame),
+                        int(sample_rate * input_bytes * 0.02)
+                    )
+                )
+                frame = frame[:int(sample_rate * input_bytes * 0.02)]
+            elif(sample_length > 0.01):
+                self._logger.info(
+                    "Reducing buf length from {} to {} (0.01 seconds)".format(
+                        len(frame),
+                        int(sample_rate * input_bytes * 0.01)
+                    )
+                )
+                frame = frame[:int(sample_rate * input_bytes * 0.01)]
+            else:
+                raise Exception(
+                    "Buffer length {} less than minimum of {}".format(
+                        len(frame),
+                        int(sample_rate * input_bytes * 0.01)
+                    )
+                )
         if(self._vad.is_speech(frame, self._input_device._input_rate)):
             response = True
+            self._logger.info("Voice detected")
         else:
             response = False
         return response
