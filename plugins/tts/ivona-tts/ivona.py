@@ -1,8 +1,12 @@
 import os
 import json
 import tempfile
-import pyvona
+import unittest
 from naomi import plugin
+try:
+    import pyvona
+except ImportError:
+    raise unittest.SkipTest("Skipping ivona, 'pyvona' module not installed")
 
 
 class IvonaTTSPlugin(plugin.TTSPlugin):

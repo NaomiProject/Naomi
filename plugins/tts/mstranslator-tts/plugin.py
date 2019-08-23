@@ -1,6 +1,10 @@
 import requests
-import mstranslator
+import unittest
 from naomi import plugin
+try:
+    import mstranslator
+except ImportError:
+    raise unittest.SkipTest('Skipping mstranslator, "mstranslator" module not found')
 
 
 class MicrosoftTranslatorTTSPlugin(plugin.TTSPlugin):

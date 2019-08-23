@@ -3,12 +3,14 @@ import os
 import pipes
 import subprocess
 import tempfile
+import unittest
 from naomi import diagnose
 from naomi import plugin
 
 EXECUTABLE = 'flite'
 
 if not diagnose.check_executable(EXECUTABLE):
+    raise unittest.SkipTest("Skipping flite-tts, executable '{}' not found".format(EXECUTABLE))
     raise ImportError("Executable '%s' not found!" % EXECUTABLE)
 
 

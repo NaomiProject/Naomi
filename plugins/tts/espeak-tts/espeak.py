@@ -2,11 +2,13 @@ import collections
 import logging
 import pipes
 import re
+import unittest
 from naomi import diagnose
 from naomi import plugin
 from naomi.run_command import run_command
 
 if not diagnose.check_executable('espeak'):
+    raise unittest.SkipTest("Skipping espeak, executable not found")
     raise ImportError("espeak executable not found!")
 
 

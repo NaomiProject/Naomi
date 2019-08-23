@@ -63,8 +63,7 @@ class Brain(object):
             # Get the contents of the naomi/data/standard_phrases/{language}.txt
             # file. This file is built from words you actually say to Naomi
             # that are not the wakeword or in the plugin phrases.
-            with open(paths.data('standard_phrases', "%s.txt" % language),
-                    mode="r") as f:
+            with open(paths.data('standard_phrases', "%s.txt" % language), mode="r") as f:
                 for line in f:
                     phrase = line.strip()
                     if phrase:
@@ -90,11 +89,10 @@ class Brain(object):
         # standard phrases, so every time I would say
         # "Naomi, check email" Naomi would hear "NAOMI SHUT EMAIL"
         # and shut down.
-        custom_standard_phrases_file = paths.sub(os.path.join(
-            "data",
+        custom_standard_phrases_file = paths.data(
             "standard_phrases",
             "{}.txt".format(profile.get(['language'], 'en-US'))
-        ))
+        )
         if(os.path.isfile(custom_standard_phrases_file)):
             with open(custom_standard_phrases_file, mode='r') as f:
                 for line in f:

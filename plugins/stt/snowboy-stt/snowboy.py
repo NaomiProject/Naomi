@@ -1,6 +1,10 @@
-import snowboydetect
+import unittest
 from naomi import plugin
 from naomi import paths
+try:
+    import snowboydetect
+except ImportError:
+    raise unittest.SkipTest("Skipping snowboy, 'snowboydetect' module not installed")
 
 
 class SnowboySTTPlugin(plugin.STTPlugin):

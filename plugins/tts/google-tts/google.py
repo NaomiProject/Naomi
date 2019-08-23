@@ -1,11 +1,18 @@
 import os
 import logging
+import unittest
 from collections import OrderedDict
 from naomi import plugin
 from naomi import profile
+try:
+    from google.cloud import texttospeech
+except ImportError:
+    raise unittest.SkipTest("Skipping Google-TTS, module 'google.cloud' not found")
+try:
+    from google.oauth2 import service_account
+except ImportError:
+    raise unittest.SkipTest("Skipping Google-TTS, module 'google.oauth2' not found")
 
-from google.cloud import texttospeech
-from google.oauth2 import service_account
 
 google_env_var = "GOOGLE_APPLICATION_CREDENTIALS"
 

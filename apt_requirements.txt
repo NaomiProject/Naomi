@@ -1,0 +1,8 @@
+libssl-dev
+libncurses5-dev
+gnupg
+dirmngr
+gettext
+portaudio19-dev
+libasound2-dev
+
