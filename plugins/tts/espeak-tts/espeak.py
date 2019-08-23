@@ -2,8 +2,6 @@ import collections
 import logging
 import pipes
 import re
-import subprocess
-import tempfile
 import unittest
 from naomi import diagnose
 from naomi import plugin
