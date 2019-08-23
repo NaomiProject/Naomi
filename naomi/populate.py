@@ -403,15 +403,7 @@ def get_notification_info():
         text_choice = _("text").lower()[:1]
         print(
             "    " + interface.instruction_text(
-                _("Would you prefer to have notifications sent by")
-            )
-        )
-        print(
-            "    " + interface.instruction_text(
-                _("email ({e}) or text message ({t})?").format(
-                    e=email_choice.upper(),
-                    t=text_choice.upper()
-                )
+                _("How would you prefer to have notifications sent?")
             )
         )
         print("")
@@ -1011,18 +1003,8 @@ def get_tts_engine():
     }
     # Prepare the tts_plugins object so we can
     # instantiate and test the chosen plugin.
-    tts_plugins = pluginstore.PluginStore(
-        [os.path.join(
-            os.path.dirname(
-                os.path.dirname(
-                    os.path.abspath(__file__)
-                )
-            ),
-            "plugins",
-            "tts"
-        )]
-    )
-    tts_plugins.detect_plugins()
+    tts_plugins = pluginstore.PluginStore()
+    tts_plugins.detect_plugins("tts")
     voice_chosen = False
     while not voice_chosen:
         try:
@@ -1398,18 +1380,8 @@ def get_beep_or_voice():
 # Return a list of currently installed audio engines.
 def get_audio_engines():
     global audioengine_plugins
-    audioengine_plugins = pluginstore.PluginStore(
-        [os.path.join(
-            os.path.dirname(
-                os.path.dirname(
-                    os.path.abspath(__file__)
-                )
-            ),
-            "plugins",
-            "audioengine"
-        )]
-    )
-    audioengine_plugins.detect_plugins()
+    audioengine_plugins = pluginstore.PluginStore()
+    audioengine_plugins.detect_plugins("audioengine")
     audioengines = [
         ae_info.name
         for ae_info

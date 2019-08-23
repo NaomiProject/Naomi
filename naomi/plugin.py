@@ -20,7 +20,7 @@ class GenericPlugin(object):
         if(not hasattr(self, '_logger')):
             self._logger = logging.getLogger(__name__)
         interface = commandline.commandline()
-        self.language = interface.get_language(once=True)
+        _ = interface.get_language(once=True)
         translations = i18n.parse_translations(paths.data('locale'))
         translator = i18n.GettextMixin(translations)
         _ = translator.gettext
