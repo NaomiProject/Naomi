@@ -13,7 +13,7 @@ class WebRTCPlugin(plugin.VADPlugin):
     def __init__(self, *args):
         self._logger = logging.getLogger(__name__)
         input_device = args[0]
-        timeout = profile.get_profile_var(["webrtc_vad", "timeout"], 1)
+        timeout = profile.get_profile_var(["webrtc_vad", "timeout"], 10)
         minimum_capture = profile.get_profile_var(
             ["webrtc_vad", "minimum_capture"],
             0.25
@@ -59,7 +59,11 @@ class WebRTCPlugin(plugin.VADPlugin):
                 )
             )
 
-    def _voice_detected(self, frame):
+    def _voice_detected(self, *args, **kwargs):
+        frame = args[0]
+        recording = False
+        if "recording" in kwargs:
+            recording = kwargs["recording"]
         self._logger.info("Frame length: {} bytes".format(len(frame)))
         # The frame length must be either .01, .02 or .02 ms.
         # Sometimes the audio card will refuse to obey the chunksize

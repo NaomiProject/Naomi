@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from . import alteration
-from . import paths
-from . import profile
 from datetime import datetime
+from naomi.commandline import println
+from naomi import alteration
+from naomi import paths
+from naomi import profile
 import audioop
 import contextlib
 import logging
@@ -16,7 +17,6 @@ class Mic(object):
     """
     The Mic class handles all interactions with the microphone and speaker.
     """
-
     def __init__(
         self,
         input_device,
@@ -258,7 +258,7 @@ class Mic(object):
                 else:
                     if(len(transcribed)):
                         if(self._print_transcript):
-                            print("<  {}".format(transcribed))
+                            println("<  {}\n".format(transcribed))
                             self._log_audio(f, transcribed, "passive")
                         if any([
                             keyword.lower() in t.lower()
@@ -275,7 +275,7 @@ class Mic(object):
                                     self._logger.error("Active transcription failed!", exc_info=dbg)
                                 else:
                                     if(self._print_transcript):
-                                        print("<< {}".format(transcribed))
+                                        println("<< {}\n".format(transcribed))
                                     if(self._save_active_audio):
                                         self._log_audio(f, transcribed, "active")
                                 return transcribed
@@ -283,7 +283,7 @@ class Mic(object):
                                 return False
                     else:
                         if(self._print_transcript):
-                            print("<  <noise>")
+                            println("<  <noise>\n")
                             self._log_audio(f, "", "noise")
 
     def active_listen(self, timeout=3):
@@ -311,7 +311,7 @@ class Mic(object):
                 self._logger.error("Active transcription failed!", exc_info=dbg)
             else:
                 if(self._print_transcript):
-                    print("<< {}".format(transcribed))
+                    println("<< {}\n".format(transcribed))
                     self._log_audio(f, transcribed, "active")
         return transcribed
 
@@ -333,7 +333,7 @@ class Mic(object):
 
     def say(self, phrase):
         if(self._print_transcript):
-            print(">> {}".format(phrase))
+            println(">> {}\n".format(phrase))
         altered_phrase = alteration.clean(phrase)
         with tempfile.SpooledTemporaryFile() as f:
             f.write(self.tts_engine.say(altered_phrase))

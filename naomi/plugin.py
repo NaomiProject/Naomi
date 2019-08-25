@@ -185,7 +185,7 @@ class VADPlugin(GenericPlugin):
     # Override the _voice_detected method with your own method for
     # detecting whether a voice is detected or not. Return True if
     # you detect a voice, otherwise False.
-    def _voice_detected(self, frame):
+    def _voice_detected(self, *args, **kwargs):
         pass
 
     def get_audio(self):
@@ -200,7 +200,7 @@ class VADPlugin(GenericPlugin):
             self._input_device._input_rate
         ):
             frames.append(frame)
-            voice_detected = self._voice_detected(frame)
+            voice_detected = self._voice_detected(frame, recording)
             if not recording:
                 if(voice_detected):
                     # Voice activity detected, start recording and use

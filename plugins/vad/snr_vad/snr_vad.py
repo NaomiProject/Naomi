@@ -12,6 +12,8 @@
 # recording stops. If the total length of the recording is
 # over twice the length of timeout, then the recorded audio
 # is returned for processing.
+from blessings import Terminal
+from naomi.commandline import println
 from naomi import plugin
 from naomi import profile
 import audioop
@@ -22,7 +24,7 @@ import math
 class SNRPlugin(plugin.VADPlugin):
     def __init__(self, *args, **kwargs):
         input_device = args[0]
-        timeout = profile.get_profile_var(["snr_vad", "timeout"], 1)
+        timeout = profile.get_profile_var(["snr_vad", "timeout"], 10)
         minimum_capture = profile.get_profile_var(
             ["snr_vad", "minimum_capture"],
             0.5
@@ -35,7 +37,11 @@ class SNRPlugin(plugin.VADPlugin):
         # Keep track of the number of audio levels
         self.distribution = {}
 
-    def _voice_detected(self, frame):
+    def _voice_detected(self, *args, **kwargs):
+        frame = args[0]
+        recording = False
+        if "recording" in kwargs:
+            recording = kwargs["recording"]
         rms = audioop.rms(frame, int(self._input_device._input_bits / 8))
         if rms > 0 and self._threshold > 0:
             snr = round(20.0 * math.log(rms / self._threshold, 10))
@@ -62,20 +68,21 @@ class SNRPlugin(plugin.VADPlugin):
                     1
                 )
             )
-            if(self._logger.getEffectiveLevel() < logging.WARN):
-                print(
-                    "\t".join([
-                        "snr: {}",
-                        "threshold: {}",
-                        "mean: {}",
-                        "deviation: {}"
-                    ]).format(
-                        snr,
-                        round(self._threshold),
-                        round(mean),
-                        round(stddev)
-                    )
-                )
+            # We'll say that the max possible value for SNR is mean+3*stddev
+            #displaywidth = shutil.get_terminal_size((80, 20)).columns - 6
+            displaywidth = Terminal().width - 7
+            # print("displaywidth: {}".format(displaywidth))
+            maxsnr=mean+3*stddev
+            if snr>maxsnr:
+                maxsnr=snr
+            feedback = ["+"] if recording else ["-"]
+            feedback.extend(list("||" + ("="*int(displaywidth*(snr/maxsnr)))+("-"*int(displaywidth*((maxsnr-snr)/maxsnr)))+"|| "))
+            # insert markers for mean and threshold
+            if(mean<maxsnr):
+                feedback[int(displaywidth*(mean/maxsnr))]='m'
+            if(self._threshold<maxsnr):
+                feedback[int(displaywidth*(self._threshold/maxsnr))]='t'
+            println("".join(feedback))
         if(items > 100):
             # Every 100 samples, rescale, allowing changes in
             # the environment to be recognized more quickly.
