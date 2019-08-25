@@ -22,6 +22,7 @@ class Mic(object):
     """
     The Mic class handles all interactions with the microphone and speaker.
     """
+    current_thread = None
 
     def __init__(
         self,
@@ -353,14 +354,13 @@ class Mic(object):
                 print("terminated thread")
             except AttributeError:
                 # current_thread can't be terminated
-                print("Can't terminate thread -- passing")
-                pass
+                print("Can't terminate thread")
         self._logger.info("Stopped")
 
     def say(self, phrase):
         global queue
         queue.append(phrase)
-        if(hasattr(self, "current_thread")):
+        if(hasattr(self.current_thread, "is_alive")):
             if self.current_thread.is_alive():
                 # if Naomi is currently talking, then we are done
                 return
