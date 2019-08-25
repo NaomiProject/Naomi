@@ -61,7 +61,6 @@ class WebRTCPlugin(plugin.VADPlugin):
 
     def _voice_detected(self, *args, **kwargs):
         frame = args[0]
-        recording = False
         self._logger.info("Frame length: {} bytes".format(len(frame)))
         # The frame length must be either .01, .02 or .02 ms.
         # Sometimes the audio card will refuse to obey the chunksize
