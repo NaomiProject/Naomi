@@ -20,7 +20,7 @@ t = None
 def println(string):
     # check and see if string ends with a line feed
     addCR = False
-    matchgroups = re.match('^(.*)\n$',string,re.MULTILINE)
+    matchgroups = re.match('^(.*)\n$', string, re.MULTILINE)
     if(matchgroups):
         string = matchgroups.groups(0)[0]
         addCR = True
@@ -30,7 +30,7 @@ def println(string):
     except TypeError:
         columns = 79
     sys.stdout.write("{}{}\r".format(
-        string," "*(columns-len(string)))
+        string, " " * (columns - len(string)))
     )
     if(addCR):
         sys.stdout.write("\n")

@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+from blessings import Terminal
+from naomi.commandline import println
+from naomi import plugin
+from naomi import profile
+import audioop
+import math
+
+
 # This is a really simple voice activity detector
 # based on what Naomi currently uses. When you create it,
 # you can pass in a decibel level which defaults to 30dB.
@@ -12,19 +20,10 @@
 # recording stops. If the total length of the recording is
 # over twice the length of timeout, then the recorded audio
 # is returned for processing.
-from blessings import Terminal
-from naomi.commandline import println
-from naomi import plugin
-from naomi import profile
-import audioop
-import logging
-import math
-
-
 class SNRPlugin(plugin.VADPlugin):
     def __init__(self, *args, **kwargs):
         input_device = args[0]
-        timeout = profile.get_profile_var(["snr_vad", "timeout"], 10)
+        timeout = profile.get_profile_var(["snr_vad", "timeout"], 1)
         minimum_capture = profile.get_profile_var(
             ["snr_vad", "minimum_capture"],
             0.5
@@ -69,19 +68,24 @@ class SNRPlugin(plugin.VADPlugin):
                 )
             )
             # We'll say that the max possible value for SNR is mean+3*stddev
-            #displaywidth = shutil.get_terminal_size((80, 20)).columns - 6
-            displaywidth = Terminal().width - 7
-            # print("displaywidth: {}".format(displaywidth))
-            maxsnr=mean+3*stddev
-            if snr>maxsnr:
-                maxsnr=snr
+            displaywidth = Terminal().width - 6
+            maxsnr = mean + 3 * stddev
+            if snr > maxsnr:
+                maxsnr = snr
             feedback = ["+"] if recording else ["-"]
-            feedback.extend(list("||" + ("="*int(displaywidth*(snr/maxsnr)))+("-"*int(displaywidth*((maxsnr-snr)/maxsnr)))+"|| "))
+            feedback.extend(
+                list("".join([
+                    "||",
+                    ("=" * int(displaywidth * (snr / maxsnr))),
+                    ("-" * int(displaywidth * ((maxsnr - snr) / maxsnr))),
+                    "||"
+                ]))
+            )
             # insert markers for mean and threshold
-            if(mean<maxsnr):
-                feedback[int(displaywidth*(mean/maxsnr))]='m'
-            if(self._threshold<maxsnr):
-                feedback[int(displaywidth*(self._threshold/maxsnr))]='t'
+            if(mean < maxsnr):
+                feedback[int(displaywidth * (mean / maxsnr))] = 'm'
+            if(self._threshold < maxsnr):
+                feedback[int(displaywidth * (self._threshold / maxsnr))] = 't'
             println("".join(feedback))
         if(items > 100):
             # Every 100 samples, rescale, allowing changes in
