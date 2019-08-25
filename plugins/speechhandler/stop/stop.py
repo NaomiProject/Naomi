@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
-from naomi import app_utils
 from naomi import plugin
 
 
@@ -13,7 +11,7 @@ class StopPlugin(plugin.SpeechHandlerPlugin):
 
     def handle(self, text, mic):
         """
-        Says an empty string to interrupt Naomi.
+        Interrupt Naomi.
 
         Arguments:
         text -- user-input, typically transcribed speech
@@ -26,7 +24,7 @@ class StopPlugin(plugin.SpeechHandlerPlugin):
 
     def is_valid(self, text):
         """
-        Returns True if input is related to the time.
+        Returns True if input is asking Naomi to stop speaking.
 
         Arguments:
         text -- user-input, typically transcribed speech

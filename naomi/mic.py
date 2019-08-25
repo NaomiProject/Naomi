@@ -369,7 +369,7 @@ class Mic(object):
             target=self.say_thread
         )
         self.current_thread.start()
-        
+
     def say_thread(self, *args, **kwargs):
         while(True):
             try:

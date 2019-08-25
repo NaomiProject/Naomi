@@ -82,9 +82,16 @@ class AudioDevice(object):
                         strerror, errno = e.errno, e.strerror
                     else:
                         strerror, errno = e.strerror, e.errno
-                    self._logger.warning("IO error while reading from device" +
-                                         " '%s': '%s' (Errno: %d)", self.slug,
-                                         strerror, errno)
+                    self._logger.warning(
+                        ' '.join([
+                            "IO error while reading from device",
+                            "'{}': '{}' (Errno: {})"
+                        ]).format(
+                            self.slug,
+                            strerror,
+                            errno
+                        )
+                    )
                 else:
                     yield frame
 
@@ -100,7 +107,7 @@ class AudioDevice(object):
                 data += b'\00' * (chunksize - len(data))
             while data:
                 # Check to see if we need to stop
-                if(hasattr(self,"stop")):
+                if(hasattr(self, "stop")):
                     del self.stop
                     break
                 stream.write(data)
