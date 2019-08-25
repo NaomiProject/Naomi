@@ -99,6 +99,10 @@ class AudioDevice(object):
             if add_padding and len(data) > 0:
                 data += b'\00' * (chunksize - len(data))
             while data:
+                # Check to see if we need to stop
+                if(hasattr(self,"stop")):
+                    del self.stop
+                    break
                 stream.write(data)
                 data = w.readframes(chunksize)
                 if add_padding and len(data) > 0:
