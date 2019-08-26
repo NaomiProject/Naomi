@@ -167,29 +167,33 @@ class TTSPlugin(GenericPlugin):
 
 
 class VADPlugin(GenericPlugin):
+    # timeout is seconds of audio to capture before first
+    # and after last voice detected
+    # minimum capture is minimum audio to capture, minus the padding
+    # at the front and end
     def __init__(self, input_device, timeout=1, minimum_capture=0.5):
         self._logger = logging.getLogger(__name__)
         # input device
         self._input_device = input_device
         # Here is the number of frames that have to pass without
         # detecing a voice before we respond
-        chunklength = input_device._input_rate / input_device._input_chunksize
-        self._timeout = round(chunklength * timeout)
+        chunklength = input_device._input_chunksize / input_device._input_rate
+        self._timeout = round(timeout / chunklength)
         # Mimimum capture frames is the smallest number of frames that will
-        # be recognized as audio. I'm setting this to 1/2 second longer than
-        # the timeout value.
-        self._minimum_capture = round(chunklength * (timeout + minimum_capture))
+        # be recognized as audio.
+        self._minimum_capture = round((timeout + minimum_capture) / chunklength)
         ct = input_device._input_chunksize / input_device._input_rate
         self._chunktime = ct
 
     # Override the _voice_detected method with your own method for
     # detecting whether a voice is detected or not. Return True if
     # you detect a voice, otherwise False.
-    def _voice_detected(self, frame):
+    def _voice_detected(self, *args, **kwargs):
         pass
 
     def get_audio(self):
         frames = collections.deque([], 30)
+        last_voice_frame = 0
         recording = False
         recording_frames = []
         self._logger.info("Waiting for voice data")
@@ -200,7 +204,7 @@ class VADPlugin(GenericPlugin):
             self._input_device._input_rate
         ):
             frames.append(frame)
-            voice_detected = self._voice_detected(frame)
+            voice_detected = self._voice_detected(frame, recording=recording)
             if not recording:
                 if(voice_detected):
                     # Voice activity detected, start recording and use
@@ -212,7 +216,7 @@ class VADPlugin(GenericPlugin):
                     )
                     recording = True
                     # Include the previous 10 frames in the recording.
-                    recording_frames = list(frames)[-10:]
+                    recording_frames = list(frames)[-self._timeout:]
                     last_voice_frame = len(recording_frames)
             else:
                 # We're recording
