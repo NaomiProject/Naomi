@@ -1,15 +1,40 @@
+from blessings import Terminal
+from getpass import getpass
 from naomi import i18n
 from naomi import paths
 from naomi import profile
-from getpass import getpass
 import re
-from blessings import Terminal
+import sys
+
 
 _ = None
 affirmative = ""
 negative = ""
 audioengine_plugins = None
 t = None
+
+
+# This method gives me a way to print to the terminal while
+# the SNRVAD is providing a visualization of how Naomi is
+# listening
+def println(string):
+    # check and see if string ends with a line feed
+    addCR = False
+    matchgroups = re.match('^(.*)\n$', string, re.MULTILINE)
+    if(matchgroups):
+        string = matchgroups.groups(0)[0]
+        addCR = True
+    # clear the current line
+    try:
+        columns = t.width - 1
+    except TypeError:
+        columns = 79
+    sys.stdout.write("{}{}\r".format(
+        string, " " * (columns - len(string)))
+    )
+    if(addCR):
+        sys.stdout.write("\n")
+    sys.stdout.flush()
 
 
 class commandline(object):

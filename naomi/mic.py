@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from . import alteration
-from . import paths
-from . import profile
 from datetime import datetime
+from naomi.commandline import println
+from naomi import alteration
+from naomi import paths
+from naomi import profile
 import audioop
 import contextlib
 import logging
@@ -265,7 +266,7 @@ class Mic(object):
                 else:
                     if(len(transcribed)):
                         if(self._print_transcript):
-                            print("<  {}".format(transcribed))
+                            println("<  {}\n".format(transcribed))
                             self._log_audio(f, transcribed, "passive")
                         if any([
                             keyword.lower() in t.lower()
@@ -282,7 +283,7 @@ class Mic(object):
                                     self._logger.error("Active transcription failed!", exc_info=dbg)
                                 else:
                                     if(self._print_transcript):
-                                        print("<< {}".format(transcribed))
+                                        println("<< {}\n".format(transcribed))
                                     if(self._save_active_audio):
                                         self._log_audio(f, transcribed, "active")
                                 return transcribed
@@ -290,7 +291,7 @@ class Mic(object):
                                 return False
                     else:
                         if(self._print_transcript):
-                            print("<  <noise>")
+                            println("<  <noise>\n")
                             self._log_audio(f, "", "noise")
 
     def active_listen(self, timeout=3):
@@ -318,7 +319,7 @@ class Mic(object):
                 self._logger.error("Active transcription failed!", exc_info=dbg)
             else:
                 if(self._print_transcript):
-                    print("<< {}".format(transcribed))
+                    println("<< {}\n".format(transcribed))
                     self._log_audio(f, transcribed, "active")
         return transcribed
 
@@ -345,16 +346,12 @@ class Mic(object):
         if(hasattr(self, "current_thread")):
             try:
                 queue = []
-                print("terminating thread")
-                print(dir(self.current_thread))
                 # Threads can't be terminated
-                # self.current_thread.terminate()
                 # but we can set a "stop" attribute on self._output_device
                 self._output_device.stop = 1
-                print("terminated thread")
             except AttributeError:
                 # current_thread can't be terminated
-                print("Can't terminate thread")
+                self._logger.info("Can't terminate thread")
         self._logger.info("Stopped")
 
     def say(self, phrase):
