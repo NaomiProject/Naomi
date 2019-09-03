@@ -1,0 +1,29 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2019-08-25 17:23-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: plugins/speechhandler/stop/stop.py:10
+msgid "STOP"
+msgstr ""
+
+#: plugins/speechhandler/stop/stop.py:11 plugins/speechhandler/stop/stop.py:24
+msgid "SHUT UP"
+msgstr ""
+
+#: plugins/speechhandler/stop/stop.py:25
+msgid "Okay, if that's what you want then I'll shut up, but you don't have to be rude about it."
+msgstr ""
+

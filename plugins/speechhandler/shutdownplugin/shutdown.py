@@ -8,8 +8,8 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
     def get_phrases(self):
         return [
             self.gettext("SHUTDOWN"),
-            self.gettext("SHUT"),
-            self.gettext("DOWN")]
+            self.gettext("SHUT DOWN")
+        ]
 
     def handle(self, text, mic):
         """
@@ -23,7 +23,7 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         name = profile.get_profile_var(['first_name'], '')
 
         messages = [
-            self.gettext("I'm going down."),
+            self.gettext("I'm shutting down."),
             self.gettext("Shutting down now."),
             self.gettext("Bye Bye."),
             self.gettext("Goodbye, {}").format(name)

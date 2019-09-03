@@ -10,13 +10,21 @@ import logging
 import os
 import sqlite3
 import tempfile
+import threading
+import time
 import wave
+
+
+# global queue
+queue = []
 
 
 class Mic(object):
     """
     The Mic class handles all interactions with the microphone and speaker.
     """
+    current_thread = None
+
     def __init__(
         self,
         input_device,
@@ -331,14 +339,49 @@ class Mic(object):
             add_padding=self._output_device._output_padding
         )
 
+    # Stop talking and delete the queue
+    def stop(self):
+        global queue
+        print("stopping...")
+        if(hasattr(self, "current_thread")):
+            try:
+                queue = []
+                # Threads can't be terminated
+                # but we can set a "stop" attribute on self._output_device
+                self._output_device.stop = 1
+            except AttributeError:
+                # current_thread can't be terminated
+                self._logger.info("Can't terminate thread")
+        self._logger.info("Stopped")
+
     def say(self, phrase):
-        if(self._print_transcript):
-            println(">> {}\n".format(phrase))
-        altered_phrase = alteration.clean(phrase)
-        with tempfile.SpooledTemporaryFile() as f:
-            f.write(self.tts_engine.say(altered_phrase))
-            f.seek(0)
-            self._output_device.play_fp(f)
+        global queue
+        queue.append(phrase)
+        if(hasattr(self.current_thread, "is_alive")):
+            if self.current_thread.is_alive():
+                # if Naomi is currently talking, then we are done
+                return
+        # otherwise, start talking
+        self.current_thread = threading.Thread(
+            target=self.say_thread
+        )
+        self.current_thread.start()
+
+    def say_thread(self, *args, **kwargs):
+        while(True):
+            try:
+                phrase = queue.pop(0)
+            except IndexError:
+                return
+            if(self._print_transcript):
+                print(">> {}".format(phrase))
+            altered_phrase = alteration.clean(phrase)
+            with tempfile.SpooledTemporaryFile() as f:
+                f.write(self.tts_engine.say(altered_phrase))
+                f.seek(0)
+                self._output_device.play_fp(f)
+                # Pause for 2/10 second before continuing
+                time.sleep(.2)
 
 
 if __name__ == "__main__":
