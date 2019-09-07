@@ -36,7 +36,7 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         # specifically wait for Naomi to finish talking
         # here, otherwise it will exit before getting to
         # speak.
-        while( mic.current_thread.is_alive() ):
+        while(mic.current_thread.is_alive()):
             time.sleep(1)
 
         proc = subprocess.Popen(["pkill", "-f", "Naomi.py"],

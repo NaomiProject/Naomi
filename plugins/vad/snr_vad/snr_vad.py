@@ -23,7 +23,7 @@ import math
 class SNRPlugin(plugin.VADPlugin):
     _maxsnr = None
     _minsnr = None
-    
+
     def __init__(self, *args, **kwargs):
         input_device = args[0]
         timeout = profile.get_profile_var(["snr_vad", "timeout"], 1)
@@ -88,7 +88,7 @@ class SNRPlugin(plugin.VADPlugin):
                 self._minsnr = minsnr
             snrrange = self._maxsnr - self._minsnr
             if snrrange == 0:
-                snrrange = 1 # to avoid divide by zero below
+                snrrange = 1  # to avoid divide by zero below
             feedback = ["+"] if recording else ["-"]
             feedback.extend(
                 list("".join([
