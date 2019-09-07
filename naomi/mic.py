@@ -301,6 +301,8 @@ class Mic(object):
             self.say(self._active_stt_reply)
         else:
             self._logger.debug("No text to respond with using beep")
+            if(self._print_transcript):
+                println(">> <beep>\n")
             self.play_file(paths.data('audio', 'beep_hi.wav'))
         with self._write_frames_to_file(
             self._vad_plugin.get_audio(),
@@ -311,6 +313,8 @@ class Mic(object):
                 self.say(self._active_stt_response)
             else:
                 self._logger.debug("No text to respond with using beep")
+                if(self._print_transcript):
+                    println(">> <boop>\n")
                 self.play_file(paths.data('audio', 'beep_lo.wav'))
             try:
                 transcribed = self.active_stt_engine.transcribe(f)
@@ -333,11 +337,18 @@ class Mic(object):
 
     # Output methods
     def play_file(self, filename):
-        self._output_device.play_file(
-            filename,
-            chunksize=self._output_device._output_chunksize,
-            add_padding=self._output_device._output_padding
+        global queue
+        with open(filename, 'rb') as f:
+            queue.append(f.read())
+        if(hasattr(self.current_thread, "is_alive")):
+            if self.current_thread.is_alive():
+                # if Naomi is currently talking, then we are done
+                return
+        # otherwise, start talking
+        self.current_thread = threading.Thread(
+            target=self.say_thread
         )
+        self.current_thread.start()
 
     # Stop talking and delete the queue
     def stop(self):
@@ -356,7 +367,10 @@ class Mic(object):
 
     def say(self, phrase):
         global queue
-        queue.append(phrase)
+        if(self._print_transcript):
+            println(">> {}\n".format(phrase))
+        altered_phrase = alteration.clean(phrase)
+        queue.append(self.tts_engine.say(altered_phrase))
         if(hasattr(self.current_thread, "is_alive")):
             if self.current_thread.is_alive():
                 # if Naomi is currently talking, then we are done
@@ -370,14 +384,11 @@ class Mic(object):
     def say_thread(self, *args, **kwargs):
         while(True):
             try:
-                phrase = queue.pop(0)
+                audio = queue.pop(0)
             except IndexError:
                 return
-            if(self._print_transcript):
-                print(">> {}".format(phrase))
-            altered_phrase = alteration.clean(phrase)
             with tempfile.SpooledTemporaryFile() as f:
-                f.write(self.tts_engine.say(altered_phrase))
+                f.write(audio)
                 f.seek(0)
                 self._output_device.play_fp(f)
                 # Pause for 2/10 second before continuing

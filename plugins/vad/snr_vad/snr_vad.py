@@ -21,6 +21,9 @@ import math
 # over twice the length of timeout, then the recorded audio
 # is returned for processing.
 class SNRPlugin(plugin.VADPlugin):
+    _maxsnr = None
+    _minsnr = None
+    
     def __init__(self, *args, **kwargs):
         input_device = args[0]
         timeout = profile.get_profile_var(["snr_vad", "timeout"], 1)
@@ -69,23 +72,37 @@ class SNRPlugin(plugin.VADPlugin):
             )
             # We'll say that the max possible value for SNR is mean+3*stddev
             displaywidth = Terminal().width - 6
+            if self._minsnr is None:
+                self._minsnr = snr
+            if self._maxsnr is None:
+                self._maxsnr = snr
             maxsnr = mean + 3 * stddev
             if snr > maxsnr:
                 maxsnr = snr
+            if maxsnr > self._maxsnr:
+                self._maxsnr = maxsnr
+            minsnr = mean - 3 * stddev
+            if snr < minsnr:
+                minsnr = snr
+            if minsnr < self._minsnr:
+                self._minsnr = minsnr
+            snrrange = self._maxsnr - self._minsnr
+            if snrrange == 0:
+                snrrange = 1 # to avoid divide by zero below
             feedback = ["+"] if recording else ["-"]
             feedback.extend(
                 list("".join([
                     "||",
-                    ("=" * int(displaywidth * (snr / maxsnr))),
-                    ("-" * int(displaywidth * ((maxsnr - snr) / maxsnr))),
+                    ("=" * int(displaywidth * ((snr - self._minsnr) / snrrange))),
+                    ("-" * int(displaywidth * ((self._maxsnr - snr) / snrrange))),
                     "||"
                 ]))
             )
             # insert markers for mean and threshold
-            if(mean < maxsnr):
-                feedback[int(displaywidth * (mean / maxsnr))] = 'm'
+            if(self._minsnr < mean < self._maxsnr):
+                feedback[int(displaywidth * ((mean - self._minsnr) / snrrange))] = 'm'
             if(self._threshold < maxsnr):
-                feedback[int(displaywidth * (self._threshold / maxsnr))] = 't'
+                feedback[int(displaywidth * ((self._threshold - self._minsnr) / snrrange))] = 't'
             println("".join(feedback))
         if(items > 100):
             # Every 100 samples, rescale, allowing changes in
