@@ -2,6 +2,7 @@
 import random
 from naomi import plugin, profile
 import subprocess
+import time
 
 
 class ShutdownPlugin(plugin.SpeechHandlerPlugin):
@@ -32,6 +33,11 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         message = random.choice(messages)
 
         mic.say(message)
+        # specifically wait for Naomi to finish talking
+        # here, otherwise it will exit before getting to
+        # speak.
+        while(mic.current_thread.is_alive()):
+            time.sleep(1)
 
         proc = subprocess.Popen(["pkill", "-f", "Naomi.py"],
                                 stdout=subprocess.PIPE)
