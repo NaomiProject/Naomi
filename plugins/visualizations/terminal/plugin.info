@@ -1,0 +1,10 @@
+[Plugin]
+Name = Terminal Visualizations
+Version = 1.0.0
+License = MIT
+URL = http://naomiproject.github.io/
+Description = Visualizations of Naomi's internal state for the terminal
+
+[Author]
+Name = Naomi Project
+URL = http://naomiproject.github.io/

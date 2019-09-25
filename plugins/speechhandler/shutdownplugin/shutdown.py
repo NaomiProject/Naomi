@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import random
-from naomi import plugin, profile
-import subprocess
 import time
+from naomi import plugin
+from naomi import profile
 
 
 class ShutdownPlugin(plugin.SpeechHandlerPlugin):
@@ -39,9 +39,7 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         while(mic.current_thread.is_alive()):
             time.sleep(1)
 
-        proc = subprocess.Popen(["pkill", "-f", "Naomi.py"],
-                                stdout=subprocess.PIPE)
-        proc.wait()
+        quit()
 
     def is_valid(self, text):
         """

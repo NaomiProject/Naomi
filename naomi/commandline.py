@@ -278,20 +278,30 @@ class commandline(object):
 
     # AaronC Sept 18 2018 This uses affirmative/negative to ask
     # a yes/no question. Returns True for yes and False for no.
-    def simple_yes_no(self, prompt):
+    def simple_yes_no(self, prompt, default=None):
         response = ""
-        while(response not in (affirmative.lower()[:1], negative.lower()[:1])):
+        # Make it so the default value is upper case and the non-default value
+        # is lower case
+        choice_affirmative = affirmative[:1].lower()
+        choice_negative = negative[:1].lower()
+        if default:
+            if default[:1].lower() == affirmative[:1].lower():
+                choice_affirmative = affirmative[:1].upper()
+            if default[:1].lower() == negative[:1].lower():
+                choice_negative = negative[:1].upper()
+        while(response[:1] not in (affirmative.lower()[:1], negative.lower()[:1])):
             response = self.simple_input(
                 self.format_prompt(
                     "?",
                     prompt + self.instruction_text(" (") + self.choices_text(
-                        affirmative.upper()[:1]
+                        choice_affirmative
                     ) + self.instruction_text("/") + self.choices_text(
-                        negative.upper()[:1]
+                        choice_negative
                     ) + self.instruction_text(")")
-                )
-            ).strip().lower()[:1]
-            if response not in (affirmative.lower()[:1], negative.lower()[:1]):
+                ),
+                default
+            ).strip().lower()
+            if response[:1] not in (affirmative.lower()[:1], negative.lower()[:1]):
                 print(self.alert_text("Please select '{}' or '{}'.").format(
                     affirmative.upper()[:1],
                     negative.upper()[:1]
@@ -394,6 +404,13 @@ class commandline(object):
                         setting,
                         response
                     )
+            elif(controltype == "boolean"):
+                value = profile.get_profile_flag(setting, default)
+                response = value
+                once = False
+                while not (once):
+                    once = True
+                    tmp_response = self.simple_yes_no(definition['title'], response)
             else:
                 # this is the default (textbox)
                 print("")

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from blessings import Terminal
-from naomi.commandline import println
 from naomi import plugin
 from naomi import profile
+# from naomi import pluginstore
+from naomi import visualizations
 import audioop
 import math
 
@@ -23,6 +23,7 @@ import math
 class SNRPlugin(plugin.VADPlugin):
     _maxsnr = None
     _minsnr = None
+    _visualizations = []
 
     def __init__(self, *args, **kwargs):
         input_device = args[0]
@@ -71,7 +72,6 @@ class SNRPlugin(plugin.VADPlugin):
                 )
             )
             # We'll say that the max possible value for SNR is mean+3*stddev
-            displaywidth = Terminal().width - 6
             if self._minsnr is None:
                 self._minsnr = snr
             if self._maxsnr is None:
@@ -86,24 +86,16 @@ class SNRPlugin(plugin.VADPlugin):
                 minsnr = snr
             if minsnr < self._minsnr:
                 self._minsnr = minsnr
-            snrrange = self._maxsnr - self._minsnr
-            if snrrange == 0:
-                snrrange = 1  # to avoid divide by zero below
-            feedback = ["+"] if recording else ["-"]
-            feedback.extend(
-                list("".join([
-                    "||",
-                    ("=" * int(displaywidth * ((snr - self._minsnr) / snrrange))),
-                    ("-" * int(displaywidth * ((self._maxsnr - snr) / snrrange))),
-                    "||"
-                ]))
+            # Loop through visualization plugins
+            visualizations.run_visualization(
+                "mic_volume",
+                recording=recording,
+                snr=snr,
+                minsnr=self._minsnr,
+                maxsnr=self._maxsnr,
+                mean=mean,
+                threshold=self._threshold
             )
-            # insert markers for mean and threshold
-            if(self._minsnr < mean < self._maxsnr):
-                feedback[int(displaywidth * ((mean - self._minsnr) / snrrange))] = 'm'
-            if(self._threshold < maxsnr):
-                feedback[int(displaywidth * ((self._threshold - self._minsnr) / snrrange))] = 't'
-            println("".join(feedback))
         if(items > 100):
             # Every 100 samples, rescale, allowing changes in
             # the environment to be recognized more quickly.

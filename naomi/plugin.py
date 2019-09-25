@@ -249,3 +249,11 @@ class VADPlugin(GenericPlugin):
 
 class STTTrainerPlugin(GenericPlugin):
     pass
+
+
+class TTIPlugin(GenericPlugin):
+    pass
+
+
+class VisualizationsPlugin(GenericPlugin):
+    pass

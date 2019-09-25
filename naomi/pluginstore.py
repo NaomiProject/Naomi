@@ -205,10 +205,12 @@ class PluginStore(object):
         self._categories_map = {
             'audioengine': plugin.AudioEnginePlugin,
             'speechhandler': plugin.SpeechHandlerPlugin,
+            'tti': plugin.TTIPlugin,
             'tts': plugin.TTSPlugin,
             'stt': plugin.STTPlugin,
             'stt_trainer': plugin.STTTrainerPlugin,
-            'vad': plugin.VADPlugin
+            'vad': plugin.VADPlugin,
+            'visualizations': plugin.VisualizationsPlugin
         }
 
     def detect_plugins(self, category=None):
