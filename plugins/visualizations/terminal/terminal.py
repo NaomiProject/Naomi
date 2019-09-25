@@ -2,10 +2,10 @@
 from blessings import Terminal
 from naomi.commandline import println
 from naomi import plugin
-import pdb
 
 
 class TerminalVisualizationsPlugin(plugin.VisualizationsPlugin):
+    @classmethod
     def mic_volume(self, *args, **kwargs):
         try:
             recording = kwargs['recording']
