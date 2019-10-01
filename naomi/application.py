@@ -3,7 +3,6 @@ import csv
 import io
 import logging
 import os
-import pkg_resources
 import re
 import shutil
 import urllib
@@ -20,6 +19,7 @@ from . import profile
 from .run_command import run_command
 from . import local_mic
 from . import batch_mic
+from . import visualizations
 from .strcmpci import strcmpci
 
 USE_STANDARD_MIC = 0
@@ -190,12 +190,11 @@ class Naomi(object):
                     ['audiolog', 'save_noise']
                 )
         # Load plugins
-        plugin_directories = [
-            paths.sub('plugins'),
-            pkg_resources.resource_filename(__name__, '../plugins')
-        ]
-        self.plugins = pluginstore.PluginStore(plugin_directories)
+        self.plugins = pluginstore.PluginStore()
         self.plugins.detect_plugins()
+
+        # load visualizations
+        visualizations.load_visualizations(self)
 
         # Initialize AudioEngine
         ae_info = self.plugins.get_plugin(
@@ -462,8 +461,7 @@ class Naomi(object):
 
     # This is a standardized function for getting all the plugins available
     # from all the repositories the user has enabled in their profile
-    @staticmethod
-    def get_remote_plugin_repositories(plugins=None):
+    def get_remote_plugin_repositories(self, plugins=None):
         csvfile = []
         repositories = profile.get(
             ['plugin_repositories'],
@@ -471,6 +469,7 @@ class Naomi(object):
         )
         for url in repositories:
             if repositories[url] == 'Enabled':
+                self._logger.info("Reading {}".format(url))
                 # It would be good if we could actually read the csv file line
                 # by line rather than reading it all into memory, but that
                 # might require some custom code. For right now, we'll use the

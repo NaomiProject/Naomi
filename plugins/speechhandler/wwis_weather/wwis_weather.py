@@ -74,7 +74,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         # Set the language used for the location data
         language = profile.get_profile_var(["language"], "en")[:2]
         url = "https://worldweather.wmo.int/en/json/Country_{}.xml".format(language)
-        response = requests.get(url)
+        response = requests.get(url, timeout=2)
         jsondoc = str(response.content, 'utf-8')
         self.locationdata = json.loads(jsondoc)
         # Make a list of locations
