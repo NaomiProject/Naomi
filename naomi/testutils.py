@@ -3,6 +3,7 @@ from . import paths
 import contextlib
 import gettext
 import logging
+import os
 import sys
 import unittest
 import wave
@@ -10,16 +11,13 @@ import yaml
 
 
 def test_profile():
-    with open(paths.config("profile.yml"), "r") as f:
-        config = yaml.safe_load(f)
+    if os.path.isfile(paths.config("profile.yml")):
+        with open(paths.config("profile.yml"), "r") as f:
+            config = yaml.safe_load(f)
     TEST_PROFILE = {
         'prefers_email': False,
         'timezone': 'US/Eastern',
-        'phone_number': '012344321',
-        'weather': {
-            'location': 'New York',
-            'unit': 'Fahrenheit'
-        }
+        'phone_number': '012344321'
     }
     try:
         TEST_PROFILE['pocketsphinx'] = config['pocketsphinx']
@@ -61,6 +59,7 @@ class TestInput(object):
         self._input_chunksize = input_chunksize
 
 
+@unittest.skip("Skipping base class")
 class Test_VADPlugin(unittest.TestCase):
     # attributes of the sample we are using
     # These are standard defaults for Naomi

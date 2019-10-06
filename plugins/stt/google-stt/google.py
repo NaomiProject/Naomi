@@ -1,62 +1,66 @@
-import json
 import logging
-import urllib
-import wave
-import requests
+from collections import OrderedDict
 from naomi import plugin
+from naomi import profile
+import os
+
+from google.cloud import speech
+from google.cloud.speech import enums
+from google.cloud.speech import types
+from google.api_core.exceptions import GoogleAPICallError, RetryError
+
+from google.oauth2 import service_account
+
+
+google_env_var = "GOOGLE_APPLICATION_CREDENTIALS"
 
 
 class GoogleSTTPlugin(plugin.STTPlugin):
     """
-    Speech-To-Text implementation which relies on the Google Speech API.
+    Speech-To-Text implementation using the Google Speech API.
+    Uses the google python client:
+    https://googleapis.github.io/google-cloud-python/latest/speech/index.html
 
-    This implementation requires a Google API key to be present in profile.yml
+    You need to download an google cloud API key and set its location using the
+    environment variable GOOGLE_APPLICATION_CREDENTIALS. Details here:
 
-    To obtain an API key:
-    1. Join the Chromium Dev group:
-       https://groups.google.com/a/chromium.org/
-            forum/?fromgroups#!forum/chromium-dev
-    2. Create a project through the Google Developers console:
-       https://console.developers.google.com/project
-    3. Select your project. In the sidebar, navigate to "APIs & Auth." Activate
-       the Speech API.
-    4. Under "APIs & Auth," navigate to "Credentials." Create a new key for
-       public API access.
-    5. Add your credentials to your profile.yml. Add an entry to the 'keys'
-       section using the key name 'GOOGLE_SPEECH.' Sample configuration:
-    6. Set the value of the 'stt_engine' key in your profile.yml to 'google'
+    https://cloud.google.com/speech-to-text/docs/quickstart-protocol
 
-
-    Excerpt from sample profile.yml:
-
-        ...
-        timezone: US/Pacific
-        stt_engine: google
-        keys:
-            GOOGLE_SPEECH: $YOUR_KEY_HERE
+    The python api for google stt is documented here:
+    https://googleapis.github.io/google-cloud-python/latest/speech/index.html
 
     """
+
+    settings = OrderedDict(
+        [
+            (
+                ("google", "credentials_json"), {
+                    "type": "file",
+                    "title": "Google application credentials (*.json)",
+                    "description": "This is a json file that allows your assistant to use the Google Speech API for converting speech to text. You need to generate and download an google cloud API key. Details here: https://cloud.google.com/speech-to-text/docs/quickstart-protocol",
+                    "validation": lambda filename: os.path.exists(os.path.expanduser(filename)),
+                    "invalidmsg": "File {} does not exist".format,
+                    "default": os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+                }
+            )
+        ]
+    )
 
     def __init__(self, *args, **kwargs):
         plugin.STTPlugin.__init__(self, *args, **kwargs)
         # FIXME: get init args from config
 
         self._logger = logging.getLogger(__name__)
-        self._request_url = None
-        self._language = None
-        self._api_key = None
-        self._http = requests.Session()
-        try:
-            language = self.profile['language']
-        except KeyError:
-            language = 'en-US'
+        self._language = profile.get_profile_var(['language'], 'en-US')
+        self._config = None
 
-        self.language = language.lower()
-        self.api_key = self.profile['keys']['GOOGLE_SPEECH']
-
-    @property
-    def request_url(self):
-        return self._request_url
+        if(google_env_var in os.environ):
+            self._client = speech.SpeechClient()
+        else:
+            credentials_json = profile.get_profile_var(["google", "credentials_json"])
+            cred = service_account.Credentials.from_service_account_file(credentials_json)
+            self._client = speech.SpeechClient(credentials=cred)
+        self._regenerate_config()
 
     @property
     def language(self):
@@ -64,31 +68,18 @@ class GoogleSTTPlugin(plugin.STTPlugin):
 
     @language.setter
     def language(self, value):
-        self._language = value
-        self._regenerate_request_url()
+        self._language = value.lower()
+        self._regenerate_config()
 
-    @property
-    def api_key(self):
-        return self._api_key
+    def _regenerate_config(self):
+        keyword = profile.get_profile_var(["keyword"], "Naomi")
 
-    @api_key.setter
-    def api_key(self, value):
-        self._api_key = value
-        self._regenerate_request_url()
-
-    def _regenerate_request_url(self):
-        if self.api_key and self.language:
-            query = urllib.urlencode({'output': 'json',
-                                      'client': 'chromium',
-                                      'key': self.api_key,
-                                      'lang': self.language,
-                                      'maxresults': 6,
-                                      'pfilter': 2})
-            self._request_url = urllib.parse.urlunparse(
-                ('https', 'www.google.com', '/speech-api/v2/recognize', '',
-                 query, ''))
-        else:
-            self._request_url = None
+        self._config = types.RecognitionConfig(
+                           encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
+                           language_code=self.language,
+                           speech_contexts=[speech.types.SpeechContext(phrases=[keyword])] if keyword else None,
+                           model="command_and_search"
+                       )
 
     def transcribe(self, fp):
         """
@@ -96,53 +87,32 @@ class GoogleSTTPlugin(plugin.STTPlugin):
         returning an English string.
 
         Arguments:
-        audio_file_path -- the path to the .wav file to be transcribed
+        fp -- the path to the .wav file to be transcribed
         """
-
-        if not self.api_key:
-            self._logger.critical('API key missing, transcription request ' +
-                                  'aborted.')
-            return []
-        elif not self.language:
+        if not self.language:
             self._logger.critical('Language info missing, transcription ' +
                                   'request aborted.')
             return []
 
-        wav = wave.open(fp, 'rb')
-        frame_rate = wav.getframerate()
-        wav.close()
-        data = fp.read()
-
-        headers = {'content-type': 'audio/l16; rate=%s' % frame_rate}
-        r = self._http.post(self.request_url, data=data, headers=headers)
+        content = fp.read()
+        audio = types.RecognitionAudio(content=content)
         try:
-            r.raise_for_status()
-        except requests.exceptions.HTTPError:
-            self._logger.critical('Request failed with http status %d',
-                                  r.status_code)
-            if r.status_code == requests.codes['forbidden']:
-                self._logger.warning('Status 403 is probably caused by an ' +
-                                     'invalid Google API key.')
-            return []
-        r.encoding = 'utf-8'
-        try:
-            # We cannot simply use r.json() because Google sends invalid json
-            # (i.e. multiple json objects, seperated by newlines. We only want
-            # the last one).
-            response = json.loads(list(r.text.strip().split('\n', 1))[-1])
-            if len(response['result']) == 0:
-                # Response result is empty
-                raise ValueError('Nothing has been transcribed.')
-            results = [alt['transcript'] for alt
-                       in response['result'][0]['alternative']]
+            response = self._client.recognize(self._config, audio)
+        except GoogleAPICallError as e:
+            # request failed for any reason
+            self._logger.warning('Google STT retry error. response: %s', e.args[0])
+            results = []
+        except RetryError as e:
+            # failed due to a retryable error and retry attempts failed
+            self._logger.warning('Google STT retry error. response: %s', e.args[0])
+            results = []
         except ValueError as e:
             self._logger.warning('Empty response: %s', e.args[0])
             results = []
-        except (KeyError, IndexError):
-            self._logger.warning('Cannot parse response.', exc_info=True)
-            results = []
         else:
             # Convert all results to uppercase
-            results = tuple(result.upper() for result in results)
+            results = [str(result.alternatives[0].transcript).upper() for
+                            result in response.results]
             self._logger.info('Transcribed: %r', results)
+
         return results

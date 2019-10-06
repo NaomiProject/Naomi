@@ -1,8 +1,13 @@
 import os
 import tempfile
-import suds
+import unittest
 import urllib
 from naomi import plugin
+try:
+    import suds
+except ImportError:
+    raise unittest.SkipTest("Skipping cereproc, 'suds' plugin not installed")
+
 
 VOICES = [
     ('Adam', 'en-US'),

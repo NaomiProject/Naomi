@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 import random
-from naomi import plugin,profile
-import subprocess
+import time
+from naomi import plugin
+from naomi import profile
 
 
 class ShutdownPlugin(plugin.SpeechHandlerPlugin):
     def get_phrases(self):
         return [
             self.gettext("SHUTDOWN"),
-            self.gettext("SHUT"),
-            self.gettext("DOWN")]
+            self.gettext("SHUT DOWN")
+        ]
 
     def handle(self, text, mic):
         """
@@ -20,11 +21,11 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         text -- user-input, typically transcribed speech
         mic -- used to interact with the user (for both input and output)
         """
-        name = profile.get_profile_var(self.profile,['first_name'],'')
+        name = profile.get_profile_var(['first_name'], '')
 
         messages = [
-            self.gettext("I'm going down."),
-            self.gettext("Shuting down now."),
+            self.gettext("I'm shutting down."),
+            self.gettext("Shutting down now."),
             self.gettext("Bye Bye."),
             self.gettext("Goodbye, {}").format(name)
         ]
@@ -32,10 +33,13 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         message = random.choice(messages)
 
         mic.say(message)
+        # specifically wait for Naomi to finish talking
+        # here, otherwise it will exit before getting to
+        # speak.
+        while(mic.current_thread.is_alive()):
+            time.sleep(1)
 
-        proc = subprocess.Popen(["pkill", "-f", "Naomi.py"],
-                                stdout=subprocess.PIPE)
-        proc.wait()
+        quit()
 
     def is_valid(self, text):
         """

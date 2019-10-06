@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+from naomi import plugin
+from naomi import profile
+# from naomi import pluginstore
+from naomi import visualizations
+import audioop
+import math
+
+
 # This is a really simple voice activity detector
 # based on what Naomi currently uses. When you create it,
 # you can pass in a decibel level which defaults to 30dB.
@@ -12,14 +20,11 @@
 # recording stops. If the total length of the recording is
 # over twice the length of timeout, then the recorded audio
 # is returned for processing.
-from naomi import plugin
-from naomi import profile
-import audioop
-import logging
-import math
-
-
 class SNRPlugin(plugin.VADPlugin):
+    _maxsnr = None
+    _minsnr = None
+    _visualizations = []
+
     def __init__(self, *args, **kwargs):
         input_device = args[0]
         timeout = profile.get_profile_var(["snr_vad", "timeout"], 1)
@@ -35,7 +40,11 @@ class SNRPlugin(plugin.VADPlugin):
         # Keep track of the number of audio levels
         self.distribution = {}
 
-    def _voice_detected(self, frame):
+    def _voice_detected(self, *args, **kwargs):
+        frame = args[0]
+        recording = False
+        if "recording" in kwargs:
+            recording = kwargs["recording"]
         rms = audioop.rms(frame, int(self._input_device._input_bits / 8))
         if rms > 0 and self._threshold > 0:
             snr = round(20.0 * math.log(rms / self._threshold, 10))
@@ -56,21 +65,37 @@ class SNRPlugin(plugin.VADPlugin):
                 [key * value for key, value in self.distribution.items()]
             ) / items
             stddev = math.sqrt((sum1 - (items * (mean ** 2))) / (items - 1))
-            self._threshold = mean + (stddev * 1.5)
-            if(self._logger.getEffectiveLevel() < logging.WARN):
-                print(
-                    "\t".join([
-                        "snr: {}",
-                        "threshold: {}",
-                        "mean: {}",
-                        "deviation: {}"
-                    ]).format(
-                        snr,
-                        round(self._threshold),
-                        round(mean),
-                        round(stddev)
-                    )
+            self._threshold = mean + (
+                stddev * profile.get(
+                    ['snr_vad', 'tolerance'],
+                    1
                 )
+            )
+            # We'll say that the max possible value for SNR is mean+3*stddev
+            if self._minsnr is None:
+                self._minsnr = snr
+            if self._maxsnr is None:
+                self._maxsnr = snr
+            maxsnr = mean + 3 * stddev
+            if snr > maxsnr:
+                maxsnr = snr
+            if maxsnr > self._maxsnr:
+                self._maxsnr = maxsnr
+            minsnr = mean - 3 * stddev
+            if snr < minsnr:
+                minsnr = snr
+            if minsnr < self._minsnr:
+                self._minsnr = minsnr
+            # Loop through visualization plugins
+            visualizations.run_visualization(
+                "mic_volume",
+                recording=recording,
+                snr=snr,
+                minsnr=self._minsnr,
+                maxsnr=self._maxsnr,
+                mean=mean,
+                threshold=self._threshold
+            )
         if(items > 100):
             # Every 100 samples, rescale, allowing changes in
             # the environment to be recognized more quickly.

@@ -3,12 +3,14 @@ import os
 import pipes
 import subprocess
 import tempfile
+import unittest
 from naomi import diagnose
 from naomi import plugin
 
 EXECUTABLE = 'flite'
 
 if not diagnose.check_executable(EXECUTABLE):
+    raise unittest.SkipTest("Skipping flite-tts, executable '{}' not found".format(EXECUTABLE))
     raise ImportError("Executable '%s' not found!" % EXECUTABLE)
 
 
@@ -50,13 +52,15 @@ class FliteTTSPlugin(plugin.TTSPlugin):
                                    if x.strip()])
         return voices
 
-    def say(self, phrase):
+    def say(self, phrase, voice=None):
+        if not voice:
+            voice = self.voice
         cmd = ['flite']
-        self._logger.info("self.voice = {}".format(self.voice))
         if self.voice:
-            cmd.extend(['-voice', self.voice])
+            self._logger.info("voice = {}".format(voice))
+            cmd.extend(['-voice', voice])
         else:
-            self._logger.info("self.voice is false")
+            self._logger.info("voice is false")
         cmd.extend(['-t', phrase])
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as f:
             fname = f.name

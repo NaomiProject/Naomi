@@ -9,12 +9,48 @@ from . import paths
 from . import vocabcompiler
 from . import audioengine
 from . import i18n
+from . import commandline
+from . import profile
 
 
 class GenericPlugin(object):
     def __init__(self, info, config):
         self._plugin_config = config
         self._plugin_info = info
+        if(not hasattr(self, '_logger')):
+            self._logger = logging.getLogger(__name__)
+        interface = commandline.commandline()
+        _ = interface.get_language(once=True)
+        translations = i18n.parse_translations(paths.data('locale'))
+        translator = i18n.GettextMixin(translations)
+        _ = translator.gettext
+        if hasattr(self, 'settings'):
+            # set a variable here to tell us if all settings are
+            # completed or not
+            # If all settings do not currently exist, go ahead and
+            # re-query all settings for this plugin
+            settings_complete = True
+            # Step through the settings and check for
+            # any missing settings
+            for setting in self.settings:
+                if not profile.check_profile_var_exists(setting):
+                    self._logger.info(
+                        "{} setting does not exist".format(setting)
+                    )
+                    # Go ahead and pull the setting
+                    settings_complete = False
+            if(profile.get_arg("repopulate") or not settings_complete):
+                print(interface.status_text(_(
+                    "Configuring {}"
+                ).format(
+                    self._plugin_info.name
+                )))
+                for setting in self.settings:
+                    interface.get_setting(
+                        setting, self.settings[setting]
+                    )
+                # Save the profile with the new settings
+                profile.save_profile()
 
     @property
     def profile(self):
@@ -36,7 +72,9 @@ class SpeechHandlerPlugin(GenericPlugin, i18n.GettextMixin):
     def __init__(self, *args, **kwargs):
         GenericPlugin.__init__(self, *args, **kwargs)
         i18n.GettextMixin.__init__(
-            self, self.info.translations, self.profile)
+            self,
+            self.info.translations
+        )
 
     @abc.abstractmethod
     def get_phrases(self):
@@ -129,29 +167,33 @@ class TTSPlugin(GenericPlugin):
 
 
 class VADPlugin(GenericPlugin):
+    # timeout is seconds of audio to capture before first
+    # and after last voice detected
+    # minimum capture is minimum audio to capture, minus the padding
+    # at the front and end
     def __init__(self, input_device, timeout=1, minimum_capture=0.5):
         self._logger = logging.getLogger(__name__)
         # input device
         self._input_device = input_device
         # Here is the number of frames that have to pass without
         # detecing a voice before we respond
-        chunklength = input_device._input_rate / input_device._input_chunksize
-        self._timeout = round(chunklength * timeout)
+        chunklength = input_device._input_chunksize / input_device._input_rate
+        self._timeout = round(timeout / chunklength)
         # Mimimum capture frames is the smallest number of frames that will
-        # be recognized as audio. I'm setting this to 1/2 second longer than
-        # the timeout value.
-        self._minimum_capture = round(chunklength * (timeout + minimum_capture))
+        # be recognized as audio.
+        self._minimum_capture = round((timeout + minimum_capture) / chunklength)
         ct = input_device._input_chunksize / input_device._input_rate
         self._chunktime = ct
 
     # Override the _voice_detected method with your own method for
     # detecting whether a voice is detected or not. Return True if
     # you detect a voice, otherwise False.
-    def _voice_detected(self, frame):
+    def _voice_detected(self, *args, **kwargs):
         pass
 
     def get_audio(self):
         frames = collections.deque([], 30)
+        last_voice_frame = 0
         recording = False
         recording_frames = []
         self._logger.info("Waiting for voice data")
@@ -162,7 +204,7 @@ class VADPlugin(GenericPlugin):
             self._input_device._input_rate
         ):
             frames.append(frame)
-            voice_detected = self._voice_detected(frame)
+            voice_detected = self._voice_detected(frame, recording=recording)
             if not recording:
                 if(voice_detected):
                     # Voice activity detected, start recording and use
@@ -174,7 +216,7 @@ class VADPlugin(GenericPlugin):
                     )
                     recording = True
                     # Include the previous 10 frames in the recording.
-                    recording_frames = list(frames)[-10:]
+                    recording_frames = list(frames)[-self._timeout:]
                     last_voice_frame = len(recording_frames)
             else:
                 # We're recording
@@ -203,3 +245,15 @@ class VADPlugin(GenericPlugin):
                             )
                         )
                         return recording_frames
+
+
+class STTTrainerPlugin(GenericPlugin):
+    pass
+
+
+class TTIPlugin(GenericPlugin):
+    pass
+
+
+class VisualizationsPlugin(GenericPlugin):
+    pass

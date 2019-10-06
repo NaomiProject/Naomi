@@ -1,9 +1,8 @@
 [Plugin]
-Name = weather
+Name = Adapt Pocketsphinx
 Version = 1.0.0
-License = MIT
 URL = http://naomiproject.github.io/
-Description = Get weather forecasts from wunderground.com
+Description = Adapt a Pockesphinx model to respond to your voice
 
 [Author]
 Name = Naomi Project

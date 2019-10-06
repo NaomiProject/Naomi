@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
+import os
 from . import paths
+from . import profile
 
 
 class Brain(object):
-    def __init__(self, config):
+    def __init__(self, *args, **kwargs):
         """
         Instantiates a new Brain object, which cross-references user
         input with a list of modules. Note that the order of brain.modules
@@ -14,12 +16,14 @@ class Brain(object):
 
         self._plugins = []
         self._logger = logging.getLogger(__name__)
-        self._config = config
 
     def add_plugin(self, plugin):
         self._plugins.append(plugin)
         self._plugins = sorted(
-            self._plugins, key=lambda p: p.get_priority(), reverse=True)
+            self._plugins,
+            key=lambda p: p.get_priority(),
+            reverse=True
+        )
 
     def get_plugins(self):
         return self._plugins
@@ -32,25 +36,41 @@ class Brain(object):
         Returns:
             A list of standard phrases.
         """
-        try:
-            language = self._config['language']
-        except KeyError:
-            language = None
-        if not language:
-            language = 'en-US'
+        language = profile.get(['language'], 'en-US')
 
-        phrases = []
+        phrases = [profile.get(['keyword'])]
 
-        with open(paths.data('standard_phrases', "%s.txt" % language),
-                  mode="r") as f:
-            for line in f:
-                phrase = line.strip()
-                if phrase:
-                    phrases.append(phrase)
+        # Get the contents of the
+        # .naomi/data/standard_phrases/{language}.txt
+        # file
+        # The purpose of this file is to provide some
+        # words that Naomi can recognize rather than only
+        # recognizing wakeword. If the only word it knows
+        # is the wake word, you will get a lot of false
+        # positives.
+        custom_standard_phrases_file = paths.sub(os.path.join(
+            "data",
+            "standard_phrases",
+            "{}.txt".format(language)
+        ))
+        if(os.path.isfile(custom_standard_phrases_file)):
+            with open(custom_standard_phrases_file, mode='r') as f:
+                for line in f:
+                    phrase = line.strip()
+                    if phrase:
+                        phrases.append(phrase)
+        if(len(phrases) < 10):
+            # Get the contents of the naomi/data/standard_phrases/{language}.txt
+            # file. This file is built from words you actually say to Naomi
+            # that are not the wakeword or in the plugin phrases.
+            with open(paths.data('standard_phrases', "%s.txt" % language), mode="r") as f:
+                for line in f:
+                    phrase = line.strip()
+                    if phrase:
+                        phrases.append(phrase)
+        return sorted(list(set(phrases)))
 
-        return phrases
-
-    def get_plugin_phrases(self):
+    def get_plugin_phrases(self, passive_listen=False):
         """
         Gets phrases from all plugins.
 
@@ -58,10 +78,30 @@ class Brain(object):
             A list of phrases from all plugins.
         """
         phrases = []
+        # include the keyword, otherwise
+        if(passive_listen):
+            phrases = [profile.get(["keyword"])]
+        # Include any custom phrases (things you say to Naomi
+        # that don't match plugin phrases. Otherwise, there is
+        # a high probability that something you say will be
+        # interpreted as a command. For instance, the
+        # "check_email" plugin has only "EMAIL" and "INBOX" as
+        # standard phrases, so every time I would say
+        # "Naomi, check email" Naomi would hear "NAOMI SHUT EMAIL"
+        # and shut down.
+        custom_standard_phrases_file = paths.data(
+            "standard_phrases",
+            "{}.txt".format(profile.get(['language'], 'en-US'))
+        )
+        if(os.path.isfile(custom_standard_phrases_file)):
+            with open(custom_standard_phrases_file, mode='r') as f:
+                for line in f:
+                    phrase = line.strip()
+                    if phrase:
+                        phrases.append(phrase)
 
         for plugin in self._plugins:
             phrases.extend(plugin.get_phrases())
-
         return sorted(list(set(phrases)))
 
     def get_all_phrases(self):
@@ -71,7 +111,9 @@ class Brain(object):
         Returns:
             A list of phrases.
         """
-        return self.get_standard_phrases() + self.get_plugin_phrases()
+        phrases = self.get_standard_phrases()
+        phrases.extend(self.get_plugin_phrases())
+        return sorted(list(set(phrases)))
 
     def query(self, texts):
         """
@@ -87,9 +129,16 @@ class Brain(object):
         for plugin in self._plugins:
             for text in texts:
                 if plugin.is_valid(text):
-                    self._logger.debug("'%s' is a valid phrase for module " +
-                                       "'%s'", text, plugin.info.name)
+                    self._logger.debug(
+                        "'{}' is a valid phrase for module '{}'".format(
+                            text,
+                            plugin.info.name
+                        )
+                    )
                     return (plugin, text)
-        self._logger.debug("No module was able to handle any of these " +
-                           "phrases: %r", texts)
+        self._logger.debug(
+            "No module was able to handle any of these phrases: {}".format(
+                str(texts)
+            )
+        )
         return (None, None)

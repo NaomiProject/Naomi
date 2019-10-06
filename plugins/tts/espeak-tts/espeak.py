@@ -2,20 +2,23 @@ import collections
 import logging
 import pipes
 import re
-import subprocess
-import tempfile
+import unittest
 from naomi import diagnose
 from naomi import plugin
+from naomi.run_command import run_command
 
 if not diagnose.check_executable('espeak'):
+    raise unittest.SkipTest("Skipping espeak, executable not found")
     raise ImportError("espeak executable not found!")
 
 
-RE_PATTERN = re.compile(r'(?P<pty>\d+)\s+' +
-                        r'(?P<lang>[a-z-]+)\s+' +
-                        r'(?P<gender>[MF-])\s+' +
-                        r'(?P<name>[\w-]+)\s+\S+\s+' +
-                        r'(?P<other>(?:\([a-z-]+\s+\d+\))*)')
+RE_PATTERN = re.compile(''.join([
+    r'(?P<pty>\d+)\s+',
+    r'(?P<lang>[a-z-]+)\s+',
+    r'(?P<gender>[MF-])\s+',
+    r'(?P<name>[\w-]+)\s+\S+\s+',
+    r'(?P<other>(?:\([a-z-]+\s+\d+\))*)'
+]))
 RE_OTHER = re.compile(r'\((?P<lang>[a-z-]+)\s+(?P<pty>\d+)\)')
 
 Voice = collections.namedtuple(
@@ -79,8 +82,11 @@ class EspeakTTSPlugin(plugin.TTSPlugin):
         self.words_per_minute = words_per_minute
 
     def get_voices(self):
-        output = subprocess.check_output(['espeak', '--voices'])
-        output += subprocess.check_output(['espeak', '--voices=mbrola'])
+        output = run_command(['espeak', '--voices'], 1).stdout.decode("UTF-8")
+        output += run_command(
+            ['espeak', '--voices=mbrola'],
+            1
+        ).stdout.decode("UTF-8")
         voices = []
         for pty, lang, gender, name, other in RE_PATTERN.findall(output):
             voices.append(Voice(name=name, gender=gender,
@@ -92,16 +98,19 @@ class EspeakTTSPlugin(plugin.TTSPlugin):
         return sorted(voices, key=lambda voice: voice.priority)
 
     def say(self, phrase):
-        with tempfile.SpooledTemporaryFile() as out_f:
-            cmd = ['espeak', '-v', self.voice,
-                             '-p', self.pitch_adjustment,
-                             '-s', self.words_per_minute,
-                             '--stdout',
-                             phrase]
-            cmd = [str(x) for x in cmd]
-            self._logger.debug('Executing %s', ' '.join([pipes.quote(arg)
-                                                         for arg in cmd]))
-            subprocess.call(cmd, stdout=out_f)
-            out_f.seek(0)
-            data = out_f.read()
-            return data
+        cmd = [
+            'espeak',
+            '-v', self.voice,
+            '-p', self.pitch_adjustment,
+            '-s', self.words_per_minute,
+            '--stdout',
+            phrase
+        ]
+        cmd = [str(x) for x in cmd]
+        self._logger.debug(
+            'Executing %s', ' '.join(
+                [pipes.quote(arg) for arg in cmd]
+            )
+        )
+        data = run_command(cmd, 1).stdout
+        return data

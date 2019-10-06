@@ -140,7 +140,8 @@ class PyAudioDevice(plugin.audioengine.AudioDevice):
         except ValueError as e:
             if e.args in (('Sample format not supported', -9994),
                           ('Invalid sample rate', -9997),
-                          ('Invalid number of channels', -9998)):
+                          ('Invalid number of channels', -9998),
+                          ('Device unavailable', -9985)):
                 return False
             else:
                 raise

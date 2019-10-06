@@ -2,9 +2,10 @@
 import sys
 import logging
 import argparse
-
 from . import application
-#from application import USE_STANDARD_MIC, USE_TEXT_MIC, USE_BATCH_MIC
+from . import profile
+
+
 USE_STANDARD_MIC = application.USE_STANDARD_MIC
 USE_TEXT_MIC = application.USE_TEXT_MIC
 USE_BATCH_MIC = application.USE_BATCH_MIC
@@ -22,17 +23,90 @@ def main(args=None):
         action='store_true',
         help='Rebuild configuration profile'
     )
+    parser.add_argument(
+        '--passive-listen',
+        action='store_true',
+        help='Check for keyword and command in same input'
+    )
+    parser.add_argument(
+        '--save-passive-audio',
+        action='store_true',
+        help='Save passive recordings and transcripts for training'
+    )
+    parser.add_argument(
+        '--save-active-audio',
+        action='store_true',
+        help='Save active recordings and transcripts for training'
+    )
+    parser.add_argument(
+        '--save-noise',
+        action='store_true',
+        help='Save noise recordings for training'
+    )
+    parser.add_argument(
+        '--save-audio',
+        action='store_true',
+        help=' '.join([
+            'Save passive, active and noise audio recordings',
+            'and transcripts for training'
+        ])
+    )
+    # Plugin Repository Management
+    pr_man = parser.add_mutually_exclusive_group(required=False)
+    pr_man.add_argument(
+        '--list-available-plugins',
+        nargs='*',
+        dest='list_available',
+        action='append',
+        help='List available plugins (by category) and exit'
+    )
+    pr_man.add_argument(
+        '--install',
+        nargs="+",
+        dest='plugins_to_install',
+        action='append',
+        help='Install plugin and exit'
+    )
+    pr_man.add_argument(
+        '--update',
+        nargs="*",
+        dest='plugins_to_update',
+        action='append',
+        help='Update specific plugin(s) or all plugins and exit'
+    )
+    pr_man.add_argument(
+        '--remove',
+        nargs='+',
+        dest='plugins_to_remove',
+        action='append',
+        help='Remove (uninstall) plugins and exit'
+    )
+    pr_man.add_argument(
+        '--disable',
+        nargs='+',
+        dest='plugins_to_disable',
+        action='append',
+        help='Disable plugins and exit'
+    )
+    pr_man.add_argument(
+        '--enable',
+        nargs='+',
+        dest='plugins_to_enable',
+        action='append',
+        help='Enable plugins and exit'
+    )
     list_info = parser.add_mutually_exclusive_group(required=False)
     list_info.add_argument(
-        '--list-plugins',
+        '--list-active-plugins',
         action='store_true',
-        help='List plugins and exit'
+        help='List active plugins and exit'
     )
     list_info.add_argument(
         '--list-audio-devices',
         action='store_true',
         help='List audio devices and exit'
     )
+    # input options
     mic_mode = parser.add_mutually_exclusive_group(required=False)
     mic_mode.add_argument(
         '--local',
@@ -77,18 +151,50 @@ def main(args=None):
         # Use batched mode mic, pass a file too
         used_mic = USE_BATCH_MIC
 
+    # AaronC 2019-05-29
+    # This keeps an argument in a static location
+    # so we don't have to keep passing it from library
+    # to library. We need to know if the user wants to
+    # re-run populate.py when we examine the settings
+    # variable while instantiating plugin objects
+    # in plugin.GenericPlugin.__init__()
+    profile.set_arg("repopulate", p_args.repopulate)
+
     # Run Naomi
     app = application.Naomi(
         use_mic=used_mic,
         batch_file=p_args.batch_file,
         repopulate=p_args.repopulate,
-        print_transcript=p_args.print_transcript
+        print_transcript=p_args.print_transcript,
+        passive_listen=p_args.passive_listen,
+        save_audio=p_args.save_audio,
+        save_passive_audio=p_args.save_passive_audio,
+        save_active_audio=p_args.save_active_audio,
+        save_noise=p_args.save_noise
     )
-    if p_args.list_plugins:
-        app.list_plugins()
-        sys.exit(1)
+    if p_args.list_active_plugins:
+        app.list_active_plugins()
+        sys.exit(0)
     elif p_args.list_audio_devices:
         app.list_audio_devices()
+        sys.exit(0)
+    if p_args.list_available:
+        app.list_available_plugins(p_args.list_available)
+        sys.exit(0)
+    if p_args.plugins_to_install:
+        app.install_plugins(p_args.plugins_to_install)
+        sys.exit(0)
+    if p_args.plugins_to_update:
+        app.update_plugins(p_args.plugins_to_update)
+        sys.exit(0)
+    if p_args.plugins_to_remove:
+        app.remove_plugins(p_args.plugins_to_remove)
+        sys.exit(0)
+    if p_args.plugins_to_enable:
+        app.enable_plugins(p_args.plugins_to_enable)
+        sys.exit(0)
+    if p_args.plugins_to_disable:
+        app.disable_plugins(p_args.plugins_to_disable)
         sys.exit(0)
     app.run()
 

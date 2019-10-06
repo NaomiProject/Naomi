@@ -4,12 +4,14 @@ import pipes
 import re
 import subprocess
 import tempfile
+import unittest
 from naomi import diagnose
 from naomi import plugin
 
 EXECUTABLE = 'pico2wave'
 
 if not diagnose.check_executable(EXECUTABLE):
+    raise unittest.SkipTest("Skipping Pico, executable '%s' not found!" % EXECUTABLE)
     raise ImportError("Executable '%s' not found!" % EXECUTABLE)
 
 

@@ -2,11 +2,13 @@ import logging
 import pipes
 import subprocess
 import tempfile
+import unittest
 from naomi import diagnose
 from naomi import plugin
 
 
 if not all(diagnose.check_executable(e) for e in ('text2wave', 'festival')):
+    raise unittest.SkipTest('Skipping festival, executables "test2wave" and/or "festival" not found')
     raise ImportError('Executables "text2wave" and/or  "festival" not found!')
 
 

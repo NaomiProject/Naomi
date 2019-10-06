@@ -1,37 +1,35 @@
 # -*- coding: utf-8 -*-
 import logging
-from . import paths
 from . import i18n
+from . import paths
+from . import profile
 #  from notifier import Notifier
 
 
 class Conversation(i18n.GettextMixin):
-    def __init__(self, mic, brain, profile):
+    def __init__(self, mic, brain, *args, **kwargs):
         translations = i18n.parse_translations(paths.data('locale'))
         i18n.GettextMixin.__init__(self, translations, profile)
         self._logger = logging.getLogger(__name__)
         self.mic = mic
-        self.profile = profile
         self.brain = brain
-        self.translations = {
-
-        }
         #  self.notifier = Notifier(profile)
+        self.translations = {}
 
     # Add way for the system to ask for name if is not found in the config
     def askName(self):
-        if 'keyword' in self.profile:
+        if profile.get(['keyword']):
             salutation = self.gettext("My name is {}.").format(
-                self.profile['keyword']
+                profile.get(['keyword'])
             )
         else:
             salutation = self.gettext("My name is Naomi")
         self.mic.say(salutation)
 
     def greet(self):
-        if 'first_name' in self.profile:
+        if profile.get(['first_name']):
             salutation = self.gettext("How can I be of service, {}?").format(
-                self.profile["first_name"]
+                profile.get(["first_name"])
             )
         else:
             salutation = self.gettext("How can I be of service?")
