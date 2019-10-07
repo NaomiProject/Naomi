@@ -18,7 +18,7 @@ class ClockPlugin(plugin.SpeechHandlerPlugin):
             }
         }
 
-    def handle(self, intent, mic):
+    def handle(self, text, mic):
         """
         Reports the current time based on the user's timezone.
 
