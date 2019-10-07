@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import json
 import os
-import re
-import sys
 from adapt.entity_tagger import EntityTagger
 from adapt.tools.text.tokenizer import EnglishTokenizer
 from adapt.tools.text.trie import Trie
@@ -25,7 +22,7 @@ def weight(count, examples):
 
 def makeindex(num):
     char = []
-    while num>0:
+    while num > 0:
         char.insert(0, chr(97 + (num % 26)))
         num = num // 26
     return "".join(char)
@@ -36,7 +33,7 @@ def makeindex(num):
 def is_keyword(word):
     word = word.strip()
     response = False
-    if("{}{}".format(word[:1],word[-1:]) == "{}"):
+    if("{}{}".format(word[:1], word[-1:]) == "{}"):
         response = True
     return response
 
@@ -50,8 +47,8 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
 
     def add_word(self, intent, word):
         # Check if this is a collection
-        if word[:1]+word[-1:]=="{}":
-            keyword_name = "{}_{}".format(intent,word[1:][:-1])
+        if is_keyword(word):
+            keyword_name = "{}_{}".format(intent, word[1:][:-1])
             # print("Registering words for '{}'".format(keyword_name))
             # This doesn't have to exist:
             if keyword_name in self.keywords:
@@ -63,7 +60,7 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
                     self.engine.register_regex_entity(regex)
         else:
             # Just register the word as a required word
-            self.keyword_index+=1
+            self.keyword_index += 1
             keyword_name = "{}_{}".format(intent, makeindex(self.keyword_index))
             # print("Registering word '{}' as {}".format(word,keyword_name))
             self.engine.register_entity(word, keyword_name)
@@ -80,15 +77,15 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
                 intent = "{}{}".format(intent_base, intent_inc)
             if('keywords' in intents[intent_base]):
                 for keyword in intents[intent_base]['keywords']:
-                    keyword_token = "{}_{}".format(intent,keyword)
-                    self.keywords[keyword_token]={
+                    keyword_token = "{}_{}".format(intent, keyword)
+                    self.keywords[keyword_token] = {
                         'words': intents[intent_base]['keywords'][keyword],
                         'name': keyword
                     }
             if('regex' in intents[intent_base]):
                 for regex_name in intents[intent_base]['regex']:
-                    regex_token = "{}_{}".format(intent,regex_name)
-                    self.regex[regex_token]=[]
+                    regex_token = "{}_{}".format(intent, regex_name)
+                    self.regex[regex_token] = []
                     for regex in intents[intent_base]['regex'][regex_name]:
                         self.regex[regex_token].append(regex.replace(regex_name, regex_token))
                 # pprint(self.regex)
@@ -109,16 +106,16 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
                 for word in words:
                     if not is_keyword(word):
                         word = word.upper()
-                    # Count the number of times the word ap
+                    # Count the number of times the word appears in this intent
                     try:
                         self.intent_map['intents'][intent]['words'][word]['count'] += 1
                     except KeyError:
                         self.intent_map['intents'][intent]['words'][word] = {'count': 1, 'weight': None, 'required': False}
-                    # A
+                    # Count the number of intents the word appears in
                     try:
                         self.words[word].update({intent: True})
                     except KeyError:
-                        self.words[word]={intent: True}
+                        self.words[word] = {intent: True}
             # for each word in each intent, divide the word frequency by the number of examples.
             # Since a word is only counted once per example, regardless of how many times it appears,
             # if the number of times it was counted matches the number of examples, then
@@ -146,39 +143,37 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
             # print("Training {}".format(intent))
             # pprint(self.keywords)
             for word in self.intent_map['intents'][intent]['words']:
-                weight = self.intent_map['intents'][intent]['words'][word]
                 intents_count = len(self.intent_map['intents'])
                 word_appears_in = len(self.words[word])
                 # print("Word: {} Weight: {} Intents: {} Appears in: {}".format(word, weight, intents_count, word_appears_in))
                 self.intent_map['intents'][intent]['words'][word]['weight'] = self.intent_map['intents'][intent]['words'][word]['weight'] * (intents_count - word_appears_in) / intents_count
-                word_token = "{}_{}".format(intent, word)
                 if(self.intent_map['intents'][intent]['words'][word]['required']):
                     # add the word as required.
                     # print("adding '{}' as required".format(word_token))
-                    required_words.append(self.add_word(intent,word))
+                    required_words.append(self.add_word(intent, word))
                 else:
                     # if the word is a keyword list, add it
                     if(word[:1] + word[-1:] == "{}"):
-                        optional_words.append(self.add_word(intent,word))
+                        optional_words.append(self.add_word(intent, word))
                     else:
                         if(self.intent_map['intents'][intent]['words'][word]['weight'] > 0.35):
                             # print("adding '{}' as optional".format(word_token))
-                            optional_words.append(self.add_word(intent,word))
-            a=IntentBuilder(intent)
+                            optional_words.append(self.add_word(intent, word))
+            construction = IntentBuilder(intent)
             for keyword in required_words:
                 # print("Required word: {}".format(keyword))
-                a=a.require(keyword)
+                construction = construction.require(keyword)
             for keyword in optional_words:
                 # print("Optional word: {}".format(keyword))
-                a=a.optionally(keyword)
-            if(a):
+                construction = construction.optionally(keyword)
+            if(construction):
                 # print("Building {}".format(intent))
-                self.engine.register_intent_parser(a.build())
+                self.engine.register_intent_parser(construction.build())
         # pprint(self.intent_map['intents'])
         # print("")
         self.trained = True
 
-    def get_plugin_phrases(self, passive_listen):
+    def get_plugin_phrases(self, passive_listen=False):
         phrases = []
         # include the keyword, otherwise
         if(passive_listen):
@@ -223,10 +218,10 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
         response = {}
         try:
             for intent in self.engine.determine_intent(phrase):
-                if intent and intent.get("confidence")>0:
+                if intent and intent.get("confidence") > 0:
                     keywords = {}
                     for keyword in intent:
-                        if keyword not in ['confidence','intent_type','target']:
+                        if keyword not in ['confidence', 'intent_type', 'target']:
                             if keyword in self.keywords:
                                 # Since the Naomi parser can return a list of matching words,
                                 # this needs to be a list

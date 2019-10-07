@@ -86,7 +86,7 @@ class BirthdayPlugin(plugin.SpeechHandlerPlugin):
             try:
                 if needle in person['birthday']:
                     people.append(person['name'])
-            except Exception:
+            except KeyError:
                 continue
 
         if len(people) > 0:

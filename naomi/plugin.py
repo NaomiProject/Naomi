@@ -76,7 +76,7 @@ class SpeechHandlerPlugin(GenericPlugin, i18n.GettextMixin):
         pass
 
     @abc.abstractmethod
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         pass
 
     @abc.abstractmethod

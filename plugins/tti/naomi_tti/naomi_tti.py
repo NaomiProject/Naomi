@@ -8,13 +8,13 @@ from naomi import profile
 
 
 # Replace the nth occurrance of sub
-# based on an answer by aleskva at 
+# based on an answer by aleskva at
 # https://stackoverflow.com/questions/35091557/replace-nth-occurrence-of-substring-in-string
 def replacenth(search_for, replace_with, string, n):
     try:
         # print("Searching for: '{}' in '{}'".format(search_for, string))
         # pprint([m.start() for m in re.finditer(search_for, string)])
-        where = [m.start() for m in re.finditer("{}{}{}".format(r"\b",search_for,r"\b"), string)][n-1]
+        where = [m.start() for m in re.finditer("{}{}{}".format(r"\b", search_for, r"\b"), string)][n - 1]
         before = string[:where]
         after = string[where:]
         after = after.replace(search_for, replace_with, 1)
@@ -30,7 +30,7 @@ def replacenth(search_for, replace_with, string, n):
 def is_keyword(word):
     word = word.strip()
     response = False
-    if("{}{}".format(word[:1],word[-1:]) == "{}"):
+    if("{}{}".format(word[:1], word[-1:]) == "{}"):
         response = True
     return response
 
@@ -48,7 +48,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 try:
                     self.keywords[intent].update(intents[intent_base]['keywords'])
                 except KeyError:
-                    self.keywords[intent]=intents[intent_base]['keywords']
+                    self.keywords[intent] = intents[intent_base]['keywords']
             self.intent_map['intents'][intent] = {
                 'action': intents[intent_base]['action'],
                 'name': intent_base,
@@ -69,11 +69,11 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                     try:
                         self.words[word].update({intent: True})
                     except KeyError:
-                        self.words[word]={intent: True}
+                        self.words[word] = {intent: True}
             # for each word in each intent, divide the word frequency by the number of examples
             phrase_count = len(intents[intent_base]['templates'])
             for word in self.intent_map['intents'][intent]['words']:
-                self.intent_map['intents'][intent]['words'][word]/=phrase_count
+                self.intent_map['intents'][intent]['words'][word] /= phrase_count
 
     def get_plugin_phrases(self, passive_listen):
         phrases = []
@@ -126,20 +126,21 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             variants = {phrase: {}}
             for keyword in self.keywords[intent]:
                 for word in self.keywords[intent][keyword]:
-                    count=0  # count is the index of the match we are looking for
-                    countadded=0  # keep track of variants added for this count
+                    count = 0  # count is the index of the match we are looking for
+                    countadded = 0  # keep track of variants added for this count
                     while True:
-                        added = 0 # if we get through all the variants without adding any new variants, then increase the count.
+                        added = 0  # if we get through all the variants without
+                        # adding any new variants, then increase the count.
                         for variant in variants:
-                            #print("Count: {} Added: {} CountAdded: {}".format(count, added, countadded))
-                            #print()
-                            #print("word: '{}' variant: '{}'".format(word,variant))
+                            # print("Count: {} Added: {} CountAdded: {}".format(count, added, countadded))
+                            # print()
+                            # print("word: '{}' variant: '{}'".format(word,variant))
                             # subs is a list of substitutions
                             subs = dict(variants[variant])
                             # check and see if we can make a substitution and
                             # generate a new variant.
                             # print("replacenth('{}', '{}', '{}', {})".format(word, '{'+keyword+'}', variant, count))
-                            new = replacenth(word, "{}{}{}".format('{',keyword,'}'), variant, count)
+                            new = replacenth(word, "{}{}{}".format('{', keyword, '}'), variant, count)
                             # print(new)
                             if new not in variants:
                                 # print(new)
@@ -149,7 +150,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                                     subs[keyword] = [word]
                                 # print(subs[keyword])
                                 # print()
-                                variants[new]=subs
+                                variants[new] = subs
                                 # pprint(variants)
                                 added += 1
                                 countadded += 1
@@ -161,47 +162,46 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                             if countadded == 0:
                                 break
                             else:
-                                count+=1
-                                countadded=0
+                                count += 1
+                                countadded = 0
             allvariants.update(variants)
         # Now calculate a total score for each variant
         variantscores = {}
         for variant in allvariants:
             # print("************VARIANT**************")
             # print(variant)
-            variantscores[variant]={}
+            variantscores[variant] = {}
             words = variant.split()
-            intentscores={}
+            intentscores = {}
             for intent in self.intent_map['intents']:
                 score = 0
                 for word in words:
                     if word in self.intent_map['intents'][intent]['words']:
-                        weight = self.intent_map['intents'][intent]['words'][word]
                         intents_count = len(self.intent_map['intents'])
                         word_appears_in = len(self.words[word])
                         # print("Word: {} Weight: {} Intents: {} Appears in: {}".format(word, weight, intents_count, word_appears_in))
-                        score += self.intent_map['intents'][intent]['words'][word]*(intents_count-word_appears_in)/intents_count
+                        score += self.intent_map['intents'][intent]['words'][word] * (intents_count - word_appears_in) / intents_count
                 intentscores[intent] = score / len(words)
             # Take the intent with the highest score
             # print("==========intentscores============")
             # pprint(intentscores)
-            bestintent = max(intentscores, key=lambda key:intentscores[key])
-            variantscores[variant]={
-                'intent': bestintent, 
-                'input': phrase, 
+            bestintent = max(intentscores, key=lambda key: intentscores[key])
+            variantscores[variant] = {
+                'intent': bestintent,
+                'input': phrase,
                 'score': intentscores[bestintent],
                 'matches': allvariants[variant],
                 'action': self.intent_map['intents'][bestintent]['action']
             }
-        bestvariant = max(variantscores, key=lambda key:variantscores[key]['score'])
+        bestvariant = max(variantscores, key=lambda key: variantscores[key]['score'])
         # print("BEST: {}".format(bestvariant))
         # pprint(variantscores[bestvariant])
         # find the template with the smallest levenshtein distance
-        templates={}
+        templates = {}
         for template in self.intent_map['intents'][bestintent]['templates']:
-            templates[template]=wer(template,variant)
+            templates[template] = wer(template, variant)
             # print("distance from '{}' to '{}' is {}".format(variant,template,templates[template]))
-        besttemplate = min(templates, key=lambda key:templates[key])
+        besttemplate = min(templates, key=lambda key: templates[key])
         # The next thing we have to do is match up all the substitutions
         # that have been made between the template and the current variant
         # This is so that if there are multiple match indicators we can eliminate
@@ -233,90 +233,110 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
         currenttemplate = besttemplate
         for matchlist in variantscores[bestvariant]['matches']:
             for word in variantscores[bestvariant]['matches'][matchlist]:
-                # Substitute word into the variant (we know this matches the first
-                # occurrance of {matchlist})
-                currentvariant = bestvariant.replace('{'+matchlist+'}', word, 1)
+                # Substitute word into the variant (we know this matches the
+                # first occurrance of {matchlist})
+                currentvariant = bestvariant.replace(
+                    "{}{}{}".format('{', matchlist, '}'),
+                    word,
+                    1
+                )
                 # print("Bestvariant with substitutions: {}".format(currentvariant))
                 templates = {}
-                # Get a count of the number of matches for the current matchlist in template
-                possiblesubstitutions = currenttemplate.count('{'+matchlist+'}')
+                # Get a count of the number of matches for the
+                # current matchlist in template
+                possiblesubstitutions = currenttemplate.count(
+                    '{}{}{}'.format('{', matchlist, '}')
+                )
                 # print("Matchlist: {} Word: {} Subs: {}".format(matchlist, word, possiblesubstitutions))
-                # We don't actually know if there are actually any substitutions in the template
-                if(possiblesubstitutions>0):
+                # We don't actually know if there are actually any
+                # substitutions in the template
+                if(possiblesubstitutions > 0):
                     for i in range(possiblesubstitutions):
                         # print("i={}".format(i))
-                        currenttemplate=replacenth('{'+matchlist+'}', word, currenttemplate, i + 1)
-                        templates[currenttemplate]=wer(currentvariant, currenttemplate)
-                    currenttemplate = min(templates, key=lambda key: templates[key])
+                        currenttemplate = replacenth(
+                            '{}{}{}'.format('{', matchlist, '}'),
+                            word,
+                            currenttemplate,
+                            i + 1
+                        )
+                        templates[currenttemplate] = wer(
+                            currentvariant,
+                            currenttemplate
+                        )
+                    currenttemplate = min(
+                        templates,
+                        key=lambda key: templates[key]
+                    )
                     # print(currenttemplate)
                 # print("{}: {}".format(word,currenttemplate))
             # print("{}: {}".format(matchlist,currenttemplate))
         # Now that we have a matching template, run through a list of all
         # substitutions in the template and see if there are any we have not
         # identified yet.
-        substitutions = re.findall('\{(.*?)\}',currenttemplate)
+        substitutions = re.findall('\{(.*?)\}', currenttemplate)
         if(substitutions):
             for substitution in substitutions:
-                subvar = '{'+substitution+'}'
+                subvar = "{}{}{}".format('{', substitution, '}')
                 # print("Searching for {}".format(subvar))
-                # So now we know that we are missing the variable contained in substitution.
-                # What we have to do now is figure out where in the string to insert that
-                # variable in order to minimize the levenshtein distance between
-                # bestvariant and besttemplate
+                # So now we know that we are missing the variable contained
+                # in substitution.
+                # What we have to do now is figure out where in the string
+                # to insert that variable in order to minimize the levenshtein
+                # distance between bestvariant and besttemplate
                 # print("Minimizing distance from '{}' to '{}' by substituting in '{}'".format(currentvariant,currenttemplate,subvar))
                 # print("Variant: {}".format(currentvariant))
-                variant=currentvariant.split()
+                variant = currentvariant.split()
                 # print("Template: {}".format(currenttemplate))
-                template=currenttemplate.split()
-                n=len(variant)+1
-                m=len(template)+1
+                template = currenttemplate.split()
+                n = len(variant) + 1
+                m = len(template) + 1
                 # print("Variant: '{}' length: {}".format(variant,n))
                 # print("Template: '{}' length: {}".format(template,m))
                 # Find out which column contains the first instance of substitution
-                s=template.index(subvar)+1
+                s = template.index(subvar) + 1
                 # print("subvar={} s={}".format(subvar,s))
-                match=[]
-                a=[]
-                for i in range(n+1):
-                    a.append([1]*(m+1))
-                    a[i][0]=i
-                for j in range(m+1):
-                    a[0][j]=j
-                for i in range(1,n):
-                    for j in range(1,m):
-                        if(variant[i-1] == template[j-1]):
-                            c=0
+                match = []
+                a = []
+                for i in range(n + 1):
+                    a.append([1] * (m + 1))
+                    a[i][0] = i
+                for j in range(m + 1):
+                    a[0][j] = j
+                for i in range(1, n):
+                    for j in range(1, m):
+                        if(variant[i - 1] == template[j - 1]):
+                            c = 0
                         else:
-                            c=1
-                        a[i][j]=min(
-                            a[i-1][j]+1,
-                            a[i][j-1]+1,
-                            a[i-1][j-1]+c
+                            c = 1
+                        a[i][j] = min(
+                            a[i - 1][j] + 1,
+                            a[i][j - 1] + 1,
+                            a[i - 1][j - 1] + c
                         )
-                        a[i][j]=c
+                        a[i][j] = c
                 # pprint(a)
                 # examine the resulting list of matched words
                 # to locate the position of the unmatched keyword
                 matched = ""
-                for i in range(1,n-1):
+                for i in range(1, n - 1):
                     # print("i: {} s: {}".format(i,s))
-                    if(a[i-1][s-1]==0):
+                    if(a[i - 1][s - 1] == 0):
                         # the previous item was a match
                         # so start here and work to the right until there is another match
                         k = i
                         start = k
                         end = n - 1
                         compare = [k]
-                        compare.extend([1]*(m))
+                        compare.extend([1] * (m))
                         # print(variant[k])
                         # print("Comparing {} to {}".format(a[k],compare))
-                        while(a[k]==compare and k < (n)):
+                        while((a[k] == compare) and (k < (n))):
                             # print("k = {}".format(k))
-                            match.append(variant[k-1])
+                            match.append(variant[k - 1])
                             # print(match)
-                            k+=1
+                            k += 1
                             compare = [k]
-                            compare.extend([1]*(m))
+                            compare.extend([1] * (m))
                             # print("Comparing {} to {}".format(a[k],compare))
                             end = k
                         matched = " ".join(match)
@@ -328,20 +348,20 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         substitutedvariant.extend(variant[end:])
                         break
                         # print("SubstitutedVariant: {}".format(substitutedvariant))
-                    elif(a[i+1][s+1]==0):
+                    elif(a[i + 1][s + 1] == 0):
                         # the next item is a match, so start working backward
                         k = i
                         end = k
                         start = 0
                         compare = [k]
-                        compare.extend([1]*(m))
+                        compare.extend([1] * (m))
                         # print("Comparing {} to {}".format(a[k],compare))
-                        while(a[k]==compare):
-                            match.append(variant[k-1])
+                        while(a[k] == compare):
+                            match.append(variant[k - 1])
                             # print(match)
-                            k-=1
+                            k -= 1
                             compare = [k]
-                            compare.extend([1]*(m))
+                            compare.extend([1] * (m))
                             # print("Comparing {} to {}".format(a[k],compare))
                             start = k
                         matched = " ".join(reversed(match))
@@ -358,7 +378,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                     try:
                         variantscores[bestvariant]['matches'][substitution].append(matched)
                     except KeyError:
-                        variantscores[bestvariant]['matches'][substitution]=[matched]
+                        variantscores[bestvariant]['matches'][substitution] = [matched]
         # variantscores[bestvariant]['template']=besttemplate
         return {
             self.intent_map['intents'][variantscores[bestvariant]['intent']]['name']: {

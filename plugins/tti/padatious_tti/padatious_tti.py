@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import json
 import os
 from padatious import IntentContainer
 from naomi import paths
@@ -12,13 +11,14 @@ from naomi import profile
 def is_keyword(word):
     word = word.strip()
     response = False
-    if("{}{}".format(word[:1],word[-1:]) == "{}"):
+    if("{}{}".format(word[:1], word[-1:]) == "{}"):
         response = True
     return response
 
 
 class PadatiousTTIPlugin(plugin.TTIPlugin):
     container = IntentContainer('intent_cache')
+
     def add_intents(self, intents):
         for intent in intents:
             # this prevents collisions between intents
@@ -35,14 +35,14 @@ class PadatiousTTIPlugin(plugin.TTIPlugin):
             templates = intents[intent_base]['templates']
             if('keywords' in intents[intent_base]):
                 for keyword in intents[intent_base]['keywords']:
-                    keyword_token = "{}_{}".format(intent,keyword)
-                    self.keywords[keyword_token]={
+                    keyword_token = "{}_{}".format(intent, keyword)
+                    self.keywords[keyword_token] = {
                         'words': intents[intent_base]['keywords'][keyword],
                         'name': keyword
                     }
                     # print("Adding keyword '{}': {}".format(keyword_token,intents[intent_base]['keywords'][keyword]))
                     # map the keywords into the intents
-                    templates = [t.replace(keyword,keyword_token) for t in templates]
+                    templates = [t.replace(keyword, keyword_token) for t in templates]
                     self.container.add_entity(keyword_token, intents[intent_base]['keywords'][keyword])
             self.intent_map['intents'][intent]['templates'] = templates
             self.container.add_intent(intent, templates)
@@ -102,7 +102,6 @@ class PadatiousTTIPlugin(plugin.TTIPlugin):
         response = {}
         intent = self.container.calc_intent(phrase)
         if(intent):
-            intent_name = self.intent_map['intents'][intent.name]['name']
             matches = {}
             for match in intent.matches:
                 if match in self.keywords:
