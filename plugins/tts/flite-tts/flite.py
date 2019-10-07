@@ -6,11 +6,15 @@ import tempfile
 import unittest
 from naomi import diagnose
 from naomi import plugin
+from naomi import profile
+
 
 EXECUTABLE = 'flite'
 
 if not diagnose.check_executable(EXECUTABLE):
-    raise unittest.SkipTest("Skipping flite-tts, executable '{}' not found".format(EXECUTABLE))
+    raise unittest.SkipTest(
+        "Skipping flite-tts, executable '{}' not found".format(EXECUTABLE)
+    )
     raise ImportError("Executable '%s' not found!" % EXECUTABLE)
 
 
@@ -24,18 +28,17 @@ class FliteTTSPlugin(plugin.TTSPlugin):
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
 
         self._logger = logging.getLogger(__name__)
-        self._logger.warning("This TTS plugin doesn't have multilanguage " +
-                             "support!")
-        try:
-            voice = self.profile['flite-tts']['voice']
-            self._logger.info("Voice: {}".format(voice))
-        except KeyError:
+        self._logger.warning(
+            "This TTS plugin doesn't have multilanguage support!"
+        )
+        voice = profile.get(['flite-tts', 'voice'], '')
+        self._logger.info("Voice: {}".format(voice))
+        voices = self.get_voices()
+        if not voice or voice not in voices:
+            self._logger.info(
+                "Voice {} not in Voices {}".format(voice, voices)
+            )
             voice = ''
-        else:
-            voices = self.get_voices()
-            if not voice or voice not in voices:
-                self._logger.info("Voice {} not in Voices {}".format(voice,voices))
-                voice = ''
         self.voice = voice
 
     @classmethod

@@ -1,6 +1,7 @@
 import unittest
-from naomi import plugin
 from naomi import paths
+from naomi import plugin
+from naomi import profile
 try:
     import snowboydetect
 except ImportError:
@@ -23,15 +24,13 @@ class SnowboySTTPlugin(plugin.STTPlugin):
         plugin.STTPlugin.__init__(self, *args, **kwargs)
 
         self.resource_file = paths.PLUGIN_PATH + "/stt/snowboy-stt/common.res"
-        self.model = self.profile['snowboy']['model']
-        try:
-            self.sensitivity = self.profile['snowboy']['sensitivity']
-        except KeyError:
-            self.sensitivity = "0.5"
+        self.model = profile.get(['snowboy', 'model'])
+        self.sensitivity = profile.get(['snowboy', 'sensitivity'], "0.5")
 
         self.detector = snowboydetect.SnowboyDetect(
             resource_filename=self.resource_file,
-            model_str=self.model)
+            model_str=self.model
+        )
         self.detector.SetAudioGain(1)
         self.detector.SetSensitivity(self.sensitivity)
 

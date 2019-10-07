@@ -94,8 +94,19 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
         ]
     )
 
-    def get_phrases(self):
-        return [self.gettext("CHECK EMAIL"), self.gettext("CHECK INBOX")]
+    def intents(self):
+        _ = self.gettext
+        return {
+            'CheckEmailIntent': {
+                'templates': [
+                    _("READ MY EMAIL"),
+                    _("CHECK MY INBOX"),
+                    _("DO I HAVE ANY EMAIL"),
+                    _("ARE THERE ANY NEW EMAILS")
+                ],
+                'action': self.handle
+            }
+        }
 
     def fetch_unread_emails(self, since=None, markRead=False, limit=None):
         """
@@ -143,14 +154,20 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
 
         return msgs
 
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         """
         Responds to user-input, typically speech text, with a summary of
         the user's IMAP inbox, reporting on the number of unread emails
         in the inbox, as well as their senders.
 
         Arguments:
-        text -- user-input, typically transcribed speech
+        intent -- intentparser result with the following layout:
+            intent['action'] = the action to take when the intent is activated
+            intent['input'] = the original words
+            intent['matches'] = dictionary of lists with matching elements,
+                each with a list of the actual words matched
+            intent['score'] = how confident Naomi is that it matched the
+                correct intent.
         mic -- used to interact with the user (for both input and output)
         """
         try:
@@ -196,12 +213,3 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
                     unique_senders[0]
                 )
             mic.say(response)
-
-    def is_valid(self, text):
-        """
-        Returns True if the input is related to email.
-
-        Arguments:
-        text -- user-input, typically transcribed speech
-        """
-        return any(p.lower() in text.lower() for p in ['EMAIL', 'INBOX'])

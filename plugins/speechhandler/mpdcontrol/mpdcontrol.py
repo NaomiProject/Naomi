@@ -2,53 +2,61 @@
 import difflib
 import logging
 from naomi import plugin
+from naomi import profile
 from . import mpdclient
 
 
 class MPDControlPlugin(plugin.SpeechHandlerPlugin):
+
     def __init__(self, *args, **kwargs):
         super(MPDControlPlugin, self).__init__(*args, **kwargs)
-
         self._logger = logging.getLogger(__name__)
 
+        server = profile.get(['mpdclient', 'server'], 'localhost')
         try:
-            server = self.profile['mpdclient']['server']
-        except KeyError:
-            server = 'localhost'
-
-        try:
-            port = int(self.profile['mpdclient']['port'])
-        except (KeyError, ValueError) as e:
+            port = int(profile.get(['mpdclient', 'port'], 6600))
+        except ValueError:
             port = 6600
-            if isinstance(e, ValueError):
-                self._logger.warning(
-                    "Configured port is invalid, using %d instead",
-                    port)
+            self._logger.warning(
+                "Configured port is invalid, using %d instead",
+                port
+            )
 
-        try:
-            password = self.profile['mpdclient']['password']
-        except KeyError:
-            password = ''
+        password = profile.get(['mpdclient', 'password'], '')
+        self._autoplay = profile.get(['mpdclient', 'autoplay'], False)
 
-        try:
-            self._autoplay = self.profile['mpdclient']['autoplay']
-        except KeyError:
-            self._autoplay = False
+        # In reticent mode Naomi is quieter.
+        self._reticient = profile.get_profile_flag(
+            ['mpdclient', 'reticient'],
+            False
+        )
 
-        try:
-            self._reticient = self.profile['mpdclient']['reticient']
-        except KeyError:
-            self._reticient = False
+        self._music = mpdclient.MPDClient(
+            server=server,
+            port=port,
+            password=password
+        )
 
-        self._music = mpdclient.MPDClient(server=server, port=port,
-                                          password=password)
+    def intents(self):
+        _ = self.gettext
+        playlists = [pl.upper() for pl in self._music.get_playlists()]
+        return {
+            'MPDControlIntent': {
+                'keywords': {
+                    'PlayList': playlists
+                },
+                'templates': [
+                    "PLAY SOMETHING",
+                    "PLAY MUSIC",
+                    "PLAY {PlayList}"
+                ],
+                'action': self.handle
+            }
+        }
 
-    def get_phrases(self):
-        return [self.gettext('MUSIC'), self.gettext('SPOTIFY')]
-
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         """
-        Responds to user-input, typically speech text, by telling a joke.
+        Responds to user-input, typically speech text, by playing music
 
         Arguments:
             text -- user-input, typically transcribed speech
@@ -220,12 +228,3 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
             self._music.play()
         else:
             mic.say(text)
-
-    def is_valid(self, text):
-        """
-        Returns True if the input is related to jokes/humor.
-
-        Arguments:
-        text -- user-input, typically transcribed speech
-        """
-        return any(phrase in text.upper() for phrase in self.get_phrases())

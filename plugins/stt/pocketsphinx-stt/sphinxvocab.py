@@ -7,6 +7,7 @@ try:
 except ImportError:
     pass
 from .g2p import PhonetisaurusG2P
+from naomi import profile
 
 
 def delete_temp_file(file_to_delete):
@@ -30,7 +31,7 @@ def get_dictionary_path(path):
     return os.path.join(path, 'dictionary')
 
 
-def compile_vocabulary(config, directory, phrases):
+def compile_vocabulary(directory, phrases):
     """
     Compiles the vocabulary to the Pocketsphinx format by creating a
     languagemodel and a dictionary.
@@ -42,35 +43,32 @@ def compile_vocabulary(config, directory, phrases):
     languagemodel_path = get_languagemodel_path(directory)
     dictionary_path = get_dictionary_path(directory)
 
-    try:
-        executable = config['pocketsphinx']['phonetisaurus_executable']
-    except KeyError:
-        executable = 'phonetisaurus-g2p'
-
-    try:
-        nbest = config['pocketsphinx']['nbest']
-    except KeyError:
-        nbest = 3
-
-    try:
-        fst_model = config['pocketsphinx']['fst_model']
-    except KeyError:
-        fst_model = None
-
-    try:
-        fst_model_alphabet = config['pocketsphinx']['fst_model_alphabet']
-    except KeyError:
-        fst_model_alphabet = 'arpabet'
+    executable = profile.get(
+        ['pocketsphinx', 'phonetisaurus_executable'],
+        'phonetisaurus-g2p'
+    )
+    nbest = profile.get(
+        ['pocketsphinx', 'nbest'],
+        3
+    )
+    fst_model = profile.get(['pocketsphinx', 'fst_model'])
+    fst_model_alphabet = profile.get(
+        ['pocketsphinx', 'fst_model_alphabet'],
+        'arpabet'
+    )
 
     if not fst_model:
         raise ValueError('FST model not specified!')
 
     if not os.path.exists(fst_model):
-        raise OSError('FST model does not exist!')
+        raise OSError('FST model {} does not exist!'.format(fst_model))
 
-    g2pconverter = PhonetisaurusG2P(executable, fst_model,
-                                    fst_model_alphabet=fst_model_alphabet,
-                                    nbest=nbest)
+    g2pconverter = PhonetisaurusG2P(
+        executable,
+        fst_model,
+        fst_model_alphabet=fst_model_alphabet,
+        nbest=nbest
+    )
 
     logger.debug('Languagemodel path: %s' % languagemodel_path)
     logger.debug('Dictionary path:    %s' % dictionary_path)
@@ -149,6 +147,7 @@ def compile_dictionary(g2pconverter, words, output_file):
         phonemes = g2pconverter.translate([word.upper() for word in words])
         logger.debug(phonemes)
     except ValueError as e:
+        print(str(e))
         if str(e) == 'Input symbol not found':
             logger.debug("Upper failed trying lower()")
             phonemes = g2pconverter.translate([word.lower() for word in words])

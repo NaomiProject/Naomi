@@ -1,6 +1,8 @@
 import logging
 import requests
+from collections import OrderedDict
 from naomi import plugin
+from naomi import profile
 
 SUPPORTED_LANGUAGES = ['en-US', 'es-US']
 
@@ -21,21 +23,41 @@ class AttSTTPlugin(plugin.STTPlugin):
     """
 
     def __init__(self, *args, **kwargs):
-        plugin.STTPlugin.__init__(self, *args, **kwargs)
         self._logger = logging.getLogger(__name__)
-        self._token = None
-        self.app_key = self.profile['att-stt']['app_key']
-        self.app_secret = self.profile['att-stt']['app_secret']
-
-        try:
-            language = self.profile['language']
-        except KeyError:
-            language = 'en-US'
+        self._logger.debug("WWIS_Weather INIT")
+        language = profile.get(['language'], 'en-US')
+        translations = i18n.parse_translations(paths.data('locale'))
+        translator = i18n.GettextMixin(translations, profile.get_profile())
+        _ = translator.gettext
 
         if language not in SUPPORTED_LANGUAGES:
             raise ValueError("Language '%s' not supported" % language)
 
         self.language = language
+        self.settings = OrderedDict(
+            [
+                (
+                    ('att-stt', 'app_key'), {
+                        'title': _('Please enter your AT&T app key'),
+                        'description': "".join([
+                            _('For more information: https://developer.att.com/blog/at-amp-t-text-to-speech-and-speech-to-text-api-tutorial')
+                        ])
+                    }
+                ),
+                (
+                    ('att-stt', 'app_secret'), {
+                        'title': _('Please enter your AT&T secret key'),
+                        'description': "".join([
+                            _('For more information: https://developer.att.com/blog/at-amp-t-text-to-speech-and-speech-to-text-api-tutorial')
+                        ])
+                    }
+                )
+            ]
+        )
+        plugin.STTPlugin.__init__(self, *args, **kwargs)
+        self._token = None
+        self.app_key = profile.get(['att-stt', 'app_key'])
+        self.app_secret = profile.get(['att-stt', 'app_secret'])
 
     @property
     def token(self):
@@ -57,8 +79,12 @@ class AttSTTPlugin(plugin.STTPlugin):
         r = self._get_response(data)
         if r.status_code == requests.codes['unauthorized']:
             # Request token invalid, retry once with a new token
-            self._logger.warning('OAuth access token invalid, generating a ' +
-                                 'new one and retrying...')
+            self._logger.warning(
+                " ".join([
+                    'OAuth access token invalid, generating a',
+                    'new one and retrying...'
+                ])
+            )
             self._token = None
             r = self._get_response(data)
         try:

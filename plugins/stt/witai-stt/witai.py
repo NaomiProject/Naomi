@@ -3,6 +3,7 @@
 import logging
 import requests
 from naomi import plugin
+from naomi import profile
 
 # There seems to be no way to get language setting of the defined app
 # Last updated: April 06, 2016
@@ -41,15 +42,15 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         """
         plugin.STTPlugin.__init__(self, *args, **kwargs)
         self._logger = logging.getLogger(__name__)
-        self.token = self.profile['witai-stt']['access_token']
+        self.token = profile.get(['witai-stt', 'access_token'])
 
-        try:
-            language = self.profile['language']
-        except KeyError:
-            language = 'en-US'
+        language = profile.get(['language'], 'en-US')
         if language.split('-')[0] not in SUPPORTED_LANG:
-            raise ValueError('Language %s is not supported.',
-                             language.split('-')[0])
+            raise ValueError(
+                'Language {} is not supported.'.format(
+                    language.split('-')[0]
+                )
+            )
 
     @property
     def token(self):
@@ -71,9 +72,11 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         Sets property token
         """
         self._token = value
-        self._headers = {'Authorization': 'Bearer %s' % self.token,
-                         'accept': 'application/json',
-                         'Content-Type': 'audio/wav'}
+        self._headers = {
+            'Authorization': 'Bearer %s' % self.token,
+            'accept': 'application/json',
+            'Content-Type': 'audio/wav'
+        }
 
     @property
     def headers(self):

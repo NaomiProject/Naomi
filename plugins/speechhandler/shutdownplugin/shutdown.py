@@ -6,13 +6,18 @@ from naomi import profile
 
 
 class ShutdownPlugin(plugin.SpeechHandlerPlugin):
-    def get_phrases(self):
-        return [
-            self.gettext("SHUTDOWN"),
-            self.gettext("SHUT DOWN")
-        ]
+    def intents(self):
+        return {
+            'ShutdownIntent': {
+                'templates': [
+                    "SHUTDOWN",
+                    "TURN YOURSELF OFF"
+                ],
+                'action': self.handle
+            }
+        }
 
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         """
         Responds to user-input, typically speech text, by relaying the
         meaning of life.
@@ -36,16 +41,8 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         # specifically wait for Naomi to finish talking
         # here, otherwise it will exit before getting to
         # speak.
-        while(mic.current_thread.is_alive()):
-            time.sleep(1)
+        if hasattr(mic, "current_thread"):
+            while(mic.current_thread.is_alive()):
+                time.sleep(1)
 
         quit()
-
-    def is_valid(self, text):
-        """
-        Returns True if the input is related to the meaning of life.
-
-        Arguments:
-        text -- user-input, typically transcribed speech
-        """
-        return any(p.lower() in text.lower() for p in self.get_phrases())

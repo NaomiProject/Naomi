@@ -70,6 +70,64 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         )
         super(WWISWeatherPlugin, self).__init__(*args, **kwargs)
 
+    def intents(self):
+        return {
+            'WeatherIntent': {
+                'keywords': {
+                    'WeatherTypePresentKeyword': [
+                        'snowing',
+                        'raining',
+                        'windy',
+                        'sleeting',
+                        'sunny'
+                    ],
+                    'WeatherTypeFutureKeyword': [
+                        'snow',
+                        'rain',
+                        'be windy',
+                        'sleet',
+                        'be sunny'
+                    ],
+                    'LocationKeyword': [
+                        'seattle',
+                        'san francisco',
+                        'tokyo'
+                    ],
+                    'TimeKeyword': [
+                        "morning",
+                        "afternoon",
+                        "evening",
+                        "night"
+                    ],
+                    'DayKeyword': [
+                        "today",
+                        "tomorrow",
+                        "sunday",
+                        "monday",
+                        "tuesday",
+                        "wednesday",
+                        "thursday",
+                        "friday",
+                        "saturday"
+                    ]
+                },
+                'templates': [
+                    "what's the weather in {LocationKeyword}",
+                    "what's the forecast for {DayKeyword}",
+                    "what's the forecast for {LocationKeyword}",
+                    "what's the forecast for {LocationKeyword} on {DayKeyword}",
+                    "what's the forecast for {LocationKeyword} on {DayKeyword} {TimeKeyword}",
+                    "is it {WeatherTypePresentKeyword} in {LocationKeyword}",
+                    "will it {WeatherTypeFutureKeyword} this {TimeKeyword}",
+                    "will it {WeatherTypeFutureKeyword} {DayKeyword}",
+                    "will it {WeatherTypeFutureKeyword} {DayKeyword} {TimeKeyword}",
+                    "when will it {WeatherTypeFutureKeyword}",
+                    "when will is {WeatherTypeFutureKeyword} in {LocationKeyword}"
+                ],
+                'action': self.handle
+            }
+        }
+
     def get_location_data(self):
         # Set the language used for the location data
         language = profile.get_profile_var(["language"], "en")[:2]
@@ -137,15 +195,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                 city = None
         return city, cityId
 
-    def get_phrases(self):
-        return [
-            _("weather"),
-            _("forecast"),
-            _("today"),
-            _("tomorrow")
-        ]
-
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         # Ideally, we could use our list of countries to check if any country
         # appears in the input, then check for regions in the current country,
         # and finally cities in the selected region, so I should be able to
@@ -156,6 +206,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         # First, establish the cityId
         city, cityId = self.get_city_id()
         country = profile.get_profile_var(["wwis_weather", "country"])
+        text = intent.input
         snark = True
         if(cityId):
             # Next, pull the weather data for City
@@ -248,12 +299,3 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                     snark = False
         if snark:
             mic.say(_("I don't know. Why don't you look out the window?"))
-
-    def is_valid(self, text):
-        """
-        Returns True if the input is related to the weather.
-
-        Arguments:
-        text -- user-input, typically transcribed speech
-        """
-        return any(p.lower() in text.lower() for p in ["weather", "forecast"])

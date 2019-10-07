@@ -1,6 +1,7 @@
 import requests
 import unittest
 from naomi import plugin
+from naomi import profile
 try:
     import mstranslator
 except ImportError:
@@ -16,22 +17,17 @@ class MicrosoftTranslatorTTSPlugin(plugin.TTSPlugin):
     def __init__(self, *args, **kwargs):
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
 
-        try:
-            client_id = self.profile['mstranslator-tts']['client_id']
-        except KeyError:
+        client_id = profile.get(['mstranslator-tts', 'client_id'])
+        if not client_id:
             raise ValueError('Microsoft Translator client ID not configured!')
 
-        try:
-            client_secret = self.profile['mstranslator-tts'][
-                'client_secret']
-        except KeyError:
+        client_secret = profile.get(['mstranslator-tts', 'client_secret'])
+        if not client_secret:
             raise ValueError(
-                'Microsoft Translator client secret not configured!')
+                'Microsoft Translator client secret not configured!'
+            )
 
-        try:
-            language = self.profile['language']
-        except KeyError:
-            language = 'en-US'
+        language = profile.get(['language'], 'en-US')
 
         self._mstranslator = mstranslator.Translator(client_id, client_secret)
 
@@ -43,11 +39,7 @@ class MicrosoftTranslatorTTSPlugin(plugin.TTSPlugin):
         else:
             raise ValueError("Language '%s' not supported" % language)
 
-        try:
-            best_quality = self.profile['mstranslator-tts'][
-                'best_quality']
-        except KeyError:
-            best_quality = False
+        best_quality = profile.get(['mstranslator-tts']['best_quality'])
 
         self._kwargs = {
             'format': 'audio/wav',

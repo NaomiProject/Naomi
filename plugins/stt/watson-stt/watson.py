@@ -1,7 +1,7 @@
-import logging
 import wave
 import requests
 from naomi import plugin
+from naomi import profile
 
 
 class IBMWatsonSTTPlugin(plugin.STTPlugin):
@@ -35,21 +35,17 @@ class IBMWatsonSTTPlugin(plugin.STTPlugin):
     def __init__(self, *args, **kwargs):
         plugin.STTPlugin.__init__(self, *args, **kwargs)
         # FIXME: get init args from config
-
-        self._logger = logging.getLogger(__name__)
         self._endpoint_url = 'https://stream.watsonplatform.net/speech-to-text/api/v1/recognize'
         self._username = None
         self._password = None
         self._model = 'en-US_BroadbandModel'
         self._http = requests.Session()
 
-        try:
-            self.username = self.profile['watson_stt']['username']
-        except KeyError:
+        self.username = profile.get(['watson_stt', 'username'])
+        if not self.username:
             raise ValueError("Watson STT username missing!")
-        try:
-            self.password = self.profile['watson_stt']['password']
-        except KeyError:
+        self.password = profile.get(['watson_stt', 'password'])
+        if not self.password:
             raise ValueError("Watson STT password missing!")
 
     @property

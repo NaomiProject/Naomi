@@ -10,6 +10,12 @@ import wave
 import yaml
 
 
+class test_info:
+    def __init__(self, name):
+        self.name = name
+        self.translations = {'en-US': None}
+
+
 def test_profile():
     if os.path.isfile(paths.config("profile.yml")):
         with open(paths.config("profile.yml"), "r") as f:

@@ -13,17 +13,19 @@ class Brain(object):
         matters, as the Brain will return the first module
         that accepts a given input.
         """
-
         self._plugins = []
         self._logger = logging.getLogger(__name__)
+        self._intentparser = args[0]
 
     def add_plugin(self, plugin):
         self._plugins.append(plugin)
-        self._plugins = sorted(
-            self._plugins,
-            key=lambda p: p.get_priority(),
-            reverse=True
-        )
+        # print("Checking {} for intents".format(plugin._plugin_info.name))
+        if(hasattr(plugin, "intents")):
+            # print("Found intents")
+            self._intentparser.add_intents(plugin.intents())
+
+    def train(self):
+        self._intentparser.train()
 
     def get_plugins(self):
         return self._plugins
@@ -63,7 +65,13 @@ class Brain(object):
             # Get the contents of the naomi/data/standard_phrases/{language}.txt
             # file. This file is built from words you actually say to Naomi
             # that are not the wakeword or in the plugin phrases.
-            with open(paths.data('standard_phrases', "%s.txt" % language), mode="r") as f:
+            with open(
+                paths.data(
+                    'standard_phrases',
+                    "{}.txt".format(language)
+                ),
+                mode="r"
+            ) as f:
                 for line in f:
                     phrase = line.strip()
                     if phrase:
@@ -77,32 +85,7 @@ class Brain(object):
         Returns:
             A list of phrases from all plugins.
         """
-        phrases = []
-        # include the keyword, otherwise
-        if(passive_listen):
-            phrases = [profile.get(["keyword"])]
-        # Include any custom phrases (things you say to Naomi
-        # that don't match plugin phrases. Otherwise, there is
-        # a high probability that something you say will be
-        # interpreted as a command. For instance, the
-        # "check_email" plugin has only "EMAIL" and "INBOX" as
-        # standard phrases, so every time I would say
-        # "Naomi, check email" Naomi would hear "NAOMI SHUT EMAIL"
-        # and shut down.
-        custom_standard_phrases_file = paths.data(
-            "standard_phrases",
-            "{}.txt".format(profile.get(['language'], 'en-US'))
-        )
-        if(os.path.isfile(custom_standard_phrases_file)):
-            with open(custom_standard_phrases_file, mode='r') as f:
-                for line in f:
-                    phrase = line.strip()
-                    if phrase:
-                        phrases.append(phrase)
-
-        for plugin in self._plugins:
-            phrases.extend(plugin.get_phrases())
-        return sorted(list(set(phrases)))
+        return self._intentparser.get_plugin_phrases(passive_listen)
 
     def get_all_phrases(self):
         """
@@ -126,19 +109,14 @@ class Brain(object):
         Returns:
             A tuple containing a text and the module that can handle it
         """
-        for plugin in self._plugins:
-            for text in texts:
-                if plugin.is_valid(text):
-                    self._logger.debug(
-                        "'{}' is a valid phrase for module '{}'".format(
-                            text,
-                            plugin.info.name
-                        )
-                    )
-                    return (plugin, text)
-        self._logger.debug(
-            "No module was able to handle any of these phrases: {}".format(
-                str(texts)
+        for text in texts:
+            intents = self._intentparser.determine_intent(text)
+            for intent in intents:
+                if intents[intent]['score'] > 0.05:
+                    return(intents[intent], text)
+            self._logger.debug(
+                "No module was able to handle any of these phrases: {}".format(
+                    str(texts)
+                )
             )
-        )
-        return (None, None)
+            return (None, None)

@@ -49,13 +49,13 @@ class Conversation(i18n.GettextMixin):
             input = self.mic.listen()
 
             if input:
-                plugin, text = self.brain.query(input)
-                if plugin and text:
+                intent, text = self.brain.query(input)
+                if intent and text:
                     try:
-                        plugin.handle(text, self.mic)
+                        intent['action'](intent, self.mic)
                     except Exception:
                         self._logger.error('Failed to execute module',
-                                           exc_info=True)
+                                        exc_info=True)
                         self.mic.say(self.gettext(
                             "I'm sorry. I had some trouble with that "
                         ) + self.gettext(
@@ -68,7 +68,7 @@ class Conversation(i18n.GettextMixin):
                                 "by module '{}' completed"
                             ]).format(
                                 text,
-                                plugin.info.name
+                                intent
                             )
                         )
             else:
