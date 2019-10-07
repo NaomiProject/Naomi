@@ -39,7 +39,7 @@ class MicrosoftTranslatorTTSPlugin(plugin.TTSPlugin):
         else:
             raise ValueError("Language '%s' not supported" % language)
 
-        best_quality = profile.get(['mstranslator-tts']['best_quality'])
+        best_quality = profile.get(['mstranslator-tts', 'best_quality'])
 
         self._kwargs = {
             'format': 'audio/wav',

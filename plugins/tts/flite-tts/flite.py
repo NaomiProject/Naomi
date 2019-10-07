@@ -55,13 +55,11 @@ class FliteTTSPlugin(plugin.TTSPlugin):
                                    if x.strip()])
         return voices
 
-    def say(self, phrase, voice=None):
-        if not voice:
-            voice = self.voice
+    def say(self, phrase):
         cmd = ['flite']
         if self.voice:
-            self._logger.info("voice = {}".format(voice))
-            cmd.extend(['-voice', voice])
+            self._logger.info("voice = {}".format(self.voice))
+            cmd.extend(['-voice', self.voice])
         else:
             self._logger.info("voice is false")
         cmd.extend(['-t', phrase])

@@ -54,7 +54,7 @@ class JokePlugin(plugin.SpeechHandlerPlugin):
             }
         }
 
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         """
         Responds to user-input, typically speech text, by telling a joke.
 

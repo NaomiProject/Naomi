@@ -72,19 +72,12 @@ class SpeechHandlerPlugin(GenericPlugin, i18n.GettextMixin):
         )
 
     @abc.abstractmethod
-    def get_phrases(self):
+    def intents(self):
         pass
 
     @abc.abstractmethod
     def handle(self, intent, mic):
         pass
-
-    @abc.abstractmethod
-    def is_valid(self, text):
-        pass
-
-    def get_priority(self):
-        return 0
 
 
 class STTPlugin(GenericPlugin):
@@ -138,7 +131,7 @@ class TTSPlugin(GenericPlugin):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def say(self, phrase, *args):
+    def say(self, phrase):
         pass
 
     def mp3_to_wave(self, filename):

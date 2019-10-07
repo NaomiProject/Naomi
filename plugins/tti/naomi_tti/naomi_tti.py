@@ -75,7 +75,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             for word in self.intent_map['intents'][intent]['words']:
                 self.intent_map['intents'][intent]['words'][word] /= phrase_count
 
-    def get_plugin_phrases(self, passive_listen):
+    def get_plugin_phrases(self, passive_listen=False):
         phrases = []
         # include the keyword, otherwise
         if(passive_listen):

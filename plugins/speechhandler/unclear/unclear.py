@@ -11,7 +11,7 @@ class UnclearPlugin(plugin.SpeechHandlerPlugin):
     def get_phrases(self):
         return []
 
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         """
         Reports that the user has unclear or unusable input.
 

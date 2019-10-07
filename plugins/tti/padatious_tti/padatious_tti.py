@@ -53,7 +53,7 @@ class PadatiousTTIPlugin(plugin.TTIPlugin):
         self.container.train()
         self.trained = True
 
-    def get_plugin_phrases(self, passive_listen):
+    def get_plugin_phrases(self, passive_listen=False):
         phrases = []
         # include the keyword, otherwise
         if(passive_listen):
