@@ -32,7 +32,7 @@ class NotificationsPlugin(plugin.SpeechHandlerPlugin):
             }
         }
 
-    def handle(self, intent, mic):
+    def handle(self, text, mic):
         """
         Responds to user-input, typically speech text, with a summary of
         the user's Facebook notifications, including a count and details

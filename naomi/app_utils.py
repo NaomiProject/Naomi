@@ -119,7 +119,7 @@ def generate_tiny_URL(URL):
         URL -- the original URL to-be compressed
     """
     target = "http://tinyurl.com/api-create.php?url=" + URL
-    response = urllib_request.urlopen(target)
+    response = urllib_request.urlopen(target)  # nosec
     return response.read()
 
 

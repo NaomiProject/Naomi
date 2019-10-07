@@ -195,7 +195,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                 city = None
         return city, cityId
 
-    def handle(self, intent, mic):
+    def handle(self, text, mic):
         # Ideally, we could use our list of countries to check if any country
         # appears in the input, then check for regions in the current country,
         # and finally cities in the selected region, so I should be able to
@@ -206,7 +206,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         # First, establish the cityId
         city, cityId = self.get_city_id()
         country = profile.get_profile_var(["wwis_weather", "country"])
-        text = intent.input
+        # text = intent.input
         snark = True
         if(cityId):
             # Next, pull the weather data for City

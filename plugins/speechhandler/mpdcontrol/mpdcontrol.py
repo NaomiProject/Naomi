@@ -54,7 +54,7 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
             }
         }
 
-    def handle(self, intent, mic):
+    def handle(self, text, mic):
         """
         Responds to user-input, typically speech text, by playing music
 

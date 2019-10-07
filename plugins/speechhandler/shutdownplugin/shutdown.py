@@ -17,7 +17,7 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
             }
         }
 
-    def handle(self, intent, mic):
+    def handle(self, text, mic):
         """
         Responds to user-input, typically speech text, by relaying the
         meaning of life.

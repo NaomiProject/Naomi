@@ -43,7 +43,7 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
             }
         }
 
-    def handle(self, intent, mic):
+    def handle(self, text, mic):
         """
         Responds to user-input, typically speech text, with a summary of
         the day's top news headlines, sending them to the user over email
