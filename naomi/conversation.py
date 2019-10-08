@@ -72,7 +72,7 @@ class Conversation(i18n.GettextMixin):
                             )
                         )
                 else:
-                    self.mic.say(random.choice([
+                    self.mic.say(random.choice([  # nosec
                         self.gettext("I'm sorry, could you repeat that?"),
                         self.gettext("My apologies, could you try saying that again?"),
                         self.gettext("Say that again?"),
