@@ -22,6 +22,8 @@ class Brain(object):
         # print("Checking {} for intents".format(plugin._plugin_info.name))
         if(hasattr(plugin, "intents")):
             # print("Found intents")
+            # print(plugin)
+            # print(dir(plugin))
             self._intentparser.add_intents(plugin.intents())
 
     def train(self):

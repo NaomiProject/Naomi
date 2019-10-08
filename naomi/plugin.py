@@ -61,9 +61,7 @@ class AudioEnginePlugin(GenericPlugin, audioengine.AudioEngine):
     pass
 
 
-class SpeechHandlerPlugin(GenericPlugin, i18n.GettextMixin):
-    __metaclass__ = abc.ABCMeta
-
+class SpeechHandlerPlugin(GenericPlugin, i18n.GettextMixin, metaclass=abc.ABCMeta):
     def __init__(self, *args, **kwargs):
         GenericPlugin.__init__(self, *args, **kwargs)
         i18n.GettextMixin.__init__(
@@ -80,7 +78,7 @@ class SpeechHandlerPlugin(GenericPlugin, i18n.GettextMixin):
         pass
 
 
-class STTPlugin(GenericPlugin):
+class STTPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def __init__(self, name, phrases, *args, **kwargs):
         GenericPlugin.__init__(self, *args, **kwargs)
         self._vocabulary_phrases = phrases
@@ -114,22 +112,15 @@ class STTPlugin(GenericPlugin):
     def vocabulary_path(self):
         return self._vocabulary_path
 
-    @classmethod
-    @abc.abstractmethod
-    def is_available(cls):
-        return True
-
     @abc.abstractmethod
     def transcribe(self, fp):
         pass
 
 
-class TTSPlugin(GenericPlugin):
+class TTSPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     """
     Generic parent class for all speakers
     """
-    __metaclass__ = abc.ABCMeta
-
     @abc.abstractmethod
     def say(self, phrase):
         pass

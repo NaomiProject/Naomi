@@ -229,10 +229,6 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
         if not pocketsphinx_available:
             raise ImportError("Pocketsphinx not installed!")
 
-        self._logger.warning(
-            "This STT plugin doesn't have multilanguage support!"
-        )
-
         vocabulary_path = self.compile_vocabulary(
             sphinxvocab.compile_vocabulary)
 

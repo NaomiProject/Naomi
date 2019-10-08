@@ -3,12 +3,13 @@
 # You should be able to install it with a simple
 # pip install webrtcvad
 import logging
+import unittest
+import webrtcvad
 from naomi import plugin
 from naomi import profile
-import webrtcvad
 
 
-class WebRTCPlugin(plugin.VADPlugin):
+class WebRTCPlugin(plugin.VADPlugin, unittest.TestCase):
     # Timeout in seconds
     def __init__(self, *args):
         self._logger = logging.getLogger(__name__)

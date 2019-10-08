@@ -65,8 +65,7 @@ class TestInput(object):
         self._input_chunksize = input_chunksize
 
 
-@unittest.skip("Skipping base class")
-class Test_VADPlugin(unittest.TestCase):
+class Test_VADPlugin(object):
     # attributes of the sample we are using
     # These are standard defaults for Naomi
     sample_file = "naomi/data/audio/naomi.wav"
