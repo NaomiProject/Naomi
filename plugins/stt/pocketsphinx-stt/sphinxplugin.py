@@ -185,10 +185,6 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 phonetisaurus_executable = 'phonetisaurus-g2pfst'
             else:
                 phonetisaurus_executable = 'phonetisaurus-g2p'
-        profile.set_profile_var(
-            ['pocketsphinx', 'phonetisaurus_executable'],
-            phonetisaurus_executable
-        )
         self.settings = OrderedDict(
             [
                 (

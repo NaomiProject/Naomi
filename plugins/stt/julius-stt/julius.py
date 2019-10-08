@@ -1,4 +1,3 @@
-import logging
 import re
 import subprocess
 import tempfile
@@ -22,10 +21,8 @@ class JuliusSTTPlugin(plugin.STTPlugin):
     A very basic Speech-to-Text engine using Julius.
     """
     def __init__(self, *args, **kwargs):
-        self._logger = logging.getLogger(__name__)
-        translations = i18n.parse_translations(paths.data('locale'))
-        translator = i18n.GettextMixin(translations, profile.get_profile())
-        _ = translator.gettext
+        plugin.STTPlugin.__init__(self, *args, **kwargs)
+        _ = self.gettext
         self.settings = OrderedDict(
             [
                 (

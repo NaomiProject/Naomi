@@ -1,4 +1,3 @@
-import logging
 import requests
 from collections import OrderedDict
 from naomi import plugin
@@ -23,17 +22,14 @@ class AttSTTPlugin(plugin.STTPlugin):
     """
 
     def __init__(self, *args, **kwargs):
-        self._logger = logging.getLogger(__name__)
-        self._logger.debug("WWIS_Weather INIT")
         language = profile.get(['language'], 'en-US')
-        translations = i18n.parse_translations(paths.data('locale'))
-        translator = i18n.GettextMixin(translations, profile.get_profile())
-        _ = translator.gettext
+        plugin.STTPlugin.__init__(self, *args, **kwargs)
 
         if language not in SUPPORTED_LANGUAGES:
             raise ValueError("Language '%s' not supported" % language)
 
         self.language = language
+        _ = self.gettext
         self.settings = OrderedDict(
             [
                 (
