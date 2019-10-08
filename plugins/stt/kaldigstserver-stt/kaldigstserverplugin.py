@@ -2,8 +2,13 @@ import logging
 import wave
 import requests
 from collections import OrderedDict
+from naomi import i18n
+from naomi import paths
 from naomi import plugin
 from naomi import profile
+
+
+defaultKaldiServer = 'http://localhost:8888/client/dynamic/recognize'
 
 
 class KaldiGstServerSTTPlugin(plugin.STTPlugin):
@@ -21,7 +26,7 @@ class KaldiGstServerSTTPlugin(plugin.STTPlugin):
                         'description': "".join([
                             _('The URL for your local Kaldi server')
                         ]),
-                        'default': 'http://localhost:8888/client/dynamic/recognize'
+                        'default': defaultKaldiServer
                     }
                 )
             ]
@@ -33,7 +38,7 @@ class KaldiGstServerSTTPlugin(plugin.STTPlugin):
 
         self._url = profile.get(
             ['kaldigstserver-stt', 'url'],
-            'http://localhost:8888/client/dynamic/recognize'
+            defaultKaldiServer
         )
 
     def transcribe(self, fp):
