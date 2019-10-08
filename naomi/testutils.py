@@ -5,7 +5,6 @@ import gettext
 import logging
 import os
 import sys
-import unittest
 import wave
 import yaml
 

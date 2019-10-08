@@ -45,10 +45,12 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 intent_inc += 1
                 intent = "{}{}".format(intent_base, intent_inc)
             if('keywords' in intents[intent_base]):
-                try:
-                    self.keywords[intent].update(intents[intent_base]['keywords'])
-                except KeyError:
-                    self.keywords[intent] = intents[intent_base]['keywords']
+                if not intent in self.keywords:
+                    self.keywords[intent] = {}
+                for keyword in intents[intent_base]['keywords']:
+                    if not keyword in self.keywords[intent]:
+                        self.keywords[intent][keyword] = []
+                    self.keywords[intent][keyword].extend([word.upper() for word in intents[intent_base]['keywords'][keyword]])
             self.intent_map['intents'][intent] = {
                 'action': intents[intent_base]['action'],
                 'name': intent_base,
@@ -141,6 +143,8 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                             # generate a new variant.
                             # print("replacenth('{}', '{}', '{}', {})".format(word, '{'+keyword+'}', variant, count))
                             new = replacenth(word, "{}{}{}".format('{', keyword, '}'), variant, count)
+                            # print(new)
+                            # print()
                             # print(new)
                             if new not in variants:
                                 # print(new)

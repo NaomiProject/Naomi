@@ -196,6 +196,9 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         return city, cityId
 
     def handle(self, text, mic):
+        # the text is actually a member of the intent
+        intent = text
+        text = intent['input']
         # Ideally, we could use our list of countries to check if any country
         # appears in the input, then check for regions in the current country,
         # and finally cities in the selected region, so I should be able to

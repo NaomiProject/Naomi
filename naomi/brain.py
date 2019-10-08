@@ -114,6 +114,9 @@ class Brain(object):
         for text in texts:
             intents = self._intentparser.determine_intent(text)
             for intent in intents:
+                # Add the intent to the response so the handler method
+                # can find out which intent activated it
+                intents[intent]['intent'] = intent
                 if intents[intent]['score'] > 0.05:
                     return(intents[intent], text)
             self._logger.debug(

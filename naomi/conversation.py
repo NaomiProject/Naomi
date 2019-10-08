@@ -71,5 +71,12 @@ class Conversation(i18n.GettextMixin):
                                 intent
                             )
                         )
+                else:
+                    self.mic.say(random.choice([
+                        self.gettext("I'm sorry, could you repeat that?"),
+                        self.gettext("My apologies, could you try saying that again?"),
+                        self.gettext("Say that again?"),
+                        self.gettext("I beg your pardon?")
+                    ]))
             else:
                 self.mic.say(self.gettext("Pardon?"))
