@@ -4,7 +4,6 @@ from padatious import IntentContainer
 from naomi import paths
 from naomi import plugin
 from naomi import profile
-from pprint import pprint
 
 
 # is_keyword just checks to see if the word is a normal word or a keyword
