@@ -15,6 +15,8 @@ class StopPlugin(plugin.SpeechHandlerPlugin):
         }
 
     def handle(self, text, mic):
+        intent = text
+        text = intent['input']
         """
         Interrupt Naomi.
 

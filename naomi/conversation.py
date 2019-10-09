@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import random
 from . import i18n
 from . import paths
 from . import profile
@@ -52,6 +53,7 @@ class Conversation(i18n.GettextMixin):
                 intent, text = self.brain.query(input)
                 if intent and text:
                     try:
+                        self._logger.info(intent)
                         intent['action'](intent, self.mic)
                     except Exception:
                         self._logger.error('Failed to execute module',

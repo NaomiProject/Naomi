@@ -4,6 +4,7 @@ from padatious import IntentContainer
 from naomi import paths
 from naomi import plugin
 from naomi import profile
+from pprint import pprint
 
 
 # is_keyword just checks to see if the word is a normal word or a keyword
@@ -86,12 +87,14 @@ class PadatiousTTIPlugin(plugin.TTIPlugin):
                 # print("Parsing '{}'".format(phrase))
                 template_words = phrase.split()
                 for template_word in template_words:
-                    # print("Checking {}".format(template_word))
                     if is_keyword(template_word):
-                        # print("Checking {} for words".format(template_word))
-                        if(template_word in self.keywords):
-                            for word in self.keywords[template_word]:
-                                # print("Adding word: {}".format(word))
+                        # The keyword group name in self.keywords
+                        # does not include the curly braces, so strip
+                        # them off
+                        keyword = template_word[1:][:-1]
+                        if(keyword in self.keywords):
+                            for word in self.keywords[keyword]['words']:
+                                # print("Adding word: {} for keyword list: {}".format(word, keyword))
                                 phrases.append(word.upper())
                     else:
                         # print("Adding word: {}".format(template_word))
