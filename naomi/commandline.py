@@ -238,7 +238,10 @@ class commandline(object):
     def simple_input(self, prompt, default=None):
         prompt += ": "
         if(default):
-            prompt += self.default_text(default) + self.default_prompt()
+            if type(default) is str:
+                prompt += self.default_text(default) + self.default_prompt()
+            else:
+                prompt += self.default_text(', '.join(default)) + self.default_prompt()
         prompt += self.input_text()
         # don't use print here so no automatic carriage return
         # sys.stdout.write(prompt)

@@ -182,7 +182,7 @@ def get_wakeword():
                 "?",
                 _("First, what name would you like to call me by?")
             ),
-            ', '.join(keyword)
+            keyword
         )
     )
 
