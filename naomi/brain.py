@@ -80,7 +80,7 @@ class Brain(object):
         phrases = []
         # include the keyword, otherwise
         if(passive_listen):
-            phrases = profile.get(["keyword"])
+            phrases = profile.get(["keyword"]).copy()
         # Include any custom phrases (things you say to Naomi
         # that don't match plugin phrases. Otherwise, there is
         # a high probability that something you say will be
