@@ -38,7 +38,7 @@ class Brain(object):
         """
         language = profile.get(['language'], 'en-US')
 
-        phrases = [profile.get(['keyword'])]
+        phrases = profile.get(['keyword'])
 
         # Get the contents of the
         # .naomi/data/standard_phrases/{language}.txt
