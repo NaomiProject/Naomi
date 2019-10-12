@@ -155,7 +155,7 @@ class Naomi(object):
             )
         self._logger.info("Using TTS engine '{}'".format(tts_slug))
 
-        keyword = profile.get_profile_var(['keyword'], 'NAOMI')
+        keyword = profile.get_profile_var(['keyword'], 'NAOMI').split(",")
         self._logger.info("Using keyword '{}'".format(keyword))
 
         if(not print_transcript):
@@ -391,7 +391,7 @@ class Naomi(object):
 
         passive_stt_plugin = passive_stt_plugin_info.plugin_class(
             'keyword',
-            self.brain.get_standard_phrases() + [keyword],
+            self.brain.get_standard_phrases() + keyword,
             passive_stt_plugin_info,
             self.config
         )
