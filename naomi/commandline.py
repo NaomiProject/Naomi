@@ -238,7 +238,7 @@ class commandline(object):
     def simple_input(self, prompt, default=None):
         prompt += ": "
         if(default):
-            if type(default) is str:
+            if isinstance(default, str):
                 prompt += self.default_text(default) + self.default_prompt()
             else:
                 prompt += self.default_text(', '.join(default)) + self.default_prompt()
@@ -252,7 +252,7 @@ class commandline(object):
             response = default
         if "," in response:
             return [x.strip() for x in response.split(",")]
-        elif type(response) is not str:
+        elif not isinstance(response, str):
             return [x.strip() for x in response]
         else:
             return response.strip()
