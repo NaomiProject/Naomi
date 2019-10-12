@@ -250,7 +250,7 @@ class commandline(object):
         # set the response to default
         if(default and not response):
             response = default
-        if "," in response:
+        if "," in response or type(response) is not str:
             return [x.strip() for x in response.split(",")]
         else:
             return response.strip()
