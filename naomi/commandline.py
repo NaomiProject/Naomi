@@ -248,7 +248,7 @@ class commandline(object):
         if(default and not response):
             response = default
         if "," in response:
-            return response.split(",")
+            return [x.strip() for x in response.split(",")]
         else:
             return response.strip()
 
