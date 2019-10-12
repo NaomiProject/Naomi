@@ -155,8 +155,8 @@ class Naomi(object):
             )
         self._logger.info("Using TTS engine '{}'".format(tts_slug))
 
-        keyword = profile.get_profile_var(['keyword'], 'NAOMI').split(",")
-        self._logger.info("Using keyword '{}'".format(keyword))
+        keyword = profile.get_profile_var(['keyword'], ['NAOMI'])
+        self._logger.info("Using keywords '{}'".format(', '.join(keyword)))
 
         if(not print_transcript):
             print_transcript = profile.get_profile_flag(

@@ -247,7 +247,10 @@ class commandline(object):
         # set the response to default
         if(default and not response):
             response = default
-        return response.strip()
+        if "," in response:
+            return response.split(",")
+        else:
+            return response.strip()
 
     # AaronC - simple_password is a lot like simple_input, just uses
     # getpass instead of input. It does not encrypt the password. That

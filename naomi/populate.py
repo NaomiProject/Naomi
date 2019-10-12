@@ -174,7 +174,7 @@ def greet_user():
 
 def get_wakeword():
     # my name
-    keyword = profile.get_profile_var(["keyword"], "Naomi")
+    keyword = profile.get_profile_var(["keyword"], ["Naomi"])
     profile.set_profile_var(
         ["keyword"],
         interface.simple_input(
