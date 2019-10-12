@@ -38,7 +38,7 @@ class Mic(object):
         tts_engine,
         vad_plugin,
         config,
-        keyword='NAOMI',
+        keyword=['NAOMI'],
         print_transcript=False,
         passive_listen=False,
         save_audio=False,
@@ -269,7 +269,7 @@ class Mic(object):
                             println("<  {}\n".format(transcribed))
                             self._log_audio(f, transcribed, "passive")
                         if any([
-                            keyword.lower() in t.lower()
+                            t.lower() in [word.lower() for word in keyword]
                             for t in transcribed if t
                         ]):
                             if(self.passive_listen):
