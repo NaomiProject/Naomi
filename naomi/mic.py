@@ -269,7 +269,7 @@ class Mic(object):
                             println("<  {}\n".format(transcribed))
                             self._log_audio(f, transcribed, "passive")
                         if any([
-                            t.lower() in [word.lower() for word in keyword]
+                            [word.lower() for word in keyword] in t.lower()
                             for t in transcribed if t
                         ]):
                             if(self.passive_listen):
