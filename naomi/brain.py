@@ -38,6 +38,11 @@ class Brain(object):
         """
         language = profile.get(['language'], 'en-US')
 
+        keyword = profile.get(['keyword'])
+        if isinstance(keyword, str):
+            keyword = [keyword]
+            profile.save_profile()
+
         phrases = profile.get(['keyword']).copy()
 
         # Get the contents of the
