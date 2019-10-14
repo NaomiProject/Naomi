@@ -43,7 +43,7 @@ class Brain(object):
             keyword = [keyword]
             profile.save_profile()
 
-        phrases = profile.get(['keyword']).copy()
+        phrases = keyword.copy()
 
         # Get the contents of the
         # .naomi/data/standard_phrases/{language}.txt
