@@ -41,6 +41,7 @@ class Brain(object):
         keyword = profile.get(['keyword'])
         if isinstance(keyword, str):
             keyword = [keyword]
+            profile.set_profile_var(['keyword'], keyword)
             profile.save_profile()
 
         phrases = keyword.copy()
