@@ -235,7 +235,7 @@ class commandline(object):
     # then that can be done here.
     # Part of the purpose is to provide a way of overriding
     # raw_input easily without hunting down every reference
-    def simple_input(self, prompt, default=None):
+    def simple_input(self, prompt, default=None, return_list=False):
         prompt += ": "
         if(default):
             if isinstance(default, str):
@@ -252,8 +252,10 @@ class commandline(object):
             response = default
         if "," in response:
             return [x.strip() for x in response.split(",")]
-        elif not isinstance(response, str):
+        elif not isinstance(response, str) and return_list:
             return [x.strip() for x in response]
+        elif not isinstance(response, str) and not return_list:
+            return ', '.join(x.strip() for x in response)
         else:
             return response.strip()
 
