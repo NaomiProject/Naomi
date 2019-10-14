@@ -38,7 +38,13 @@ class Brain(object):
         """
         language = profile.get(['language'], 'en-US')
 
-        phrases = [profile.get(['keyword'])]
+        keyword = profile.get(['keyword'])
+        if isinstance(keyword, str):
+            keyword = [keyword]
+            profile.set_profile_var(['keyword'], keyword)
+            profile.save_profile()
+
+        phrases = keyword.copy()
 
         # Get the contents of the
         # .naomi/data/standard_phrases/{language}.txt
@@ -80,7 +86,7 @@ class Brain(object):
         phrases = []
         # include the keyword, otherwise
         if(passive_listen):
-            phrases = [profile.get(["keyword"])]
+            phrases = profile.get(["keyword"]).copy()
         # Include any custom phrases (things you say to Naomi
         # that don't match plugin phrases. Otherwise, there is
         # a high probability that something you say will be
