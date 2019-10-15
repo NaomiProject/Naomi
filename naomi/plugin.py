@@ -19,10 +19,10 @@ class GenericPlugin(object):
         if(not hasattr(self, '_logger')):
             self._logger = logging.getLogger(__name__)
         interface = commandline.commandline()
-        _ = interface.get_language(once=True)
+        interface.get_language(once=True)
         translations = i18n.parse_translations(paths.data('locale'))
         translator = i18n.GettextMixin(translations)
-        _ = translator.gettext
+        self.gettext = translator.gettext
         # Skip asking for missing settings if we are using a test profile
         if hasattr(self, 'settings') and not profile._test_profile:
             # set a variable here to tell us if all settings are
@@ -32,7 +32,7 @@ class GenericPlugin(object):
             settings_complete = True
             # Step through the settings and check for
             # any missing settings
-            for setting in self.settings:
+            for setting in self.settings():
                 if not profile.check_profile_var_exists(setting):
                     self._logger.info(
                         "{} setting does not exist".format(setting)
@@ -40,7 +40,7 @@ class GenericPlugin(object):
                     # Go ahead and pull the setting
                     settings_complete = False
             if(profile.get_arg("repopulate") or not settings_complete):
-                print(interface.status_text(_(
+                print(interface.status_text(self.gettext(
                     "Configuring {}"
                 ).format(
                     self._plugin_info.name
@@ -61,7 +61,11 @@ class AudioEnginePlugin(GenericPlugin, audioengine.AudioEngine):
     pass
 
 
-class SpeechHandlerPlugin(GenericPlugin, i18n.GettextMixin, metaclass=abc.ABCMeta):
+class SpeechHandlerPlugin(
+    GenericPlugin,
+    i18n.GettextMixin,
+    metaclass=abc.ABCMeta
+):
     def __init__(self, *args, **kwargs):
         GenericPlugin.__init__(self, *args, **kwargs)
         i18n.GettextMixin.__init__(

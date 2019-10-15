@@ -1,9 +1,6 @@
 import os.path
-import logging
 import tempfile
 from collections import OrderedDict
-from naomi import i18n
-from naomi import paths
 from naomi import plugin
 from naomi import profile
 from . import sphinxvocab
@@ -42,6 +39,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
     """
     The default Speech-to-Text implementation which relies on PocketSphinx.
     """
+    _logfile = None
 
     def __init__(self, *args, **kwargs):
         """
@@ -51,11 +49,81 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             vocabulary -- a PocketsphinxVocabulary instance
             hmm_dir -- the path of the Hidden Markov Model (HMM)
         """
-        self._logger = logging.getLogger(__name__)
-        translations = i18n.parse_translations(paths.data('locale'))
-        translator = i18n.GettextMixin(translations, profile.get_profile())
-        _ = translator.gettext
+        plugin.STTPlugin.__init__(self, *args, **kwargs)
 
+        if not pocketsphinx_available:
+            raise ImportError("Pocketsphinx not installed!")
+
+        vocabulary_path = self.compile_vocabulary(
+            sphinxvocab.compile_vocabulary)
+
+        lm_path = sphinxvocab.get_languagemodel_path(vocabulary_path)
+        dict_path = sphinxvocab.get_dictionary_path(vocabulary_path)
+        hmm_dir = profile.get(['pocketsphinx', 'hmm_dir'])
+
+        self._logger.debug(
+            "Initializing PocketSphinx Decoder with hmm_dir '{}'".format(
+                hmm_dir
+            )
+        )
+        # Perform some checks on the hmm_dir so that we can display more
+        # meaningful error messages if neccessary
+        if not os.path.exists(hmm_dir):
+            msg = " ".join([
+                "hmm_dir '{}' does not exist! Please make sure that you",
+                "have set the correct hmm_dir in your profile."
+            ]).format(hmm_dir)
+            self._logger.error(msg)
+            raise RuntimeError(msg)
+        # Lets check if all required files are there. Refer to:
+        # http://cmusphinx.sourceforge.net/wiki/acousticmodelformat
+        # for details
+        missing_hmm_files = []
+        for fname in ('mdef', 'feat.params', 'means', 'noisedict',
+                      'transition_matrices', 'variances'):
+            if not os.path.exists(os.path.join(hmm_dir, fname)):
+                missing_hmm_files.append(fname)
+        mixweights = os.path.exists(os.path.join(hmm_dir, 'mixture_weights'))
+        sendump = os.path.exists(os.path.join(hmm_dir, 'sendump'))
+        if not mixweights and not sendump:
+            # We only need mixture_weights OR sendump
+            missing_hmm_files.append('mixture_weights or sendump')
+        if missing_hmm_files:
+            self._logger.warning(
+                " ".join([
+                    "hmm_dir '%s' is missing files: %s.",
+                    "Please make sure that you have set the correct",
+                    "hmm_dir in your profile."
+                ]).format(hmm_dir, ', '.join(missing_hmm_files))
+            )
+        self._pocketsphinx_v5 = hasattr(pocketsphinx.Decoder, 'default_config')
+
+        with tempfile.NamedTemporaryFile(prefix='psdecoder_',
+                                         suffix='.log', delete=False) as f:
+            self._logfile = f.name
+
+        if self._pocketsphinx_v5:
+            # Pocketsphinx v5
+            config = pocketsphinx.Decoder.default_config()
+            config.set_string('-hmm', hmm_dir)
+            config.set_string('-lm', lm_path)
+            config.set_string('-dict', dict_path)
+            config.set_string('-logfn', self._logfile)
+            self._decoder = pocketsphinx.Decoder(config)
+        else:
+            # Pocketsphinx v4 or sooner
+            self._decoder = pocketsphinx.Decoder(
+                hmm=hmm_dir,
+                logfn=self._logfile,
+                lm=lm_path,
+                dict=dict_path
+            )
+
+    def __del__(self):
+        if self._logfile is not None:
+            os.remove(self._logfile)
+
+    def settings(self):
         # Get the defaults for settings
         # hmm_dir
         hmm_dir = profile.get(
@@ -185,7 +253,8 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 phonetisaurus_executable = 'phonetisaurus-g2pfst'
             else:
                 phonetisaurus_executable = 'phonetisaurus-g2p'
-        self.settings = OrderedDict(
+        _ = self.gettext
+        return OrderedDict(
             [
                 (
                     ('pocketsphinx', 'hmm_dir'), {
@@ -216,82 +285,6 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 ),
             ]
         )
-
-        plugin.STTPlugin.__init__(self, *args, **kwargs)
-
-        self._logger = logging.getLogger(__name__)
-        self._logfile = None
-
-        if not pocketsphinx_available:
-            raise ImportError("Pocketsphinx not installed!")
-
-        vocabulary_path = self.compile_vocabulary(
-            sphinxvocab.compile_vocabulary)
-
-        lm_path = sphinxvocab.get_languagemodel_path(vocabulary_path)
-        dict_path = sphinxvocab.get_dictionary_path(vocabulary_path)
-
-        self._logger.debug(
-            "Initializing PocketSphinx Decoder with hmm_dir '{}'".format(
-                hmm_dir
-            )
-        )
-        # Perform some checks on the hmm_dir so that we can display more
-        # meaningful error messages if neccessary
-        if not os.path.exists(hmm_dir):
-            msg = " ".join([
-                "hmm_dir '{}' does not exist! Please make sure that you",
-                "have set the correct hmm_dir in your profile."
-            ]).format(hmm_dir)
-            self._logger.error(msg)
-            raise RuntimeError(msg)
-        # Lets check if all required files are there. Refer to:
-        # http://cmusphinx.sourceforge.net/wiki/acousticmodelformat
-        # for details
-        missing_hmm_files = []
-        for fname in ('mdef', 'feat.params', 'means', 'noisedict',
-                      'transition_matrices', 'variances'):
-            if not os.path.exists(os.path.join(hmm_dir, fname)):
-                missing_hmm_files.append(fname)
-        mixweights = os.path.exists(os.path.join(hmm_dir, 'mixture_weights'))
-        sendump = os.path.exists(os.path.join(hmm_dir, 'sendump'))
-        if not mixweights and not sendump:
-            # We only need mixture_weights OR sendump
-            missing_hmm_files.append('mixture_weights or sendump')
-        if missing_hmm_files:
-            self._logger.warning(
-                " ".join([
-                    "hmm_dir '%s' is missing files: %s.",
-                    "Please make sure that you have set the correct",
-                    "hmm_dir in your profile."
-                ]).format(hmm_dir, ', '.join(missing_hmm_files))
-            )
-        self._pocketsphinx_v5 = hasattr(pocketsphinx.Decoder, 'default_config')
-
-        with tempfile.NamedTemporaryFile(prefix='psdecoder_',
-                                         suffix='.log', delete=False) as f:
-            self._logfile = f.name
-
-        if self._pocketsphinx_v5:
-            # Pocketsphinx v5
-            config = pocketsphinx.Decoder.default_config()
-            config.set_string('-hmm', hmm_dir)
-            config.set_string('-lm', lm_path)
-            config.set_string('-dict', dict_path)
-            config.set_string('-logfn', self._logfile)
-            self._decoder = pocketsphinx.Decoder(config)
-        else:
-            # Pocketsphinx v4 or sooner
-            self._decoder = pocketsphinx.Decoder(
-                hmm=hmm_dir,
-                logfn=self._logfile,
-                lm=lm_path,
-                dict=dict_path
-            )
-
-    def __del__(self):
-        if self._logfile is not None:
-            os.remove(self._logfile)
 
     def transcribe(self, fp):
         """

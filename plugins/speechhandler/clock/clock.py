@@ -1,10 +1,32 @@
 # -*- coding: utf-8 -*-
 import datetime
+from collections import OrderedDict
 from naomi import app_utils
 from naomi import plugin
+from naomi.run_command import run_command
 
 
 class ClockPlugin(plugin.SpeechHandlerPlugin):
+    def settings(self):
+        _ = self.gettext
+        try:
+            tz = run_command(
+                ["/bin/cat", "/etc/timezone"],
+                capture=1
+            ).stdout.decode('utf-8').strip()
+        except OSError:
+            tz = None
+
+        return OrderedDict(
+            {
+                ('timezone',): {
+                    "title": _("What is your timezone?"),
+                    "description": _("Please enter a timezone from the list located in the TZ* column at http://en.wikipedia.org/wiki/List_of_tz_database_time_zones"),
+                    "default": tz
+                }
+            }
+        )
+
     def intents(self):
         _ = self.gettext
         return {

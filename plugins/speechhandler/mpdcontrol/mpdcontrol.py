@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import difflib
 import logging
+from collections import OrderedDict
 from naomi import plugin
 from naomi import profile
 from . import mpdclient
@@ -35,6 +36,28 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
             server=server,
             port=port,
             password=password
+        )
+
+    def settings(self):
+        _ = self.gettext
+        return OrderedDict(
+            {
+                ('mpdclient', 'server'): {
+                    "title": _("MPD Server"),
+                    "description": _("If you have set up an MPD server, please enter it here."),
+                    "default": "localhost"
+                },
+                ('mpdclient', 'port'): {
+                    "title": _("MPD Port"),
+                    "description": _("What port should I use to contact MPD on that server?"),
+                    "default": 6600
+                },
+                ('mpdclient', 'reticent'): {
+                    "type": "boolean",
+                    "title": "Should I try to be quiet while music is playing?",
+                    "default": False
+                }
+            }
         )
 
     def intents(self):

@@ -28,10 +28,6 @@ def get_top_articles(num_headlines=5):
 
 
 class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
-    def __init__(self, *args, **kwargs):
-        super(HackerNewsPlugin, self).__init__(*args, **kwargs)
-        self._num_headlines = profile.get(['hacker-news', 'num-headlines'], 4)
-
     def intents(self):
         return {
             'HackerNewsIntent': {
@@ -60,13 +56,15 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
         mic -- used to interact with the user (for both input and output)
         """
         _ = self.gettext
+        num_headlines = profile.get(['hacker-news', 'num-headlines'], 4)
+
         mic.say(
             _("Getting the top {} stories from Hacker News...").format(
-                self._num_headlines
+                num_headlines
             )
         )
 
-        articles = get_top_articles(num_headlines=self._num_headlines)
+        articles = get_top_articles(num_headlines=num_headlines)
         if len(articles) == 0:
             mic.say(
                 " ".join([

@@ -8,6 +8,7 @@ requests==2.20.0
 blessings
 pyaudio
 pyalsaaudio
+cryptography
 
 #other modules
 python-slugify==1.2.5

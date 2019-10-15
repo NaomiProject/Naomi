@@ -45,10 +45,10 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 intent_inc += 1
                 intent = "{}{}".format(intent_base, intent_inc)
             if('keywords' in intents[intent_base]):
-                if not intent in self.keywords:
+                if intent not in self.keywords:
                     self.keywords[intent] = {}
                 for keyword in intents[intent_base]['keywords']:
-                    if not keyword in self.keywords[intent]:
+                    if keyword not in self.keywords[intent]:
                         self.keywords[intent][keyword] = []
                     self.keywords[intent][keyword].extend([word.upper() for word in intents[intent_base]['keywords'][keyword]])
             self.intent_map['intents'][intent] = {
@@ -81,7 +81,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
         phrases = []
         # include the keyword, otherwise
         if(passive_listen):
-            phrases = [profile.get(["keyword"])]
+            phrases.extend(profile.get(["keyword"]))
         # Include any custom phrases (things you say to Naomi
         # that don't match plugin phrases. Otherwise, there is
         # a high probability that something you say will be

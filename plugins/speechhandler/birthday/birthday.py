@@ -8,10 +8,10 @@ from naomi import profile
 
 
 class BirthdayPlugin(plugin.SpeechHandlerPlugin):
-    def __init__(self, *args, **kwargs):
-        super(BirthdayPlugin, self).__init__(*args, **kwargs)
+
+    def settings(self):
         _ = self.gettext
-        self.settings = OrderedDict(
+        return OrderedDict(
             [
                 (
                     ("keys", "FB_TOKEN"), {

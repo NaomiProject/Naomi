@@ -21,6 +21,9 @@ class ExampleSpeechHandlerPlugin(plugin.SpeechHandlerPlugin):
             }
         }
 
+    def handle(self, intents, mic):
+        mic.say("Test")
+
 
 class TestBrain(unittest.TestCase):
     # aaronc 2019-10-04 Since we now have an actual intent parser,
