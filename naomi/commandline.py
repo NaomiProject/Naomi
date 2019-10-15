@@ -235,10 +235,13 @@ class commandline(object):
     # then that can be done here.
     # Part of the purpose is to provide a way of overriding
     # raw_input easily without hunting down every reference
-    def simple_input(self, prompt, default=None):
+    def simple_input(self, prompt, default=None, return_list=False):
         prompt += ": "
         if(default):
-            prompt += self.default_text(default) + self.default_prompt()
+            if isinstance(default, str):
+                prompt += self.default_text(default) + self.default_prompt()
+            else:
+                prompt += self.default_text(', '.join(default)) + self.default_prompt()
         prompt += self.input_text()
         # don't use print here so no automatic carriage return
         # sys.stdout.write(prompt)
@@ -247,7 +250,14 @@ class commandline(object):
         # set the response to default
         if(default and not response):
             response = default
-        return response.strip()
+        if "," in response:
+            return [x.strip() for x in response.split(",")]
+        elif not isinstance(response, str) and return_list:
+            return [x.strip() for x in response]
+        elif not isinstance(response, str) and not return_list:
+            return ', '.join(x.strip() for x in response)
+        else:
+            return response.strip()
 
     # AaronC - simple_password is a lot like simple_input, just uses
     # getpass instead of input. It does not encrypt the password. That

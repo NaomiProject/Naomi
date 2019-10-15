@@ -21,7 +21,9 @@ class Conversation(i18n.GettextMixin):
     def askName(self):
         if profile.get(['keyword']):
             salutation = self.gettext("My name is {}.").format(
-                profile.get(['keyword'])
+                ' or '.join(
+                    profile.get(['keyword'])
+                )
             )
         else:
             salutation = self.gettext("My name is Naomi")

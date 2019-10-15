@@ -42,7 +42,13 @@ class Brain(object):
         """
         language = profile.get(['language'], 'en-US')
 
-        phrases = [profile.get(['keyword'])]
+        keyword = profile.get(['keyword'])
+        if isinstance(keyword, str):
+            keyword = [keyword]
+            profile.set_profile_var(['keyword'], keyword)
+            profile.save_profile()
+
+        phrases = keyword.copy()
 
         # Get the contents of the
         # .naomi/data/standard_phrases/{language}.txt
