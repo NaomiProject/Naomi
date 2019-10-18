@@ -126,7 +126,7 @@ class TTSPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     Generic parent class for all speakers
     """
     @abc.abstractmethod
-    def say(self, phrase):
+    def say(self, phrase, voice):
         pass
 
     def mp3_to_wave(self, filename):
