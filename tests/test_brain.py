@@ -21,7 +21,7 @@ class ExampleSpeechHandlerPlugin(plugin.SpeechHandlerPlugin):
             }
         }
 
-    def handle(self, intents, mic):
+    def handle(self, intent, mic):
         mic.say("Test")
 
 

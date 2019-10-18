@@ -60,7 +60,7 @@ class FliteTTSPlugin(plugin.TTSPlugin):
     def say(self, phrase, voice=None):
         cmd = ['flite']
         if not voice:
-            # If a voice was not passed in, use the default 
+            # If a voice was not passed in, use the value from profile
             voice = self.voice
         if voice:
             self._logger.info("voice = {}".format(voice))
