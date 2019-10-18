@@ -31,7 +31,7 @@ class FliteTTSPlugin(plugin.TTSPlugin):
         self._logger.warning(
             "This TTS plugin doesn't have multilanguage support!"
         )
-        voice = profile.get(['flite-tts', 'voice'], '')
+        voice = profile.get(['flite-tts', 'voice'], 'slt')
         self._logger.info("Voice: {}".format(voice))
         voices = self.get_voices()
         if not voice or voice not in voices:
@@ -55,11 +55,16 @@ class FliteTTSPlugin(plugin.TTSPlugin):
                                    if x.strip()])
         return voices
 
-    def say(self, phrase):
+    # This plugin can receive a voice as a third parameter. This allows easier
+    # testing of different voices.
+    def say(self, phrase, voice=None):
         cmd = ['flite']
-        if self.voice:
-            self._logger.info("voice = {}".format(self.voice))
-            cmd.extend(['-voice', self.voice])
+        if not voice:
+            # If a voice was not passed in, use the default 
+            voice = self.voice
+        if voice:
+            self._logger.info("voice = {}".format(voice))
+            cmd.extend(['-voice', voice])
         else:
             self._logger.info("voice is false")
         cmd.extend(['-t', phrase])
