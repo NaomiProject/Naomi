@@ -1,10 +1,10 @@
 import collections
-import logging
 import pipes
 import re
 import unittest
 from naomi import diagnose
 from naomi import plugin
+from naomi import profile
 from naomi.run_command import run_command
 
 if not diagnose.check_executable('espeak'):
@@ -34,12 +34,7 @@ class EspeakTTSPlugin(plugin.TTSPlugin):
     def __init__(self, *args, **kwargs):
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
 
-        self._logger = logging.getLogger(__name__)
-
-        try:
-            orig_language = self.profile['language']
-        except KeyError:
-            orig_language = 'en-US'
+        orig_language = profile.get(['language'], 'en-US')
         language = orig_language.split('-')[0]
 
         available_voices = self.get_voices()
@@ -53,10 +48,7 @@ class EspeakTTSPlugin(plugin.TTSPlugin):
         self._logger.info('Available voices: %s', ', '.join(
             v.name for v in matching_voices))
 
-        try:
-            voice = self.profile['espeak-tts']['voice']
-        except KeyError:
-            voice = None
+        voice = profile.get(['espeak-tts', 'voice'])
 
         if voice is not None and len([v for v in matching_voices
                                       if v.name == voice]) > 0:
@@ -70,14 +62,14 @@ class EspeakTTSPlugin(plugin.TTSPlugin):
         self._logger.info("Using voice '%s'.", self.voice)
 
         try:
-            pitch_adjustment = self.profile['espeak-tts']['pitch_adjustment']
-        except KeyError:
+            pitch_adjustment = int(profile.get(['espeak-tts', 'pitch_adjustment']))
+        except(TypeError, ValueError):
             pitch_adjustment = 40
         self.pitch_adjustment = pitch_adjustment
 
         try:
-            words_per_minute = self.profile['espeak-tts']['words_per_minute']
-        except KeyError:
+            words_per_minute = int(profile.get(['espeak-tts', 'words_per_minute']))
+        except(TypeError, ValueError):
             words_per_minute = 160
         self.words_per_minute = words_per_minute
 

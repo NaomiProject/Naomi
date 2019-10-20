@@ -1,0 +1,35 @@
+# #-#-#-#-#  en-US.po (Naomi 2.2-dev)  #-#-#-#-#
+# Naomi Clock Plugin 
+# Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
+# Portions copyright (C) 2018 others
+# This file is distributed under the same license as the Naomi package.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"#-#-#-#-#  en-US_temp.po (Naomi 2.2-dev)  #-#-#-#-#\n"
+"Project-Id-Version: Naomi 2.2-dev\n"
+"Report-Msgid-Bugs-To: https://github.com/naomiproject/naomi-client/issues\n"
+"POT-Creation-Date: 2015-10-30 19:00+0100\n"
+"PO-Revision-Date: 2015-10-30 19:00+0100\n"
+"Last-Translator: Jan Holthuis <jan.holthuis@ruhr-uni-bochum.de>\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+#: clock.py:9 clock.py:35 /home/pi/Naomi/plugins/speechhandler/clock/clock.py:9
+msgid "TIME"
+msgstr ""
+
+#: clock.py:23
+#, python-format
+msgid "It is {t:%l} {t:%p} right now."
+msgstr ""
+
+#: clock.py:25
+#, python-format
+msgid "It is {t:%l}:{t.%M} {t:%p} right now."
+msgstr ""

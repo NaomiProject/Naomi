@@ -1,8 +1,12 @@
 import logging
 import os
 import scipy.io.wavfile as wav
+from collections import OrderedDict
+from naomi import i18n
+from naomi import paths
 from naomi import plugin
 from naomi import profile
+
 
 try:
     from deepspeech.model import Model
@@ -24,41 +28,78 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
         """
         Create Plugin Instance
         """
-        plugin.STTPlugin.__init__(self, *args, **kwargs)
         self._logger = logging.getLogger(__name__)
-        self._logger.info("Init DeepSpeech")
-        self._logger.debug(str(self.profile))
-
         if not deepspeech_available:
             self._logger.warning("DeepSpeech import error!")
             raise ImportError("DeepSpeech not installed!")
-
-        self._logger.warning(
-            "This STT plugin doesn't have multilanguage support!"
+        self._logger.info("Init DeepSpeech")
+        translations = i18n.parse_translations(paths.data('locale'))
+        translator = i18n.GettextMixin(translations, profile.get_profile())
+        _ = translator.gettext
+        self.settings = OrderedDict(
+            [
+                (
+                    ('deepspeech', 'alphabet'), {
+                        'title': _('DeepSpeech alphabet.txt'),
+                        'description': "".join([
+                            _('The alphabet file for your deepspeech')
+                        ]),
+                        'default': '~/deepspeech-0.5.1-models/alphabet.txt'
+                    }
+                ),
+                (
+                    ('deepspeech', 'language_model'), {
+                        'title': _('DeepSpeech language model'),
+                        'description': "".join([
+                            _('The deepspeech language model file')
+                        ]),
+                        'default': '~/deepspeech-0.5.1-models/lm.binary'
+                    }
+                ),
+                (
+                    ('deepspeech', 'model'), {
+                        'title': _('DeepSpeech neural network graph model'),
+                        'description': "".join([
+                            _('The deepspeech neural network graph model file')
+                        ]),
+                        'default': '~/deepspeech-0.5.1-models/output_graph.pbmm'
+                    }
+                ),
+                (
+                    ('deepspeech', 'trie'), {
+                        'title': _('DeepSpeech language model'),
+                        'description': "".join([
+                            _('The deepspeech trie file')
+                        ]),
+                        'default': '~/deepspeech-0.5.1-models/trie'
+                    }
+                )
+            ]
         )
+        plugin.STTPlugin.__init__(self, *args, **kwargs)
         # Beam width used in the CTC decoder when building candidate
         # transcriptions
-        self._BEAM_WIDTH = profile.get_profile_var(
+        self._BEAM_WIDTH = profile.get(
             ['deepspeech', 'beam_width'],
             500
         )
 
         # The alpha hyperparameter of the CTC decoder. Language Model weight
-        self._LM_WEIGHT = profile.get_profile_var(
+        self._LM_WEIGHT = profile.get(
             ['deepspeech', 'lm_weight'],
             1.75
         )
 
         # The beta hyperparameter of the CTC decoder. Word insertion weight
         # (penalty)
-        self._WORD_COUNT_WEIGHT = profile.get_profile_var(
+        self._WORD_COUNT_WEIGHT = profile.get(
             ['deepspeech', 'word_count_weight'],
             1.00
         )
 
         # Valid word insertion weight. This is used to lessen the word
         # insertion penalty when the inserted word is part of the vocabulary
-        self._VALID_WORD_COUNT_WEIGHT = profile.get_profile_var(
+        self._VALID_WORD_COUNT_WEIGHT = profile.get(
             ['deepspeech', 'valid_word_count_weight'],
             1.00
         )
@@ -68,20 +109,20 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
         # use the same constants that were used during training
 
         # Number of MFCC features to use
-        self._N_FEATURES = profile.get_profile_var(
+        self._N_FEATURES = profile.get(
             ['deepspeech', 'n_features'],
             26
         )
 
         # Size of the context window used for producing timesteps in the
         # input vector
-        self._N_CONTEXT = profile.get_profile_var(
+        self._N_CONTEXT = profile.get(
             ['deepspeech', 'n_context'],
             9
         )
 
         # Only 16KHz files are currently supported
-        self._FS = profile.get_profile_var(
+        self._FS = profile.get(
             ['deepspeech', 'fs'],
             16000
         )
@@ -90,7 +131,7 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
 
         # Path to the model (protocol buffer binary file)
         self._MODEL = os.path.expanduser(
-            profile.get_profile_var(
+            profile.get(
                 ['deepspeech', 'model']
             )
         )
@@ -105,7 +146,7 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
 
         # Path to the configuration file specifying the alphabet used
         self._ALPHABET = os.path.expanduser(
-            profile.get_profile_var(
+            profile.get(
                 ["deepspeech", "alphabet"]
             )
         )
@@ -120,7 +161,7 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
 
         # Path to the language model binary file
         self._LM = os.path.expanduser(
-            profile.get_profile_var(
+            profile.get(
                 ["deepspeech", "language_model"]
             )
         )
@@ -136,7 +177,7 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
         # Path to the language model trie file created with
         # native_client/generate_trie
         self._TRIE = os.path.expanduser(
-            profile.get_profile_var(
+            profile.get(
                 ["deepspeech", "trie"]
             )
         )

@@ -1,21 +1,45 @@
 import logging
 import wave
 import requests
+from collections import OrderedDict
+from naomi import i18n
+from naomi import paths
 from naomi import plugin
+from naomi import profile
+
+
+defaultKaldiServer = 'http://localhost:8888/client/dynamic/recognize'
 
 
 class KaldiGstServerSTTPlugin(plugin.STTPlugin):
     def __init__(self, *args, **kwargs):
+        self._logger = logging.getLogger(__name__)
+        translations = i18n.parse_translations(paths.data('locale'))
+        translator = i18n.GettextMixin(translations, profile.get_profile())
+        _ = translator.gettext
+
+        self.settings = OrderedDict(
+            [
+                (
+                    ('kaldigstserver-stt', 'url'), {
+                        'title': _('Kaldi server URL'),
+                        'description': "".join([
+                            _('The URL for your local Kaldi server')
+                        ]),
+                        'default': defaultKaldiServer
+                    }
+                )
+            ]
+        )
+
         plugin.STTPlugin.__init__(self, *args, **kwargs)
 
-        self._logger = logging.getLogger(__name__)
         self._http = requests.Session()
 
-        try:
-            url = self.profile['kaldigstserver-stt']['url']
-        except KeyError:
-            url = 'http://localhost:8888/client/dynamic/recognize'
-        self._url = url
+        self._url = profile.get(
+            ['kaldigstserver-stt', 'url'],
+            defaultKaldiServer
+        )
 
     def transcribe(self, fp):
         wav = wave.open(fp, 'rb')

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from naomi import plugin
-from naomi import profile
-# from naomi import pluginstore
-from naomi import visualizations
 import audioop
 import math
+import unittest
+from naomi import plugin
+from naomi import profile
+from naomi import visualizations
 
 
 # This is a really simple voice activity detector
@@ -20,7 +20,7 @@ import math
 # recording stops. If the total length of the recording is
 # over twice the length of timeout, then the recorded audio
 # is returned for processing.
-class SNRPlugin(plugin.VADPlugin):
+class SNRPlugin(plugin.VADPlugin, unittest.TestCase):
     _maxsnr = None
     _minsnr = None
     _visualizations = []

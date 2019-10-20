@@ -1,10 +1,10 @@
-import logging
 import pipes
 import subprocess
 import tempfile
 import unittest
 from naomi import diagnose
 from naomi import plugin
+from naomi import profile
 
 
 if not all(diagnose.check_executable(e) for e in ('text2wave', 'festival')):
@@ -19,9 +19,7 @@ class FestivalTTSPlugin(plugin.TTSPlugin):
     """
 
     def __init__(self, *args, **kwargs):
-        plugin.TTSPlugin.__init__(self, *args, **kwargs)
-
-        self._logger = logging.getLogger(__name__)
+        plugin.FestivalTTSPlugin.__init__(self, *args, **kwargs)
 
         available_voices = self.get_voices()
         if len(available_voices) == 0:
@@ -31,10 +29,7 @@ class FestivalTTSPlugin(plugin.TTSPlugin):
                              "support!")
         self._logger.info('Available voices: %s', ', '.join(available_voices))
 
-        try:
-            voice = self.profile['festival-tts']['voice']
-        except KeyError:
-            voice = None
+        voice = profile.get(['festival-tts', 'voice'])
 
         if voice is None or voice not in available_voices:
             if voice is not None:
