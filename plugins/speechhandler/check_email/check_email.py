@@ -50,7 +50,8 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
 
     def __init__(self, *args, **kwargs):
         super(CheckEmailPlugin, self).__init__(*args, **kwargs)
-        global _
+
+        _ = self.gettext
 
         self.settings = OrderedDict(
             [
