@@ -48,10 +48,10 @@ def get_most_recent_date(emails):
 
 class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
 
-        def __init__(self, *args, **kwargs):
-        _ = self.gettext
+   def __init__(self, *args, **kwargs):
+       _ = self.gettext
 
-        self.settings = OrderedDict(
+       self.settings = OrderedDict(
                 [
                     (
                         ("email", "address"), {
