@@ -43,17 +43,16 @@ def write_test_lm(text, output_file, **kwargs):
 
 class TestPocketsphinxVocabulary(unittest.TestCase):
     def testVocabulary(self):
-        with mock.patch.object(sphinxvocab, 'cmuclmtk',
-                               create=True) as mocked_cmuclmtk:
+        with mock.patch.object(
+            sphinxvocab,
+            'cmuclmtk',
+            create=True
+        ) as mocked_cmuclmtk:
             mocked_cmuclmtk.text2vocab = write_test_vocab
             mocked_cmuclmtk.text2lm = write_test_lm
             with mock.patch.object(sphinxvocab, 'PhonetisaurusG2P', DummyG2P):
                 with tempfile.NamedTemporaryFile() as f:
-                    config = {
-                        'pocketsphinx': {
-                            'fst_model': f.name
-                        }
-                    }
                     with do_in_tempdir() as tempdir:
                         sphinxvocab.compile_vocabulary(
-                            config, tempdir, WORDS.keys())
+                            tempdir, WORDS.keys()
+                        )

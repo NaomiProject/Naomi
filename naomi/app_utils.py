@@ -6,9 +6,19 @@ from urllib import request as urllib_request
 import re
 from pytz import timezone
 import logging
+from naomi import profile
 
 
-def send_email(SUBJECT, BODY, TO, FROM, SENDER, PASSWORD, SMTP_SERVER, SMTP_PORT):
+def send_email(
+    SUBJECT,
+    BODY,
+    TO,
+    FROM,
+    SENDER,
+    PASSWORD,
+    SMTP_SERVER,
+    SMTP_PORT
+):
     """Sends an HTML email."""
 
     msg = MIMEMultipart()
@@ -30,57 +40,61 @@ def send_email(SUBJECT, BODY, TO, FROM, SENDER, PASSWORD, SMTP_SERVER, SMTP_PORT
     logging.info('Successful.')
 
 
-def email_user(profile, SUBJECT="", BODY=""):
+def email_user(SUBJECT="", BODY=""):
     """
     sends an email.
 
     Arguments:
-        profile -- contains information related to the user (e.g., email
-                   address)
         SUBJECT -- subject line of the email
         BODY -- body text of the email
     """
     if not BODY:
         return False
 
-    body = 'Hello %s,' % profile['first_name']
+    body = 'Hello {},'.format(profile.get(['first_name']))
     body += '\n\n' + BODY.strip() + '\n\n'
     body += 'Best Regards,\nNaomi\n'
 
     recipient = None
 
-
-    if profile['email']['address']:
-        recipient = profile['email']['address']
-        if profile['first_name'] and profile['last_name']:
-            first_name=profile['first_name']
-            last_name=profile['last_name']
+    if profile.get(['email', 'address']):
+        recipient = profile.get(['email', 'address'])
+        first_name = profile.get(['first_name'])
+        last_name = profile.get(['last_name'])
+        if first_name and last_name:
             recipient = "{first_name} {last_name} <{recipient}>".format(
-                    first_name=profile['first_name'],
-                    last_name=profile['last_name'],
-                    recipient=recipient)
-
-
+                first_name=first_name,
+                last_name=last_name,
+                recipient=recipient
+            )
     else:
-        if profile['carrier'] and profile['phone_number']:
-            recipient = "%s@%s" % (
-                str(profile['phone_number']),
-                profile['carrier'])
+        phone_number = profile.get(['phone_number'])
+        carrier = profile.get(['carrier'])
+        if phone_number and carrier:
+            recipient = "{}@{}".format(
+                str(phone_number),
+                carrier
+            )
 
     if not recipient:
         return False
 
     try:
-        user = profile['email']['address']
-        password = profile['email']['password']
-        server = profile['email']['smtp']
-        try:
-            port = profile ['email']['smtp_port']
-        except KeyError:
-            port = 587
+        user = profile.get(['email', 'username'])
+        password = profile.get_profile_password(['email', 'password'])
+        server = profile.get(['email', 'smtp'])
+        port = profile.get(['email', 'smtp_port'], 587)
 
-        send_email(SUBJECT, body, recipient, user,
-                   "Naomi <naomi>", password, server, port)
+        send_email(
+            SUBJECT,
+            body,
+            recipient,
+            user,
+            "Naomi <naomi>",
+            password,
+            server,
+            port
+        )
 
     except Exception:
         return False
@@ -88,18 +102,13 @@ def email_user(profile, SUBJECT="", BODY=""):
         return True
 
 
-def get_timezone(profile):
+def get_timezone():
     """
     Returns the pytz timezone for a given profile.
 
-    Arguments:
-        profile -- contains information related to the user (e.g., email
-                   address)
+    Arguments: None
     """
-    try:
-        return timezone(profile['timezone'])
-    except:
-        return None
+    return timezone(profile.get(['timezone']))
 
 
 def generate_tiny_URL(URL):
@@ -110,7 +119,7 @@ def generate_tiny_URL(URL):
         URL -- the original URL to-be compressed
     """
     target = "http://tinyurl.com/api-create.php?url=" + URL
-    response = urllib_request.urlopen(target)
+    response = urllib_request.urlopen(target)  # nosec
     return response.read()
 
 

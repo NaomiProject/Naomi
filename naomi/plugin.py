@@ -14,17 +14,17 @@ from . import profile
 
 
 class GenericPlugin(object):
-    def __init__(self, info, config):
-        self._plugin_config = config
+    def __init__(self, info, *args):
         self._plugin_info = info
         if(not hasattr(self, '_logger')):
             self._logger = logging.getLogger(__name__)
         interface = commandline.commandline()
-        _ = interface.get_language(once=True)
+        interface.get_language(once=True)
         translations = i18n.parse_translations(paths.data('locale'))
         translator = i18n.GettextMixin(translations)
-        _ = translator.gettext
-        if hasattr(self, 'settings'):
+        self.gettext = translator.gettext
+        # Skip asking for missing settings if we are using a test profile
+        if hasattr(self, 'settings') and not profile._test_profile:
             # set a variable here to tell us if all settings are
             # completed or not
             # If all settings do not currently exist, go ahead and
@@ -32,7 +32,7 @@ class GenericPlugin(object):
             settings_complete = True
             # Step through the settings and check for
             # any missing settings
-            for setting in self.settings:
+            for setting in self.settings():
                 if not profile.check_profile_var_exists(setting):
                     self._logger.info(
                         "{} setting does not exist".format(setting)
@@ -40,7 +40,7 @@ class GenericPlugin(object):
                     # Go ahead and pull the setting
                     settings_complete = False
             if(profile.get_arg("repopulate") or not settings_complete):
-                print(interface.status_text(_(
+                print(interface.status_text(self.gettext(
                     "Configuring {}"
                 ).format(
                     self._plugin_info.name
@@ -53,11 +53,6 @@ class GenericPlugin(object):
                 profile.save_profile()
 
     @property
-    def profile(self):
-        # FIXME: Remove this in favor of something better
-        return self._plugin_config
-
-    @property
     def info(self):
         return self._plugin_info
 
@@ -66,9 +61,11 @@ class AudioEnginePlugin(GenericPlugin, audioengine.AudioEngine):
     pass
 
 
-class SpeechHandlerPlugin(GenericPlugin, i18n.GettextMixin):
-    __metaclass__ = abc.ABCMeta
-
+class SpeechHandlerPlugin(
+    GenericPlugin,
+    i18n.GettextMixin,
+    metaclass=abc.ABCMeta
+):
     def __init__(self, *args, **kwargs):
         GenericPlugin.__init__(self, *args, **kwargs)
         i18n.GettextMixin.__init__(
@@ -77,22 +74,15 @@ class SpeechHandlerPlugin(GenericPlugin, i18n.GettextMixin):
         )
 
     @abc.abstractmethod
-    def get_phrases(self):
+    def intents(self):
         pass
 
     @abc.abstractmethod
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         pass
 
-    @abc.abstractmethod
-    def is_valid(self, text):
-        pass
 
-    def get_priority(self):
-        return 0
-
-
-class STTPlugin(GenericPlugin):
+class STTPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def __init__(self, name, phrases, *args, **kwargs):
         GenericPlugin.__init__(self, *args, **kwargs)
         self._vocabulary_phrases = phrases
@@ -106,20 +96,18 @@ class STTPlugin(GenericPlugin):
         if self._vocabulary_compiled:
             raise RuntimeError("Vocabulary has already been compiled!")
 
-        try:
-            language = self.profile['language']
-        except KeyError:
-            language = None
-        if not language:
-            language = 'en-US'
+        language = profile.get(['language'], 'en-US')
 
         vocabulary = vocabcompiler.VocabularyCompiler(
             self.info.name, self._vocabulary_name,
-            path=paths.sub('vocabularies', language))
+            path=paths.sub('vocabularies', language)
+        )
 
         if not vocabulary.matches_phrases(self._vocabulary_phrases):
             vocabulary.compile(
-                self.profile, compilation_func, self._vocabulary_phrases)
+                compilation_func,
+                self._vocabulary_phrases
+            )
 
         self._vocabulary_path = vocabulary.path
         return self._vocabulary_path
@@ -128,24 +116,17 @@ class STTPlugin(GenericPlugin):
     def vocabulary_path(self):
         return self._vocabulary_path
 
-    @classmethod
-    @abc.abstractmethod
-    def is_available(cls):
-        return True
-
     @abc.abstractmethod
     def transcribe(self, fp):
         pass
 
 
-class TTSPlugin(GenericPlugin):
+class TTSPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     """
     Generic parent class for all speakers
     """
-    __metaclass__ = abc.ABCMeta
-
     @abc.abstractmethod
-    def say(self, phrase, *args):
+    def say(self, phrase, voice):
         pass
 
     def mp3_to_wave(self, filename):
@@ -224,7 +205,7 @@ class VADPlugin(GenericPlugin):
                 if(voice_detected):
                     last_voice_frame = len(recording_frames)
                 if(last_voice_frame < len(recording_frames) - self._timeout):
-                    # We have waied past the timeout number of frames
+                    # We have waited past the timeout number of frames
                     # so we believe the speaker has finished speaking.
                     recording = False
                     if(len(recording_frames) < self._minimum_capture):
@@ -251,8 +232,31 @@ class STTTrainerPlugin(GenericPlugin):
     pass
 
 
-class TTIPlugin(GenericPlugin):
-    pass
+class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
+    intent_map = {'intents': {}}
+    keywords = {}
+    keyword_index = 0
+    regex = {}
+    words = {}
+    trained = False
+
+    def add_intent(self, intent):
+        self.add_intents(intent)
+
+    @abc.abstractmethod
+    def add_intents(self, intents):
+        pass
+
+    @abc.abstractmethod
+    def get_plugin_phrases(self, passive_listen=False):
+        pass
+
+    def train(self):
+        self.trained = True
+
+    @abc.abstractmethod
+    def determine_intent(self, phrase):
+        pass
 
 
 class VisualizationsPlugin(GenericPlugin):

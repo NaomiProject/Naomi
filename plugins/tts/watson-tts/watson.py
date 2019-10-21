@@ -3,6 +3,7 @@ import tempfile
 import logging
 import requests
 from naomi import plugin
+from naomi import profile
 
 
 class IBMWatsonTTSPlugin(plugin.TTSPlugin):
@@ -20,7 +21,7 @@ class IBMWatsonTTSPlugin(plugin.TTSPlugin):
            https://console.bluemix.net/catalog/services/text-to-speech
         3. Select your Text-To-Speech Instance and Click Service Credentials.
         4. Click New Credential. Name Credential
-           "OVIA Credential" or appropriate.
+           "Naomi Credential" or appropriate.
         5. Add your credential username/password to
            your profile.yml. Add a 'watson_stt' entry
            section and set your 'username' and 'password'.
@@ -38,7 +39,6 @@ class IBMWatsonTTSPlugin(plugin.TTSPlugin):
                 voice: $YOUR_WATSON_VOICE
 
     """
-
     def __init__(self, *args, **kwargs):
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
         # FIXME: get init args from config
@@ -49,19 +49,16 @@ class IBMWatsonTTSPlugin(plugin.TTSPlugin):
         self._password = None
         self._http = requests.Session()
 
-        try:
-            self.username = self.profile['watson-tts']['username']
-        except KeyError:
+        self.username = profile.get(['watson-tts', 'username'])
+        if not self.username:
             raise ValueError("Username account for Watson TTS missing!")
 
-        try:
-            self.password = self.profile['watson-tts']['password']
-        except KeyError:
+        self.password = profile.get(['watson-tts', 'password'])
+        if not self.password:
             raise ValueError("Password for Watson TTS missing!")
 
-        try:
-            self._voice = self.profile['watson-tts']['voice']
-        except KeyError:
+        self._voice = profile.get(['watson-tts', 'voice'])
+        if not self._voice:
             raise ValueError("No voice selected!")
 
     @property

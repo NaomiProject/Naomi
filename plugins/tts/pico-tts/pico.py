@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from naomi import diagnose
 from naomi import plugin
+from naomi import profile
 
 EXECUTABLE = 'pico2wave'
 
@@ -24,10 +25,7 @@ class PicoTTSPlugin(plugin.TTSPlugin):
     def __init__(self, *args, **kwargs):
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
 
-        try:
-            language = self.profile['language']
-        except KeyError:
-            language = 'en-US'
+        language = profile.get(['language'], 'en-US')
 
         available_languages = self.get_languages()
         if language not in available_languages:

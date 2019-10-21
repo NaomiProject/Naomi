@@ -1,53 +1,59 @@
 # -*- coding: utf-8 -*-
 import unittest
-import tempfile
-import mock
 from naomi import testutils
 from naomi import brain
+from naomi import plugin
+from naomi import pluginstore
+from naomi import profile
 
 
-class ExamplePlugin(object):
-    def __init__(self, phrases, priority=0):
-        self.phrases = phrases
-        self.priority = priority
-        self.info = type('', (object,), {'name': 'foo'})()
+class ExampleSpeechHandlerPlugin(plugin.SpeechHandlerPlugin):
+    def __init__(self, test_phrases):
+        info = testutils.test_info(test_phrases)
+        super(ExampleSpeechHandlerPlugin, self).__init__(info)
+        self.test_phrases = test_phrases
 
-    def get_phrases(self):
-        return self.phrases
+    def intents(self):
+        return {
+            'TestIntent': {
+                'templates': self.test_phrases,
+                'action': None
+            }
+        }
 
-    def get_priority(self):
-        return self.priority
-
-    def is_valid(self, text):
-        return (text in self.phrases)
+    def handle(self, intent, mic):
+        mic.say("Test")
 
 
 class TestBrain(unittest.TestCase):
-    def testPriority(self):
-        """Does Brain sort modules by priority?"""
-        my_brain = brain.Brain(testutils.test_profile())
-
-        plugin1 = ExamplePlugin(['MOCK1'], priority=1)
-        plugin2 = ExamplePlugin(['MOCK1'], priority=999)
-        plugin3 = ExamplePlugin(['MOCK2'], priority=998)
-        plugin4 = ExamplePlugin(['MOCK1'], priority=0)
-        plugin5 = ExamplePlugin(['MOCK2'], priority=-3)
-
-        for plugin in (plugin1, plugin2, plugin3, plugin4, plugin5):
-            my_brain.add_plugin(plugin)
-
-        expected_order = [plugin2, plugin3, plugin1, plugin4, plugin5]
-        self.assertEqual(expected_order, my_brain.get_plugins())
-
-        input_texts = ['MOCK1']
-        plugin, output_text = my_brain.query(input_texts)
-        self.assertIs(plugin, plugin2)
-        self.assertEqual(input_texts[0], output_text)
-
-        input_texts = ['MOCK2']
-        plugin, output_text = my_brain.query(input_texts)
-        self.assertIs(plugin, plugin3)
-        self.assertEqual(input_texts[0], output_text)
+    # aaronc 2019-10-04 Since we now have an actual intent parser,
+    # it is no longer necessary to use priority to organize the
+    # plugins.
+    # def testPriority(self):
+    #     """Does Brain sort modules by priority?"""
+    #     my_brain = brain.Brain(testutils.test_profile())
+    #
+    #     plugin1 = ExamplePlugin(['MOCK1'], priority=1)
+    #     plugin2 = ExamplePlugin(['MOCK1'], priority=999)
+    #     plugin3 = ExamplePlugin(['MOCK2'], priority=998)
+    #     plugin4 = ExamplePlugin(['MOCK1'], priority=0)
+    #     plugin5 = ExamplePlugin(['MOCK2'], priority=-3)
+    #
+    #     for plugin in (plugin1, plugin2, plugin3, plugin4, plugin5):
+    #         my_brain.add_plugin(plugin)
+    #
+    #     expected_order = [plugin2, plugin3, plugin1, plugin4, plugin5]
+    #     self.assertEqual(expected_order, my_brain.get_plugins())
+    #
+    #     input_texts = ['MOCK1']
+    #     plugin, output_text = my_brain.query(input_texts)
+    #     self.assertIs(plugin, plugin2)
+    #     self.assertEqual(input_texts[0], output_text)
+    #
+    #     input_texts = ['MOCK2']
+    #     plugin, output_text = my_brain.query(input_texts)
+    #     self.assertIs(plugin, plugin3)
+    #     self.assertEqual(input_texts[0], output_text)
 
     # AJC 2019-08-07 This is no longer true. We now have a list of
     # additional phrases to help the parser.
@@ -56,10 +62,19 @@ class TestBrain(unittest.TestCase):
     def testPluginPhraseExtraction(self):
         expected_phrases = ['MOCK1', 'MOCK2']
 
-        my_brain = brain.Brain(testutils.test_profile())
+        self.plugins = pluginstore.PluginStore()
+        self.plugins.detect_plugins()
+        tti_slug = 'Naomi TTI'
+        tti_info = self.plugins.get_plugin(
+            tti_slug,
+            category='tti'
+        )
+        intent_parser = tti_info.plugin_class(tti_info)
+        profile.set_profile(testutils.test_profile())
+        my_brain = brain.Brain(intent_parser)
 
-        my_brain.add_plugin(ExamplePlugin(['MOCK2']))
-        my_brain.add_plugin(ExamplePlugin(['MOCK1']))
+        my_brain.add_plugin(ExampleSpeechHandlerPlugin(['MOCK2']))
+        my_brain.add_plugin(ExampleSpeechHandlerPlugin(['MOCK1']))
 
         extracted_phrases = my_brain.get_plugin_phrases()
 
@@ -70,7 +85,7 @@ class TestBrain(unittest.TestCase):
     # which somehow brain.get_standard_phrases is supposed
     # to figure out is the file to use for reading the
     # list of standard phrases from
-    #def testStandardPhraseExtraction(self):
+    # def testStandardPhraseExtraction(self):
     #    expected_phrases = [b'MOCK']
     #
     #    my_brain = brain.Brain(testutils.test_profile())

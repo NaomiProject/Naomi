@@ -27,6 +27,7 @@ lib64/
 parts/
 sdist/
 var/
+intent_cache/
 *.egg-info/
 .installed.cfg
 *.egg

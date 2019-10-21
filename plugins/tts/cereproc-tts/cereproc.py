@@ -3,6 +3,7 @@ import tempfile
 import unittest
 import urllib
 from naomi import plugin
+from naomi import profile
 try:
     import suds
 except ImportError:
@@ -54,25 +55,16 @@ class CereprocTTSPlugin(plugin.TTSPlugin):
     def __init__(self, *args, **kwargs):
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
 
-        try:
-            self._account_id = self.profile['cereproc-tts']['account_id']
-        except KeyError:
+        self._account_id = profile.get(['cereproc-tts', 'account_id'])
+        if not self._account_id:
             raise ValueError("Cereproc account ID not configured!")
 
-        try:
-            self._password = self.profile['cereproc-tts']['password']
-        except KeyError:
+        self._password = profile.get(['cereproc-tts', 'password'])
+        if not self._password:
             raise ValueError("Cereproc password not configured!")
 
-        try:
-            language = self.profile['language']
-        except KeyError:
-            language = 'en-US'
-
-        try:
-            voice = self.profile['cereproc-tts']['voice']
-        except KeyError:
-            voice = None
+        language = profile.get(['language'], 'en-US')
+        voice = profile.get(['cereproc-tts', 'voice'])
 
         if voice is None:
             for name, lang in VOICES:

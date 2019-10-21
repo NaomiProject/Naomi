@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import random
 from . import i18n
 from . import paths
 from . import profile
@@ -51,13 +52,14 @@ class Conversation(i18n.GettextMixin):
             input = self.mic.listen()
 
             if input:
-                plugin, text = self.brain.query(input)
-                if plugin and text:
+                intent, text = self.brain.query(input)
+                if intent and text:
                     try:
-                        plugin.handle(text, self.mic)
+                        self._logger.info(intent)
+                        intent['action'](intent, self.mic)
                     except Exception:
                         self._logger.error('Failed to execute module',
-                                           exc_info=True)
+                                        exc_info=True)
                         self.mic.say(self.gettext(
                             "I'm sorry. I had some trouble with that "
                         ) + self.gettext(
@@ -70,8 +72,15 @@ class Conversation(i18n.GettextMixin):
                                 "by module '{}' completed"
                             ]).format(
                                 text,
-                                plugin.info.name
+                                intent
                             )
                         )
+                else:
+                    self.mic.say(random.choice([  # nosec
+                        self.gettext("I'm sorry, could you repeat that?"),
+                        self.gettext("My apologies, could you try saying that again?"),
+                        self.gettext("Say that again?"),
+                        self.gettext("I beg your pardon?")
+                    ]))
             else:
                 self.mic.say(self.gettext("Pardon?"))

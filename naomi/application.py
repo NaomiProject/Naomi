@@ -328,7 +328,14 @@ class Naomi(object):
         vad_plugin = vad_info.plugin_class(input_device)
 
         # Initialize Brain
-        self.brain = brain.Brain(self.config)
+        tti_slug = profile.get_profile_var(['tti_engine'], 'Naomi TTI')
+        tti_info = self.plugins.get_plugin(
+            tti_slug,
+            category='tti'
+        )
+        intent_parser = tti_info.plugin_class(tti_info)
+
+        self.brain = brain.Brain(intent_parser)
         for info in self.plugins.get_plugins_by_category('speechhandler'):
             try:
                 plugin = info.plugin_class(info, self.config)
@@ -342,6 +349,8 @@ class Naomi(object):
                 )
             else:
                 self.brain.add_plugin(plugin)
+        # print(self.brain._intentparser.intent_map)
+        self.brain.train()
 
         if len(self.brain.get_plugins()) == 0:
             msg = 'No plugins for handling speech found!'
@@ -512,9 +521,11 @@ class Naomi(object):
             info = plugins_sorted[name]
             print("{} {} - {}".format(
                 info.name.ljust(len_name),
-                ("(v%s)" % info.version).ljust(len_version),
-                info.description
-            ))
+                (
+                    "(v%s)" % info.version).ljust(len_version),
+                    info.description
+                )
+            )
 
     def list_available_plugins(self, categories):
         installed_plugins = {}
