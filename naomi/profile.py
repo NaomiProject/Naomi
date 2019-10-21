@@ -10,9 +10,9 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import base64
 import logging
+from naomi.run_command import run_command
 from naomi import paths
 import os
-import subprocess
 import shutil
 import yaml
 
@@ -216,12 +216,17 @@ def get_profile_password(path, default=None):
     """
     if(isinstance(path, str)):
         path = [path]
-    first_id = subprocess.Popen("sudo dmidecode -t 4 | grep ID | sed 's/.*ID://;s/ //g'", shell=True,
-                                stdout=subprocess.PIPE).communicate()[0].decode()
-    second_id = subprocess.Popen("ifconfig | grep eth0 | awk '{print $NF}' | sed 's/://g'", shell=True,
-                                 stdout=subprocess.PIPE).communicate()[0].decode()
-    third_id = subprocess.Popen("""blkid | grep -oP 'UUID="\\K[^"]+' | sha256sum | awk '{print $1}'""", shell=True,
-                                stdout=subprocess.PIPE).communicate()[0].decode()
+    first_idb1 = run_command("cat /etc/machine-id".split(), capture=1).stdout.decode().strip()
+    first_idb2 = run_command("sha256sum".split(), capture=4, stdin=first_idb1).stdout.decode().strip()
+    first_id = run_command("awk '{print $NF}'".split(), capture=4, stdin=first_idb2).stdout.decode().strip()
+    second_idb1 = run_command("hostid".split(), capture=1).stdout.decode().strip()
+    second_idb2 = run_command("sha256sum".split(), capture=4, stdin=second_idb1).stdout.decode().strip()
+    second_id = run_command("awk '{print $NF}'".split(), capture=4, stdin=second_idb2).stdout.decode().strip()
+    third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
+    third_idb2 = run_command("""grep -oP 'UUID="\\K[^"]+'""".split(), capture=4,
+                             stdin=third_idb1).stdout.decode().strip()
+    third_idb3 = run_command("sha256sum".split(), capture=4, stdin=third_idb2).stdout.decode().strip()
+    third_id = run_command("awk '{print $NF}'".split(), capture=4, stdin=third_idb3).stdout.decode().strip()
     salt = get_profile_key()
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA512(),
@@ -360,12 +365,17 @@ def set_profile_password(path, value):
     if(isinstance(path, str)):
         path = [path]
     # Encrypt value
-    first_id = subprocess.Popen("sudo dmidecode -t 4 | grep ID | sed 's/.*ID://;s/ //g'", shell=True,
-                                stdout=subprocess.PIPE).communicate()[0].decode()
-    second_id = subprocess.Popen("ifconfig | grep eth0 | awk '{print $NF}' | sed 's/://g'", shell=True,
-                                 stdout=subprocess.PIPE).communicate()[0].decode()
-    third_id = subprocess.Popen("""blkid | grep -oP 'UUID="\\K[^"]+' | sha256sum | awk '{print $1}'""", shell=True,
-                                stdout=subprocess.PIPE).communicate()[0].decode()
+    first_idb1 = run_command("cat /etc/machine-id".split(), capture=1).stdout.decode().strip()
+    first_idb2 = run_command("sha256sum".split(), capture=4, stdin=first_idb1).stdout.decode().strip()
+    first_id = run_command("awk '{print $NF}'".split(), capture=4, stdin=first_idb2).stdout.decode().strip()
+    second_idb1 = run_command("hostid".split(), capture=1).stdout.decode().strip()
+    second_idb2 = run_command("sha256sum".split(), capture=4, stdin=second_idb1).stdout.decode().strip()
+    second_id = run_command("awk '{print $NF}'".split(), capture=4, stdin=second_idb2).stdout.decode().strip()
+    third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
+    third_idb2 = run_command("""grep -oP 'UUID="\\K[^"]+'""".split(), capture=4,
+                             stdin=third_idb1).stdout.decode().strip()
+    third_idb3 = run_command("sha256sum".split(), capture=4, stdin=third_idb2).stdout.decode().strip()
+    third_id = run_command("awk '{print $NF}'".split(), capture=4, stdin=third_idb3).stdout.decode().strip()
     salt = get_profile_key()
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA512(),
