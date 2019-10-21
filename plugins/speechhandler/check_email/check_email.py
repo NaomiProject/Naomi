@@ -49,6 +49,7 @@ def get_most_recent_date(emails):
 class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
 
     def __init__(self, *args, **kwargs):
+        super(CheckEmailPlugin, self).__init__(*args, **kwargs)
         global _
 
         self.settings = OrderedDict(
@@ -101,16 +102,16 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
                 )
             ]
         )
-        super(CheckEmailPlugin, self).__init__(*args, **kwargs)
 
     def intents(self):
+        _ = self.gettext
         return {
             'CheckEmailIntent': {
                 'templates': [
-                    "READ MY EMAIL",
-                    "CHECK MY INBOX",
-                    "DO I HAVE ANY EMAIL",
-                    "ARE THERE ANY NEW EMAILS"
+                    _("READ MY EMAIL"),
+                    _("CHECK MY INBOX"),
+                    _("DO I HAVE ANY EMAIL"),
+                    _("ARE THERE ANY NEW EMAILS")
                 ],
                 'action': self.handle
             }
