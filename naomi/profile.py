@@ -218,15 +218,15 @@ def get_profile_password(path, default=None):
         path = [path]
     first_idb1 = run_command("cat /etc/machine-id".split(), capture=1).stdout.decode().strip()
     first_idb2 = run_command("sha256sum".split(), capture=4, stdin=first_idb1).stdout.decode().strip()
-    first_id = run_command("awk '{print $NF}'".split(), capture=4, stdin=first_idb2).stdout.decode().strip()
+    first_id = first_idb2.replace("-", "").strip()
     second_idb1 = run_command("hostid".split(), capture=1).stdout.decode().strip()
     second_idb2 = run_command("sha256sum".split(), capture=4, stdin=second_idb1).stdout.decode().strip()
-    second_id = run_command("awk '{print $NF}'".split(), capture=4, stdin=second_idb2).stdout.decode().strip()
+    second_id = second_idb2.replace("-", "").strip()
     third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
     third_idb2 = run_command("""grep -oP 'UUID="\\K[^"]+'""".split(), capture=4,
                              stdin=third_idb1).stdout.decode().strip()
     third_idb3 = run_command("sha256sum".split(), capture=4, stdin=third_idb2).stdout.decode().strip()
-    third_id = run_command("awk '{print $NF}'".split(), capture=4, stdin=third_idb3).stdout.decode().strip()
+    third_id = third_idb3.replace("-", "").strip()
     salt = get_profile_key()
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA512(),
