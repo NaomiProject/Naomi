@@ -118,7 +118,6 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
         }
 
     @staticmethod
-
     def fetch_unread_emails(since=None, markRead=False, limit=None):
         """
             Fetches a list of unread email objects from a user's Email inbox.
