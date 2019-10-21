@@ -3,10 +3,16 @@
 These functions "walk" the profile, and return either a boolean variable to
 tell whether an option is configured or not, or the actual value
 """
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import InvalidToken
+from cryptography.fernet import Fernet
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import base64
 import logging
 from naomi import paths
 import os
+import subprocess
 import shutil
 import yaml
 
@@ -210,7 +216,22 @@ def get_profile_password(path, default=None):
     """
     if(isinstance(path, str)):
         path = [path]
-    key = get_profile_key()
+    first_id = subprocess.Popen("sudo dmidecode -t 4 | grep ID | sed 's/.*ID://;s/ //g'", shell=True,
+                                stdout=subprocess.PIPE).communicate()[0]
+    second_id = subprocess.Popen("ifconfig | grep eth0 | awk '{print $NF}' | sed 's/://g'", shell=True,
+                                 stdout=subprocess.PIPE).communicate()[0]
+    third_id = subprocess.Popen("""blkid | grep -oP 'UUID="\\K[^"]+' | sha256sum | awk '{print $1}'""", shell=True,
+                                stdout=subprocess.PIPE).communicate()[0]
+    salt = os.urandom(16)
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA512(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    password = ''.join([first_id, second_id, third_id]).encode()
+    key = base64.urlsafe_b64encode(kdf.derive(password))
     cipher_suite = Fernet(key)
     response = _walk_profile(path, True)
     try:
@@ -339,7 +360,22 @@ def set_profile_password(path, value):
     if(isinstance(path, str)):
         path = [path]
     # Encrypt value
-    key = get_profile_key()
+    first_id = subprocess.Popen("sudo dmidecode -t 4 | grep ID | sed 's/.*ID://;s/ //g'", shell=True,
+                                stdout=subprocess.PIPE).communicate()[0]
+    second_id = subprocess.Popen("ifconfig | grep eth0 | awk '{print $NF}' | sed 's/://g'", shell=True,
+                                 stdout=subprocess.PIPE).communicate()[0]
+    third_id = subprocess.Popen("""blkid | grep -oP 'UUID="\\K[^"]+' | sha256sum | awk '{print $1}'""", shell=True,
+                                stdout=subprocess.PIPE).communicate()[0]
+    salt = os.urandom(16)
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA512(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    password = ''.join([first_id, second_id, third_id]).encode()
+    key = base64.urlsafe_b64encode(kdf.derive(password))
     cipher_suite = Fernet(key)
     cipher_text = cipher_suite.encrypt(value.encode("utf-8")).decode("utf-8")
     temp = get_profile()

@@ -127,7 +127,7 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
 
         password = profile.get_profile_password(['email', 'password'])
         conn.login(
-            profile.get_profile_var(['email', 'username']),
+            profile.get_profile_password(['email', 'username']),
             password
         )
         conn.select(readonly=(not markRead))

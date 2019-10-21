@@ -233,7 +233,7 @@ def get_email_info():
         )
     )
 
-    profile.set_profile_var(
+    profile.set_profile_password(
         ["email", "address"],
         interface.simple_input(
             interface.format_prompt(
@@ -257,9 +257,9 @@ def get_email_info():
     # This should allow the encryption method to be improved
     # incrementally while not forcing people to re-enter credentials
     # every time a new encryption method is added.
-    if(profile.get_profile_var(["email", "address"])):
+    if(profile.get_profile_password(["email", "address"])):
         prompt = _("What is your email password?") + ": "
-        if(profile.get_profile_var(["email", "password"])):
+        if(profile.get_profile_password(["email", "password"])):
             prompt += interface.default_text(
                 _("(just press enter to keep current password)")
             ) + interface.default_prompt()
@@ -270,7 +270,7 @@ def get_email_info():
             )
         )
         if(temp):
-            profile.set_profile_var(['email', 'password'], temp)
+            profile.set_profile_password(['email', 'password'], temp)
 
 
 def get_phone_info():
