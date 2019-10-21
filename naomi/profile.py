@@ -217,11 +217,11 @@ def get_profile_password(path, default=None):
     if(isinstance(path, str)):
         path = [path]
     first_id = subprocess.Popen("sudo dmidecode -t 4 | grep ID | sed 's/.*ID://;s/ //g'", shell=True,
-                                stdout=subprocess.PIPE).communicate()[0]
+                                stdout=subprocess.PIPE).communicate()[0].decode()
     second_id = subprocess.Popen("ifconfig | grep eth0 | awk '{print $NF}' | sed 's/://g'", shell=True,
-                                 stdout=subprocess.PIPE).communicate()[0]
+                                 stdout=subprocess.PIPE).communicate()[0].decode()
     third_id = subprocess.Popen("""blkid | grep -oP 'UUID="\\K[^"]+' | sha256sum | awk '{print $1}'""", shell=True,
-                                stdout=subprocess.PIPE).communicate()[0]
+                                stdout=subprocess.PIPE).communicate()[0].decode()
     salt = os.urandom(16)
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA512(),
@@ -361,11 +361,11 @@ def set_profile_password(path, value):
         path = [path]
     # Encrypt value
     first_id = subprocess.Popen("sudo dmidecode -t 4 | grep ID | sed 's/.*ID://;s/ //g'", shell=True,
-                                stdout=subprocess.PIPE).communicate()[0]
+                                stdout=subprocess.PIPE).communicate()[0].decode()
     second_id = subprocess.Popen("ifconfig | grep eth0 | awk '{print $NF}' | sed 's/://g'", shell=True,
-                                 stdout=subprocess.PIPE).communicate()[0]
+                                 stdout=subprocess.PIPE).communicate()[0].decode()
     third_id = subprocess.Popen("""blkid | grep -oP 'UUID="\\K[^"]+' | sha256sum | awk '{print $1}'""", shell=True,
-                                stdout=subprocess.PIPE).communicate()[0]
+                                stdout=subprocess.PIPE).communicate()[0].decode()
     salt = os.urandom(16)
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA512(),
