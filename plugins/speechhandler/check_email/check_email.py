@@ -96,7 +96,7 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
                         "description": _("I need your email address in order to check your emails"),
                         "active": lambda: True if (len(
                             profile.get_profile_password(["email", "address"]).strip()) > 0) and (len(
-                            profile.get_profile_var(["email", "imap"])) > 0) else False
+                                profile.get_profile_var(["email", "imap"])) > 0) else False
                     }
                 )
             ]
