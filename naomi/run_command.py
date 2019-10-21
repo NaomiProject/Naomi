@@ -43,7 +43,7 @@ def run_command(command, capture=0, stdin=None):
         completedprocess = subprocess.run(
             command,
             stdout=subprocess.PIPE,
-            stdin=stdin.encode() if hasattr(stdin, "encode") else stdin
+            input=stdin.encode() if hasattr(stdin, "encode") else stdin
         )
     else:
         completedprocess = subprocess.run(

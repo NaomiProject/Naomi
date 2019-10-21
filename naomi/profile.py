@@ -238,7 +238,7 @@ def get_profile_password(path, default=None):
     password = ''.join([first_id, second_id, third_id]).encode()
     key = base64.urlsafe_b64encode(kdf.derive(password))
     cipher_suite = Fernet(key)
-    response = get_profile_var(path, True)
+    response = get_profile_var(path, None)
     try:
         if(hasattr(response, "encode")):
             response = cipher_suite.decrypt(
