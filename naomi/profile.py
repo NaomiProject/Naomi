@@ -222,7 +222,7 @@ def get_profile_password(path, default=None):
                                  stdout=subprocess.PIPE).communicate()[0].decode()
     third_id = subprocess.Popen("""blkid | grep -oP 'UUID="\\K[^"]+' | sha256sum | awk '{print $1}'""", shell=True,
                                 stdout=subprocess.PIPE).communicate()[0].decode()
-    salt = os.urandom(16)
+    salt = get_profile_key()
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA512(),
         length=32,
@@ -366,7 +366,7 @@ def set_profile_password(path, value):
                                  stdout=subprocess.PIPE).communicate()[0].decode()
     third_id = subprocess.Popen("""blkid | grep -oP 'UUID="\\K[^"]+' | sha256sum | awk '{print $1}'""", shell=True,
                                 stdout=subprocess.PIPE).communicate()[0].decode()
-    salt = os.urandom(16)
+    salt = get_profile_key()
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA512(),
         length=32,
