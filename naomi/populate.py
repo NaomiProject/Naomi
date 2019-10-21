@@ -380,7 +380,7 @@ def get_notification_info():
     # go ahead and assume "prefers email"
     if(
         (
-            profile.get_profile_var(
+            profile.get_profile_password(
                 ['email', 'address']
             )
         ) and not (
@@ -395,7 +395,7 @@ def get_notification_info():
     elif(
         profile.get_profile_var(
             ['phone_number']
-        ) and profile.get_profile_var(
+        ) and profile.get_profile_password(
             ['email', 'address']
         )
     ):
@@ -1786,8 +1786,8 @@ def run():
     get_user_name()
     interface.separator()
 
-    # get_email_info()
-    # interface.separator()
+    get_email_info()
+    interface.separator()
 
     get_phone_info()
     interface.separator()
