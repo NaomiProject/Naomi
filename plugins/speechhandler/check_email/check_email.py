@@ -49,7 +49,7 @@ def get_most_recent_date(emails):
 class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
 
     def __init__(self, *args, **kwargs):
-        _ = self.gettext
+        global _
 
         self.settings = OrderedDict(
             [
@@ -96,7 +96,7 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
                         "description": _("I need your email address in order to check your emails"),
                         "active": lambda: True if (len(
                             profile.get_profile_password(["email", "address"]).strip()) > 0) and (len(
-                                profile.get_profile_var(["email", "imap"])) > 0) else False
+                            profile.get_profile_var(["email", "imap"])) > 0) else False
                     }
                 )
             ]
@@ -104,7 +104,7 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
         super(CheckEmailPlugin, self).__init__(*args, **kwargs)
 
     def intents(self):
-        _ = self.gettext
+        global _
         return {
             'CheckEmailIntent': {
                 'templates': [
