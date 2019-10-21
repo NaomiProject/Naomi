@@ -29,8 +29,14 @@ class AttSTTPlugin(plugin.STTPlugin):
             raise ValueError("Language '%s' not supported" % language)
 
         self.language = language
+        plugin.STTPlugin.__init__(self, *args, **kwargs)
+        self._token = None
+        self.app_key = profile.get(['att-stt', 'app_key'])
+        self.app_secret = profile.get(['att-stt', 'app_secret'])
+
+    def settings(self):
         _ = self.gettext
-        self.settings = OrderedDict(
+        return OrderedDict(
             [
                 (
                     ('att-stt', 'app_key'), {
@@ -50,10 +56,6 @@ class AttSTTPlugin(plugin.STTPlugin):
                 )
             ]
         )
-        plugin.STTPlugin.__init__(self, *args, **kwargs)
-        self._token = None
-        self.app_key = profile.get(['att-stt', 'app_key'])
-        self.app_secret = profile.get(['att-stt', 'app_secret'])
 
     @property
     def token(self):

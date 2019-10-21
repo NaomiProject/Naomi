@@ -18,7 +18,18 @@ class KaldiGstServerSTTPlugin(plugin.STTPlugin):
         translator = i18n.GettextMixin(translations, profile.get_profile())
         _ = translator.gettext
 
-        self.settings = OrderedDict(
+        plugin.STTPlugin.__init__(self, *args, **kwargs)
+
+        self._http = requests.Session()
+
+        self._url = profile.get(
+            ['kaldigstserver-stt', 'url'],
+            defaultKaldiServer
+        )
+
+    def settings(self):
+        _ = self.gettext
+        return OrderedDict(
             [
                 (
                     ('kaldigstserver-stt', 'url'), {
@@ -30,15 +41,6 @@ class KaldiGstServerSTTPlugin(plugin.STTPlugin):
                     }
                 )
             ]
-        )
-
-        plugin.STTPlugin.__init__(self, *args, **kwargs)
-
-        self._http = requests.Session()
-
-        self._url = profile.get(
-            ['kaldigstserver-stt', 'url'],
-            defaultKaldiServer
         )
 
     def transcribe(self, fp):

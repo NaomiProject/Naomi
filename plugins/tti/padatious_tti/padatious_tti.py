@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
-from padatious import IntentContainer
+import unittest
 from naomi import paths
 from naomi import plugin
 from naomi import profile
+try:
+    from padatious import IntentContainer
+except ModuleNotFoundError:
+    raise unittest.SkipTest("padatious module not found")
 
 
 # is_keyword just checks to see if the word is a normal word or a keyword

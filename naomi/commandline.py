@@ -1,5 +1,6 @@
 from blessings import Terminal
 from getpass import getpass
+from naomi import app_utils
 from naomi import i18n
 from naomi import paths
 from naomi import profile
@@ -238,6 +239,8 @@ class commandline(object):
     def simple_input(self, prompt, default=None, return_list=False):
         prompt += ": "
         if(default):
+            if isinstance(default, (int, bool)):
+                default = str(default)
             if isinstance(default, str):
                 prompt += self.default_text(default) + self.default_prompt()
             else:
@@ -294,10 +297,12 @@ class commandline(object):
         # is lower case
         choice_affirmative = affirmative[:1].lower()
         choice_negative = negative[:1].lower()
+        if(not isinstance(default, str)):
+            default = str(default)
         if default:
-            if default[:1].lower() == affirmative[:1].lower():
+            if app_utils.is_positive(default):
                 choice_affirmative = affirmative[:1].upper()
-            if default[:1].lower() == negative[:1].lower():
+            if app_utils.is_negative(default):
                 choice_negative = negative[:1].upper()
         while(response[:1] not in (affirmative.lower()[:1], negative.lower()[:1])):
             response = self.simple_input(
@@ -308,8 +313,7 @@ class commandline(object):
                     ) + self.instruction_text("/") + self.choices_text(
                         choice_negative
                     ) + self.instruction_text(")")
-                ),
-                default
+                )
             ).strip().lower()
             if response[:1] not in (affirmative.lower()[:1], negative.lower()[:1]):
                 print(self.alert_text("Please select '{}' or '{}'.").format(
@@ -399,11 +403,14 @@ class commandline(object):
                 while not ((once) and (self.validate(definition, response))):
                     once = True
                     tmp_response = self.simple_password(
-                        "    " + self.instruction_text('{} ("?" for help)'.format(definition["title"])),
+                        "    " + self.instruction_text(
+                            _('{} ("?" for help)').format(definition["title"])
+                        ),
                         response
                     )
                     if(tmp_response.strip() == "?"):
-                        # Print the description plus any help text for the control
+                        # Print the description plus any help text
+                        # for the control
                         print("")
                         print(self.instruction_text(definition["description"]))
                         once = False
@@ -420,7 +427,14 @@ class commandline(object):
                 once = False
                 while not (once):
                     once = True
-                    tmp_response = self.simple_yes_no(definition['title'], response)
+                    response = self.simple_yes_no(
+                        definition['title'],
+                        response
+                    )
+                profile.set_profile_var(
+                    setting,
+                    response
+                )
             else:
                 # this is the default (textbox)
                 print("")
@@ -429,7 +443,7 @@ class commandline(object):
                 while not ((once) and (self.validate(definition, response))):
                     once = True
                     tmp_response = self.simple_input(
-                        "    " + self.instruction_text('{} ("?" for help)'.format(definition["title"])),
+                        "    " + self.instruction_text(_('{} ("?" for help)').format(definition["title"])),
                         response
                     )
                     if(tmp_response.strip() == "?"):
