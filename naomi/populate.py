@@ -259,11 +259,11 @@ def get_email_info():
     # every time a new encryption method is added.
     if(profile.get_profile_password(["email", "address"])):
         prompt = _("What is your email password?") + ": "
-        if not (profile.get_profile_password(["email", "password"])):
+        if (profile.get_profile_password(["email", "password"])):
             prompt += interface.default_text(
                 _("(just press enter to keep current password)")
             ) + interface.default_prompt()
-        temp = interface.getpass(
+        temp = interface.simple_password(
             interface.format_prompt(
                 "?",
                 prompt
