@@ -240,7 +240,7 @@ def get_email_info():
                 "?",
                 _('What is your email address?')
             ),
-            profile.get_profile_var(["email", "address"])
+            profile.get_profile_password(["email", "address"])
         )
     )
 
