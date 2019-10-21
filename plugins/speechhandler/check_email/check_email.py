@@ -101,6 +101,7 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
                 )
             ]
         )
+        super(CheckEmailPlugin, self).__init__(*args, **kwargs)
 
     def intents(self):
         _ = self.gettext
