@@ -104,14 +104,13 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
         super(CheckEmailPlugin, self).__init__(*args, **kwargs)
 
     def intents(self):
-        global _
         return {
             'CheckEmailIntent': {
                 'templates': [
-                    _("READ MY EMAIL"),
-                    _("CHECK MY INBOX"),
-                    _("DO I HAVE ANY EMAIL"),
-                    _("ARE THERE ANY NEW EMAILS")
+                    "READ MY EMAIL",
+                    "CHECK MY INBOX",
+                    "DO I HAVE ANY EMAIL",
+                    "ARE THERE ANY NEW EMAILS"
                 ],
                 'action': self.handle
             }
