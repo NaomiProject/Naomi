@@ -233,7 +233,7 @@ def get_profile_password(path, default=None):
     password = ''.join([first_id, second_id, third_id]).encode()
     key = base64.urlsafe_b64encode(kdf.derive(password))
     cipher_suite = Fernet(key)
-    response = _walk_profile(path, True)
+    response = get_profile_var(path, True)
     try:
         if(hasattr(response, "encode")):
             response = cipher_suite.decrypt(
@@ -378,16 +378,4 @@ def set_profile_password(path, value):
     key = base64.urlsafe_b64encode(kdf.derive(password))
     cipher_suite = Fernet(key)
     cipher_text = cipher_suite.encrypt(value.encode("utf-8")).decode("utf-8")
-    temp = get_profile()
-    if len(path) > 0:
-        last = path[0]
-        if len(path) > 1:
-            for branch in path[1:]:
-                try:
-                    if not isinstance(temp[last], dict):
-                        temp[last] = {}
-                except KeyError:
-                    temp[last] = {}
-                temp = temp[last]
-                last = branch
-            temp[last] = cipher_text
+    set_profile_var(path, cipher_text)
