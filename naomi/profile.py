@@ -223,7 +223,7 @@ def get_profile_password(path, default=None):
     try:
         third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
         third_id = hashlib.sha256(run_command("""grep -oP 'UUID="\\K[^"]+'""".split(), capture=4,
-                                              stdin=third_idb1).stdout.decode().strip()).hexdigest()
+                                              stdin=third_idb1).stdout).hexdigest()
     except FileNotFoundError:
         _logger.warning(
             " ".join([
@@ -376,7 +376,7 @@ def set_profile_password(path, value):
     try:
         third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
         third_id = hashlib.sha256(run_command("""grep -oP 'UUID="\\K[^"]+'""".split(), capture=4,
-                                              stdin=third_idb1).stdout.decode().strip()).hexdigest()
+                                              stdin=third_idb1).stdout).hexdigest()
     except FileNotFoundError:
         _logger.warning(
             " ".join([
