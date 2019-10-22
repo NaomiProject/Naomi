@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 import os
-from adapt.entity_tagger import EntityTagger
-from adapt.tools.text.tokenizer import EnglishTokenizer
-from adapt.tools.text.trie import Trie
-from adapt.intent import IntentBuilder
-from adapt.parser import Parser
-from adapt.engine import IntentDeterminationEngine
+import unittest
 from naomi import paths
 from naomi import plugin
 from naomi import profile
+try:
+    from adapt.entity_tagger import EntityTagger
+    from adapt.tools.text.tokenizer import EnglishTokenizer
+    from adapt.tools.text.trie import Trie
+    from adapt.intent import IntentBuilder
+    from adapt.parser import Parser
+    from adapt.engine import IntentDeterminationEngine
+except ModuleNotFoundError:
+    raise unittest.SkipTest("adapt module not found")
 
 
 def weight(count, examples):

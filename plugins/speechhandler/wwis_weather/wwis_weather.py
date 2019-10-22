@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-from collections import OrderedDict
-from naomi import i18n, paths, plugin, profile
 import datetime
-import logging
 import requests
 import json
+from collections import OrderedDict
+from naomi import plugin
+from naomi import profile
 
 
-_ = None
 WEEKDAY_NAMES = {
     0: 'Monday',
     1: 'Tuesday',
@@ -20,55 +19,6 @@ WEEKDAY_NAMES = {
 
 
 class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
-
-    def __init__(self, *args, **kwargs):
-        global _
-        self._logger = logging.getLogger(__name__)
-        self._logger.debug("WWIS_Weather INIT")
-        translations = i18n.parse_translations(paths.data('locale'))
-        translator = i18n.GettextMixin(translations, profile.get_profile())
-        _ = translator.gettext
-        self.get_location_data()
-        # Here we have to put settings into the init since we are using self
-        # to reference functions, and if you try to put this into the static
-        # variables before init, there is no self to reference.
-        # We also have to put it before the super callback to the Generic
-        # plugin init function, because that is where we look for and process
-        # the self.settings variable.
-        self.settings = OrderedDict(
-            [
-                (
-                    ('wwis_weather', 'country'), {
-                        'type': 'listbox',
-                        'title': _('Please select your country from the list'),
-                        'description': "".join([
-                            _('This value is being used to help locate your Area ID, which will be used to provide weather information')
-                        ]),
-                        'options': self.get_countries
-                    }
-                ),
-                (
-                    ('wwis_weather', 'region'), {
-                        'type': 'listbox',
-                        'title': _('Please select your region or city from the list'),
-                        'description': _('Please select your region or city from the list, which will be used to provide weather information'),
-                        'options': self.get_regions,
-                        'active': lambda: True if profile.check_profile_var_exists(['wwis_weather', 'country']) and len(profile.get_profile_var(["wwis_weather", "country"])) > 0 else False
-                    }
-                ),
-                (
-                    ('wwis_weather', 'city'), {
-                        'type': 'listbox',
-                        'title': _('Please select your city from the list'),
-                        'description': _('Please select your city from the list. This will be used as the default location when providing weather information'),
-                        'options': self.get_cities,
-                        # This is only active if the currently selected region is a dictionary and not a city
-                        'active': lambda: True if isinstance(self.locations[profile.get_profile_var(["wwis_weather", "country"])][profile.get_profile_var(["wwis_weather", "region"])], dict) else False
-                    }
-                )
-            ]
-        )
-        super(WWISWeatherPlugin, self).__init__(*args, **kwargs)
 
     def intents(self):
         return {
@@ -127,6 +77,52 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                 'action': self.handle
             }
         }
+
+    def settings(self):
+        self.get_location_data()
+        _ = self.gettext
+        return OrderedDict(
+            [
+                (
+                    ('wwis_weather', 'country'), {
+                        'type': 'listbox',
+                        'title': _('Please select your country from the list'),
+                        'description': "".join([
+                            _('This value is being used to help locate your Area ID, which will be used to provide weather information')
+                        ]),
+                        'options': self.get_countries
+                    }
+                ),
+                (
+                    ('wwis_weather', 'region'), {
+                        'type': 'listbox',
+                        'title': _('Please select your region or city from the list'),
+                        'description': _('Please select your region or city from the list, which will be used to provide weather information'),
+                        'options': self.get_regions,
+                        'active': lambda: True if profile.check_profile_var_exists(['wwis_weather', 'country']) and len(profile.get_profile_var(["wwis_weather", "country"])) > 0 else False
+                    }
+                ),
+                (
+                    ('wwis_weather', 'city'), {
+                        'type': 'listbox',
+                        'title': _('Please select your city from the list'),
+                        'description': _('Please select your city from the list. This will be used as the default location when providing weather information'),
+                        'options': self.get_cities,
+                        # This is only active if the currently selected region is a dictionary and not a city
+                        # 'active': lambda: True if isinstance(self.locations[profile.get_profile_var(["wwis_weather", "country"])][profile.get_profile_var(["wwis_weather", "region"])], dict) else False
+                        'active': self.city_isactive
+                    }
+                )
+            ]
+        )
+
+    def city_isactive(self):
+        response = False
+        country = profile.get_profile_var(["wwis_weather", "country"])
+        if country:
+            if(isinstance(self.locations[country], dict)):
+                return True if isinstance(self.locations[country][profile.get_profile_var(["wwis_weather", "region"])], dict) else False
+        return response
 
     def get_location_data(self):
         # Set the language used for the location data
@@ -195,10 +191,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                 city = None
         return city, cityId
 
-    def handle(self, text, mic):
-        # the text is actually a member of the intent
-        intent = text
-        text = intent['input']
+    def handle(self, intent, mic):
         # Ideally, we could use our list of countries to check if any country
         # appears in the input, then check for regions in the current country,
         # and finally cities in the selected region, so I should be able to
@@ -207,6 +200,8 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         # For now we just check to see if "Today" or "Tomorrow" appear
         # in the text, and return the requested day's weather.
         # First, establish the cityId
+        _ = self.gettext
+        text = intent['input']
         city, cityId = self.get_city_id()
         country = profile.get_profile_var(["wwis_weather", "country"])
         # text = intent.input

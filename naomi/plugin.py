@@ -32,7 +32,8 @@ class GenericPlugin(object):
             settings_complete = True
             # Step through the settings and check for
             # any missing settings
-            for setting in self.settings():
+            settings = self.settings()
+            for setting in settings:
                 if not profile.check_profile_var_exists(setting):
                     self._logger.info(
                         "{} setting does not exist".format(setting)
@@ -45,9 +46,9 @@ class GenericPlugin(object):
                 ).format(
                     self._plugin_info.name
                 )))
-                for setting in self.settings:
+                for setting in settings:
                     interface.get_setting(
-                        setting, self.settings[setting]
+                        setting, settings[setting]
                     )
                 # Save the profile with the new settings
                 profile.save_profile()

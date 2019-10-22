@@ -22,30 +22,6 @@ class JuliusSTTPlugin(plugin.STTPlugin):
     """
     def __init__(self, *args, **kwargs):
         plugin.STTPlugin.__init__(self, *args, **kwargs)
-        _ = self.gettext
-        self.settings = OrderedDict(
-            [
-                (
-                    ('julius', 'hmmdefs'), {
-                        'title': _('Julius HMMDEFS file'),
-                        'description': "".join([
-                            _('The hidden markov model file for Julius')
-                        ]),
-                        'default': '/usr/share/voxforge/julius/acoustic_model_files/hmmdefs'
-                    }
-                ),
-                (
-                    ('julius', 'tiedlist'), {
-                        'title': _('Julius tiedlist file'),
-                        'description': "".join([
-                            _('The tied list file for Julius')
-                        ]),
-                        'default': '/usr/share/voxforge/julius/acoustic_model_files/tiedlist'
-                    }
-                )
-            ]
-        )
-        plugin.STTPlugin.__init__(self, *args, **kwargs)
 
         vocabulary_path = self.compile_vocabulary(
             juliusvocab.compile_vocabulary
@@ -91,6 +67,31 @@ class JuliusSTTPlugin(plugin.STTPlugin):
                     self._logger.warning(line[9:])
                 elif len(line) > 6 and line[:6].upper() == 'STAT: ':
                     self._logger.debug(line[6:])
+
+    def settings(self):
+        _ = self.gettext
+        return OrderedDict(
+            [
+                (
+                    ('julius', 'hmmdefs'), {
+                        'title': _('Julius HMMDEFS file'),
+                        'description': "".join([
+                            _('The hidden markov model file for Julius')
+                        ]),
+                        'default': '/usr/share/voxforge/julius/acoustic_model_files/hmmdefs'
+                    }
+                ),
+                (
+                    ('julius', 'tiedlist'), {
+                        'title': _('Julius tiedlist file'),
+                        'description': "".join([
+                            _('The tied list file for Julius')
+                        ]),
+                        'default': '/usr/share/voxforge/julius/acoustic_model_files/tiedlist'
+                    }
+                )
+            ]
+        )
 
     def transcribe(self, fp, mode=None):
         cmd = ['julius',

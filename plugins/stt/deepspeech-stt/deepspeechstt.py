@@ -1,9 +1,6 @@
-import logging
 import os
 import scipy.io.wavfile as wav
 from collections import OrderedDict
-from naomi import i18n
-from naomi import paths
 from naomi import plugin
 from naomi import profile
 
@@ -28,55 +25,10 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
         """
         Create Plugin Instance
         """
-        self._logger = logging.getLogger(__name__)
+        plugin.STTPlugin.__init__(self, *args, **kwargs)
         if not deepspeech_available:
             self._logger.warning("DeepSpeech import error!")
             raise ImportError("DeepSpeech not installed!")
-        self._logger.info("Init DeepSpeech")
-        translations = i18n.parse_translations(paths.data('locale'))
-        translator = i18n.GettextMixin(translations, profile.get_profile())
-        _ = translator.gettext
-        self.settings = OrderedDict(
-            [
-                (
-                    ('deepspeech', 'alphabet'), {
-                        'title': _('DeepSpeech alphabet.txt'),
-                        'description': "".join([
-                            _('The alphabet file for your deepspeech')
-                        ]),
-                        'default': '~/deepspeech-0.5.1-models/alphabet.txt'
-                    }
-                ),
-                (
-                    ('deepspeech', 'language_model'), {
-                        'title': _('DeepSpeech language model'),
-                        'description': "".join([
-                            _('The deepspeech language model file')
-                        ]),
-                        'default': '~/deepspeech-0.5.1-models/lm.binary'
-                    }
-                ),
-                (
-                    ('deepspeech', 'model'), {
-                        'title': _('DeepSpeech neural network graph model'),
-                        'description': "".join([
-                            _('The deepspeech neural network graph model file')
-                        ]),
-                        'default': '~/deepspeech-0.5.1-models/output_graph.pbmm'
-                    }
-                ),
-                (
-                    ('deepspeech', 'trie'), {
-                        'title': _('DeepSpeech language model'),
-                        'description': "".join([
-                            _('The deepspeech trie file')
-                        ]),
-                        'default': '~/deepspeech-0.5.1-models/trie'
-                    }
-                )
-            ]
-        )
-        plugin.STTPlugin.__init__(self, *args, **kwargs)
         # Beam width used in the CTC decoder when building candidate
         # transcriptions
         self._BEAM_WIDTH = profile.get(
@@ -215,6 +167,49 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
                 self._LM_WEIGHT,
                 self._WORD_COUNT_WEIGHT
             )
+
+    def settings(self):
+        _ = self.gettext
+        return OrderedDict(
+            [
+                (
+                    ('deepspeech', 'alphabet'), {
+                        'title': _('DeepSpeech alphabet.txt'),
+                        'description': "".join([
+                            _('The alphabet file for your deepspeech')
+                        ]),
+                        'default': '~/deepspeech-0.5.1-models/alphabet.txt'
+                    }
+                ),
+                (
+                    ('deepspeech', 'language_model'), {
+                        'title': _('DeepSpeech language model'),
+                        'description': "".join([
+                            _('The deepspeech language model file')
+                        ]),
+                        'default': '~/deepspeech-0.5.1-models/lm.binary'
+                    }
+                ),
+                (
+                    ('deepspeech', 'model'), {
+                        'title': _('DeepSpeech neural network graph model'),
+                        'description': "".join([
+                            _('The deepspeech neural network graph model file')
+                        ]),
+                        'default': '~/deepspeech-0.5.1-models/output_graph.pbmm'
+                    }
+                ),
+                (
+                    ('deepspeech', 'trie'), {
+                        'title': _('DeepSpeech language model'),
+                        'description': "".join([
+                            _('The deepspeech trie file')
+                        ]),
+                        'default': '~/deepspeech-0.5.1-models/trie'
+                    }
+                )
+            ]
+        )
 
     def transcribe(self, fp):
         """

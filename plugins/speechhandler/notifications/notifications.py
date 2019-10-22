@@ -6,10 +6,9 @@ from naomi import profile
 
 
 class NotificationsPlugin(plugin.SpeechHandlerPlugin):
-    def __init__(self, *args, **kwargs):
-        super(NotificationsPlugin, self).__init__(*args, **kwargs)
+    def settings(self):
         _ = self.gettext
-        self.settings = OrderedDict(
+        return OrderedDict(
             [
                 (
                     ("keys", "FB_TOKEN"), {
@@ -32,7 +31,7 @@ class NotificationsPlugin(plugin.SpeechHandlerPlugin):
             }
         }
 
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         """
         Responds to user-input, typically speech text, with a summary of
         the user's Facebook notifications, including a count and details

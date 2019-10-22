@@ -32,6 +32,11 @@ def test_profile():
         TEST_PROFILE['language'] = config['language']
     except(KeyError, NameError):
         pass
+    try:
+        TEST_PROFILE['google'] = {}
+        TEST_PROFILE['google']['credentials_json'] = config['google']['credentials_json']
+    except(KeyError, NameError):
+        pass
     return TEST_PROFILE
 
 
