@@ -1,3 +1,4 @@
+import logging
 import os
 import unittest
 from collections import OrderedDict
@@ -60,24 +61,18 @@ class GoogleSTTPlugin(plugin.STTPlugin):
             ]
         )
 
-    @property
-    def language(self):
-        return self._language
-
-    @language.setter
-    def language(self, value):
-        self._language = value.lower()
-        self._regenerate_config()
-
     def _regenerate_config(self):
-        keyword = profile.get_profile_var(["keyword"], "Naomi")
+        phrases = []
+        phrases.extend(profile.get_profile_var(["keyword"], "Naomi"))
 
         self._config = types.RecognitionConfig(
             encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-            language_code=self.language,
-            speech_contexts=[speech.types.SpeechContext(
-                phrases=[keyword]
-            )] if keyword else None,
+            language_code=profile.get(['language'], 'en-US'),
+            speech_contexts=[
+                speech.types.SpeechContext(
+                    phrases=phrases
+                )
+            ] if len(phrases) else None,
             model="command_and_search"
         )
 
@@ -89,32 +84,33 @@ class GoogleSTTPlugin(plugin.STTPlugin):
         Arguments:
         fp -- the path to the .wav file to be transcribed
         """
-        if not self.language:
-            self._logger.critical(
-                'Language info missing, transcription request aborted.'
-            )
-            return []
-
         content = fp.read()
         audio = types.RecognitionAudio(content=content)
         try:
             response = self._client.recognize(self._config, audio)
         except GoogleAPICallError as e:
             # request failed for any reason
-            self._logger.warning(
-                'Google STT retry error. response: %s',
+            error_message = 'Google STT API call error. response: {}'.format(
                 e.args[0]
             )
+            if(self._logger.getEffectiveLevel() > logging.WARN):
+                print(error_message)
+            self._logger.warning(error_message)
             results = []
         except RetryError as e:
             # failed due to a retryable error and retry attempts failed
-            self._logger.warning(
-                'Google STT retry error. response: %s',
+            error_message = 'Google STT retry error. response: {}'.format(
                 e.args[0]
             )
+            if(self._logger.getEffectiveLevel() > logging.WARN):
+                print(error_message)
+            self._logger.warning(error_message)
             results = []
         except ValueError as e:
-            self._logger.warning('Empty response: %s', e.args[0])
+            error_message = 'Empty response: {}'.format(e.args[0])
+            if(self._logger.getEffectiveLevel() > logging.WARN):
+                print(error_message)
+            self._logger.warning(error_message)
             results = []
         else:
             # Convert all results to uppercase

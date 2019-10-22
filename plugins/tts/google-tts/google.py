@@ -23,6 +23,7 @@ class GoogleTTSPlugin(plugin.TTSPlugin):
 
     https://cloud.google.com/text-to-speech/docs/reference/rpc/google.cloud.texttospeech.v1beta1#audioencoding
 
+    pip3 install google-cloud-texttospeech
     """
 
     def __init__(self, *args, **kwargs):
@@ -59,8 +60,8 @@ class GoogleTTSPlugin(plugin.TTSPlugin):
             [(
                 ("google", "credentials_json"), {
                     "type": "file",
-                    "title": "Google application credentials (*.json)",
-                    "description": "This is a json file that allows your assistant to use the Google Speech API for converting speech to text. You need to generate and download an google cloud API key. Details here: https://cloud.google.com/speech-to-text/docs/quickstart-protocol",
+                    "title": _("Google application credentials (*.json)"),
+                    "description": _("This is a json file that allows your assistant to use the Google Speech API for converting text to speech. You need to generate and download a Google cloud API key. Details here: https://cloud.google.com/speech-to-text/docs/quickstart-protocol"),
                     "validation": lambda filename: os.path.exists(os.path.expanduser(filename)),
                     "invalidmsg": "File {} does not exist".format,
                     "default": os.getenv('GOOGLE_APPLICATION_CREDENTIALS')

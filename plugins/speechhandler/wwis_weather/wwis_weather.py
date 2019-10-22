@@ -121,8 +121,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         country = profile.get_profile_var(["wwis_weather", "country"])
         if country:
             if(isinstance(self.locations[country], dict)):
-                print(self.locations[profile.get_profile_var(["wwis_weather", "country"])][profile.get_profile_var(["wwis_weather", "region"])])
-                return True if isinstance(self.locations[profile.get_profile_var(["wwis_weather", "country"])][profile.get_profile_var(["wwis_weather", "region"])], dict) else False
+                return True if isinstance(self.locations[country][profile.get_profile_var(["wwis_weather", "region"])], dict) else False
         return response
 
     def get_location_data(self):
