@@ -48,9 +48,12 @@ def get_most_recent_date(emails):
 
 class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
 
-    def settings(self):
+    def __init__(self, *args, **kwargs):
+        super(CheckEmailPlugin, self).__init__(*args, **kwargs)
+
         _ = self.gettext
-        return OrderedDict(
+
+        self.settings = OrderedDict(
             [
                 (
                     ("email", "address"), {
@@ -62,8 +65,10 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
                 (
                     ("email", "imap", "server"), {
                         "title": _("Please enter your IMAP email server url"),
-                        "description": _("I need to know the url of your email server if you want me to check your emails for you"),
-                        "active": lambda: True if len(profile.get_profile_var(["email", "address"]).strip()) > 0 else False
+                        "description": _(
+                            "I need to know the url of your email server if you want me to check your emails for you"),
+                        "active": lambda: True if len(
+                            profile.get_profile_password(["email", "address"]).strip()) > 0 else False
                     }
                 ),
                 (
@@ -72,14 +77,18 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
                         "description": _("I need to know I have the correct port to access your email"),
                         "default": "993",
                         "validation": "int",
-                        "active": lambda: True if(len(profile.get_profile_var(["email", "address"]).strip()) > 0) and (len(profile.get_profile_var(["email", "imap"])) > 0) else False
+                        "active": lambda: True if (len(
+                            profile.get_profile_password(["email", "address"]).strip()) > 0) and (len(
+                            profile.get_profile_var(["email", "imap"])) > 0) else False
                     }
                 ),
                 (
                     ("email", "username"), {
                         "title": _("Please enter your IMAP email server username"),
-                        "description": _("Your username is normally either your full email address or just the part before the '@' symbol"),
-                        "active": lambda: True if len(profile.get_profile_var(["email", "address"]).strip()) > 0 else False
+                        "description": _(
+                            "Your username is normally either your full email address or just the part before the '@' symbol"),
+                        "active": lambda: True if len(
+                            profile.get_profile_password(["email", "address"]).strip()) > 0 else False
                     }
                 ),
                 (
@@ -87,7 +96,9 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
                         "type": "password",
                         "title": _("Please enter your IMAP email password"),
                         "description": _("I need your email address in order to check your emails"),
-                        "active": lambda: True if(len(profile.get_profile_var(["email", "address"]).strip()) > 0) and (len(profile.get_profile_var(["email", "imap"])) > 0) else False
+                        "active": lambda: True if (len(
+                            profile.get_profile_password(["email", "address"]).strip()) > 0) and (len(
+                            profile.get_profile_var(["email", "imap"])) > 0) else False
                     }
                 )
             ]
@@ -127,7 +138,7 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
 
         password = profile.get_profile_password(['email', 'password'])
         conn.login(
-            profile.get_profile_var(['email', 'username']),
+            profile.get_profile_password(['email', 'username']),
             password
         )
         conn.select(readonly=(not markRead))

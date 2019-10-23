@@ -3,8 +3,15 @@
 These functions "walk" the profile, and return either a boolean variable to
 tell whether an option is configured or not, or the actual value
 """
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import InvalidToken
+from cryptography.fernet import Fernet
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import base64
 import logging
+import hashlib
+from naomi.run_command import run_command
 from naomi import paths
 import os
 import shutil
@@ -27,7 +34,7 @@ def set_arg(name, value):
 # argument is not set.
 def get_arg(name, default=None):
     value = default
-    if(name in _args.keys()):
+    if (name in _args.keys()):
         value = _args[name]
     return value
 
@@ -136,7 +143,7 @@ def get_profile(command=""):
         # Read config
         # set a loop so we can keep looping back until the config file exists
         config_read = False
-        while(not config_read):
+        while (not config_read):
             try:
                 with open(new_configfile, "r") as f:
                     _profile = yaml.safe_load(f)
@@ -172,7 +179,7 @@ def save_profile():
     global _profile, _profile_read, _test_profile
     # I want to make sure the user's profile is never accidentally overwritten
     # with a test profile.
-    if((_profile_read)and(not _test_profile)):
+    if ((_profile_read) and (not _test_profile)):
         # Save the profile
         if not os.path.exists(paths.CONFIG_PATH):
             os.makedirs(paths.CONFIG_PATH)
@@ -190,7 +197,7 @@ def get_profile_var(path, default=None):
     If the value does not exist in the profile, returns
     either the default value (if there is one) or None.
     """
-    if(isinstance(path, str)):
+    if (isinstance(path, str)):
         path = [path]
     response = _walk_profile(path, True)
     if response is None:
@@ -208,13 +215,37 @@ def get_profile_password(path, default=None):
     If the value does not exist in the profile, returns
     either the default value (if there is one) or None.
     """
-    if(isinstance(path, str)):
+    _logger = logging.getLogger(__name__)
+    if (isinstance(path, str)):
         path = [path]
-    key = get_profile_key()
-    cipher_suite = Fernet(key)
-    response = _walk_profile(path, True)
+    first_id = hashlib.sha256(run_command("cat /etc/machine-id".split(), capture=1).stdout).hexdigest()
+    second_id = hashlib.sha256(run_command("hostid".split(), capture=1).stdout).hexdigest()
     try:
-        if(hasattr(response, "encode")):
+        third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
+        third_id = hashlib.sha256(run_command("""grep -oP 'UUID="\\K[^"]+'""".split(), capture=4,
+                                              stdin=third_idb1).stdout).hexdigest()
+    except FileNotFoundError:
+        _logger.warning(
+            " ".join([
+                "Package not installed: 'blkid'",
+                "Please install it manually or run apt_requirements.sh again"
+            ])
+        )
+        third_id = ""
+    salt = get_profile_key()
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA512(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    password = ''.join([first_id, second_id, third_id]).encode()
+    key = base64.urlsafe_b64encode(kdf.derive(password))
+    cipher_suite = Fernet(key)
+    response = get_profile_var(path, None)
+    try:
+        if (hasattr(response, "encode")):
             response = cipher_suite.decrypt(
                 response.encode("utf-8")
             ).decode("utf-8")
@@ -231,11 +262,11 @@ def get_profile_flag(path, default=None):
     or not. If the value does not exist, returns default or
     None
     """
-    if(isinstance(path, str)):
+    if (isinstance(path, str)):
         path = [path]
     # Get the variable value
     temp = str(_walk_profile(path, True))
-    if(temp is None):
+    if (temp is None):
         # the variable is not defined
         temp = default
     response = False
@@ -254,7 +285,7 @@ def check_profile_var_exists(path):
     Option is passed in as a list so that if we need to check
     if a suboption exists, we can pass the full path to it.
     """
-    if(isinstance(path, str)):
+    if (isinstance(path, str)):
         path = [path]
     return _walk_profile(path, False)
 
@@ -263,7 +294,7 @@ def _walk_profile(path, returnValue):
     """
     Function to walk the profile
     """
-    if(isinstance(path, str)):
+    if (isinstance(path, str)):
         path = [path]
     profile = get_profile()
     found = True
@@ -272,14 +303,14 @@ def _walk_profile(path, returnValue):
             # This happens if a value that was a string
             # is converted to a list. So overwrite the
             # string value with an array.
-            if(not isinstance(profile, dict)):
+            if (not isinstance(profile, dict)):
                 profile = {}
             profile = profile[branch]
         except KeyError:
             found = False
             profile = None
             break
-    if(returnValue):
+    if (returnValue):
         response = profile
     else:
         response = found
@@ -289,7 +320,7 @@ def _walk_profile(path, returnValue):
 def set_profile_var(path, value):
     global _profile
     temp = _profile
-    if(isinstance(path, str)):
+    if (isinstance(path, str)):
         path = [path]
     if len(path) > 0:
         last = path[0]
@@ -309,7 +340,7 @@ def set_profile_var(path, value):
 
 def remove_profile_var(path):
     global _profile
-    if(isinstance(path, str)):
+    if (isinstance(path, str)):
         path = [path]
     temp = get_profile()
     if len(path) > 0:
@@ -336,22 +367,34 @@ def get_profile_key():
 
 def set_profile_password(path, value):
     global _profile
-    if(isinstance(path, str)):
+    _logger = logging.getLogger(__name__)
+    if (isinstance(path, str)):
         path = [path]
     # Encrypt value
-    key = get_profile_key()
+    first_id = hashlib.sha256(run_command("cat /etc/machine-id".split(), capture=1).stdout).hexdigest()
+    second_id = hashlib.sha256(run_command("hostid".split(), capture=1).stdout).hexdigest()
+    try:
+        third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
+        third_id = hashlib.sha256(run_command("""grep -oP 'UUID="\\K[^"]+'""".split(), capture=4,
+                                              stdin=third_idb1).stdout).hexdigest()
+    except FileNotFoundError:
+        _logger.warning(
+            " ".join([
+                "Package not installed: 'blkid'",
+                "Please install it manually or run apt_requirements.sh again"
+            ])
+        )
+        third_id = ""
+    salt = get_profile_key()
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA512(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    password = ''.join([first_id, second_id, third_id]).encode()
+    key = base64.urlsafe_b64encode(kdf.derive(password))
     cipher_suite = Fernet(key)
     cipher_text = cipher_suite.encrypt(value.encode("utf-8")).decode("utf-8")
-    temp = get_profile()
-    if len(path) > 0:
-        last = path[0]
-        if len(path) > 1:
-            for branch in path[1:]:
-                try:
-                    if not isinstance(temp[last], dict):
-                        temp[last] = {}
-                except KeyError:
-                    temp[last] = {}
-                temp = temp[last]
-                last = branch
-            temp[last] = cipher_text
+    set_profile_var(path, cipher_text)
