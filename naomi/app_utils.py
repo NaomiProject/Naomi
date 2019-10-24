@@ -108,7 +108,7 @@ def email_user(SUBJECT="", BODY=""):
         return True
 
 
-def fetch_emails(since=None, filter="", markRead=False, limit=None):
+def fetch_emails(since=None, email_filter="", markRead=False, limit=None):
     """
         Fetches a list of unread email objects from a user's Email inbox.
 
@@ -132,7 +132,7 @@ def fetch_emails(since=None, filter="", markRead=False, limit=None):
     conn.select(readonly=(not markRead))
 
     msgs = []
-    (retcode, messages) = conn.search(None, filter)
+    (retcode, messages) = conn.search(None, email_filter)
 
     if retcode == 'OK' and messages != ['']:
         numUnread = len(messages[0].split(b' '))
@@ -141,7 +141,7 @@ def fetch_emails(since=None, filter="", markRead=False, limit=None):
 
         for num in messages[0].split(b' '):
             # parse email RFC822 format
-            ret, data = conn.fetch(num, '(RFC822)')
+            (retcode, data) = conn.fetch(num, '(RFC822)')
             raw_email = data[0][1]
             raw_email_str = raw_email.decode("utf-8")
             msg = email.message_from_string(raw_email_str)
