@@ -173,6 +173,137 @@ function network_setup() {
     echo
 }
 
+function engine_setup() {
+
+    echo -e "\e[1;36m"
+    echo "========================================================================="
+    echo "TTS SETUP:"
+    echo "TTS, stands for Text To Speech, and is software that transforms text into speech,"
+    echo "which is how Naomi can speak to you. You will need to pick one of the options below"
+    echo 
+    echo "Note: Some engines do not require you to do anything other than input information during the profile setup."
+    echo
+    echo -e "\e[1;36m"
+    echo "  1) Google TTS"
+    echo "  2) Microsoft TTS"
+    echo "  3) Festival (only english is available at this time!)"
+    echo "  4) Espeak"
+    echo "  5) SvoxPico"
+    echo "  6) Flite"
+    echo -n -e "\e[1;36mChoice [\e[1;35m1\e[1;36m-\e[1;35m6\e[1;36m]: \e[0m"
+    while true; do
+        read -N1 -s key
+        case $key in
+         1)
+            echo -e "\e[1;32m$key - Google TTS"
+            # nothing to do, handled in POP
+            break
+            ;;
+         2)
+            echo -e "\e[1;32m$key - Mirosoft TTS"
+            # nothing to do, handled in POP
+            break
+            ;;
+         3)
+            echo -e "\e[1;32m$key - Festival"
+            cd ~
+            sudo apt-get install festival festvox-kallpc16k
+            break
+            ;;
+         4)
+            echo -e "\e[1;32m$key - Espeak"
+            cd ~
+            sudo apt-get install espeak
+            break
+            ;;
+         5)
+            echo -e "\e[1;32m$key - SvoxPico"
+            cd ~
+            sudo apt-get install libttspico-utils
+            break
+            ;;
+         6)
+            echo -e "\e[1;32m$key - Flite"
+            cd ~
+            sudo apt install flite -y
+            break
+            ;;
+        esac
+    done
+    echo
+    echo
+    echo
+    echo
+
+    echo -e "\e[1;36m"
+    echo "========================================================================="
+    echo "STT SETUP:"
+    echo "STT, stands for Speech to Text, and is software that transforms spoken words & sentences"
+    echo "into text, which is how Naomi can understand you. You will need to pick one of the Below"
+    echo 
+    echo "Note: For accuracy, really good understanding and easy to use, online solutions are better!"
+    echo "      But for privacy reasons and to use Naomi without internet access, we recommend"
+    echo "      the use of offline solutions"
+    echo
+    echo -e "\e[1;36m"
+    echo "  1) Wit.ai"
+    echo "  2) Google Cloud STT"
+    echo "  3) Pocketsphinx"
+    echo "  4) Mozilla DeepSpeech"
+    echo -n -e "\e[1;36mChoice [\e[1;35m1\e[1;36m-\e[1;35m4\e[1;36m]: \e[0m"
+    while true; do
+        read -N1 -s key
+        case $key in
+         1)
+            echo -e "\e[1;32m$key - Wit.ai"
+            echo -e "\e[1;36m"
+            echo "You will need a token that you receive for free by registering an account on the Wit.ai website!"
+            echo "https://wit.ai"
+            sleep 5
+            pip install wit
+            break
+            ;;
+         2)
+            echo -e "\e[1;32m$key - Google Cloud STT"
+            echo -e "\e[1;36m"
+            echo "You will need a token that you receive for free by registering an account on the Google Cloud website!"
+            echo "https://cloud.google.com/speech-to-text/"
+            echo
+            echo "In particular, this page explains how to register and how to retrieve your private key:"
+            echo "https://cloud.google.com/speech-to-text/docs/quickstart-protocol"
+            sleep 5
+            break
+            ;;
+         3)
+            echo -e "\e[1;32m$key - Pocketsphinx"
+            echo "Beginning the Pocket build process.  This will take around 3 hours..."
+            echo "Treat yourself to a movie and some popcorn in the mean time."
+            echo -e "Results will be in the \e[1;35m~/.naomi/pocketsphinx-build.log"
+            sleep 10
+            cd ~/.naomi/scripts/
+            wget https://git.io/JeBlW -O pocketsphinx-setup.sh
+            cd ~
+            bash ~/.naomi/scripts/pocketsphinx-setup.sh -y 2>&1 | tee ~/.naomi/pocketsphinx-build.log
+            echo
+            echo -e "\e[1;36mBuild complete.  Press any key to review the output."
+            read -N1 -s key
+            nano ~/.naomi/pocketsphinx-build.log
+            cd ~
+            break
+            ;;
+         4)
+            echo -e "\e[1;32m$key - DeepSpeech"
+            cd ~
+            sudo pip3 install DeepSpeech
+            wget https://github.com/mozilla/DeepSpeech/releases/download/v0.5.1/deepspeech-0.5.1-models.tar.gz
+            tar xzvf deepspeech-0.5.1-models.tar.gz
+            cd ~
+            break
+            ;;
+        esac
+    done
+}
+
 function setup_wizard() {
 
     echo -e "\e[1;36m"
@@ -443,11 +574,11 @@ function setup_wizard() {
         case $key in
          1)
             echo -e "\e[1;32m$key - Easy Peasy!"
-            echo '{"use_release":"stable", "auto_update": false}' > ~/.naomi/configs/.naomi_options.json
+            version="2.2"
+            echo '{"use_release":"stable", "version":"Naomi-'$version'", "auto_update":"false"}' > ~/.naomi/configs/.naomi_options.json
             cd ~
             mv ~/Naomi ~/Naomi-Temp
             cd ~
-            version="2.2"
             curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/stable/Naomi-$version.zip" -o Naomi-$version.zip
             unzip Naomi-$version.zip
             mv Naomi-$version Naomi
@@ -456,12 +587,12 @@ function setup_wizard() {
             ;;
          2)
             echo -e "\e[1;32m$key - Good Choice!"
-            echo '{"use_release":"milestone", "auto_update": false}' > ~/.naomi/configs/.naomi_options.json
+            version="3.0"
+            milestone=$(date -d "-1 month" +%-m)
+            echo '{"use_release":"milestone", "version":"Naomi-'$version'.M'$milestone'", "auto_update":"false"}' > ~/.naomi/configs/.naomi_options.json
             cd ~
             mv ~/Naomi ~/Naomi-Temp
             cd ~
-            version="3.0"
-            milestone=$(date -d "-1 month" +%-m)
             curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/dev/Naomi-$version.M$milestone.zip" -o Naomi-$version.M$milestone.zip
             unzip Naomi-$version.M$milestone.zip
             mv Naomi-$version.M$milestone Naomi
@@ -470,7 +601,7 @@ function setup_wizard() {
             ;;
          3)
             echo -e "\e[1;32m$key - You know what you are doing!"
-            echo '{"use_release":"nightly", "auto_update": true}' > ~/.naomi/configs/.naomi_options.json
+            echo '{"use_release":"nightly", "version":"Naomi-Nightly", "auto_update":"true"}' > ~/.naomi/configs/.naomi_options.json
             cd ~
             mv ~/Naomi ~/Naomi-Temp
             cd ~
@@ -492,114 +623,42 @@ function setup_wizard() {
     echo "PLUGIN SETUP"
     echo "Now we'll tackle the different plugin options available for Text-to-Speech, Speech-to-Text, and more."
     echo
+    sleep 3
+    echo
 
     echo -e "\e[1;36m"
     echo "========================================================================="
-    echo "TTS SETUP:"
-    echo "TTS, stands for Text To Speech, and is software that transforms text into speech,"
-    echo "which is how Naomi can speak to you. You will need to pick one of the options below"
-    echo 
-    echo "Note: Some engines do not require you to do anything other than input information during the profile setup."
+    echo "Pre-Configs:"
+    echo "Naomi has various options for active and or passive Text-to-Speech engines as well"
+    echo "as Speech-to-Text engines. We have put together two pre-configured setups that make"
+    echo "setup easier. The options fall into two categories: Better Privacy & Better Accuracy."
+    echo
+    echo "Better Privacy includes Flite for TTS & PocketSphinx for STT"
+    echo
+    echo "Better Accuracy includes Google for TTS & active listening STT, & PocketSphinx"
+    echo "for passive listening STT"
+    echo
+    echo "Note: As always you can select to set things up manually if you so wish."
     echo
     echo -e "\e[1;36m"
-    echo "  1) Google TTS"
-    echo "  2) Microsoft TTS"
-    echo "  3) Festival (only english is available at this time!)"
-    echo "  4) Espeak"
-    echo "  5) SvoxPico"
-    echo "  6) Flite"
-    echo -n -e "\e[1;36mChoice [\e[1;35m1\e[1;36m-\e[1;35m6\e[1;36m]: \e[0m"
+    echo "  1) Better Privacy"
+    echo "  2) Better Accuracy"
+    echo "  3) Manual Setup"
+    echo -n -e "\e[1;36mChoice [\e[1;35m1\e[1;36m-\e[1;35m3\e[1;36m]: \e[0m"
     while true; do
         read -N1 -s key
         case $key in
          1)
-            echo -e "\e[1;32m$key - Google TTS"
-            # nothing to do, handled in POP
-            break
-            ;;
-         2)
-            echo -e "\e[1;32m$key - Mirosoft TTS"
-            # nothing to do, handled in POP
-            break
-            ;;
-         3)
-            echo -e "\e[1;32m$key - Festival"
-            cd ~
-            sudo apt-get install festival festvox-kallpc16k
-            break
-            ;;
-         4)
-            echo -e "\e[1;32m$key - Espeak"
-            cd ~
-            sudo apt-get install espeak
-            break
-            ;;
-         5)
-            echo -e "\e[1;32m$key - SvoxPico"
-            cd ~
-            sudo apt-get install libttspico-utils
-            break
-            ;;
-         6)
-            echo -e "\e[1;32m$key - Flite"
+            echo -e "\e[1;32m$key - Better Privacy!"
+            echo "Installing Flite..."
             cd ~
             sudo apt install flite -y
-            break
-            ;;
-        esac
-    done
-    echo
-    echo
-    echo
-    echo
-
-    echo -e "\e[1;36m"
-    echo "========================================================================="
-    echo "STT SETUP:"
-    echo "STT, stands for Speech to Text, and is software that transforms spoken words & sentences"
-    echo "into text, which is how Naomi can understand you. You will need to pick one of the Below"
-    echo 
-    echo "Note: For accuracy, really good understanding and easy to use, online solutions are better!"
-    echo "      But for privacy reasons and to use Naomi without internet access, we recommend"
-    echo "      the use of offline solutions"
-    echo
-    echo -e "\e[1;36m"
-    echo "  1) Wit.ai"
-    echo "  2) Google Cloud STT"
-    echo "  3) Pocketsphinx"
-    echo "  4) Mozilla DeepSpeech"
-    echo -n -e "\e[1;36mChoice [\e[1;35m1\e[1;36m-\e[1;35m4\e[1;36m]: \e[0m"
-    while true; do
-        read -N1 -s key
-        case $key in
-         1)
-            echo -e "\e[1;32m$key - Wit.ai"
-            echo -e "\e[1;36m"
-            echo "You will need a token that you receive for free by registering an account on the Wit.ai website!"
-            echo "https://wit.ai"
-            sleep 5
-            pip install wit
-            break
-            ;;
-         2)
-            echo -e "\e[1;32m$key - Google Cloud STT"
-            echo -e "\e[1;36m"
-            echo "You will need a token that you receive for free by registering an account on the Google Cloud website!"
-            echo "https://cloud.google.com/speech-to-text/"
-            echo
-            echo "In particular, this page explains how to register and how to retrieve your private key:"
-            echo "https://cloud.google.com/speech-to-text/docs/quickstart-protocol"
-            sleep 5
-            break
-            ;;
-         3)
-            echo -e "\e[1;32m$key - Pocketsphinx"
             echo "Beginning the Pocket build process.  This will take around 3 hours..."
             echo "Treat yourself to a movie and some popcorn in the mean time."
             echo -e "Results will be in the \e[1;35m~/.naomi/pocketsphinx-build.log"
             sleep 10
             cd ~/.naomi/scripts/
-            wget -N $REPO_PATH/home/pi/.naomi/scripts/pocketsphinx-setup.sh
+            wget https://git.io/JeBlW -O pocketsphinx-setup.sh
             cd ~
             bash ~/.naomi/scripts/pocketsphinx-setup.sh -y 2>&1 | tee ~/.naomi/pocketsphinx-build.log
             echo
@@ -609,13 +668,46 @@ function setup_wizard() {
             cd ~
             break
             ;;
-         4)
-            echo -e "\e[1;32m$key - DeepSpeech"
-            cd ~
-            sudo pip3 install DeepSpeech
-            wget https://github.com/mozilla/DeepSpeech/releases/download/v0.5.1/deepspeech-0.5.1-models.tar.gz
-            tar xzvf deepspeech-0.5.1-models.tar.gz
-            cd ~
+         2)
+            echo -e "\e[1;32m$key - Better Accuracy!"
+            pip3 install google-api-core==1.9.0
+            pip3 install google-auth==1.6.3
+            pip3 install google-cloud-speech==1.0.0
+            pip3 install google-cloud-texttospeech==0.5.0
+            pip3 install googleapis-common-protos==1.5.9
+            pip3 install grpcio
+            echo "On another device, please go to:"
+            echo "https://projectnaomi.com/dev/docs/configuration/pre-configs/"
+            echo "and follow the instructions for the Better Accuracy config."
+            echo "Once you have completed the steps, Press any key to enter"
+            echo "your Google Application Credential API Key."
+            read -N1 -s key
+
+            echo -n -e "\e[1;36mEnter the API key: \e[0m"
+            read -s api_key
+            echo
+            echo -n -e "\e[1;36mEnter the API key again: \e[0m"
+            read -s api_key_confirm
+            echo
+
+            if [[ "$api_key" = "$api_key_confirm"]]
+            then
+                echo "network={" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null
+                echo "        ssid=\"$user_ssid\"" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null
+                echo "        psk=\"$user_pwd\"" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null
+                echo "}" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null
+                reset_wlan0=1
+                break
+                ;;
+            else
+                echo "Please double check your key!"
+                ;;
+            fi
+            break
+            ;;
+         3)
+            echo -e "\e[1;32m$key - Manual Setup!"
+            engine_setup
             break
             ;;
         esac
