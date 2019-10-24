@@ -1,6 +1,7 @@
 import os.path
 import tempfile
 from collections import OrderedDict
+from naomi import paths
 from naomi import plugin
 from naomi import profile
 from . import sphinxvocab
@@ -127,41 +128,27 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
         # Get the defaults for settings
         # hmm_dir
         hmm_dir = profile.get(
-            ['pocketsphinx', 'hmm_dir'],
-            "/usr/local/share/pocketsphinx/model/hmm/en_US/hub4wsj_sc_8k"
+            ['pocketsphinx', 'hmm_dir']
         )
         if(not hmm_dir):
-            if(os.path.isdir(os.path.join(
-                os.path.expanduser("~"),
-                "pocketsphinx-python",
-                "pocketsphinx",
-                "model",
-                "en-us",
-                "en-us"
-            ))):
-                hmm_dir = os.path.join(
+            # Make a list of possible paths to check
+            hmm_dir_paths = [
+                os.path.join(
                     os.path.expanduser("~"),
                     "pocketsphinx-python",
                     "pocketsphinx",
                     "model",
                     "en-us",
                     "en-us"
-                )
-            elif(os.path.isdir(os.path.join(
-                os.path.expanduser("~"),
-                "pocketsphinx",
-                "model",
-                "en-us",
-                "en-us"
-            ))):
-                hmm_dir = os.path.join(
+                ),
+                os.path.join(
                     os.path.expanduser("~"),
                     "pocketsphinx",
                     "model",
                     "en-us",
                     "en-us"
-                )
-            elif(os.path.isdir(os.path.join(
+                ),
+                os.path.join(
                     "/",
                     "usr",
                     "share",
@@ -169,18 +156,8 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                     "model",
                     "en-us",
                     "en-us"
-            ))):
-                hmm_dir = os.path.join(
-                    "/",
-                    "usr",
-                    "share",
-                    "pocketsphinx",
-                    "model",
-                    "en-us",
-                    "en-us"
-                )
-            else:
-                hmm_dir = os.path.join(
+                ),
+                os.path.join(
                     "/usr",
                     "local",
                     "share",
@@ -190,19 +167,28 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                     "en_US",
                     "hub4wsj_sc_8k"
                 )
+            ]
+            # see if any of these paths exist
+            for path in hmm_dir_paths:
+                if os.path.isdir(path):
+                    hmm_dir = path
         # fst_model
         fst_model = profile.get_profile_var(["pocketsphinx", "fst_model"])
         if not fst_model:
-            if(os.path.isfile(os.path.join(
-                os.path.expanduser("~"),
-                "pocketsphinx-python",
-                "pocketsphinx",
-                "model",
-                "en-us",
-                "train",
-                "model.fst"
-            ))):
-                fst_model = os.path.join(
+            # Make a list of possible paths to check
+            fst_model_paths = [
+                os.path.join(
+                    paths.sub(
+                        os.path.join(
+                            "pocketsphinx",
+                            "adapt",
+                            "en-US",
+                            "train",
+                            "model.fst"
+                        )
+                    )
+                ),
+                os.path.join(
                     os.path.expanduser("~"),
                     "pocketsphinx-python",
                     "pocketsphinx",
@@ -210,41 +196,28 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                     "en-us",
                     "train",
                     "model.fst"
-                )
-            elif(os.path.isfile(os.path.join(
-                os.path.expanduser("~"),
-                "cmudict",
-                "train",
-                "model.fst"
-            ))):
-                fst_model = os.path.join(
+                ),
+                os.path.join(
                     os.path.expanduser("~"),
                     "cmudict",
                     "train",
                     "model.fst"
-                )
-            elif(os.path.isfile(os.path.join(
-                os.path.expanduser("~"),
-                "CMUDict",
-                "train",
-                "model.fst"
-            ))):
-                fst_model = os.path.join(
+                ),
+                os.path.join(
                     os.path.expanduser("~"),
                     "CMUDict",
                     "train",
                     "model.fst"
-                )
-            elif(os.path.isfile(os.path.join(
-                os.path.expanduser("~"),
-                "phonetisaurus",
-                "g014b2b.fst"
-            ))):
-                fst_model = os.path.join(
+                ),
+                os.path.join(
                     os.path.expanduser("~"),
                     "phonetisaurus",
                     "g014b2b.fst"
                 )
+            ]
+            for path in fst_model_paths:
+                if os.path.isfile(path):
+                    fst_model = path
         phonetisaurus_executable = profile.get_profile_var(
             ['pocketsphinx', 'phonetisaurus_executable']
         )
@@ -271,7 +244,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                         'description': "".join([
                             _('PocketSphinx finite state transducer file')
                         ]),
-                        'default': hmm_dir
+                        'default': fst_model
                     }
                 ),
                 (

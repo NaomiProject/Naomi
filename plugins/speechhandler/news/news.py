@@ -88,7 +88,7 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
         if not email:
             return
 
-        if profile.get_profile_flag(['prefers_email'], False):
+        if profile.get_profile_flag(['allows_email'], False):
 
             mic.say(_('Would you like me to send you these articles?'))
 

@@ -37,7 +37,6 @@ class Mic(object):
         plugins,
         tts_engine,
         vad_plugin,
-        config,
         keyword=['NAOMI'],
         print_transcript=False,
         passive_listen=False,
