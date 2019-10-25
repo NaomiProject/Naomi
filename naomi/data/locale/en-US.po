@@ -601,3 +601,11 @@ msgstr ""
 #: naomi/populate.py:1704
 msgid "Setting threshold from {t} to {s}"
 msgstr ""
+
+#: naomi/app_utils.py:129
+msgid "\\b(no(t)?|don\\'t|stop|end|n)\\b"
+msgstr ""
+
+#: naomi/app_utils.py:143
+msgid "\\b(sure|yes|yeah|go|yup|y)\\b"
+msgstr ""
