@@ -668,9 +668,9 @@ msgid "Setting threshold from {t} to {s}"
 msgstr "Seuil de réglage de {t} à {s}"
 
 #: naomi/app_utils.py:129
-msgid "\\b(no|cesser|stopper|n)\\b"
-msgstr ""
+msgid "\\b(no(t)?|don\\'t|stop|end|n)\\b"
+msgstr "\\b(no|cesser|stopper|n)\\b"
 
 #: naomi/app_utils.py:143
-msgid "\\b(oui|aller|continuer|o)\\b"
-msgstr ""
+msgid "\\b(sure|yes|yeah|go|yup|y)\\b"
+msgstr "\\b(oui|aller|continuer|o)\\b"

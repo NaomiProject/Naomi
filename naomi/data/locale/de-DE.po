@@ -630,9 +630,9 @@ msgid "Setting threshold from {t} to {s}"
 msgstr "Schwellenwert von {t} bis {s} einstellen"
 
 #: naomi/app_utils.py:129
-msgid "\\b(nicht?|kein*|stopp|ende?|n)\\b"
-msgstr ""
+msgid "\\b(no(t)?|don\\'t|stop|end|n)\\b"
+msgstr "\\b(nicht?|kein*|stopp|ende?|n)\\b"
 
 #: naomi/app_utils.py:143
-msgid "\\b(sicher|ja|jawohl|los|yo|j)\\b"
-msgstr ""
+msgid "\\b(sure|yes|yeah|go|yup|y)\\b"
+msgstr "\\b(sicher|ja|jawohl|los|yo|j)\\b"
