@@ -1756,55 +1756,55 @@ def run():
     greet_user()
     interface.separator()
 
-    get_wakeword()
-    interface.separator()
+    # get_wakeword()
+    # interface.separator()
 
-    select_audio_engine()
-    interface.separator()
+    # select_audio_engine()
+    # interface.separator()
 
-    get_output_device()
-    interface.separator()
+    # get_output_device()
+    # interface.separator()
 
-    get_input_device()
-    interface.separator()
+    # get_input_device()
+    # interface.separator()
 
-    get_passive_stt_engine()
-    interface.separator()
+    # get_passive_stt_engine()
+    # interface.separator()
 
-    get_active_stt_engine()
-    interface.separator()
+    # get_active_stt_engine()
+    # interface.separator()
 
-    get_special_stt_engine()
-    interface.separator()
+    # get_special_stt_engine()
+    # interface.separator()
 
-    get_tts_engine()
-    interface.separator()
+    # get_tts_engine()
+    # interface.separator()
 
     get_beep_or_voice()
     interface.separator()
 
-    get_user_name()
-    interface.separator()
+    # get_user_name()
+    # interface.separator()
 
-    get_email_info()
-    interface.separator()
+    # get_email_info()
+    # interface.separator()
 
-    get_phone_info()
-    interface.separator()
+    # get_phone_info()
+    # interface.separator()
 
-    get_notification_info()
-    interface.separator()
+    # get_notification_info()
+    # interface.separator()
 
     # comment out the following two lines as the weather location service
     # at weather underground has now been shut down. AaronC 2019-03-25
     # get_weather_location()
     # interface.separator()
 
-    get_timezone()
-    interface.separator()
+    # get_timezone()
+    # interface.separator()
 
     # write to profile
-    profile.save_profile()
+    # profile.save_profile()
 
     interface.separator()
     print(

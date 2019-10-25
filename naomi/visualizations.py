@@ -8,7 +8,7 @@ def load_visualizations(self):
     global _visualizations
     for info in self.plugins.get_plugins_by_category('visualizations'):
         try:
-            _visualizations.append(info.plugin_class(info, self.config))
+            _visualizations.append(info.plugin_class(info))
         except Exception as e:
             self._logger.warning(
                 "Plugin '%s' skipped! (Reason: %s)", info.name,

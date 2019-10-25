@@ -80,7 +80,7 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
         )
         mic.say(text)
 
-        if profile.get_profile_flag(['prefers_email']):
+        if profile.get_profile_flag(['allows_email']):
             mic.say(_('Would you like me to send you these articles?'))
 
             answers = mic.active_listen()

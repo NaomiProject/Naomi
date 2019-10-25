@@ -291,31 +291,47 @@ class commandline(object):
 
     # AaronC Sept 18 2018 This uses affirmative/negative to ask
     # a yes/no question. Returns True for yes and False for no.
-    def simple_yes_no(self, prompt, default=None):
+    def simple_yes_no(
+        self,
+        prompt,
+        description=None,
+        default=None
+    ):
         response = ""
         # Make it so the default value is upper case and the non-default value
         # is lower case
+        instruction = ""
+        if(description):
+            instruction = '"?" for help'
         choice_affirmative = affirmative[:1].lower()
         choice_negative = negative[:1].lower()
         if(not isinstance(default, str)):
             default = str(default)
+        default_temp = None
         if default:
             if app_utils.is_positive(default):
                 choice_affirmative = affirmative[:1].upper()
+                default_temp = choice_affirmative
             if app_utils.is_negative(default):
                 choice_negative = negative[:1].upper()
+                default_temp = choice_negative
         while(response[:1] not in (affirmative.lower()[:1], negative.lower()[:1])):
-            response = self.simple_input(
+            temp_response = self.simple_input(
                 self.format_prompt(
                     "?",
                     prompt + self.instruction_text(" (") + self.choices_text(
                         choice_affirmative
                     ) + self.instruction_text("/") + self.choices_text(
                         choice_negative
-                    ) + self.instruction_text(")")
-                )
+                    ) + self.instruction_text(")") + instruction
+                ),
+                default_temp
             ).strip().lower()
-            if response[:1] not in (affirmative.lower()[:1], negative.lower()[:1]):
+            if description and temp_response[:1] == "?":
+                print(self.instruction_text(description))
+            elif temp_response[:1] in (affirmative.lower()[:1], negative.lower()[:1]):
+                response = temp_response
+            else:
                 print(self.alert_text("Please select '{}' or '{}'.").format(
                     affirmative.upper()[:1],
                     negative.upper()[:1]
@@ -357,6 +373,8 @@ class commandline(object):
                     options = definition["options"]()
                 except TypeError:
                     options = definition["options"]
+                if(isinstance(options, list)):
+                    options = {item: item for item in options}
                 print(
                     "    " + self.instruction_text(
                         definition["title"]
@@ -421,14 +439,48 @@ class commandline(object):
                         setting,
                         response
                     )
+            elif(controltype == "encrypted"):
+                # Encrypted is like password, in that it encrypts the
+                # information in your profile, so it would be protected
+                # from someone who steals your profile.
+                # However, it does not hide the text the way password does.
+                print("")
+                value = profile.get_profile_password(setting, default)
+                response = value
+                once = False
+                while not ((once) and (self.validate(definition, response))):
+                    once = True
+                    tmp_response = self.simple_input(
+                        "    " + self.instruction_text(
+                            _('{} ("?" for help)').format(definition["title"])
+                        ),
+                        response
+                    )
+                    if(tmp_response.strip() == "?"):
+                        # Print the description plus any help text
+                        # for the control
+                        print("")
+                        print(self.instruction_text(definition["description"]))
+                        once = False
+                        continue
+                    response = tmp_response
+                    print("")
+                    profile.set_profile_password(
+                        setting,
+                        response
+                    )
             elif(controltype == "boolean"):
                 value = profile.get_profile_flag(setting, default)
+                description = None
+                if('description' in definition):
+                    description = definition['description']
                 response = value
                 once = False
                 while not (once):
                     once = True
                     response = self.simple_yes_no(
                         definition['title'],
+                        description,
                         response
                     )
                 profile.set_profile_var(

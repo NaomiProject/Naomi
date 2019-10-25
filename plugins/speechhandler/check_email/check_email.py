@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 import imaplib
-import email
 import re
-from collections import OrderedDict
-from dateutil import parser
+from naomi import app_utils
 from naomi import plugin
-from naomi import profile
 
 
 def get_sender(msg):
@@ -25,10 +22,6 @@ def get_sender(msg):
     return sender
 
 
-def get_date(email):
-    return parser.parse(email.get('date'))
-
-
 def get_most_recent_date(emails):
     """
         Returns the most recent date of any email in the list provided.
@@ -39,7 +32,7 @@ def get_most_recent_date(emails):
         Returns:
         Date of the most recent email.
     """
-    dates = [get_date(e) for e in emails]
+    dates = [app_utils.get_date(e) for e in emails]
     dates.sort(reverse=True)
     if dates:
         return dates[0]
@@ -47,62 +40,6 @@ def get_most_recent_date(emails):
 
 
 class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
-
-    def __init__(self, *args, **kwargs):
-        super(CheckEmailPlugin, self).__init__(*args, **kwargs)
-
-        _ = self.gettext
-
-        self.settings = OrderedDict(
-            [
-                (
-                    ("email", "address"), {
-                        "title": _("Please enter your email address"),
-                        "description": _("I can use your email address to check your mail and send you notifications"),
-                        "validation": "email"
-                    }
-                ),
-                (
-                    ("email", "imap", "server"), {
-                        "title": _("Please enter your IMAP email server url"),
-                        "description": _(
-                            "I need to know the url of your email server if you want me to check your emails for you"),
-                        "active": lambda: True if len(
-                            profile.get_profile_password(["email", "address"]).strip()) > 0 else False
-                    }
-                ),
-                (
-                    ("email", "imap", "port"), {
-                        "title": _("Please enter your IMAP email server port"),
-                        "description": _("I need to know I have the correct port to access your email"),
-                        "default": "993",
-                        "validation": "int",
-                        "active": lambda: True if (len(
-                            profile.get_profile_password(["email", "address"]).strip()) > 0) and (len(
-                            profile.get_profile_var(["email", "imap"])) > 0) else False
-                    }
-                ),
-                (
-                    ("email", "username"), {
-                        "title": _("Please enter your IMAP email server username"),
-                        "description": _(
-                            "Your username is normally either your full email address or just the part before the '@' symbol"),
-                        "active": lambda: True if len(
-                            profile.get_profile_password(["email", "address"]).strip()) > 0 else False
-                    }
-                ),
-                (
-                    ("email", "password"), {
-                        "type": "password",
-                        "title": _("Please enter your IMAP email password"),
-                        "description": _("I need your email address in order to check your emails"),
-                        "active": lambda: True if (len(
-                            profile.get_profile_password(["email", "address"]).strip()) > 0) and (len(
-                            profile.get_profile_var(["email", "imap"])) > 0) else False
-                    }
-                )
-            ]
-        )
 
     def intents(self):
         _ = self.gettext
@@ -117,53 +54,6 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
                 'action': self.handle
             }
         }
-
-    @staticmethod
-    def fetch_unread_emails(since=None, markRead=False, limit=None):
-        """
-            Fetches a list of unread email objects from a user's Email inbox.
-
-            Arguments:
-            since -- if provided, no emails before this date will be returned
-            markRead -- if True, marks all returned emails as read in target
-                        inbox
-
-            Returns:
-            A list of unread email objects.
-        """
-        host = profile.get_profile_var(['email', 'imap', 'server'])
-        port = int(profile.get_profile_var(['email', 'imap', 'port'], "993"))
-        conn = imaplib.IMAP4_SSL(host, port)
-        conn.debug = 0
-
-        password = profile.get_profile_password(['email', 'password'])
-        conn.login(
-            profile.get_profile_password(['email', 'username']),
-            password
-        )
-        conn.select(readonly=(not markRead))
-
-        msgs = []
-        (retcode, messages) = conn.search(None, '(UNSEEN)')
-
-        if retcode == 'OK' and messages != ['']:
-            numUnread = len(messages[0].split(b' '))
-            if limit and numUnread > limit:
-                return numUnread
-
-            for num in messages[0].split(b' '):
-                # parse email RFC822 format
-                ret, data = conn.fetch(num, '(RFC822)')
-                raw_email = data[0][1]
-                raw_email_str = raw_email.decode("utf-8")
-                msg = email.message_from_string(raw_email_str)
-
-                if not since or get_date(msg) > since:
-                    msgs.append(msg)
-        conn.close()
-        conn.logout()
-
-        return msgs
 
     def handle(self, intent, mic):
         """
@@ -183,7 +73,7 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
         """
         _ = self.gettext
         try:
-            messages = self.fetch_unread_emails(limit=5)
+            messages = app_utils.fetch_emails(filter="(UNSEEN)", limit=5)
         except imaplib.IMAP4.error:
             mic.say(
                 _("I'm sorry. I'm not authenticated to work with your Email account.")
