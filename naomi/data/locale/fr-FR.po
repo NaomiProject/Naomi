@@ -666,3 +666,11 @@ msgstr "Aucun son détecté."
 #: naomi/populate.py:1702
 msgid "Setting threshold from {t} to {s}"
 msgstr "Seuil de réglage de {t} à {s}"
+
+#: naomi/app_utils.py:129
+msgid "\\b(no|cesser|stopper|n)\\b"
+msgstr ""
+
+#: naomi/app_utils.py:143
+msgid "\\b(oui|aller|continuer|o)\\b"
+msgstr ""
