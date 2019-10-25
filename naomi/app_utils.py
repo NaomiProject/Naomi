@@ -5,7 +5,9 @@ from email.MIMEMultipart import MIMEMultipart
 import urllib2
 import re
 from pytz import timezone
+import paths
 import logging
+from . import i18n
 
 
 def send_email(SUBJECT, BODY, TO, FROM, SENDER, PASSWORD, SMTP_SERVER, SMTP_PORT):
@@ -114,24 +116,30 @@ def generate_tiny_URL(URL):
     return response.read()
 
 
-def is_negative(phrase):
+def is_negative(phrase, profile):
     """
     Returns True if the input phrase has a negative sentiment.
 
     Arguments:
         phrase -- the input phrase to-be evaluated
     """
-    return bool(re.search(r'\b(no(t)?|don\'t|stop|end|n)\b', phrase,
+    translations = i18n.parse_translations(paths.data('locale'))
+    translator = i18n.GettextMixin(translations, profile)
+    _ = translator.gettext
+    return bool(re.search(_(r'\b(no(t)?|don\'t|stop|end|n)\b'), phrase,
                           re.IGNORECASE))
 
 
-def is_positive(phrase):
+def is_positive(phrase, profile):
     """
         Returns True if the input phrase has a positive sentiment.
 
         Arguments:
         phrase -- the input phrase to-be evaluated
     """
-    return bool(re.search(r'\b(sure|yes|yeah|go|yup|y)\b',
+    translations = i18n.parse_translations(paths.data('locale'))
+    translator = i18n.GettextMixin(translations, profile)
+    _ = translator.gettext
+    return bool(re.search(_(r'\b(sure|yes|yeah|go|yup|y)\b'),
                           phrase,
                           re.IGNORECASE))
