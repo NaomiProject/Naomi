@@ -221,6 +221,7 @@ def get_profile_password(path, default=None):
     allowed=[]
     allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'app_utils.py'))
     allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'commandline.py'))
+    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'application.py'))
     filename, line_number, clsname, lines, index = inspect.getframeinfo(sys._getframe(1))
     if(filename in allowed):
         if (isinstance(path, str)):
@@ -263,6 +264,7 @@ def get_profile_password(path, default=None):
     else:
         print("Access to encrypted profile elements not allowed from {}".format(filename))
         _logger.warn("Access to encrypted profile elements not allowed from {}".format(filename))
+        response = None
     return response
 
 
