@@ -18,7 +18,7 @@ from . import commandline as interface
 from . import i18n
 from . import paths
 from . import pluginstore
-# from . import populate
+from . import populate
 from . import conversation
 from . import mic
 from . import profile
@@ -117,6 +117,7 @@ class Naomi(object):
         #         print("Cannot continue. Exiting.")
         #         quit()
         if(profile.get_arg("repopulate") or profile.get_arg("profile_missing") or not settings_complete):
+            populate.run()
             print(self._interface.status_text(_(
                 "Configuring {}"
             ).format(

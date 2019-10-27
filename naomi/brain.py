@@ -124,10 +124,10 @@ class Brain(object):
                 # can find out which intent activated it
                 intents[intent]['intent'] = intent
                 if intents[intent]['score'] > 0.05:
-                    return(intents[intent], text)
+                    return(intents[intent])
             self._logger.debug(
                 "No module was able to handle any of these phrases: {}".format(
                     str(texts)
                 )
             )
-            return (None, None)
+            return (None)
