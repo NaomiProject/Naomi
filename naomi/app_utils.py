@@ -194,8 +194,7 @@ def fetch_emails(since=None, email_filter="", markRead=False, limit=None):
 
     msgs = []
     (retcode, messages) = conn.search(None, email_filter)
-
-    if retcode == 'OK' and messages != ['']:
+    if retcode == 'OK' and messages != [b'']:
         numUnread = len(messages[0].split(b' '))
         if limit and numUnread > limit:
             return numUnread

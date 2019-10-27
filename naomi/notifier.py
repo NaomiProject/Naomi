@@ -80,7 +80,6 @@ class Notifier(object):
             message = app_utils.get_message_text(e)
             if(any(x in message for x in profile.get(["keyword"]))):
                 # This message should be marked as read
-                print("Marking the message read")
                 app_utils.mark_read(e)
                 emailmic = EmailMic(
                     address=e['From'],
@@ -184,7 +183,6 @@ class EmailMic(object):
         return self.active_listen(timeout=3)
 
     def say(self, phrase, OPTIONS=None):
-        print("Sending response '{}' to {}".format(phrase, self._to))
         app_utils.send_email(
             "Re: {}".format(self._subject),
             phrase,
