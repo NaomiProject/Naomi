@@ -18,7 +18,7 @@ from . import commandline as interface
 from . import i18n
 from . import paths
 from . import pluginstore
-# from . import populate
+from . import populate
 from . import conversation
 from . import mic
 from . import profile
