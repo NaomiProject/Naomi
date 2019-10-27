@@ -4,13 +4,11 @@ import contextlib
 import logging
 import random
 import queue
-import unicodedata
 from apscheduler.schedulers.background import BackgroundScheduler
 from naomi import app_utils
 from naomi import i18n
 from naomi import paths
 from naomi import profile
-from pprint import pprint
 
 
 class Notifier(object):
@@ -34,7 +32,7 @@ class Notifier(object):
         self._brain = brain
         self.q = queue.Queue()
         self.notifiers = []
-        
+
         # check to see if we can connect to an email account
         if(app_utils.check_imap_config()):
             self.notifiers.append(
@@ -172,8 +170,9 @@ class EmailMic(object):
         else:
             return
 
-# This gets called if the handler is supposed to wait for input.
-    def active_listen(self, timeout=3):
+    # This gets called if the handler is supposed to wait for input.
+    @staticmethod
+    def active_listen(timeout=3):
         #input_text = input("YOU: ")
         #unicodedata.normalize('NFD', input_text).encode('ascii', 'ignore')
         #self.prev = input_text

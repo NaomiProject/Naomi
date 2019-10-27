@@ -276,9 +276,7 @@ def mark_read(msg):
     )
     conn.select(readonly=False)
     (retcode, messages) = conn.search(None, "(HEADER Message-ID {})".format(msg['Message-ID']))
-    # It seems like just retrieving the emai is enough
-    # to mark it read when readonly is False
-    if(len(messages)):
+    if(retcode == 'OK' and len(messages)):
         conn.store(messages[0].split()[0], '+FLAGS', '\Seen')
     conn.close()
     conn.logout()
