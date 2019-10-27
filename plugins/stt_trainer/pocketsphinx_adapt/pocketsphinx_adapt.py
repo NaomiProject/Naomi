@@ -328,7 +328,7 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     c.execute(query)
                     words_used = [x[0].upper() for x in c.fetchall()]
                     # Pull the list of words from the local standard phrases
-                    phrases = profile.get_profile_var(['keyword']).copy()
+                    phrases = [word.upper() for word in profile.get(['keyword'], ['NAOMI'])]
                     custom_standard_phrases_dir = paths.sub(os.path.join(
                         "data",
                         "standard_phrases"
