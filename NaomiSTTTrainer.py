@@ -315,7 +315,7 @@ def application(environ, start_response):
             )
             ret.append(
                 '<html><head><title>{} STT Training</title>'.format(
-                    keyword
+                    ', '.join(keyword)
                 ).encode("utf-8")
             )
             # Return the main page
@@ -719,7 +719,7 @@ def application(environ, start_response):
                         ret.append("""</ul>""".encode("utf-8"))
 
                     ret.append("""<h1>{} transcription {} ({})</h1>""".format(
-                        keyword,
+                        ', '.join(keyword),
                         rowID,
                         Current_record["Type"]).encode("utf-8")
                     )
@@ -742,7 +742,7 @@ def application(environ, start_response):
                             '{} heard',
                             '"<span style="font-weight:bold">{}</span>"<br />'
                         ]).format(
-                            keyword,
+                            ', '.join(keyword),
                             Current_record["Transcription"]
                         ).encode("utf-8"))
                     ret.append("What did you hear?<br />".encode("utf-8"))
