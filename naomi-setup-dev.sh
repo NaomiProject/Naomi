@@ -676,33 +676,7 @@ function setup_wizard() {
             pip3 install google-cloud-texttospeech==0.5.0
             pip3 install googleapis-common-protos==1.5.9
             pip3 install grpcio
-            echo "On another device, please go to:"
-            echo "https://projectnaomi.com/dev/docs/configuration/pre-configs/"
-            echo "and follow the instructions for the Better Accuracy config."
-            echo "Once you have completed the steps, Press any key to enter"
-            echo "your Google Application Credential API Key."
-            read -N1 -s key
-
-            echo -n -e "\e[1;36mEnter the API key: \e[0m"
-            read -s api_key
-            echo
-            echo -n -e "\e[1;36mEnter the API key again: \e[0m"
-            read -s api_key_confirm
-            echo
-
-            if [[ "$api_key" = "$api_key_confirm"]]
-            then
-                echo "network={" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null
-                echo "        ssid=\"$user_ssid\"" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null
-                echo "        psk=\"$user_pwd\"" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null
-                echo "}" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant.conf > /dev/null
-                reset_wlan0=1
-                break
-                ;;
-            else
-                echo "Please double check your key!"
-                ;;
-            fi
+            touch download_google_json
             break
             ;;
          3)
@@ -730,22 +704,36 @@ function setup_wizard() {
     echo
     echo
 
-    if [ ! $skip_last_prompt ]; then
+    if [ -f download_google_json ] then
         echo -e "\e[1;36m"
         echo "========================================================================="
         echo
-        echo "That's all, installation is complete!  Now we'll hand you over to the profile"
-        echo "population process and after that Naomi will start."
+        echo "That's all, installation is complete! Now you'll need to follow the"
+        echo "instructions for the Better Accuracy config."
         echo
-        echo "In the future, run $NAOMI_DIR/Naomi to start Naomi"
+        echo "https://projectnaomi.com/dev/docs/configuration/pre-configs/"
         echo
-        echo -e "\e[1;36mPress any key to start populating your profile..."
+        echo "Please follow the instructions and you will have Naomi running in no time!"
+        echo -e "\e[1;36mPress any key to finish installation..."
         read -N1 -s anykey
+        break
+    else
+        if [ ! $skip_last_prompt ]; then
+            echo -e "\e[1;36m"
+            echo "========================================================================="
+            echo
+            echo "That's all, installation is complete! Now we'll hand you over to the profile"
+            echo "population process and after that Naomi will start."
+            echo
+            echo "In the future, run $NAOMI_DIR/Naomi to start Naomi"
+            echo
+            echo -e "\e[1;36mPress any key to start populating your profile..."
+            read -N1 -s anykey
+        fi
+        # Launch Naomi Population
+        cd ~/Naomi
+        ./Naomi --repopulate
     fi
-
-    # Launch Naomi Population
-    cd ~/Naomi
-    ./Naomi --repopulate
 }
 
 
