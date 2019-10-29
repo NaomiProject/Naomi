@@ -704,7 +704,8 @@ function setup_wizard() {
     echo
     echo
 
-    if [ -f download_google_json ] then
+    if [ -f download_google_json ]
+    then
         echo -e "\e[1;36m"
         echo "========================================================================="
         echo
@@ -717,7 +718,8 @@ function setup_wizard() {
         echo -e "\e[1;36mPress any key to finish installation..."
         read -N1 -s anykey
         break
-    else if [ ! $skip_last_prompt ]; then
+    elif [ ! $skip_last_prompt ];
+    then
         echo -e "\e[1;36m"
         echo "========================================================================="
         echo
