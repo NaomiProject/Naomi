@@ -717,18 +717,17 @@ function setup_wizard() {
         echo -e "\e[1;36mPress any key to finish installation..."
         read -N1 -s anykey
         break
-    else
-        if [ ! $skip_last_prompt ]; then
-            echo -e "\e[1;36m"
-            echo "========================================================================="
-            echo
-            echo "That's all, installation is complete! Now we'll hand you over to the profile"
-            echo "population process and after that Naomi will start."
-            echo
-            echo "In the future, run $NAOMI_DIR/Naomi to start Naomi"
-            echo
-            echo -e "\e[1;36mPress any key to start populating your profile..."
-            read -N1 -s anykey
+    else if [ ! $skip_last_prompt ]; then
+        echo -e "\e[1;36m"
+        echo "========================================================================="
+        echo
+        echo "That's all, installation is complete! Now we'll hand you over to the profile"
+        echo "population process and after that Naomi will start."
+        echo
+        echo "In the future, run $NAOMI_DIR/Naomi to start Naomi"
+        echo
+        echo -e "\e[1;36mPress any key to start populating your profile..."
+        read -N1 -s anykey
         fi
         # Launch Naomi Population
         cd ~/Naomi
