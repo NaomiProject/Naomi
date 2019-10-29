@@ -730,7 +730,6 @@ function setup_wizard() {
         echo
         echo -e "\e[1;36mPress any key to start populating your profile..."
         read -N1 -s anykey
-        fi
         # Launch Naomi Population
         cd ~/Naomi
         ./Naomi --repopulate
