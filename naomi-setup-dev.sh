@@ -516,7 +516,7 @@ function setup_wizard() {
     echo -e "before you will be able activate the Naomi environment with \e[1;35m'workon Naomi'\e[1;36m"
     echo " "
     echo "All of this will be incorporated into the Naomi script, so to simply"
-    echo "launch Naomi, all you have to type is \e[1;35m'./Naomi'\e[1;36m regardless of your choice here."
+    echo -e "launch Naomi, all you have to type is \e[1;35m'./Naomi'\e[1;36m regardless of your choice here."
     echo " "
     echo -e "\e[1;36m[\e[1;33m?\e[1;36m] Would you like to start VirtualEnvWrapper automatically? \e[0m"
     echo -e "\e[1;36m"
@@ -717,6 +717,8 @@ function setup_wizard() {
         echo "Please follow the instructions and you will have Naomi running in no time!"
         echo -e "\e[1;36mPress any key to finish installation..."
         read -N1 -s anykey
+        mv ~/Naomi-Temp/Naomi ~/Naomi/Naomi
+        sudo rm -Rf ~/Naomi-Temp
         break
     elif [ ! $skip_last_prompt ];
     then
@@ -730,6 +732,8 @@ function setup_wizard() {
         echo
         echo -e "\e[1;36mPress any key to start populating your profile..."
         read -N1 -s anykey
+        mv ~/Naomi-Temp/Naomi ~/Naomi/Naomi
+        sudo rm -Rf ~/Naomi-Temp
         # Launch Naomi Population
         cd ~/Naomi
         ./Naomi --repopulate
