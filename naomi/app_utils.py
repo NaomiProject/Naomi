@@ -21,15 +21,77 @@ def get_date(email):
     return parser.parse(email.get('date'))
 
 
+# The following two functions just check to make sure Naomi has
+# access to an imap server for receiving emails/text messages
+# and an smtp server for sending emails/texts
+def check_imap_config():
+    success = True
+    USERNAME = profile.get_profile_password(['email', 'username'])
+    if(not USERNAME):
+        logging.info('Email username not set')
+        success = False
+    PASSWORD = profile.get_profile_password(['email', 'password'])
+    if(not PASSWORD):
+        logging.info('Email password not set')
+        success = False
+    SERVER = profile.get(['email', 'imap', 'server'])
+    if(not SERVER):
+        logging.info('Email imap server not set')
+        success = False
+    PORT = profile.get(['email', 'imap', 'port'], 993)
+    try:
+        conn = imaplib.IMAP4_SSL(SERVER, PORT)
+        conn.login(USERNAME, PASSWORD)
+        conn.logout()
+    except TimeoutError:
+        logging.info('IMAP connection timed out (check server name)')
+        success = False
+    except imaplib.IMAP4.error as e:
+        if hasattr(e, 'args'):
+            logging.info(e.args[0])
+        success = False
+    return success
+
+
+def check_smtp_config():
+    success = True
+    USERNAME = profile.get_profile_password(['email', 'username'])
+    if(not USERNAME):
+        logging.info('Email username not set')
+        success = False
+    PASSWORD = profile.get_profile_password(['email', 'password'])
+    if(not PASSWORD):
+        logging.info('Email password not set')
+        success = False
+    SERVER = profile.get(['email', 'smtp', 'server'])
+    if(not SERVER):
+        logging.info('Email smtp server not set')
+        success = False
+    PORT = profile.get(['email', 'smtp', 'port'], 587)
+    try:
+        session = smtplib.SMTP(SERVER, PORT)
+        session.starttls()
+        session.login(USERNAME, PASSWORD)
+        session.quit()
+    except TimeoutError:
+        logging.info('SMTP connection timed out (check server name)')
+        success = False
+    except imaplib.IMAP4.error as e:
+        if hasattr(e, 'args'):
+            logging.info(e.args[0])
+        success = False
+    return success
+
+
 def send_email(
     SUBJECT,
     BODY,
-    TO,
-    SENDER=profile.get(['keyword'], ['Naomi'])[0]
+    TO
 ):
     """Sends an HTML email."""
 
     USERNAME = profile.get_profile_password(['email', 'username'])
+    SENDER = profile.get(['keyword'], ['Naomi'])[0]
     FROM = profile.get_profile_password(['email', 'address'])
     PASSWORD = profile.get_profile_password(['email', 'password'])
     SERVER = profile.get(['email', 'smtp', 'server'])
@@ -41,7 +103,6 @@ def send_email(
     msg['Subject'] = SUBJECT
     msg.attach(MIMEText(BODY.encode('UTF-8'), 'html', 'UTF-8'))
 
-    FROM = profile.get_profile_password(['email', 'address'])
     logging.info('using %s, and %s as port', SERVER, PORT)
 
     session = smtplib.SMTP(SERVER, PORT)
@@ -49,7 +110,7 @@ def send_email(
     session.starttls()
 
     session.login(USERNAME, PASSWORD)
-    session.sendmail(SENDER, TO, msg.as_string())
+    session.sendmail(msg['From'], msg['To'], msg.as_string())
     session.quit()
     logging.info('Successful.')
 
@@ -133,25 +194,109 @@ def fetch_emails(since=None, email_filter="", markRead=False, limit=None):
 
     msgs = []
     (retcode, messages) = conn.search(None, email_filter)
-
-    if retcode == 'OK' and messages != ['']:
+    if retcode == 'OK' and messages != [b'']:
         numUnread = len(messages[0].split(b' '))
         if limit and numUnread > limit:
             return numUnread
 
         for num in messages[0].split(b' '):
             # parse email RFC822 format
+            logging.info("num = {}".format(num))
             (retcode, data) = conn.fetch(num, '(RFC822)')
             raw_email = data[0][1]
             raw_email_str = raw_email.decode("utf-8")
             msg = email.message_from_string(raw_email_str)
-
             if not since or get_date(msg) > since:
                 msgs.append(msg)
     conn.close()
     conn.logout()
 
     return msgs
+
+
+def get_sender(msg):
+    """
+        Returns the best-guess sender of an email.
+
+        Arguments:
+        email -- the email whose sender is desired
+
+        Returns:
+        Sender of the email.
+    """
+    sender = msg['From']
+    m = re.match(r'(.*)\s<.*>', sender)
+    if m:
+        return m.group(1)
+    return sender
+
+
+def get_sender_email(msg):
+    """
+        Returns the best-guess email address of the sender.
+
+        Arguments:
+        email -- the email whose sender is desired
+
+        Returns:
+        Sender of the email.
+    """
+    sender = msg['From']
+    m = re.match(r'.*\s<(.*)>', sender)
+    if m:
+        return m.group(1)
+    return sender
+
+
+def get_message_text(msg):
+    subject = msg['Subject']
+    if(msg.is_multipart()):
+        for part in msg.walk():
+            ctype = part.get_content_type()
+            cdispo = str(part.get('Content-Disposition'))
+            if((ctype == "text/plain") and ('attachment' not in cdispo)):
+                body = re.sub('[\\r\\n\\t]+', ' ', part.get_payload())
+                break
+    else:
+        body = re.sub('[\\r\\n\\t]+', ' ', msg.get_payload())
+    if(body[:len(subject)] != subject):
+        body = " ".join([subject, body])
+    return body
+
+
+def mark_read(msg):
+    host = profile.get_profile_var(['email', 'imap', 'server'])
+    port = int(profile.get_profile_var(['email', 'imap', 'port'], "993"))
+    conn = imaplib.IMAP4_SSL(host, port)
+    conn.debug = 0
+
+    conn.login(
+        profile.get_profile_password(['email', 'username']),
+        profile.get_profile_password(['email', 'password'])
+    )
+    conn.select(readonly=False)
+    (retcode, messages) = conn.search(None, "(HEADER Message-ID {})".format(msg['Message-ID']))
+    if(retcode == 'OK' and len(messages)):
+        conn.store(messages[0].split()[0], '+FLAGS', '\Seen')
+    conn.close()
+    conn.logout()
+
+
+def get_most_recent_date(emails):
+    """
+        Returns the most recent date of any email in the list provided.
+
+        Arguments:
+        emails -- a list of emails to check
+
+        Returns:
+        Date of the most recent email.
+    """
+    dates = [get_date(e) for e in emails]
+    dates.sort(reverse=True)
+    if dates:
+        return dates[0]
+    return None
 
 
 def get_timezone():

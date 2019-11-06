@@ -117,6 +117,7 @@ class Naomi(object):
         #         print("Cannot continue. Exiting.")
         #         quit()
         if(profile.get_arg("repopulate") or profile.get_arg("profile_missing") or not settings_complete):
+            populate.run()
             print(self._interface.status_text(_(
                 "Configuring {}"
             ).format(

@@ -3,19 +3,21 @@
 These functions "walk" the profile, and return either a boolean variable to
 tell whether an option is configured or not, or the actual value
 """
+import base64
+import inspect
+import logging
+import hashlib
+import os
+import shutil
+import sys
+import yaml
 from cryptography.fernet import InvalidToken
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import base64
-import logging
-import hashlib
 from naomi.run_command import run_command
 from naomi import paths
-import os
-import shutil
-import yaml
 
 _profile = {}
 _profile_read = False
@@ -216,43 +218,53 @@ def get_profile_password(path, default=None):
     either the default value (if there is one) or None.
     """
     _logger = logging.getLogger(__name__)
-    if (isinstance(path, str)):
-        path = [path]
-    first_id = hashlib.sha256(run_command("cat /etc/machine-id".split(), capture=1).stdout).hexdigest()
-    second_id = hashlib.sha256(run_command("hostid".split(), capture=1).stdout).hexdigest()
-    try:
-        third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
-        third_id = hashlib.sha256(run_command("""grep -oP 'UUID="\\K[^"]+'""".split(), capture=4,
-                                              stdin=third_idb1).stdout).hexdigest()
-    except FileNotFoundError:
-        _logger.warning(
-            " ".join([
-                "Package not installed: 'blkid'",
-                "Please install it manually or run apt_requirements.sh again"
-            ])
+    allowed=[]
+    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'app_utils.py'))
+    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'commandline.py'))
+    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'application.py'))
+    filename = inspect.getframeinfo(sys._getframe(1))[0]
+    if(filename in allowed):
+        if (isinstance(path, str)):
+            path = [path]
+        first_id = hashlib.sha256(run_command("cat /etc/machine-id".split(), capture=1).stdout).hexdigest()
+        second_id = hashlib.sha256(run_command("hostid".split(), capture=1).stdout).hexdigest()
+        try:
+            third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
+            third_id = hashlib.sha256(run_command("""grep -oP 'UUID="\\K[^"]+'""".split(), capture=4,
+                                                stdin=third_idb1).stdout).hexdigest()
+        except FileNotFoundError:
+            _logger.warning(
+                " ".join([
+                    "Package not installed: 'blkid'",
+                    "Please install it manually or run apt_requirements.sh again"
+                ])
+            )
+            third_id = ""
+        salt = get_profile_key()
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA512(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+            backend=default_backend()
         )
-        third_id = ""
-    salt = get_profile_key()
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA512(),
-        length=32,
-        salt=salt,
-        iterations=100000,
-        backend=default_backend()
-    )
-    password = ''.join([first_id, second_id, third_id]).encode()
-    key = base64.urlsafe_b64encode(kdf.derive(password))
-    cipher_suite = Fernet(key)
-    response = get_profile_var(path, None)
-    try:
-        if (hasattr(response, "encode")):
-            response = cipher_suite.decrypt(
-                response.encode("utf-8")
-            ).decode("utf-8")
-    except InvalidToken:
+        password = ''.join([first_id, second_id, third_id]).encode()
+        key = base64.urlsafe_b64encode(kdf.derive(password))
+        cipher_suite = Fernet(key)
+        response = get_profile_var(path, None)
+        try:
+            if (hasattr(response, "encode")):
+                response = cipher_suite.decrypt(
+                    response.encode("utf-8")
+                ).decode("utf-8")
+        except InvalidToken:
+            response = None
+        if response is None:
+            response = default
+    else:
+        print("Access to encrypted profile elements not allowed from {}".format(filename))
+        _logger.warn("Access to encrypted profile elements not allowed from {}".format(filename))
         response = None
-    if response is None:
-        response = default
     return response
 
 

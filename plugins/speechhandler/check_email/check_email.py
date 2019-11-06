@@ -5,40 +5,6 @@ from naomi import app_utils
 from naomi import plugin
 
 
-def get_sender(msg):
-    """
-        Returns the best-guess sender of an email.
-
-        Arguments:
-        email -- the email whose sender is desired
-
-        Returns:
-        Sender of the email.
-    """
-    sender = msg['From']
-    m = re.match(r'(.*)\s<.*>', sender)
-    if m:
-        return m.group(1)
-    return sender
-
-
-def get_most_recent_date(emails):
-    """
-        Returns the most recent date of any email in the list provided.
-
-        Arguments:
-        emails -- a list of emails to check
-
-        Returns:
-        Date of the most recent email.
-    """
-    dates = [app_utils.get_date(e) for e in emails]
-    dates.sort(reverse=True)
-    if dates:
-        return dates[0]
-    return None
-
-
 class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
 
     def intents(self):
@@ -92,7 +58,7 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
             mic.say(response)
             return
 
-        senders = [get_sender(e) for e in messages]
+        senders = [app_utils.get_sender(e) for e in messages]
 
         if not senders:
             mic.say(_("You have no unread emails."))
