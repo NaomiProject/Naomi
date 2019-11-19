@@ -324,58 +324,66 @@ function setup_wizard() {
         sudo reboot
     fi
 
-#    echo -e "\e[1;36m"
-#    echo "========================================================================="
-#    echo "LOCALIZATION SETUP:"
-#    echo -e "By default the Raspbian OS has \e[1;33men_GB.UTF-8 \e[1;36mlocale enabled by default."
-#    echo "Which is rightfully so since the Raspberry Pi Foundation is located in the UK. But for"
-#    echo "any one not living in the UK this presents an issue if configured wrong."
-#    echo
-#    echo "Select your locale from the list below:"
-#    echo
-#    echo -e "\e[1;36m"
-#    echo "  1) en_GB"
-#    echo "  2) en_US"
-#    echo "  3) fr_FR"
-#    echo "  4) de_DE"
-#    echo -n -e "\e[1;36mChoice [\e[1;35m1\e[1;36m-\e[1;35m4\e[1;36m]: \e[0m"
-#    while true; do
-#        read -N1 -s key
-#        case $key in
-#         [1])
-#            echo -e "\e[1;32m$key - No change"
-#            break
-#            ;;
-#         [2])
-#            echo -e "\e[1;32m$key - Enabling en_US UTF-8"
-#            locale=en_US.UTF-8
-#            layout=us
-#            sudo raspi-config nonint do_change_locale $locale
-#            sudo raspi-config nonint do_configure_keyboard $layout
-#            break
-#            ;;
-#         [3])
-#            echo -e "\e[1;32m$key - Enabling fr_FR UTF-8"
-#            sudo su -c 'echo "fr_FR.UTF-8 UTF-8" > /etc/locale.gen'
-#            sudo locale-gen fr_FR.UTF-8
-#            sudo su -c 'echo "LANG=fr_FR.UTF-8" > /etc/default/locale'
-#            sudo update-locale fr_FR.UTF-8
-#            break
-#            ;;
-#         [4])
-#            echo -e "\e[1;32m$key - Enabling de_DE UTF-8"
-#            sudo su -c 'echo "de_DE.UTF-8 UTF-8" > /etc/locale.gen'
-#            sudo locale-gen de_DE.UTF-8
-#            sudo su -c 'echo "LANG=de_DE.UTF-8" > /etc/default/locale'
-#            sudo update-locale de_DE.UTF-8
-#            break
-#            ;;
-#        esac
-#    done
-#    echo
-#    echo
-#    echo
-#    echo
+    echo -e "\e[1;36m"
+    echo "========================================================================="
+    echo "LOCALIZATION SETUP:"
+    echo -e "By default the Raspbian OS has \e[1;33men_GB.UTF-8 \e[1;36mlocale enabled by default."
+    echo "Which is rightfully so since the Raspberry Pi Foundation is located in the UK. But for"
+    echo "any one not living in the UK this presents an issue if configured wrong."
+    echo
+    echo "Select your locale from the list below:"
+    echo
+    echo -e "\e[1;36m"
+    echo "  1) en_GB"
+    echo "  2) en_US"
+    echo "  3) fr_FR"
+    echo "  4) de_DE"
+    echo -n -e "\e[1;36mChoice [\e[1;35m1\e[1;36m-\e[1;35m4\e[1;36m]: \e[0m"
+    while true; do
+        read -N1 -s key
+        case $key in
+         [1])
+            echo -e "\e[1;32m$key - Enabling en_GB UTF-8"
+            sudo su -c 'echo "en_GB.UTF-8 UTF-8" > /etc/locale.gen'
+            sudo locale-gen en_GB.UTF-8
+            sudo su -c 'echo "LANG=en_GB.UTF-8" > /etc/default/locale'
+            sudo update-locale en_GB.UTF-8
+            LANG="en_GB.UTF-8"
+            break
+            ;;
+         [2])
+            echo -e "\e[1;32m$key - Enabling en_US UTF-8"
+            sudo su -c 'echo "en_US.UTF-8 UTF-8" > /etc/locale.gen'
+            sudo locale-gen en_US.UTF-8
+            sudo su -c 'echo "LANG=en_US.UTF-8" > /etc/default/locale'
+            sudo update-locale en_US.UTF-8
+            LANG="en_US.UTF-8"
+            break
+            ;;
+         [3])
+            echo -e "\e[1;32m$key - Enabling fr_FR UTF-8"
+            sudo su -c 'echo "fr_FR.UTF-8 UTF-8" > /etc/locale.gen'
+            sudo locale-gen fr_FR.UTF-8
+            sudo su -c 'echo "LANG=fr_FR.UTF-8" > /etc/default/locale'
+            sudo update-locale fr_FR.UTF-8
+            LANG="fr_FR.UTF-8"
+            break
+            ;;
+         [4])
+            echo -e "\e[1;32m$key - Enabling de_DE UTF-8"
+            sudo su -c 'echo "de_DE.UTF-8 UTF-8" > /etc/locale.gen'
+            sudo locale-gen de_DE.UTF-8
+            sudo su -c 'echo "LANG=de_DE.UTF-8" > /etc/default/locale'
+            sudo update-locale de_DE.UTF-8
+            LANG="fr_FR.UTF-8"
+            break
+            ;;
+        esac
+    done
+    echo
+    echo
+    echo
+    echo
 
     echo -e "\e[1;36m"
     echo "========================================================================="
@@ -635,7 +643,7 @@ function setup_wizard() {
     echo
     echo "Better Privacy includes Flite for TTS & PocketSphinx for STT"
     echo
-    echo "Better Accuracy includes Google for TTS & active listening STT, & PocketSphinx"
+    echo "Better Accuracy includes Google for TTS & active listening STT, and PocketSphinx"
     echo "for passive listening STT"
     echo
     echo "Note: As always you can select to set things up manually if you so wish."
@@ -763,6 +771,8 @@ then
     echo -e "\e[1;36m"
     echo "Welcome to Naomi. This process is designed to make getting started with"
     echo "Naomi quick and easy. Would you like help setting up your system?"
+    echo
+    echo "Note: Some options can cause the process to take up to 3 hours"
     echo
     echo "  Y)es, I'd like the guided setup."
     echo "  N)ope, just get me a command line and get out of my way!"
