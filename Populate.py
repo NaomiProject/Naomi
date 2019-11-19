@@ -1,18 +1,9 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import logging
 import naomi
-import os
-import yaml
+import sys
 
-logging.basicConfig(level=logging.CRITICAL)
+if(sys.version_info.major < 3):
+    raise SystemError("This version of Naomi requires Python 3.5 or greater")
 
-configfile = naomi.paths.config('profile.yml')
-
-if os.path.exists(configfile):
-    with open(configfile, "r") as f:
-        config = yaml.safe_load(f)
-else:
-    config = {}
-
-naomi.populate.run(config)
+naomi.main(args=["--repopulate"])

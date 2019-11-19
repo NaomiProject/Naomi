@@ -11,6 +11,7 @@ import subprocess
 #  1 - only capture stdout
 #  2 - only capture stderr
 #  3 - pipe stdout into stderr and capture stdout
+#  4 - pipe stdin to subprocess and capture output
 # The response is the raw CompletedProcess instance, containing the command,
 # returncode, stdout and stderr properties and the check_returncode() method
 # The subprocess.run command takes a wide variety of arguments, so I
@@ -20,7 +21,7 @@ import subprocess
 # use cases. This module is currently only used in populate.py (for capturing
 # the system timezone) but I will need to use it a lot in my STT model
 # training plugins.
-def run_command(command, capture=0):
+def run_command(command, capture=0, stdin=None):
     completedprocess = None
     if(capture == 1):
         completedprocess = subprocess.run(
@@ -37,6 +38,12 @@ def run_command(command, capture=0):
             command,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT
+        )
+    elif (capture == 4):
+        completedprocess = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            input=stdin.encode() if hasattr(stdin, "encode") else stdin
         )
     else:
         completedprocess = subprocess.run(

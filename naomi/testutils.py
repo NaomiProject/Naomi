@@ -5,9 +5,14 @@ import gettext
 import logging
 import os
 import sys
-import unittest
 import wave
 import yaml
+
+
+class test_info:
+    def __init__(self, name):
+        self.name = name
+        self.translations = {'en-US': None}
 
 
 def test_profile():
@@ -25,6 +30,11 @@ def test_profile():
         pass
     try:
         TEST_PROFILE['language'] = config['language']
+    except(KeyError, NameError):
+        pass
+    try:
+        TEST_PROFILE['google'] = {}
+        TEST_PROFILE['google']['credentials_json'] = config['google']['credentials_json']
     except(KeyError, NameError):
         pass
     return TEST_PROFILE
@@ -59,8 +69,7 @@ class TestInput(object):
         self._input_chunksize = input_chunksize
 
 
-@unittest.skip("Skipping base class")
-class Test_VADPlugin(unittest.TestCase):
+class Test_VADPlugin(object):
     # attributes of the sample we are using
     # These are standard defaults for Naomi
     sample_file = "naomi/data/audio/naomi.wav"

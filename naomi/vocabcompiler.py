@@ -3,7 +3,6 @@
 Iterates over all the WORDS variables in the modules and creates a
 vocabulary for the respective stt_engine if needed.
 """
-
 import os
 import logging
 import hashlib
@@ -98,7 +97,7 @@ class VocabularyCompiler(object):
         """
         return (self.compiled_revision == phrases_to_revision(phrases))
 
-    def compile(self, config, compilation_func, phrases, force=False):
+    def compile(self, compilation_func, phrases, force=False):
         """
         Compiles this vocabulary. If the force argument is True, compilation
         will be forced regardless of necessity (which means that the
@@ -115,18 +114,27 @@ class VocabularyCompiler(object):
         revision = phrases_to_revision(phrases)
         debug = self._logger.getEffectiveLevel() == logging.DEBUG
         if not force and self.compiled_revision == revision:
-            self._logger.debug('Compilation not neccessary, compiled ' +
-                               'version matches phrases.')
+            self._logger.debug(
+                " ".join([
+                    'Compilation not neccessary, compiled',
+                    'version matches phrases.'
+                ])
+            )
             return revision
 
         if not os.path.exists(self.path):
-            self._logger.debug("Vocabulary dir '%s' does not exist, " +
-                               "creating...", self.path)
+            self._logger.debug(
+                "Vocabulary dir '{}' does not exist, creating...".format(
+                    self.path
+                )
+            )
             try:
                 os.makedirs(self.path)
             except OSError:
-                self._logger.error("Couldn't create vocabulary dir '%s'",
-                                   self.path, exc_info=debug)
+                self._logger.error(
+                    "Couldn't create vocabulary dir '{}'".format(self.path),
+                    exc_info=debug
+                )
                 raise
         try:
             with open(self.revision_file, 'w') as f:
@@ -138,7 +146,7 @@ class VocabularyCompiler(object):
         else:
             self._logger.info('Starting compilation...')
             try:
-                compilation_func(config, self.path, phrases)
+                compilation_func(self.path, phrases)
             except Exception as e:
                 msg = "Fatal compilation error occured"
                 if hasattr(e, 'message') and len(e.message) > 0:

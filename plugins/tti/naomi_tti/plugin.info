@@ -1,0 +1,10 @@
+[Plugin]
+Name = Naomi TTI
+Version = 1.0.0
+License = MIT
+URL = https://projectnaomi.com/
+Description = Naomi's default Text to Intent parser
+
+[Author]
+Name = Naomi Project
+URL = https://projectnaomi.com/

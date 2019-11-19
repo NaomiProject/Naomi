@@ -3,6 +3,7 @@ import json
 import tempfile
 import unittest
 from naomi import plugin
+from naomi import profile
 try:
     import pyvona
 except ImportError:
@@ -19,40 +20,23 @@ class IvonaTTSPlugin(plugin.TTSPlugin):
     def __init__(self, *args, **kwargs):
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
 
-        try:
-            access_key = self.profile['ivona-tts']['access_key']
-        except KeyError:
+        access_key = profile.get(['ivona-tts', 'access_key'])
+        if not access_key:
             raise ValueError("Ivona access key not configured!")
 
-        try:
-            secret_key = self.profile['ivona-tts']['secret_key']
-        except KeyError:
+        secret_key = profile.get(['ivona-tts', 'secret_key'])
+        if not secret_key:
             raise ValueError("Ivona secret key not configured!")
 
+        region = profile.get(['ivona-tts', 'region'])
+        voice = profile.get(['ivona-tts', 'voice'])
+        speech_rate = profile.get(['ivona-tts', 'speech_rate'])
         try:
-            region = self.profile['ivona-tts']['region']
-        except KeyError:
-            region = None
-
-        try:
-            voice = self.profile['ivona-tts']['voice']
-        except KeyError:
-            voice = None
-
-        try:
-            speech_rate = self.profile['ivona-tts']['speech_rate']
-        except KeyError:
-            speech_rate = None
-
-        try:
-            sentence_break = int(self.profile['ivona-tts']['sentence_break'])
-        except KeyError:
+            sentence_break = int(profile.get(['ivona-tts', 'sentence_break']))
+        except (TypeError, ValueError):
             sentence_break = None
 
-        try:
-            language = self.profile['language']
-        except KeyError:
-            language = 'en-US'
+        language = profile.get(['language'], "en-US")
 
         self._pyvonavoice = pyvona.Voice(access_key, secret_key)
         self._pyvonavoice.codec = "mp3"

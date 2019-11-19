@@ -233,14 +233,14 @@ def get_email_info():
         )
     )
 
-    profile.set_profile_var(
+    profile.set_profile_password(
         ["email", "address"],
         interface.simple_input(
             interface.format_prompt(
                 "?",
                 _('What is your email address?')
             ),
-            profile.get_profile_var(["email", "address"])
+            profile.get_profile_password(["email", "address"])
         )
     )
 
@@ -257,20 +257,20 @@ def get_email_info():
     # This should allow the encryption method to be improved
     # incrementally while not forcing people to re-enter credentials
     # every time a new encryption method is added.
-    if(profile.get_profile_var(["email", "address"])):
+    if(profile.get_profile_password(["email", "address"])):
         prompt = _("What is your email password?") + ": "
-        if(profile.get_profile_var(["email", "password"])):
+        if (profile.get_profile_password(["email", "password"])):
             prompt += interface.default_text(
                 _("(just press enter to keep current password)")
             ) + interface.default_prompt()
-        temp = interface.getpass(
+        temp = interface.simple_password(
             interface.format_prompt(
                 "?",
                 prompt
             )
         )
         if(temp):
-            profile.set_profile_var(['email', 'password'], temp)
+            profile.set_profile_password(['email', 'password'], temp)
 
 
 def get_phone_info():
@@ -380,7 +380,7 @@ def get_notification_info():
     # go ahead and assume "prefers email"
     if(
         (
-            profile.get_profile_var(
+            profile.get_profile_password(
                 ['email', 'address']
             )
         ) and not (
@@ -395,7 +395,7 @@ def get_notification_info():
     elif(
         profile.get_profile_var(
             ['phone_number']
-        ) and profile.get_profile_var(
+        ) and profile.get_profile_password(
             ['email', 'address']
         )
     ):
@@ -1756,55 +1756,55 @@ def run():
     greet_user()
     interface.separator()
 
-    get_wakeword()
-    interface.separator()
+    # get_wakeword()
+    # interface.separator()
 
-    select_audio_engine()
-    interface.separator()
+    # select_audio_engine()
+    # interface.separator()
 
-    get_output_device()
-    interface.separator()
+    # get_output_device()
+    # interface.separator()
 
-    get_input_device()
-    interface.separator()
+    # get_input_device()
+    # interface.separator()
 
-    get_passive_stt_engine()
-    interface.separator()
+    # get_passive_stt_engine()
+    # interface.separator()
 
-    get_active_stt_engine()
-    interface.separator()
+    # get_active_stt_engine()
+    # interface.separator()
 
-    get_special_stt_engine()
-    interface.separator()
+    # get_special_stt_engine()
+    # interface.separator()
 
-    get_tts_engine()
-    interface.separator()
+    # get_tts_engine()
+    # interface.separator()
 
     get_beep_or_voice()
     interface.separator()
 
-    get_user_name()
-    interface.separator()
+    # get_user_name()
+    # interface.separator()
 
     # get_email_info()
     # interface.separator()
 
-    get_phone_info()
-    interface.separator()
+    # get_phone_info()
+    # interface.separator()
 
-    get_notification_info()
-    interface.separator()
+    # get_notification_info()
+    # interface.separator()
 
     # comment out the following two lines as the weather location service
     # at weather underground has now been shut down. AaronC 2019-03-25
     # get_weather_location()
     # interface.separator()
 
-    get_timezone()
-    interface.separator()
+    # get_timezone()
+    # interface.separator()
 
     # write to profile
-    profile.save_profile()
+    # profile.save_profile()
 
     interface.separator()
     print(

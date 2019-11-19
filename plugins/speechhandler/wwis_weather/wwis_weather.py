@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-from collections import OrderedDict
-from naomi import i18n, paths, plugin, profile
 import datetime
-import logging
 import requests
 import json
+from collections import OrderedDict
+from naomi import plugin
+from naomi import profile
 
 
-_ = None
 WEEKDAY_NAMES = {
     0: 'Monday',
     1: 'Tuesday',
@@ -21,21 +20,68 @@ WEEKDAY_NAMES = {
 
 class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
 
-    def __init__(self, *args, **kwargs):
-        global _
-        self._logger = logging.getLogger(__name__)
-        self._logger.debug("WWIS_Weather INIT")
-        translations = i18n.parse_translations(paths.data('locale'))
-        translator = i18n.GettextMixin(translations, profile.get_profile())
-        _ = translator.gettext
+    def intents(self):
+        return {
+            'WeatherIntent': {
+                'keywords': {
+                    'WeatherTypePresentKeyword': [
+                        'snowing',
+                        'raining',
+                        'windy',
+                        'sleeting',
+                        'sunny'
+                    ],
+                    'WeatherTypeFutureKeyword': [
+                        'snow',
+                        'rain',
+                        'be windy',
+                        'sleet',
+                        'be sunny'
+                    ],
+                    'LocationKeyword': [
+                        'seattle',
+                        'san francisco',
+                        'tokyo'
+                    ],
+                    'TimeKeyword': [
+                        "morning",
+                        "afternoon",
+                        "evening",
+                        "night"
+                    ],
+                    'DayKeyword': [
+                        "today",
+                        "tomorrow",
+                        "sunday",
+                        "monday",
+                        "tuesday",
+                        "wednesday",
+                        "thursday",
+                        "friday",
+                        "saturday"
+                    ]
+                },
+                'templates': [
+                    "what's the weather in {LocationKeyword}",
+                    "what's the forecast for {DayKeyword}",
+                    "what's the forecast for {LocationKeyword}",
+                    "what's the forecast for {LocationKeyword} on {DayKeyword}",
+                    "what's the forecast for {LocationKeyword} on {DayKeyword} {TimeKeyword}",
+                    "is it {WeatherTypePresentKeyword} in {LocationKeyword}",
+                    "will it {WeatherTypeFutureKeyword} this {TimeKeyword}",
+                    "will it {WeatherTypeFutureKeyword} {DayKeyword}",
+                    "will it {WeatherTypeFutureKeyword} {DayKeyword} {TimeKeyword}",
+                    "when will it {WeatherTypeFutureKeyword}",
+                    "when will is {WeatherTypeFutureKeyword} in {LocationKeyword}"
+                ],
+                'action': self.handle
+            }
+        }
+
+    def settings(self):
         self.get_location_data()
-        # Here we have to put settings into the init since we are using self
-        # to reference functions, and if you try to put this into the static
-        # variables before init, there is no self to reference.
-        # We also have to put it before the super callback to the Generic
-        # plugin init function, because that is where we look for and process
-        # the self.settings variable.
-        self.settings = OrderedDict(
+        _ = self.gettext
+        return OrderedDict(
             [
                 (
                     ('wwis_weather', 'country'), {
@@ -63,12 +109,20 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                         'description': _('Please select your city from the list. This will be used as the default location when providing weather information'),
                         'options': self.get_cities,
                         # This is only active if the currently selected region is a dictionary and not a city
-                        'active': lambda: True if isinstance(self.locations[profile.get_profile_var(["wwis_weather", "country"])][profile.get_profile_var(["wwis_weather", "region"])], dict) else False
+                        # 'active': lambda: True if isinstance(self.locations[profile.get_profile_var(["wwis_weather", "country"])][profile.get_profile_var(["wwis_weather", "region"])], dict) else False
+                        'active': self.city_isactive
                     }
                 )
             ]
         )
-        super(WWISWeatherPlugin, self).__init__(*args, **kwargs)
+
+    def city_isactive(self):
+        response = False
+        country = profile.get_profile_var(["wwis_weather", "country"])
+        if country:
+            if(isinstance(self.locations[country], dict)):
+                return True if isinstance(self.locations[country][profile.get_profile_var(["wwis_weather", "region"])], dict) else False
+        return response
 
     def get_location_data(self):
         # Set the language used for the location data
@@ -137,15 +191,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                 city = None
         return city, cityId
 
-    def get_phrases(self):
-        return [
-            _("weather"),
-            _("forecast"),
-            _("today"),
-            _("tomorrow")
-        ]
-
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         # Ideally, we could use our list of countries to check if any country
         # appears in the input, then check for regions in the current country,
         # and finally cities in the selected region, so I should be able to
@@ -154,8 +200,11 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         # For now we just check to see if "Today" or "Tomorrow" appear
         # in the text, and return the requested day's weather.
         # First, establish the cityId
+        _ = self.gettext
+        text = intent['input']
         city, cityId = self.get_city_id()
         country = profile.get_profile_var(["wwis_weather", "country"])
+        # text = intent.input
         snark = True
         if(cityId):
             # Next, pull the weather data for City
@@ -248,12 +297,3 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                     snark = False
         if snark:
             mic.say(_("I don't know. Why don't you look out the window?"))
-
-    def is_valid(self, text):
-        """
-        Returns True if the input is related to the weather.
-
-        Arguments:
-        text -- user-input, typically transcribed speech
-        """
-        return any(p.lower() in text.lower() for p in ["weather", "forecast"])

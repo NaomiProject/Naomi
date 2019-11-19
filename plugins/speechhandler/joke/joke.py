@@ -2,6 +2,7 @@
 import os
 import random
 from naomi import plugin
+from naomi import profile
 
 
 def get_jokes(language='en-US'):
@@ -26,10 +27,7 @@ class JokePlugin(plugin.SpeechHandlerPlugin):
     def __init__(self, *args, **kwargs):
         super(JokePlugin, self).__init__(*args, **kwargs)
 
-        try:
-            language = self.profile['language']
-        except KeyError:
-            language = 'en-US'
+        language = profile.get(['language'], 'en-US')
 
         try:
             self._jokes = get_jokes(language)
@@ -42,10 +40,21 @@ class JokePlugin(plugin.SpeechHandlerPlugin):
         if len(self._jokes) == 0:
             raise ValueError('Unsupported language!')
 
-    def get_phrases(self):
-        return [self.gettext("JOKE")]
+    def intents(self):
+        _ = self.gettext
+        return {
+            'JokeIntent': {
+                'templates': [
+                    _("TELL ME A JOKE"),
+                    _("DO YOU KNOW ANY JOKES"),
+                    _("CAN YOU TELL ME A JOKE"),
+                    _("MAKE ME LAUGH")
+                ],
+                'action': self.handle
+            }
+        }
 
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         """
         Responds to user-input, typically speech text, by telling a joke.
 
@@ -60,12 +69,3 @@ class JokePlugin(plugin.SpeechHandlerPlugin):
         mic.say(joke[0])
         mic.active_listen()
         mic.say(joke[1])
-
-    def is_valid(self, text):
-        """
-        Returns True if the input is related to jokes/humor.
-
-        Arguments:
-        text -- user-input, typically transcribed speech
-        """
-        return (self.gettext('JOKE').upper() in text.upper())
