@@ -118,10 +118,13 @@ class Naomi(object):
         #         quit()
         if(profile.get_arg("repopulate") or profile.get_arg("profile_missing") or not settings_complete):
             populate.run()
+            keyword = profile.get_profile_var(['keyword'], ['Naomi'])
+            if(isinstance(keyword, list)):
+                keyword = keyword[0]
             print(self._interface.status_text(_(
                 "Configuring {}"
             ).format(
-                profile.get_profile_var(['keyword'], ['Naomi'])[0]
+                keyword
             )))
             for setting in self.settings():
                 self._interface.get_setting(
@@ -1056,7 +1059,7 @@ class Naomi(object):
                 # The nosec comment on the next line has to be there to say
                 # "Yes, I know I'm doing something unsecure" or codacy has a
                 # fit
-                with urllib.request.urlopen(urllib.request.Request(url)) as f:  #nosec
+                with urllib.request.urlopen(urllib.request.Request(url)) as f:  # nosec
                     file_contents = f.read().decode('utf-8')
                 for line in csv.DictReader(
                     io.StringIO(file_contents),

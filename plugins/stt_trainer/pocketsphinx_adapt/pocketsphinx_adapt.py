@@ -186,8 +186,11 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     continue_next = False
                 nextcommand = "buildweights"
             if(command == "buildweights"):
+                bw = '/usr/lib/sphinxtrain/bw'
+                if os.path.isfile('/usr/local/libexec/sphinxtrain/bw'):
+                    bw = '/usr/local/libexec/sphinxtrain/bw'
                 cmd = [
-                    os.path.join('/usr', 'local', 'libexec', 'sphinxtrain', 'bw'),
+                    bw,
                     '-hmmdir', self.model_dir,
                     '-moddeffn', os.path.join(self.model_dir, 'mdef.txt'),
                     '-ts2cbfn', '.ptm.',
@@ -209,8 +212,11 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
             if(command == "mllr"):
                 # MLLR is a cheap adaptation method that is suitable when the amount of data is limited. It's good for online adaptation.
                 # MLLR works best for a continuous model. It's effect for semi-continuous models is limited.
+                mllr = '/usr/lib/sphinxtrain/mllr_solve'
+                if os.path.isfile('/usr/local/libexec/sphinxtrain/mllr_solve'):
+                    mllr = '/usr/local/libexec/sphinxtrain/mllr_solve'
                 cmd = [
-                    os.path.join("/usr", "local", "libexec", "sphinxtrain", "mllr_solve"),
+                    mllr,
                     '-meanfn', os.path.join(self.model_dir, 'means'),
                     '-varfn', os.path.join(self.model_dir, 'variances'),
                     '-outmllrfn', os.path.join(self.model_dir, 'mllr_matrix'),
@@ -230,8 +236,11 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     shutil.rmtree(self.adapt_dir)
                     response.append("Cleared adapt directory {}".format(self.adapt_dir))
                 shutil.copytree(self.model_dir, self.adapt_dir)
+                map_adapt = '/usr/lib/sphinxtrain/map_adapt'
+                if os.path.isfile('/usr/local/libexec/sphinxtrain/map_adapt'):
+                    map_adapt = '/usr/local/libexec/sphinxtrain/map_adapt'
                 cmd = [
-                    os.path.join('/usr', 'local', 'libexec', 'sphinxtrain', 'map_adapt'),
+                    map_adapt,
                     '-moddeffn', os.path.join(self.model_dir, 'mdef.txt'),
                     '-ts2cbfn', '.ptm.',
                     '-meanfn', os.path.join(self.model_dir, 'means'),
@@ -252,8 +261,11 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
             if(command == "sendump"):
                 # Recreating the adapted sendump file
                 # a sendump file saves space and is supported by pocketsphinx
+                mk_s2sendump = '/usr/lib/sphinxtrain/mk_s2sendump'
+                if os.path.isfile('/usr/local/libexec/sphinxtrain/mk_s2sendump'):
+                    mk_s2sendump = '/usr/local/libexec/sphinxtrain/mk_s2sendump'
                 cmd = [
-                    os.path.join('/usr', 'local', 'libexec', 'sphinxtrain', 'mk_s2sendump'),
+                    mk_s2sendump,
                     '-pocketsphinx', 'yes',
                     '-moddeffn', os.path.join(self.adapt_dir, 'mdef.txt'),
                     '-mixwfn', os.path.join(self.adapt_dir, 'mixture_weights'),
@@ -328,7 +340,10 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     c.execute(query)
                     words_used = [x[0].upper() for x in c.fetchall()]
                     # Pull the list of words from the local standard phrases
-                    phrases = [word.upper() for word in profile.get(['keyword'], ['NAOMI'])]
+                    keywords = profile.get_profile_var(['keyword'])
+                    if(isinstance(keywords, str)):
+                        keywords = [keywords]
+                    phrases = [keyword.upper() for keyword in keywords]
                     custom_standard_phrases_dir = paths.sub(os.path.join(
                         "data",
                         "standard_phrases"
