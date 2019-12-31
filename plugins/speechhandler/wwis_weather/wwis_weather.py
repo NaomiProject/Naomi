@@ -75,6 +75,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                         _("thursday's"),
                         _("friday's"),
                         _("saturday's")
+                    ]
                 },
                 'templates': [
                     _("what's the weather in {LocationKeyword}"),
