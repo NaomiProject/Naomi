@@ -10,6 +10,7 @@ from naomi import profile
 class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
 
     def intents(self):
+        _ = self.gettext
         return {
             'WeatherIntent': {
                 'keywords': {
@@ -175,6 +176,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         return countries
 
     def get_regions(self):
+        _ = self.gettext
         regions = {}
         country = profile.get_profile_var(['wwis_weather', 'country'])
         for region in self.locations[country]:
