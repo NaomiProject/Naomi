@@ -69,9 +69,9 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
                     'PlayList': playlists
                 },
                 'templates': [
-                    "PLAY SOMETHING",
-                    "PLAY MUSIC",
-                    "PLAY {PlayList}"
+                    _("PLAY SOMETHING"),
+                    _("PLAY MUSIC"),
+                    _("PLAY {PlayList}")
                 ],
                 'action': self.handle
             }

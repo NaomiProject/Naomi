@@ -1,77 +1,72 @@
-# #-#-#-#-#  fr-FR.po (Naomi 2.2-dev)  #-#-#-#-#
-# Naomi News Plugin
-# Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
-# Portions copyright (C) others
+# #-#-#-#-#  fr-FR.po (Naomi 3.0-dev)  #-#-#-#-#
+# Naomi core translations
 # This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  fr-FR.po (Naomi 2.2-dev)  #-#-#-#-#\n"
-"Project-Id-Version: Naomi 2.2-dev\n"
-"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
-"POT-Creation-Date: 2015-12-01 03:11+0100\n"
-"PO-Revision-Date: 2016-06-18 00:50+0100\n"
-"Last-Translator: Rocca Seb <se.rocca84@gmail.com>\n"
+"Project-Id-Version: Naomi 3.0-dev\n"
+"POT-Creation-Date: 2019-12-29 23:19-0500\n"
 "Language: fr_FR\n"
-"Plural-Forms: nplurals=2; plural=(n>1);"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+"Last-Translator: Aaron Chantrill <aaron.chantrill@dottywood.org>\n"
+"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: pygettext.py 1.5\n"
 
-#: news.py:57 news.py:129
-msgid "NEWS"
-msgstr "ACTUALITÉ"
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:50
+msgid "READ THE NEWS"
+msgstr "LIRE LES NOUVELLES"
 
-#: news.py:58 news.py:129
-msgid "HEADLINES"
-msgstr "TITRES"
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:51
+msgid "WHAT'S HAPPENING"
+msgstr "QU'EST-CE QUI SE PASSE"
 
-#: news.py:59 news.py:98
-msgid "YES"
-msgstr "OUI"
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:52
+msgid "WHAT ARE TODAY'S HEADLINES"
+msgstr "QUELS SONT LES TITRES D'AUJOURD'HUI"
 
-#: news.py:60
-msgid "NO"
-msgstr "NON"
-
-#: news.py:72
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:69
 msgid "Pulling up the news..."
 msgstr "Récéption des titres..."
 
-#: news.py:82
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:76
 msgid "Sorry, I'm unable to get the latest headlines right now."
 msgstr "Désole, Je suis incapable d'avoir les derniers titres maitenant."
 
-#: news.py:85
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:80
 msgid "These are the current top headlines..."
 msgstr "Voci les principaux titres actuels ..."
 
-#: news.py:95
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:93
 msgid "Would you like me to send you these articles?"
 msgstr "Voulez vous que je vous envois ces articles?"
 
-#: news.py:99
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:97
+msgid "YES"
+msgstr "OUI"
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:101
 msgid "Sure, just give me a moment."
 msgstr "d'accord, donnez moi un instant."
 
-#: news.py:103
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:102
 msgid "Your Top Headlines"
 msgstr "Voici les titres du jour"
 
-#: news.py:107
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:110
 msgid "Okay, I've sent you an email."
 msgstr "D'accord. Je vous ai envoyé un mail."
 
-#: news.py:110
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:114
 msgid "Sorry, I'm having trouble sending you these articles."
 msgstr "Désolé. J'ai du mal à vous envoyer ces articles."
 
-#: news.py:112
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:117
 msgid "Okay, I will not send any articles."
 msgstr "d'accord, je ne vous envoies aucun article."
 
-#: news.py:115
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/news/news.py:120
 msgid "These are the articles you requested:"
 msgstr "Voici les articles que vous avez demandé:"

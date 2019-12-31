@@ -1,52 +1,72 @@
-# #-#-#-#-#  fr-FR.po (Naomi 2.2-dev)  #-#-#-#-#
-# Naomi Birthday Plugin 
-# Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
-# Portions copyright (C) 2018 others
+# #-#-#-#-#  fr-FR.po (Naomi 3.0-dev)  #-#-#-#-#
+# Naomi Birthday plugin
 # This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  fr-FR.po (Naomi 2.2-dev)  #-#-#-#-#\n"
-"Project-Id-Version: Naomi 2.2-dev\n"
+"Project-Id-Version: Naomi 3.0-dev\n"
+"POT-Creation-Date: 2019-12-29 23:19-0500\n"
+"Language: fr_FR\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+"Last-Translator: Aaron Chantrill <aaron.chantrill@dottywood.org>\n"
 "Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
-"POT-Creation-Date: 2015-10-30 19:00+0100\n"
-"PO-Revision-Date: 2016-06-18 00:16+0100\n"
-"Last-Translator: Rocca Seb <se.rocca84@gmail.com>\n"
-"Language: fr_Fr\n"
-"Plural-Forms: nplurals=2; plural=(n>1);"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: pygettext.py 1.5\n"
 
-#: birthday/birthday.py:10 birthday/birthday.py:69
-#: /home/pi/Naomi/plugins/speechhandler/birthday/birthday.py:10
-msgid "BIRTHDAY"
-msgstr ""
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:18
+msgid "Please enter Facebook token"
+msgstr "Veuillez entrer le jeton Facebook"
 
-#: birthday/birthday.py:30
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:19
 msgid ""
-"I have not been authorized to query your Facebook. If you would like to "
-"check birthdays in the future, please visit the Naomi dashboard."
+"I can use your Facebook token to notify you when your friends have birthdays"
 msgstr ""
-"Je n'ai pas été autorisé pour accédé à votre compte Facebook. Si vous voulez "
-"vérifier les anniversaire, merci de visiter le tableau de bord de Naomi."
+"Je peux utiliser votre token Facebook pour vous avertir lorsque vos amis "
+"ont des anniversaires"
 
-#: birthday/birthday.py:35
-msgid "I apologize, there's a problem with that service at the moment."
-msgstr "Je m'excuse, il y a un problème avec ce service en ce moment."
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:30
+msgid "WHOSE BIRTHDAY IS IT TODAY"
+msgstr "DONT L'ANNIVERSAIRE EST AUJOURD'HUI"
 
-#: birthday/birthday.py:52
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:31
+msgid "ARE THERE ANY BIRTHDAYS TODAY"
+msgstr "Y A-T-IL DES ANNIVERSAIRES AUJOURD'HUI"
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:32
+msgid "DO ANY OF MY FRIENDS HAVE BIRTHDAYS TODAY"
+msgstr "FAIRE UN DE MES AMIS A DES ANNIVERSAIRES AUJOURD'HUI"
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:65
+msgid "I have not been authorized to query your Facebook."
+msgstr "Je n'ai pas été autorisé pour accédé à votre compte Facebook."
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:66
+msgid "If you would like to check birthdays in the future,"
+msgstr "Si vous voulez vérifier les anniversaire,"
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:67
+msgid "please visit the Naomi dashboard."
+msgstr "merci de visiter le tableau de bord de Naomi."
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:74
+msgid "I apologize,"
+msgstr "Je m'excuse,"
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:75
+msgid "there's a problem with that service at the moment."
+msgstr "il y a un problème avec ce service en ce moment."
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:94
 #, python-format
 msgid "%s has a birthday today."
 msgstr "%s fête sont anniversaire aujourd'hui."
 
-#: birthday/birthday.py:55
-#, python-format
-msgid "Your friends with birthdays today are %s and %s."
-msgstr "%s et %s fêtent leurs anniversaire aujourd'hui."
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:97
+msgid "Your friends with birthdays today are {} and {}."
+msgstr "{} et {} fêtent leurs anniversaire aujourd'hui."
 
-#: birthday/birthday.py:58
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/birthday/birthday.py:100
 msgid "None of your friends have birthdays today."
 msgstr "Aucun de vos amis fête son anniversaire aujourd'hui."

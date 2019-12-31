@@ -1,68 +1,72 @@
-# #-#-#-#-#  de-DE.po (Naomi 2.2-dev)  #-#-#-#-#
+# #-#-#-#-#  de-DE.po (Naomi 3.0-dev)  #-#-#-#-#
+# Naomi Hacker News plugin
 # This file is distributed under the same license as the Naomi package.
 #
+#, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  de-DE.po (Naomi 2.2-dev)  #-#-#-#-#\n"
-"Project-Id-Version: Naomi 2.2-dev\n"
-"POT-Creation-Date: 2018-10-28 23:45+EDT\n"
+"Project-Id-Version: Naomi 3.0-dev\n"
+"POT-Creation-Date: 2019-12-29 23:19-0500\n"
 "Language: de_DE\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Last-Translator: Aaron Chantrill <aaron.chantrill@dottywood.org>\n"
+"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: pygettext.py 1.5\n"
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:40
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:112
-msgid "HACKER"
-msgstr ""
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:35
+msgid "READ HACKER NEWS"
+msgstr "HACKER NEWS LESEN"
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:41
-msgid "NEWS"
-msgstr ""
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:36
+msgid "WHAT'S IN HACKER NEWS"
+msgstr "WAS IST IN HACKER NEWS"
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:42
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:80
-msgid "YES"
-msgstr ""
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:62
+msgid "Getting the top {} stories from Hacker News..."
+msgstr "Erhalten Sie die besten {} Geschichten von Hacker News ..."
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:43
-msgid "NO"
-msgstr ""
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:71
+msgid "Sorry, I'm unable to get the top stories from"
+msgstr "Entschuldigung, ich kann die Top-Storys von"
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:55
-msgid "Getting the top %d stories from Hacker News..."
-msgstr ""
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:72
+msgid "Hacker News right now."
+msgstr "Hacker News derzeit nicht abrufen."
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:65
-msgid "These are the current top stories..."
-msgstr ""
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:77
+msgid "These are the current top stories... "
+msgstr "Das sind die aktuellen Top-Stories... "
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:77
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:84
 msgid "Would you like me to send you these articles?"
-msgstr ""
+msgstr "Möchten Sie, dass ich Ihnen diese Artikel schicke?"
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:82
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:88
+msgid "YES"
+msgstr "JA"
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:92
 msgid "Sure, just give me a moment."
-msgstr ""
+msgstr "Klar, gib mir nur einen Moment."
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:86
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:95
 msgid "Top Stories from Hacker News"
-msgstr ""
+msgstr "Beste Geschichten von Hacker News"
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:89
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:100
 msgid "Okay, I've sent you an email."
-msgstr ""
+msgstr "Okay, ich habe dir eine E-Mail geschickt."
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:92
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:104
 msgid "Sorry, I'm having trouble sending you these articles."
-msgstr ""
+msgstr "Entschuldigung, ich habe Probleme, Ihnen diese Artikel zuzusenden."
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:95
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:107
 msgid "Okay, I will not send any articles."
-msgstr ""
+msgstr "Okay, ich werde keine Artikel verschicken."
 
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:98
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:111
 msgid "These are the Hacker News articles you requested:"
-msgstr ""
+msgstr "Dies sind die von Ihnen angeforderten Hacker News-Artikel:"

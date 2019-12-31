@@ -7,11 +7,12 @@ from naomi import profile
 
 class ShutdownPlugin(plugin.SpeechHandlerPlugin):
     def intents(self):
+        _ = self.gettext
         return {
             'ShutdownIntent': {
                 'templates': [
-                    "SHUTDOWN",
-                    "TURN YOURSELF OFF"
+                    _("SHUTDOWN"),
+                    _("TURN YOURSELF OFF")
                 ],
                 'action': self.handle
             }

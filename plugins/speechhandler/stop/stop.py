@@ -4,11 +4,12 @@ from naomi import plugin
 
 class StopPlugin(plugin.SpeechHandlerPlugin):
     def intents(self):
+        _ = self.gettext
         return {
             'StopIntent': {
                 'templates': [
-                    "STOP",
-                    "SHUT UP"
+                    _("STOP"),
+                    _("SHUT UP")
                 ],
                 'action': self.handle
             }

@@ -7,17 +7,6 @@ from naomi import plugin
 from naomi import profile
 
 
-WEEKDAY_NAMES = {
-    0: 'Monday',
-    1: 'Tuesday',
-    2: 'Wednesday',
-    3: 'Thursday',
-    4: 'Friday',
-    5: 'Saturday',
-    6: 'Sunday'
-}
-
-
 class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
 
     def intents(self):
@@ -25,54 +14,82 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
             'WeatherIntent': {
                 'keywords': {
                     'WeatherTypePresentKeyword': [
-                        'snowing',
-                        'raining',
-                        'windy',
-                        'sleeting',
-                        'sunny'
+                        _('snowing'),
+                        _('raining'),
+                        _('windy'),
+                        _('sleeting'),
+                        _('sunny')
                     ],
                     'WeatherTypeFutureKeyword': [
-                        'snow',
-                        'rain',
-                        'be windy',
-                        'sleet',
-                        'be sunny'
+                        _('snow'),
+                        _('rain'),
+                        _('be windy'),
+                        _('wind'),
+                        _('sleet'),
+                        _('be sunny'),
+                        _('sun')
                     ],
+                    # FIXME The following should really be populated
+                    # by the cities from get_location_data, and region
+                    # and country information should also be used to
+                    # figure out where you are asking about, especially
+                    # since that structure respects the user's language.
+                    #
+                    # LocationKeyword itself then should be constructed
+                    # from other keywords: ie:
+                    #   '{city} {region}',
+                    #   '{city} {country}',
+                    #   '{city} {region} {country}',
+                    #   '{region}',
+                    #   '{region} {country}',
+                    #   '{country}'
                     'LocationKeyword': [
                         'seattle',
                         'san francisco',
                         'tokyo'
                     ],
                     'TimeKeyword': [
-                        "morning",
-                        "afternoon",
-                        "evening",
-                        "night"
+                        _("morning"),
+                        _("afternoon"),
+                        _("evening"),
+                        _("night")
                     ],
                     'DayKeyword': [
-                        "today",
-                        "tomorrow",
-                        "sunday",
-                        "monday",
-                        "tuesday",
-                        "wednesday",
-                        "thursday",
-                        "friday",
-                        "saturday"
-                    ]
+                        _("today"),
+                        _("tomorrow"),
+                        _("sunday"),
+                        _("monday"),
+                        _("tuesday"),
+                        _("wednesday"),
+                        _("thursday"),
+                        _("friday"),
+                        _("saturday")
+                    ],
+                    'PossessiveDayKeyword': [
+                        _("today's"),
+                        _("tomorrow's"),
+                        _("sunday's"),
+                        _("monday's"),
+                        _("tuesday's"),
+                        _("wednesday's"),
+                        _("thursday's"),
+                        _("friday's"),
+                        _("saturday's")
                 },
                 'templates': [
-                    "what's the weather in {LocationKeyword}",
-                    "what's the forecast for {DayKeyword}",
-                    "what's the forecast for {LocationKeyword}",
-                    "what's the forecast for {LocationKeyword} on {DayKeyword}",
-                    "what's the forecast for {LocationKeyword} on {DayKeyword} {TimeKeyword}",
-                    "is it {WeatherTypePresentKeyword} in {LocationKeyword}",
-                    "will it {WeatherTypeFutureKeyword} this {TimeKeyword}",
-                    "will it {WeatherTypeFutureKeyword} {DayKeyword}",
-                    "will it {WeatherTypeFutureKeyword} {DayKeyword} {TimeKeyword}",
-                    "when will it {WeatherTypeFutureKeyword}",
-                    "when will is {WeatherTypeFutureKeyword} in {LocationKeyword}"
+                    _("what's the weather in {LocationKeyword}"),
+                    _("what's the forecast for {DayKeyword}"),
+                    _("what's the forecast for {LocationKeyword}"),
+                    _("what's {PossessiveDayKeyword} forecast"),
+                    _("what will {PossessiveDayKeyword} weather be"),
+                    _("what's the forecast for {LocationKeyword} on {DayKeyword}"),
+                    _("what's the forecast for {LocationKeyword} on {DayKeyword} {TimeKeyword}"),
+                    _("is it {WeatherTypePresentKeyword} in {LocationKeyword}"),
+                    _("will it {WeatherTypeFutureKeyword} this {TimeKeyword}"),
+                    _("will it {WeatherTypeFutureKeyword} {DayKeyword}"),
+                    _("will it {WeatherTypeFutureKeyword} {DayKeyword} {TimeKeyword}"),
+                    _("when will it {WeatherTypeFutureKeyword}"),
+                    _("when will it {WeatherTypeFutureKeyword} in {LocationKeyword}")
                 ],
                 'action': self.handle
             }
@@ -162,8 +179,8 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         for region in self.locations[country]:
             regions[region] = region
         if(not regions):
-            print("Weather information is not available in {}.".format(country))
-            print("Please check nearby cities in other countries")
+            print(_("Weather information is not available in {}.").format(country))
+            print(_("Please check nearby cities in other countries"))
         return regions
 
     def get_cities(self):
@@ -201,6 +218,15 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         # in the text, and return the requested day's weather.
         # First, establish the cityId
         _ = self.gettext
+        WEEKDAY_NAMES = {
+            0: _('Monday'),
+            1: _('Tuesday'),
+            2: _('Wednesday'),
+            3: _('Thursday'),
+            4: _('Friday'),
+            5: _('Saturday'),
+            6: _('Sunday')
+        }
         text = intent['input']
         city, cityId = self.get_city_id()
         country = profile.get_profile_var(["wwis_weather", "country"])
@@ -242,7 +268,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                 tomorrow.month,
                 tomorrow.day
             )
-            if("today" in text.lower()):
+            if(_("today") in text.lower()):
                 if(todaydate in forecast.keys()):
                     mic.say(
                         _("The weather today in {} is {}").format(
@@ -263,9 +289,9 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                 first = True
                 for day in sorted(forecast.keys()):
                     if(day == todaydate):
-                        DOW = "today"
+                        DOW = _("today")
                     elif(day == tomorrowdate):
-                        DOW = "tomorrow"
+                        DOW = _("tomorrow")
                     else:
                         DOW = WEEKDAY_NAMES[datetime.datetime.strptime(day, "%Y-%m-%d").weekday()]
                     if(first):

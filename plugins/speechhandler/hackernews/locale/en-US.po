@@ -1,89 +1,72 @@
-# #-#-#-#-#  en-US_temp.po (Naomi 2.2-dev)  #-#-#-#-#
+# #-#-#-#-#  en-US.po (Naomi 3.0-dev)  #-#-#-#-#
+# Naomi Hacker News plugin
 # This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  en-US_temp.po (Naomi 2.2-dev)  #-#-#-#-#\n"
-"Project-Id-Version: Naomi 2.2-dev\n"
-"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
-"POT-Creation-Date: 2018-08-06 23:14+0100\n"
-"PO-Revision-Date: 2018-08-06 23:14+0100\n"
-"Last-Translator: Rocca Sebastien <se.rocca84@gmail.com>\n"
+"Project-Id-Version: Naomi 3.0-dev\n"
+"POT-Creation-Date: 2019-12-29 23:19-0500\n"
 "Language: en_US\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Last-Translator: Aaron Chantrill <aaron.chantrill@dottywood.org>\n"
+"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: pygettext.py 1.5\n"
 
-#: plugins/speechhandler/hackernews/hackernews.py:40
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:40
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:112
-msgid "HACKER"
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:35
+msgid "READ HACKER NEWS"
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:41
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:41
-msgid "NEWS"
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:36
+msgid "WHAT'S IN HACKER NEWS"
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:42
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:42
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:80
-msgid "YES"
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:62
+msgid "Getting the top {} stories from Hacker News..."
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:43
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:43
-msgid "NO"
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:71
+msgid "Sorry, I'm unable to get the top stories from"
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:55
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:55
-msgid "Getting the top %d stories from Hacker News..."
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:72
+msgid "Hacker News right now."
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:60
-msgid "Sorry, I'm unable to get the top stories from Hacker News right now."
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:77
+msgid "These are the current top stories... "
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:65
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:65
-msgid "These are the current top stories..."
-msgstr ""
-
-#: plugins/speechhandler/hackernews/hackernews.py:75
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:77
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:84
 msgid "Would you like me to send you these articles?"
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:80
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:82
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:88
+msgid "YES"
+msgstr ""
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:92
 msgid "Sure, just give me a moment."
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:84
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:86
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:95
 msgid "Top Stories from Hacker News"
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:88
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:89
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:100
 msgid "Okay, I've sent you an email."
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:90
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:92
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:104
 msgid "Sorry, I'm having trouble sending you these articles."
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:93
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:95
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:107
 msgid "Okay, I will not send any articles."
 msgstr ""
 
-#: plugins/speechhandler/hackernews/hackernews.py:97
-#: /home/pi/Naomi/plugins/speechhandler/hackernews/hackernews.py:98
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/hackernews/hackernews.py:111
 msgid "These are the Hacker News articles you requested:"
 msgstr ""

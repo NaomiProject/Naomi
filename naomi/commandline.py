@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from blessings import Terminal
 from getpass import getpass
 from naomi import app_utils

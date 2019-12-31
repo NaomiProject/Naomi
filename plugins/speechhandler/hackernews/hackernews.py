@@ -32,8 +32,8 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
         return {
             'HackerNewsIntent': {
                 'templates': [
-                    "READ HACKER NEWS",
-                    "WHAT'S IN HACKER NEWS"
+                    _("READ HACKER NEWS"),
+                    _("WHAT'S IN HACKER NEWS")
                 ],
                 'action': self.handle
             }

@@ -1,32 +1,36 @@
-# #-#-#-#-#  en-US.po (Naomi 2.2-dev)  #-#-#-#-#
-# Naomi Joke Plugin
-# Copyright (C) 2015 Shubhro Saha, Charlie Marsh & Jan Holthuis
-# Portions copyright (C) 2018 others
+# #-#-#-#-#  en-US.po (Naomi 3.0-dev)  #-#-#-#-#
+# Naomi Joke plugin
 # This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  en-US.po (Naomi 2.2-dev)  #-#-#-#-#\n"
-"Project-Id-Version: Naomi 2.2-dev\n"
-"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
-"POT-Creation-Date: 2015-12-01 16:22+0100\n"
-"PO-Revision-Date: 2015-12-01 16:22+0100\n"
-"Last-Translator: Jan Holthuis <jan.holthuis@ruhr-uni-bochum.de>\n"
+"Project-Id-Version: Naomi 3.0-dev\n"
+"POT-Creation-Date: 2019-12-29 23:19-0500\n"
 "Language: en_US\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Last-Translator: Aaron Chantrill <aaron.chantrill@dottywood.org>\n"
+"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: pygettext.py 1.5\n"
 
-#: plugins/speechhandler/joke/joke.py:43 plugins/speechhandler/joke/joke.py:68
-#: /home/pi/Naomi/plugins/speechhandler/joke/joke.py:46
-#: /home/pi/Naomi/plugins/speechhandler/joke/joke.py:71
-msgid "JOKE"
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/joke/joke.py:48
+msgid "TELL ME A JOKE"
 msgstr ""
 
-#: plugins/speechhandler/joke/joke.py:55
-#: /home/pi/Naomi/plugins/speechhandler/joke/joke.py:58
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/joke/joke.py:49
+msgid "DO YOU KNOW ANY JOKES"
+msgstr ""
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/joke/joke.py:50
+msgid "CAN YOU TELL ME A JOKE"
+msgstr ""
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/joke/joke.py:51
+msgid "MAKE ME LAUGH"
+msgstr ""
+
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/joke/joke.py:67
 msgid "Knock knock"
 msgstr ""

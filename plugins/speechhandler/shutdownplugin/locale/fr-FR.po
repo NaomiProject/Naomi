@@ -1,47 +1,40 @@
-# #-#-#-#-#  fr-FR.po (Naomi 2.2-dev)  #-#-#-#-#
-# Naomi Shutdown Plugin
-#
+# #-#-#-#-#  fr-FR.po (Naomi 3.0-dev)  #-#-#-#-#
+# Naomi Shutdown plugin
 # This file is distributed under the same license as the Naomi package.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"#-#-#-#-#  fr-FR.po (Naomi 2.2-dev)  #-#-#-#-#\n"
-"Project-Id-Version: Naomi 2.2-dev\n"
-"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
-"POT-Creation-Date: 2016-8-21 19:00+0100\n"
-"PO-Revision-Date: 2016-8-21 19:00+0100\n"
-"Last-Translator: Rocca Seb <se.rocca84@gmail.com>\n"
+"Project-Id-Version: Naomi 3.0-dev\n"
+"POT-Creation-Date: 2019-12-29 23:19-0500\n"
 "Language: fr_FR\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+"Last-Translator: Aaron Chantrill <aaron.chantrill@dottywood.org>\n"
+"Report-Msgid-Bugs-To: https://github.com/NaomiProject/Naomi/issues\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: pygettext.py 1.5\n"
 
-#: shutdownplugin/shutdown.py:10
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/shutdownplugin/shutdown.py:14
 msgid "SHUTDOWN"
 msgstr "ÉTEINS-TOI"
 
-#: shutdownplugin/shutdown.py:11
-msgid "SHUT"
-msgstr "ETEINDRE"
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/shutdownplugin/shutdown.py:15
+msgid "TURN YOURSELF OFF"
+msgstr "ÉTEIGNEZ-VOUS"
 
-#: shutdownplugin/shutdown.py:12
-msgid "DOWN"
-msgstr "STOP"
-
-#: shutdownplugin/shutdown.py:30
-msgid "I'm going down."
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/shutdownplugin/shutdown.py:33
+msgid "I'm shutting down."
 msgstr "Je vais m'éteindre."
 
-#: shutdownplugin/shutdown.py:31
-msgid "Shuting down now."
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/shutdownplugin/shutdown.py:34
+msgid "Shutting down now."
 msgstr "Je m'éteint maitenant."
 
-#: shutdownplugin/shutdown.py:32
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/shutdownplugin/shutdown.py:35
 msgid "Bye Bye."
 msgstr "Bye bye."
 
-#: shutdownplugin/shutdown.py:33
+#: /home/drask/Naomi_3.0rc11/plugins/speechhandler/shutdownplugin/shutdown.py:36
 msgid "Goodbye, {}"
 msgstr "Aurevoir, {}"
