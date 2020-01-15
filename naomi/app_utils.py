@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
-import smtplib
-from email.MIMEText import MIMEText
-from email.MIMEMultipart import MIMEMultipart
-import urllib2
-import re
-from pytz import timezone
-import paths
+import email
+import imaplib
 import logging
-from . import i18n
+import re
+import smtplib
+from dateutil import parser
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from naomi import i18n
+from naomi import paths
+from naomi import profile
+from pytz import timezone
+from urllib import request as urllib_request
 
 
 def send_email(SUBJECT, BODY, TO, FROM, SENDER, PASSWORD, SMTP_SERVER, SMTP_PORT):
@@ -116,7 +120,7 @@ def generate_tiny_URL(URL):
     return response.read()
 
 
-def is_negative(phrase, profile):
+def is_negative(phrase):
     """
     Returns True if the input phrase has a negative sentiment.
 
@@ -124,13 +128,13 @@ def is_negative(phrase, profile):
         phrase -- the input phrase to-be evaluated
     """
     translations = i18n.parse_translations(paths.data('locale'))
-    translator = i18n.GettextMixin(translations, profile)
+    translator = i18n.GettextMixin(translations)
     _ = translator.gettext
     return bool(re.search(_(r'\b(no(t)?|don\'t|stop|end|n)\b'), phrase,
                           re.IGNORECASE))
 
 
-def is_positive(phrase, profile):
+def is_positive(phrase):
     """
         Returns True if the input phrase has a positive sentiment.
 
@@ -138,7 +142,7 @@ def is_positive(phrase, profile):
         phrase -- the input phrase to-be evaluated
     """
     translations = i18n.parse_translations(paths.data('locale'))
-    translator = i18n.GettextMixin(translations, profile)
+    translator = i18n.GettextMixin(translations)
     _ = translator.gettext
     return bool(re.search(_(r'\b(sure|yes|yeah|go|yup|y)\b'),
                           phrase,
