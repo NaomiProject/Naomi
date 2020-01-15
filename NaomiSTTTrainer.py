@@ -200,7 +200,9 @@ def clean_transcription(transcription):
 
 
 def application(environ, start_response):
-    keyword = profile.get_profile_var(["keyword"], "Naomi")
+    keyword = profile.get_profile_var(["keyword"], ["Naomi"])
+    if(isinstance(keyword, list)):
+        keyword = keyword[0]
     print("PATH_INFO=%s" % environ["PATH_INFO"])
     if(environ["PATH_INFO"] == "/favicon.ico"):
         start_response(
@@ -315,7 +317,7 @@ def application(environ, start_response):
             )
             ret.append(
                 '<html><head><title>{} STT Training</title>'.format(
-                    ', '.join(keyword)
+                    keyword
                 ).encode("utf-8")
             )
             # Return the main page
@@ -719,7 +721,7 @@ def application(environ, start_response):
                         ret.append("""</ul>""".encode("utf-8"))
 
                     ret.append("""<h1>{} transcription {} ({})</h1>""".format(
-                        ', '.join(keyword),
+                        keyword,
                         rowID,
                         Current_record["Type"]).encode("utf-8")
                     )
@@ -742,7 +744,7 @@ def application(environ, start_response):
                             '{} heard',
                             '"<span style="font-weight:bold">{}</span>"<br />'
                         ]).format(
-                            ', '.join(keyword),
+                            keyword,
                             Current_record["Transcription"]
                         ).encode("utf-8"))
                     ret.append("What did you hear?<br />".encode("utf-8"))
