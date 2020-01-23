@@ -594,9 +594,11 @@ function setup_wizard() {
             break
             ;;
          2)
-            echo -e "\e[1;32m$key - Good Choice!"
+            echo -e "\e[1;32m$key - Good Choice!"    
             version="3.0"
-            milestone=$(date -d "-1 month" +%-m)
+            month=$(date +%-m)
+            offset=12
+            mileston=$((month+offset))
             echo '{"use_release":"milestone", "version":"Naomi-'$version'.M'$milestone'", "auto_update":"false"}' > ~/.naomi/configs/.naomi_options.json
             cd ~
             mv ~/Naomi ~/Naomi-Temp
