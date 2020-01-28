@@ -39,17 +39,21 @@ def check_imap_config():
         logging.info('Email imap server not set')
         success = False
     PORT = profile.get(['email', 'imap', 'port'], 993)
-    try:
-        conn = imaplib.IMAP4_SSL(SERVER, PORT)
-        conn.login(USERNAME, PASSWORD)
-        conn.logout()
-    except TimeoutError:
-        logging.info('IMAP connection timed out (check server name)')
-        success = False
-    except imaplib.IMAP4.error as e:
-        if hasattr(e, 'args'):
-            logging.info(e.args[0])
-        success = False
+    if(success):
+        try:
+            conn = imaplib.IMAP4_SSL(SERVER, PORT)
+            conn.login(USERNAME, PASSWORD)
+            conn.logout()
+        except TimeoutError:
+            logging.info('IMAP connection timed out (check server name)')
+            success = False
+        except OSError as e:
+            logging.info('IMAP connection error: {}'.format(e))
+            success = False
+        except imaplib.IMAP4.error as e:
+            if hasattr(e, 'args'):
+                logging.info(e.args[0])
+            success = False
     return success
 
 
@@ -68,18 +72,22 @@ def check_smtp_config():
         logging.info('Email smtp server not set')
         success = False
     PORT = profile.get(['email', 'smtp', 'port'], 587)
-    try:
-        session = smtplib.SMTP(SERVER, PORT)
-        session.starttls()
-        session.login(USERNAME, PASSWORD)
-        session.quit()
-    except TimeoutError:
-        logging.info('SMTP connection timed out (check server name)')
-        success = False
-    except imaplib.IMAP4.error as e:
-        if hasattr(e, 'args'):
-            logging.info(e.args[0])
-        success = False
+    if(success):
+        try:
+            session = smtplib.SMTP(SERVER, PORT)
+            session.starttls()
+            session.login(USERNAME, PASSWORD)
+            session.quit()
+        except TimeoutError:
+            logging.info('SMTP connection timed out (check server name)')
+            success = False
+        except OSError as e:
+            logging.info('SMTP connection error: {}'.format(e))
+            success = False
+        except imaplib.IMAP4.error as e:
+            if hasattr(e, 'args'):
+                logging.info(e.args[0])
+            success = False
     return success
 
 
