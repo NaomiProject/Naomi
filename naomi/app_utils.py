@@ -7,7 +7,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from urllib import request as urllib_request
 import re
-import requests
 from pytz import timezone
 import logging
 from naomi import profile
