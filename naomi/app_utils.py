@@ -47,8 +47,8 @@ def check_imap_config():
         except TimeoutError:
             logging.info('IMAP connection timed out (check server name)')
             success = False
-        except ConnectionRefusedError:
-            logging.info('IMAP connection refused')
+        except ConnectionError as e:
+            logging.info('IMAP connection error: {}'.format(e))
             success = False
         except imaplib.IMAP4.error as e:
             if hasattr(e, 'args'):
