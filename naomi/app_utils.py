@@ -7,6 +7,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from urllib import request as urllib_request
 import re
+import requests
 from pytz import timezone
 import logging
 from naomi import profile
@@ -47,7 +48,7 @@ def check_imap_config():
         except TimeoutError:
             logging.info('IMAP connection timed out (check server name)')
             success = False
-        except ConnectionError as e:
+        except OSError as e:
             logging.info('IMAP connection error: {}'.format(e))
             success = False
         except imaplib.IMAP4.error as e:
@@ -81,7 +82,7 @@ def check_smtp_config():
         except TimeoutError:
             logging.info('SMTP connection timed out (check server name)')
             success = False
-        except ConnectionError as e:
+        except OSError as e:
             logging.info('SMTP connection error: {}'.format(e))
             success = False
         except imaplib.IMAP4.error as e:
