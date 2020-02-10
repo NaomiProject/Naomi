@@ -1,8 +1,16 @@
+libatlas3-base
 libssl-dev
 libncurses5-dev
 gnupg
 dirmngr
 gettext
+gfortran
 portaudio19-dev
 libasound2-dev
 util-linux
+
+# pocketsphinx
+python3-pocketsphinx
+pocketsphinx
+sphinxbase-utils
+sphinxtrain

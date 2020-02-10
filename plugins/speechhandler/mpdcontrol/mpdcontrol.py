@@ -77,15 +77,14 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
             }
         }
 
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         """
         Responds to user-input, typically speech text, by playing music
 
         Arguments:
-            text -- user-input, typically transcribed speech
+            intent -- the returned intent object
             mic -- used to interact with the user (for both input and output)
         """
-
         _ = self.gettext  # Alias for better readability
 
         self.say(mic, _("Wait, I'm starting the music mode."))
@@ -107,10 +106,20 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
             # make sure naomi knows its keyword so it
             # does not confuse it with one of the commands
             if(mic._keyword not in phrases):
-                phrases.append(mic._keyword)
+                if(isinstance(mic._keyword, list)):
+                    phrases.extend(mic._keyword)
+                else:
+                    phrases.append(mic._keyword)
 
         self._logger.debug('Loading playlists...')
         phrases.extend([pl.upper() for pl in self._music.get_playlists()])
+
+        if('PlayList' in intent['matches']):
+            playlist = intent['matches']['PlayList'][0]
+            print("Loading playlist {}".format(playlist))
+            self.load_playlist(playlist)
+            self.say(mic, _('Playlist %s loaded.') % playlist)
+            self._music.play()
 
         if self._autoplay:
             self._music.play()
@@ -176,11 +185,9 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
 
             # Load playlist
             if playlist:
-                playback_state = self._music.get_playback_state()
-                self._music.load_playlist(playlist)
+                self.load_playlist(playlist)
                 self.say(mic, _('Playlist %s loaded.') % playlist)
-                if playback_state == mpdclient.PLAYBACK_STATE_PLAYING:
-                    self._music.play()
+                self._music.play()
             else:
                 self.say(
                     mic,
@@ -237,6 +244,19 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
             return False
 
         return True
+
+    def load_playlist(self, playlist):
+        playlists = self._music.get_playlists()
+        playlists_upper = [pl.upper() for pl in playlists]
+        matches = difflib.get_close_matches(
+            playlist,
+            playlists_upper
+        )
+        if len(matches) > 0:
+            playlist_index = playlists_upper.index(matches[0])
+            playlist = playlists[playlist_index]
+
+        self._music.load_playlist(playlist)
 
     # This is a special say mode for MPDClient
     # If playback is occurring, pause it before speaking

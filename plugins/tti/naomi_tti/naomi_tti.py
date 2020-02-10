@@ -72,10 +72,35 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         self.words[word].update({intent: True})
                     except KeyError:
                         self.words[word] = {intent: True}
-            # for each word in each intent, divide the word frequency by the number of examples
+            # for each word in each intent, divide the word frequency by the
+            # number of examples (this way words that are used frequently
+            # get a higher weight, while those appearing in only one template
+            # get a much lower weight.
             phrase_count = len(intents[intent_base]['templates'])
             for word in self.intent_map['intents'][intent]['words']:
                 self.intent_map['intents'][intent]['words'][word] /= phrase_count
+                print("word {} appears {} times in {}: {}".format(word, phrase_count, intent, self.intent_map['intents'][intent]['words'][word]))
+
+    def train(self):
+        # Here we want to go through a list of all the words in all the intents
+        # and get a count of the number of intents the word appears in, then
+        # divide the weight of every instance by the number of intents it
+        # appears in. That way a word that appears a lot (like "what") will
+        # get a much lower weight
+        wordcounts = {}
+        for intent in self.intent_map['intents']:
+            for word in self.intent_map['intents'][intent]['words']:
+                if word in wordcounts:
+                    wordcounts[word] += 1
+                else:
+                    wordcounts[word] = 1
+        for word in wordcounts:
+            if wordcounts[word] > 1:
+                for intent in self.intent_map['intents']:
+                    if word in self.intent_map['intents'][intent]['words']:
+                        self.intent_map['intents'][intent]['words'][word] /= wordcounts[word]
+                        print("{} appears in {} intents: reduced to {} in {}".format(word, wordcounts[word], self.intent_map['intents'][intent]['words'][word], intent))
+        self.trained = True
 
     def get_plugin_phrases(self, passive_listen=False):
         phrases = []
@@ -186,6 +211,9 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         # print("Word: {} Weight: {} Intents: {} Appears in: {}".format(word, weight, intents_count, word_appears_in))
                         score += self.intent_map['intents'][intent]['words'][word] * (intents_count - word_appears_in) / intents_count
                 intentscores[intent] = score / len(words)
+            # list intents and scores
+            for intent in intentscores.keys():
+                print("\t{}: {}".format(intent, intentscores[intent]))
             # Take the intent with the highest score
             # print("==========intentscores============")
             # pprint(intentscores)

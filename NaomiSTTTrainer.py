@@ -267,7 +267,19 @@ def application(environ, start_response):
                 ret = [w.read()]
             return ret
         # open a connection to the database
-        conn = sqlite3.connect(audiolog_db)
+        try:
+            conn = sqlite3.connect(audiolog_db)
+        except sqlite3.OperationalError:
+            ret = []
+            start_response(
+                '200 OK',
+                [('content-type', 'text/html;charset=utf-8')]
+            )
+            ret.append("<html><head><title>Could not open database</title></head>".encode("UTF-8"))
+            ret.append("<body><h2>Could not open database file {}</h2>".format(audiolog_db).encode("UTF-8"))
+            ret.append("<p>Try adding the following lines to your profile ({}) and then asking me a few questions:<br />".format(profile.profile_file).encode("UTF-8"))
+            ret.append("<pre>\taudiolog:\n\t\tsave_audio\n</pre>".encode("UTF-8"))
+            return ret
         c = conn.cursor()
         # Start the html response
         ret = []
