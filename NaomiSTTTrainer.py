@@ -191,6 +191,11 @@ def fetch_last_rowID(c):
     return rowID
 
 
+def fetch_total_rows(c):
+    c.execute("select max(RowID)MaxRow from audiolog")
+    return str(c.fetchone()[0])
+
+
 # Replaces any punctuation characters with spaces and converts to upper case
 def clean_transcription(transcription):
     print("transcription type={}".format(type(transcription)))
@@ -209,8 +214,8 @@ def application(environ, start_response):
             '404 Not Found',
             [('content-type', 'text/plain;charset=utf-8')]
         )
-        ret = ["404 Not Found".encode("UTF-8")]
-        return ret
+        ret = ["404 Not Found"]
+        return [line.encode("UTF-8") for line in ret]
     else:
         audiolog_dir = paths.sub("audiolog")
         audiolog_db = os.path.join(audiolog_dir, "audiolog.db")
@@ -220,6 +225,7 @@ def application(environ, start_response):
         prev_rowID = ""
         next_rowID = ""
         result = ""
+        speaker = ""
         verified_transcription = ""
         post_data = ""
         engine = ""
@@ -257,6 +263,8 @@ def application(environ, start_response):
                     command = namevalue[1].lower()
                 if(namevalue[0].lower() == "description"):
                     description.append(namevalue[1])
+                if(namevalue[0].lower() == "speaker"):
+                    speaker = namevalue[1].replace('+', ' ')
 
         # Handle the request
         # serve a .wav file
@@ -275,12 +283,17 @@ def application(environ, start_response):
                 '200 OK',
                 [('content-type', 'text/html;charset=utf-8')]
             )
-            ret.append("<html><head><title>Could not open database</title></head>".encode("UTF-8"))
-            ret.append("<body><h2>Could not open database file {}</h2>".format(audiolog_db).encode("UTF-8"))
-            ret.append("<p>Try adding the following lines to your profile ({}) and then asking me a few questions:<br />".format(profile.profile_file).encode("UTF-8"))
-            ret.append("<pre>\taudiolog:\n\t\tsave_audio\n</pre>".encode("UTF-8"))
-            return ret
+            ret.append("<html><head><title>Could not open database</title></head>")
+            ret.append("<body><h2>Could not open database file {}</h2>".format(audiolog_db))
+            ret.append("<p>Try adding the following lines to your profile ({}) and then asking me a few questions:<br />".format(profile.profile_file))
+            ret.append("<pre>\taudiolog:\n\t\tsave_audio\n</pre>")
+            return [line.encode("UTF-8") for line in ret]
         c = conn.cursor()
+        # Check and make sure the speaker field exists
+        c.execute("select distinct speaker from audiolog order by 1")
+        # fetchall returns all rows as tuples, take the first (and only)
+        # element of each tuple
+        speakers = [speaker[0] for speaker in c.fetchall()]
         # Start the html response
         ret = []
         # serve a train response. We will put this in a div on the Train
@@ -321,7 +334,7 @@ def application(environ, start_response):
                 'command': nextcommand,
                 'description': description
             })
-            ret.append(jsonstr.encode("UTF-8"))
+            ret.append(jsonstr)
         else:
             start_response(
                 '200 OK',
@@ -330,7 +343,7 @@ def application(environ, start_response):
             ret.append(
                 '<html><head><title>{} STT Training</title>'.format(
                     keyword
-                ).encode("utf-8")
+                )
             )
             # Return the main page
             try:
@@ -408,6 +421,7 @@ def application(environ, start_response):
                                     "update audiolog set ",
                                     " type=:type,",
                                     " verified_transcription=:vt,",
+                                    " speaker=:speaker,"
                                     " reviewed=:reviewed,",
                                     " wer=:wer",
                                     "where RowID=:RowID"
@@ -415,6 +429,7 @@ def application(environ, start_response):
                                 {
                                     "type": recording_type,
                                     "vt": verified_transcription,
+                                    "speaker": speaker,
                                     "reviewed": now,
                                     "wer": WER,
                                     "RowID": rowID
@@ -439,6 +454,7 @@ def application(environ, start_response):
                 prev_rowID = fetch_prev_rowID(c, rowID)
                 # get the next rowid
                 next_rowID = fetch_next_rowID(c, rowID)
+                totalRows = fetch_total_rows(c)
 
                 if(len(first_rowID)):
                     ret.append("""
@@ -626,7 +642,7 @@ def application(environ, start_response):
         xhttp.send("engine="+engine+"&command="+command);
         startSpinner();
     }
-</script>""".encode("utf-8"))
+</script>""")
                     ret.append('''
 </head>
 <body>
@@ -637,7 +653,7 @@ def application(environ, start_response):
 </div>
 <!-- Tab content -->
 <div id="Verify" class="tabcontent active">
-'''.encode("utf-8")
+'''
                     )
 
                     Current_record = Get_row(c, rowID)
@@ -680,67 +696,71 @@ def application(environ, start_response):
                     # Serve the body of the page
                     if(Debug):
                         # Debug info
-                        ret.append("""<ul>""".encode("utf-8"))
+                        ret.append("""<ul>""")
                         ret.append("""<li>post_data: {}</li>""".format(
                             post_data
-                        ).encode("utf-8"))
+                        ))
                         ret.append("""<li>Result: {}</li>""".format(
                             result
-                        ).encode("utf-8"))
+                        ))
 
                         if(result == "update"):
                             ret.append(
                                 "<li>Verified_transcription: {}</li>".format(
                                     verified_transcription
-                                ).encode("utf-8")
+                                )
                             )
-                        ret.append("</ul>".encode("utf-8"))
+                        ret.append("</ul>")
 
-                        ret.append("<ul>".encode("utf-8"))
+                        ret.append("<ul>")
                         ret.append("<li>Recorded: {}</li>".format(
                             Current_record["Recorded"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Filename: {}</li>".format(
                             Current_record["Filename"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Type: {}</li>".format(
                             Current_record["Type"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Transcription: {}</li>".format(
                             Current_record["Transcription"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Verified_transcription: {}</li>".format(
                             Current_record["Verified_transcription"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Speaker: {}</li>".format(
                             Current_record["Speaker"]
-                        ).encode("utf-8"))
+                        ))
+                        ret.append("<li>Speaker: {}</li>".format(
+                            Current_record["Speaker"]
+                        ))
                         ret.append("<li>Reviewed: {}</li>".format(
                             Current_record["Reviewed"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Wer: {}</li>".format(
                             Current_record["WER"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Result_correct: {}</li>".format(
                             Result_correct
-                        ).encode("utf-8"))
+                        ))
                         ret.append("""<li>Result_update: {}</li>""".format(
                             Result_update
-                        ).encode("utf-8"))
+                        ))
                         ret.append("""<li>Result_nothing: {}</li>""".format(
                             Result_nothing
-                        ).encode("utf-8"))
-                        ret.append("""</ul>""".encode("utf-8"))
+                        ))
+                        ret.append("""</ul>""")
 
-                    ret.append("""<h1>{} transcription {} ({})</h1>""".format(
+                    ret.append("""<h1>{} transcription {} of {} ({})</h1>""".format(
                         keyword,
                         rowID,
-                        Current_record["Type"]).encode("utf-8")
+                        totalRows,
+                        Current_record["Type"])
                     )
                     if(ErrorMessage):
                         ret.append("""<p class="Error">{}</p>""".format(
                             ErrorMessage
-                        ).encode("utf-8"))
+                        ))
                     ret.append(
                         " ".join([
                             '<audio',
@@ -749,7 +769,7 @@ def application(environ, start_response):
                             'style="width:100%%">',
                             '<source src="?wavfile={}" />',
                             '</audio><br />'
-                        ]).format(Current_record["Filename"]).encode("utf-8")
+                        ]).format(Current_record["Filename"])
                     )
                     ret.append(
                         ' '.join([
@@ -758,62 +778,63 @@ def application(environ, start_response):
                         ]).format(
                             keyword,
                             Current_record["Transcription"]
-                        ).encode("utf-8"))
-                    ret.append("What did you hear?<br />".encode("utf-8"))
+                        ))
+                    ret.append("What did you hear?<br />")
                     ret.append(' '.join([
                         '<form method="POST"',
                         'onsubmit="return ValidateForm()">'
-                    ]).encode("utf-8"))
+                    ]))
                     ret.append(
                         '<input type="hidden" name="RowID" value="{}"/>'.format(
                             rowID
-                        ).encode("utf-8")
+                        )
                     )
                     ret.append("""<input type="radio" id="update_result_correct" name="result" value="correct" {} onclick="document.getElementById('update_verified_transcription').disabled=true"/> <label for="update_result_correct">The transcription is correct. I heard the same thing</label><br />""".format(
                         Result_correct
-                    ).encode("utf-8"))
+                    ))
                     ret.append("""<input type="radio" id="update_result_update" name="result" value="update" {} onclick="document.getElementById('update_verified_transcription').disabled=false"/> <label for="update_result_update">The transcription is not correct. This is what I heard:</label><br /><textarea id="update_verified_transcription" name="verified_transcription" style="margin-left: 20px" {}>{}</textarea><br />""".format(
                         Result_update,
                         Verified_transcription_state,
                         Current_record["Verified_transcription"]
-                    ).encode("utf-8"))
+                    ))
                     ret.append("""<input type="radio" id="update_result_nothing" name="result" value="noise" {} onclick="document.getElementById('update_verified_transcription').disabled=true"/> <label for="update_result_nothing">This was just noise with no voices.</label><br />""".format(
                         Result_nothing
-                    ).encode("utf-8"))
-                    ret.append("""<input type="radio" id="update_result_unclear" name="result" value="unclear" {} onclick="document.getElementById('update_verified_transcription').disabled=true"/> <label for="update_result_unclear">This was too unclear to understand.</label><br />""".format(
-                        Result_unclear
-                    ).encode("utf-8"))
+                    ))
+                    ret.append("""<input type="radio" id="update_result_unclear" name="result" value="unclear" {} onclick="document.getElementById('update_verified_transcription').disabled=true"/> <label for="update_result_unclear">This was not directed to {} or was too unclear to understand.</label><br />""".format(
+                        Result_unclear,
+                        keyword
+                    ))
+                    ret.append("""<label for="Speaker">Speaker</label><br /><input type="text" id="Speaker" name="Speaker" value="{}" list="speakerList"><datalist id="speakerList">""".format(Current_record["Speaker"] if len(Current_record["Speaker"]) else speaker))
+                    for speaker in speakers:
+                        ret.append("""<option value="{}">""".format(speaker))
+                    ret.append("""</datalist><br /><br />""")
                     ret.append(
-                        '<input type="submit" value="Submit"/><br />'.encode(
-                            "utf-8"
-                        )
+                        '<input type="submit" value="Submit"/><br />'
                     )
                     if(prev_rowID):
                         ret.append(
                             ' '.join([
                                 '<input type="button" value="Prev"',
                                 'onclick="GoRowID({})"/>'
-                            ]).format(prev_rowID).encode("utf-8")
+                            ]).format(prev_rowID)
                         )
                     if(next_rowID):
                         ret.append(
                             ' '.join([
                                 '<input type="button" value="Next"',
                                 'onclick="GoRowID({})"/>'
-                            ]).format(next_rowID).encode("utf-8")
+                            ]).format(next_rowID)
                         )
                     else:
-                        ret.append("""All transcriptions verified""".encode(
-                            "utf-8"
-                        ))
+                        ret.append("""All transcriptions verified""")
                     ret.append('''
 </div><!-- Verify -->
 <div id="Train" class="tabcontent">
 <form name="Train">
-'''.encode('utf-8')
+'''
                     )
                     for info in plugins.get_plugins_by_category('stt_trainer'):
-                        ret.append('''<input type="button" value="{plugin_name}" onclick="Train(true,'{plugin_name}','checkenviron')"><br />'''.format(plugin_name=info.name).encode("utf-8"))
+                        ret.append('''<input type="button" value="{plugin_name}" onclick="Train(true,'{plugin_name}','checkenviron')"><br />'''.format(plugin_name=info.name))
                     ret.append('''
 </form>
 <div id="Result">
@@ -821,16 +842,16 @@ def application(environ, start_response):
 <div id="spinner">
 </div>
 </div><!-- Train -->
-'''.encode('UTF-8')
+'''
                     )
-                    ret.append("""</body></html>""".encode("utf-8"))
+                    ret.append("""</body></html>""")
                 else:
                     ret = [
                         "".join([
                             "<html>",
                             "<head><title>Nothing to validate</title></head>",
                             "<body><h1>Nothing to validate</h1></body></html>"
-                        ]).encode("utf-8")
+                        ])
                     ]
             except sqlite3.OperationalError as e:
                 ret.append(
@@ -838,8 +859,8 @@ def application(environ, start_response):
                         '</head>',
                         '<body>SQLite error: {}</body>',
                         '</html>'
-                    ]).format(e).encode("utf-8"))
-        return ret
+                    ]).format(e))
+        return [line.encode("UTF-8") for line in ret]
 
 
 class ThreadingWSGIServer(ThreadingMixIn, wsgiref.simple_server.WSGIServer):
