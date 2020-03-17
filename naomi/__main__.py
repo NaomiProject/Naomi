@@ -162,7 +162,7 @@ def main(args=None):
         # Use batched mode mic, pass a file too
         used_mic = USE_BATCH_MIC
 
-    # listen 
+    # listen
     # AaronC 2019-05-29
     # This keeps an argument in a static location
     # so we don't have to keep passing it from library
@@ -171,7 +171,7 @@ def main(args=None):
     # variable while instantiating plugin objects
     # in plugin.GenericPlugin.__init__()
     profile.set_arg("repopulate", p_args.repopulate)
-    
+
     if(p_args.listen_while_talking):
         profile.set_arg("listen_while_talking", 'Yes')
     else:

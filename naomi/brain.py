@@ -108,7 +108,7 @@ class Brain(object):
         """
         Passes user input to the appropriate module, testing it against
         each candidate module's isValid function.
-        
+
         Note, this should be set up as a generator so that multiple intents
         can be returned. As it is, we are relying on the intent parser to
         pass the intents back in order of highest score to lowest.

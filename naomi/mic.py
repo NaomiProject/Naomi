@@ -2,7 +2,6 @@
 from datetime import datetime
 from naomi.commandline import println
 from naomi import alteration
-from naomi import app_utils
 from naomi import paths
 from naomi import profile
 import audioop
@@ -144,17 +143,17 @@ class Mic(object):
             try:
                 c.execute("alter table audiolog add column intent")
                 self._conn.commit()
-            except:
+            except sqlite3.OperationalError:
                 self._logger.info("intent column exists")
             try:
                 c.execute("alter table audiolog add column score")
                 self._conn.commit()
-            except:
+            except sqlite3.OperationalError:
                 self._logger.info("score column exists")
             try:
                 c.execute("alter table audiolog add column verified_intent")
                 self._conn.commit()
-            except:
+            except sqlite3.OperationalError:
                 self._logger.info("verified_intent column exists")
             c.execute(" ".join([
                 "create table if not exists trainings(",
