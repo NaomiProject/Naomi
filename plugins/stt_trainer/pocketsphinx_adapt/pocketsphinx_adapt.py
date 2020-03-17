@@ -388,11 +388,20 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                                 info,
                                 profile.get_profile()
                             )
+                            # get_phrases is vestigial now
                             if(hasattr(plugin, "get_phrases")):
                                 for phrase in plugin.get_phrases():
                                     phrases.extend([
                                         word.upper() for word in phrase.split()
                                     ])
+                            # get the phrases from the plugin intents
+                            if(hasattr(plugin, "intents")):
+                                intents = plugin.intents()
+                                for intent in intents:
+                                    for template in intents[intent]['templates']:
+                                        phrases.extend([
+                                            word.upper() for word in template.split()
+                                        ])
                         except Exception as e:
                             message = "Unknown"
                             if hasattr(e, "message"):

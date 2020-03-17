@@ -28,7 +28,7 @@ class MeaningOfLifePlugin(plugin.SpeechHandlerPlugin):
         _ = self.gettext
         text = intent['input']
         if("ULTIMATE" in text or "EVERYTHING" in text):
-            message = [self.gettext("Fourty two")]
+            message = self.gettext("Fourty two")
         else:
             message = random.choice([  # nosec
                 _("It's nothing very complicated. Try and be nice to people, avoid eating carbohydrates, read a good book every now and then, get some walking in, and try and live together in peace and harmony with people of all creeds and nations."),

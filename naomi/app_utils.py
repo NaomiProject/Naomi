@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 import email
 import imaplib
+import logging
+import re
 import smtplib
 from dateutil import parser
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from urllib import request as urllib_request
-import re
+from email.mime.text import MIMEText
 from pytz import timezone
-import logging
-from naomi import profile
+from urllib import request as urllib_request
+from . import i18n
+from . import paths
+from . import profile
+
+
+_ = i18n.GettextMixin(i18n.parse_translations(paths.data('locale'))).gettext
 
 
 # AaronC - This is currently used to clean phone numbers
@@ -335,8 +340,15 @@ def is_negative(phrase):
     Arguments:
         phrase -- the input phrase to-be evaluated
     """
-    return bool(re.search(r'\b(no(t)?|don\'t|stop|end|n|false)\b', phrase,
-                          re.IGNORECASE))
+    if(isinstance(phrase, bool)):
+        return not phrase
+    return bool(
+        re.search(
+            _('\b(no(t)?|don\'t|stop|end|n|false)\b'),
+            phrase,
+            re.IGNORECASE
+        )
+    )
 
 
 def is_positive(phrase):
@@ -346,6 +358,12 @@ def is_positive(phrase):
         Arguments:
         phrase -- the input phrase to-be evaluated
     """
-    return bool(re.search(r'\b(sure|yes|yeah|go|yup|y|true)\b',
-                          phrase,
-                          re.IGNORECASE))
+    if(isinstance(phrase, bool)):
+        return phrase
+    return bool(
+        re.search(
+            _('\b(sure|yes|yeah|go|yup|y|true)\b'),
+            phrase,
+            re.IGNORECASE
+        )
+    )

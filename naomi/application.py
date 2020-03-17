@@ -227,6 +227,7 @@ class Naomi(object):
                 ['print_transcript'],
                 False
             )
+        profile.set_arg('print_transcript', print_transcript)
 
         # passive_listen
         if(not passive_listen):
@@ -253,6 +254,9 @@ class Naomi(object):
                 save_noise = profile.get_profile_flag(
                     ['audiolog', 'save_noise']
                 )
+            profile.set_arg('save_passive_audio', save_passive_audio)
+            profile.set_arg('save_active_audio', save_active_audio)
+            profile.set_arg('save_noise', save_noise)
 
         # load visualizations
         visualizations.load_visualizations(self)

@@ -3,6 +3,7 @@ import sys
 import logging
 import argparse
 from . import application
+from . import app_utils
 from . import profile
 
 
@@ -19,14 +20,14 @@ def main(args=None):
         help='Show debug messages'
     )
     parser.add_argument(
-        '--repopulate',
-        action='store_true',
-        help='Rebuild configuration profile'
-    )
-    parser.add_argument(
         '--passive-listen',
         action='store_true',
         help='Check for keyword and command in same input'
+    )
+    parser.add_argument(
+        '--repopulate',
+        action='store_true',
+        help='Rebuild configuration profile'
     )
     parser.add_argument(
         '--save-passive-audio',
@@ -51,6 +52,16 @@ def main(args=None):
             'and transcripts for training'
         ])
     )
+    parser.add_argument(
+        '--listen-while-talking',
+        action='store_true',
+        help=' '.join([
+            'Continue to listen while talking. This allows you to interrupt',
+            'Naomi, but may also lead to Naomi attempting to respond to its',
+            'own voice.'
+        ])
+    )
+
     # Plugin Repository Management
     pr_man = parser.add_mutually_exclusive_group(required=False)
     pr_man.add_argument(
@@ -151,6 +162,7 @@ def main(args=None):
         # Use batched mode mic, pass a file too
         used_mic = USE_BATCH_MIC
 
+    # listen 
     # AaronC 2019-05-29
     # This keeps an argument in a static location
     # so we don't have to keep passing it from library
@@ -159,6 +171,19 @@ def main(args=None):
     # variable while instantiating plugin objects
     # in plugin.GenericPlugin.__init__()
     profile.set_arg("repopulate", p_args.repopulate)
+    
+    if(p_args.listen_while_talking):
+        profile.set_arg("listen_while_talking", 'Yes')
+    else:
+        profile.set_arg(
+            "listen_while_talking",
+            app_utils.is_positive(
+                profile.get(
+                    ["listen_while_talking"],
+                    'false'
+                )
+            )
+        )
 
     # Run Naomi
     app = application.Naomi(

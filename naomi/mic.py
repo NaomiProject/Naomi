@@ -2,6 +2,7 @@
 from datetime import datetime
 from naomi.commandline import println
 from naomi import alteration
+from naomi import app_utils
 from naomi import paths
 from naomi import profile
 import audioop
@@ -139,6 +140,22 @@ class Mic(object):
                 ")"
             ]))
             self._conn.commit()
+            # Additional columns added
+            try:
+                c.execute("alter table audiolog add column intent")
+                self._conn.commit()
+            except:
+                self._logger.info("intent column exists")
+            try:
+                c.execute("alter table audiolog add column score")
+                self._conn.commit()
+            except:
+                self._logger.info("score column exists")
+            try:
+                c.execute("alter table audiolog add column verified_intent")
+                self._conn.commit()
+            except:
+                self._logger.info("verified_intent column exists")
             c.execute(" ".join([
                 "create table if not exists trainings(",
                 "   datetime,",
@@ -148,7 +165,19 @@ class Mic(object):
             ]))
             self._conn.commit()
             c.execute(
-                '''insert into audiolog values(?,?,?,?,?,'','','','')''',
+                " ".join([
+                    "insert into audiolog(",
+                        "datetime,",
+                        "engine,",
+                        "filename,",
+                        "type,",
+                        "transcription,",
+                        "verified_transcription,",
+                        "speaker,",
+                        "reviewed,",
+                        "wer",
+                    ")values(?,?,?,?,?,'','','','')"
+                ]),
                 (
                     datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     engine,
@@ -324,6 +353,7 @@ class Mic(object):
             else:
                 if(self._print_transcript):
                     println("<< {}\n".format(transcribed))
+                if(profile.get_arg("save_active_audio", False)):
                     self._log_audio(f, transcribed, "active")
         return transcribed
 
@@ -366,9 +396,15 @@ class Mic(object):
         self._logger.info("Stopped")
 
     def say(self, phrase):
-        global queue
         if(self._print_transcript):
             println(">> {}\n".format(phrase))
+        if(profile.get_arg('listen_while_talking', False)):
+            self.say_async(phrase)
+        else:
+            self.say_sync(phrase)
+
+    def say_async(self, phrase):
+        global queue
         altered_phrase = alteration.clean(phrase)
         queue.append(self.tts_engine.say(altered_phrase))
         if(hasattr(self.current_thread, "is_alive")):
@@ -380,6 +416,13 @@ class Mic(object):
             target=self.say_thread
         )
         self.current_thread.start()
+
+    def say_sync(self, phrase):
+        altered_phrase = alteration.clean(phrase)
+        with tempfile.SpooledTemporaryFile() as f:
+            f.write(self.tts_engine.say(altered_phrase))
+            f.seek(0)
+            self._output_device.play_fp(f)
 
     def say_thread(self, *args, **kwargs):
         while(True):

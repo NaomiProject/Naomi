@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os
 import re
 from jiwer import wer
@@ -36,6 +37,9 @@ def is_keyword(word):
 
 
 class NaomiTTIPlugin(plugin.TTIPlugin):
+    def __init__(self, *args, **kwargs):
+        self._logger = logging.getLogger(__name__)
+
     def add_intents(self, intents):
         for intent in intents:
             # this prevents collisions between intents by different authors
@@ -63,15 +67,25 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 for word in phrase.split():
                     if not is_keyword(word):
                         word = word.upper()
-                    try:
-                        self.intent_map['intents'][intent]['words'][word] += 1
-                    except KeyError:
-                        self.intent_map['intents'][intent]['words'][word] = 1
-                    # keep a list of the intents a word appears in
-                    try:
-                        self.words[word].update({intent: True})
-                    except KeyError:
-                        self.words[word] = {intent: True}
+                    # Make a list of words to ignore when building intents
+                    # This should get better over time, but at the moment
+                    # since we have so few intents, these common words are
+                    # having a way oversized impact.
+                    if(
+                        word not in profile.get(
+                            ['naomi_tti','words_to_ignore'],
+                            ['ANY', 'ARE', 'DO', 'IS', 'THE', 'TO', 'WHAT']
+                        )
+                    ):
+                        try:
+                            self.intent_map['intents'][intent]['words'][word] += 1
+                        except KeyError:
+                            self.intent_map['intents'][intent]['words'][word] = 1
+                        # keep a list of the intents a word appears in
+                        try:
+                            self.words[word].update({intent: True})
+                        except KeyError:
+                            self.words[word] = {intent: True}
             # for each word in each intent, divide the word frequency by the
             # number of examples (this way words that are used frequently
             # get a higher weight, while those appearing in only one template
@@ -79,7 +93,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             phrase_count = len(intents[intent_base]['templates'])
             for word in self.intent_map['intents'][intent]['words']:
                 self.intent_map['intents'][intent]['words'][word] /= phrase_count
-                print("word {} appears {} times in {}: {}".format(word, phrase_count, intent, self.intent_map['intents'][intent]['words'][word]))
+                self._logger.info("word {} appears {} times in {}: {}".format(word, phrase_count, intent, self.intent_map['intents'][intent]['words'][word]))
 
     def train(self):
         # Here we want to go through a list of all the words in all the intents
@@ -99,7 +113,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 for intent in self.intent_map['intents']:
                     if word in self.intent_map['intents'][intent]['words']:
                         self.intent_map['intents'][intent]['words'][word] /= wordcounts[word]
-                        print("{} appears in {} intents: reduced to {} in {}".format(word, wordcounts[word], self.intent_map['intents'][intent]['words'][word], intent))
+                        self._logger.info("{} appears in {} intents: reduced to {} in {}".format(word, wordcounts[word], self.intent_map['intents'][intent]['words'][word], intent))
         self.trained = True
 
     def get_plugin_phrases(self, passive_listen=False):
@@ -213,7 +227,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 intentscores[intent] = score / len(words)
             # list intents and scores
             for intent in intentscores.keys():
-                print("\t{}: {}".format(intent, intentscores[intent]))
+                self._logger.info("\t{}: {}".format(intent, intentscores[intent]))
             # Take the intent with the highest score
             # print("==========intentscores============")
             # pprint(intentscores)
