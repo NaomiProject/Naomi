@@ -14,6 +14,7 @@ from naomi import plugin
 from naomi import pluginstore
 from naomi import profile
 from naomi.run_command import run_command
+from naomi.run_command import process_completedprocess
 
 
 # This checks a directory to make sure the pocketsphinx model files
@@ -46,24 +47,6 @@ def check_pocketsphinx_model(directory):
     if(not os.path.isfile(os.path.join(directory, "variances"))):
         FilesExist = False
     return FilesExist
-
-
-def process_completedprocess(completedprocess):
-    result = "failure"
-    command = " ".join(completedprocess.args)
-    print('{}...{}'.format(command, completedprocess.returncode))
-    instructions = "<br />Check log for details<br />"
-    if(completedprocess.stdout):
-        instructions += completedprocess.stdout.decode("utf-8").strip()
-    if(completedprocess.returncode == 0):
-        result = "success"
-        instructions = ""
-    return '{}...<span class="{}">{}</span>{}'.format(
-        command,
-        result,
-        result.upper(),
-        instructions
-    )
 
 
 class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
@@ -122,11 +105,16 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                         'clone',
                         '-b',
                         self.language,
-                        'git@github.com:NaomiProject/CMUSphinx_standard_language_models.git',
+                        'https://github.com/NaomiProject/CMUSphinx_standard_language_models.git',
                         self.standard_dir
                     ]
                     completedprocess = run_command(cmd)
-                    response.append(process_completedprocess(completedprocess))
+                    response.append(
+                        process_completedprocess(
+                            completedprocess,
+                            output='html'
+                        )
+                    )
                     if(completedprocess.returncode != 0):
                         continue_next = False
                 response.append("Environment configured")
@@ -181,7 +169,12 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     '-mswav', 'yes'
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode != 0):
                     continue_next = False
                 nextcommand = "buildweights"
@@ -205,7 +198,12 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     '-accumdir', self.working_dir
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode != 0):
                     continue_next = False
                 nextcommand = "mllr"
@@ -223,7 +221,12 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     '-accumdir', self.working_dir
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode != 0):
                     continue_next = False
                 nextcommand = "map"
@@ -254,7 +257,12 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     '-maptmatfn', os.path.join(self.adapt_dir, 'transition_matrices')
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode != 0):
                     continue_next = False
                 nextcommand = "sendump"
@@ -272,7 +280,12 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     '-sendumpfn', os.path.join(self.adapt_dir, 'sendump')
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode != 0):
                     continue_next = False
                 nextcommand = "updateprofile"
@@ -302,7 +315,12 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     "--dir_prefix", os.path.join(self.adapt_dir, "train")
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode == 0):
                     # Now set the values in profile
                     profile.set_profile_var(
@@ -370,11 +388,20 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                                 info,
                                 profile.get_profile()
                             )
+                            # get_phrases is vestigial now
                             if(hasattr(plugin, "get_phrases")):
                                 for phrase in plugin.get_phrases():
                                     phrases.extend([
                                         word.upper() for word in phrase.split()
                                     ])
+                            # get the phrases from the plugin intents
+                            if(hasattr(plugin, "intents")):
+                                intents = plugin.intents()
+                                for intent in intents:
+                                    for template in intents[intent]['templates']:
+                                        phrases.extend([
+                                            word.upper() for word in template.split()
+                                        ])
                         except Exception as e:
                             message = "Unknown"
                             if hasattr(e, "message"):

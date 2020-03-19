@@ -14,7 +14,11 @@ class Mic(object):
 
     def __init__(self, *args, **kwargs):
         self.passive_listen = profile.get_profile_flag(["passive_listen"])
-        self._keyword = profile.get_profile_var(['keyword'], 'NAOMI')
+        keyword = profile.get_profile_var(['keyword'], 'NAOMI')
+        if isinstance(keyword, list):
+            self._keyword = keyword[0]
+        else:
+            self._keyword = keyword
         return
 
     @staticmethod

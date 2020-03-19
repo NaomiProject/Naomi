@@ -28,6 +28,7 @@ from urllib.parse import unquote
 
 
 # Set Debug to True to see debugging information
+# or use the --debug flag on the command line
 Debug = False
 _logger = logging.getLogger(__name__)
 
@@ -43,7 +44,10 @@ def Get_row(c, rowID):
             " verified_transcription,",
             " speaker,",
             " reviewed,",
-            " wer",
+            " wer,",
+            " intent,",
+            " score,",
+            " verified_intent",
             "from audiolog where rowid=:RowID"
         ]),
         ({"RowID": rowID})
@@ -61,6 +65,9 @@ def Get_row(c, rowID):
             print("Speaker Type=%s" % type(row[5]))
             print("Reviewed Type=%s" % type(row[6]))
             print("WER Type=%s" % type(row[7]))
+            print("Intent Type=%s" % type(row[8]))
+            print("Score Type=%s" % type(row[9]))
+            print("Verified Intent Type=%s" % type(row[10]))
         Record = {
             "Recorded": str(row[0]),
             "Filename": str(row[1]),
@@ -69,7 +76,10 @@ def Get_row(c, rowID):
             "Verified_transcription": str(row[4]),
             "Speaker": str(row[5]),
             "Reviewed": str(row[6]),
-            "WER": str(row[7])
+            "WER": str(row[7]),
+            "intent": str(row[8]),
+            "score": str(row[9]),
+            "verified_intent": str(row[10])
         }
     return Record
 
@@ -162,10 +172,13 @@ def fetch_next_rowID(c, rowID):
 
 
 def fetch_next_unreviewed_rowID(c, rowID):
+    # Here, if there is both a passive and active transcription
+    # then I want to look at the active.
+    # This is because only the active has the intent.
     c.execute(
         " ".join([
             "select",
-            " RowID",
+            " filename",
             "from audiolog",
             "where RowID>:RowID and reviewed=''",
             "order by RowID asc",
@@ -177,7 +190,23 @@ def fetch_next_unreviewed_rowID(c, rowID):
     if(row is None):
         next_rowID = None
     else:
-        next_rowID = str(row[0])
+        filename = str(row[0])
+        c.execute(
+            " ".join([
+                "select",
+                " RowID",
+                "from audiolog",
+                "where filename=:Filename and reviewed=''",
+                "order by type asc",
+                "limit 1"
+            ]),
+            {"Filename": filename}
+        )
+        row = c.fetchone()
+        if(row is None):
+            next_rowID = None
+        else:
+            next_rowID = str(row[0])
     return next_rowID
 
 
@@ -191,12 +220,57 @@ def fetch_last_rowID(c):
     return rowID
 
 
+def fetch_total_rows(c):
+    c.execute("select max(RowID)MaxRow from audiolog")
+    return str(c.fetchone()[0])
+
+
 # Replaces any punctuation characters with spaces and converts to upper case
 def clean_transcription(transcription):
     print("transcription type={}".format(type(transcription)))
     return transcription.translate(
         dict((ord(char), None) for char in """][}{!@#$%^&*)(,."'></?\\|=+-_""")
     ).upper()
+
+
+def fetch_intents(c):
+    # Get a list of all intents
+    # This will be a combination of all intents from detected
+    # plugins, plus any intents in either intents or verified intents
+    c.execute(" ".join([
+        "select intent from (",
+            "select ",
+                "intent",
+            "from audiolog",
+            "union select",
+                "verified_intent as intent",
+            "from audiolog",
+        ")a where intent not in ('', 'unclear') order by intent"
+    ]))
+    _intents = {}
+    for row in c.fetchall():
+        _intents[row[0]] = 1
+    ps = pluginstore.PluginStore()
+    ps.detect_plugins("speechhandler")
+    for info in ps.get_plugins_by_category("speechhandler"):
+        try:
+            plugin = info.plugin_class(
+                info,
+                profile.get_profile()
+            )
+            if(hasattr(plugin, "intents")):
+                intents = [intent for intent in plugin.intents()]
+                for intent in intents:
+                    _intents[intent] = 1
+        except Exception as e:
+            _logger.warn(
+                "Plugin '{}' skipped! (Reason: {})".format(
+                    info.name,
+                    e.message if hasattr(e, 'message') else 'Unknown'
+                ),
+                exc_info=True
+            )
+    return sorted([intent for intent in _intents])
 
 
 def application(environ, start_response):
@@ -209,8 +283,8 @@ def application(environ, start_response):
             '404 Not Found',
             [('content-type', 'text/plain;charset=utf-8')]
         )
-        ret = ["404 Not Found".encode("UTF-8")]
-        return ret
+        ret = ["404 Not Found"]
+        return [line.encode("UTF-8") for line in ret]
     else:
         audiolog_dir = paths.sub("audiolog")
         audiolog_db = os.path.join(audiolog_dir, "audiolog.db")
@@ -220,9 +294,11 @@ def application(environ, start_response):
         prev_rowID = ""
         next_rowID = ""
         result = ""
+        speaker = ""
         verified_transcription = ""
         post_data = ""
         engine = ""
+        verified_intent = ""
         description = []
         reQS = re.compile("([^=]+)=([^&]*)&?")
 
@@ -257,6 +333,10 @@ def application(environ, start_response):
                     command = namevalue[1].lower()
                 if(namevalue[0].lower() == "description"):
                     description.append(namevalue[1])
+                if(namevalue[0].lower() == "speaker"):
+                    speaker = namevalue[1].replace('+', ' ')
+                if(namevalue[0].lower() == "verified_intent"):
+                    verified_intent = namevalue[1].replace('+', ' ')
 
         # Handle the request
         # serve a .wav file
@@ -267,8 +347,25 @@ def application(environ, start_response):
                 ret = [w.read()]
             return ret
         # open a connection to the database
-        conn = sqlite3.connect(audiolog_db)
+        try:
+            conn = sqlite3.connect(audiolog_db)
+        except sqlite3.OperationalError:
+            ret = []
+            start_response(
+                '200 OK',
+                [('content-type', 'text/html;charset=utf-8')]
+            )
+            ret.append("<html><head><title>Could not open database</title></head>")
+            ret.append("<body><h2>Could not open database file {}</h2>".format(audiolog_db))
+            ret.append("<p>Try adding the following lines to your profile ({}) and then asking me a few questions:<br />".format(profile.profile_file))
+            ret.append("<pre>\taudiolog:\n\t\tsave_audio\n</pre>")
+            return [line.encode("UTF-8") for line in ret]
         c = conn.cursor()
+        # Check and make sure the speaker field exists
+        c.execute("select distinct speaker from audiolog order by 1")
+        # fetchall returns all rows as tuples, take the first (and only)
+        # element of each tuple
+        speakers = [speaker[0] for speaker in c.fetchall()]
         # Start the html response
         ret = []
         # serve a train response. We will put this in a div on the Train
@@ -309,7 +406,7 @@ def application(environ, start_response):
                 'command': nextcommand,
                 'description': description
             })
-            ret.append(jsonstr.encode("UTF-8"))
+            ret.append(jsonstr)
         else:
             start_response(
                 '200 OK',
@@ -318,7 +415,7 @@ def application(environ, start_response):
             ret.append(
                 '<html><head><title>{} STT Training</title>'.format(
                     keyword
-                ).encode("utf-8")
+                )
             )
             # Return the main page
             try:
@@ -396,15 +493,19 @@ def application(environ, start_response):
                                     "update audiolog set ",
                                     " type=:type,",
                                     " verified_transcription=:vt,",
+                                    " speaker=:speaker,"
                                     " reviewed=:reviewed,",
-                                    " wer=:wer",
+                                    " wer=:wer,",
+                                    " verified_intent=:verified_intent",
                                     "where RowID=:RowID"
                                 ]),
                                 {
                                     "type": recording_type,
                                     "vt": verified_transcription,
+                                    "speaker": speaker,
                                     "reviewed": now,
                                     "wer": WER,
+                                    "verified_intent": verified_intent,
                                     "RowID": rowID
                                 }
                             )
@@ -427,6 +528,7 @@ def application(environ, start_response):
                 prev_rowID = fetch_prev_rowID(c, rowID)
                 # get the next rowid
                 next_rowID = fetch_next_rowID(c, rowID)
+                totalRows = fetch_total_rows(c)
 
                 if(len(first_rowID)):
                     ret.append("""
@@ -614,7 +716,7 @@ def application(environ, start_response):
         xhttp.send("engine="+engine+"&command="+command);
         startSpinner();
     }
-</script>""".encode("utf-8"))
+</script>""")
                     ret.append('''
 </head>
 <body>
@@ -625,7 +727,7 @@ def application(environ, start_response):
 </div>
 <!-- Tab content -->
 <div id="Verify" class="tabcontent active">
-'''.encode("utf-8")
+'''
                     )
 
                     Current_record = Get_row(c, rowID)
@@ -668,67 +770,71 @@ def application(environ, start_response):
                     # Serve the body of the page
                     if(Debug):
                         # Debug info
-                        ret.append("""<ul>""".encode("utf-8"))
+                        ret.append("""<ul>""")
                         ret.append("""<li>post_data: {}</li>""".format(
                             post_data
-                        ).encode("utf-8"))
+                        ))
                         ret.append("""<li>Result: {}</li>""".format(
                             result
-                        ).encode("utf-8"))
+                        ))
 
                         if(result == "update"):
                             ret.append(
                                 "<li>Verified_transcription: {}</li>".format(
                                     verified_transcription
-                                ).encode("utf-8")
+                                )
                             )
-                        ret.append("</ul>".encode("utf-8"))
+                        ret.append("</ul>")
 
-                        ret.append("<ul>".encode("utf-8"))
+                        ret.append("<ul>")
                         ret.append("<li>Recorded: {}</li>".format(
                             Current_record["Recorded"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Filename: {}</li>".format(
                             Current_record["Filename"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Type: {}</li>".format(
                             Current_record["Type"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Transcription: {}</li>".format(
                             Current_record["Transcription"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Verified_transcription: {}</li>".format(
                             Current_record["Verified_transcription"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Speaker: {}</li>".format(
                             Current_record["Speaker"]
-                        ).encode("utf-8"))
+                        ))
+                        ret.append("<li>Speaker: {}</li>".format(
+                            Current_record["Speaker"]
+                        ))
                         ret.append("<li>Reviewed: {}</li>".format(
                             Current_record["Reviewed"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Wer: {}</li>".format(
                             Current_record["WER"]
-                        ).encode("utf-8"))
+                        ))
                         ret.append("<li>Result_correct: {}</li>".format(
                             Result_correct
-                        ).encode("utf-8"))
+                        ))
                         ret.append("""<li>Result_update: {}</li>""".format(
                             Result_update
-                        ).encode("utf-8"))
+                        ))
                         ret.append("""<li>Result_nothing: {}</li>""".format(
                             Result_nothing
-                        ).encode("utf-8"))
-                        ret.append("""</ul>""".encode("utf-8"))
+                        ))
+                        ret.append("""</ul>""")
 
-                    ret.append("""<h1>{} transcription {} ({})</h1>""".format(
+                    ret.append("""<h1>{} transcription {} of {} ({})</h1>""".format(
                         keyword,
                         rowID,
-                        Current_record["Type"]).encode("utf-8")
+                        totalRows,
+                        Current_record["Type"])
                     )
                     if(ErrorMessage):
                         ret.append("""<p class="Error">{}</p>""".format(
                             ErrorMessage
-                        ).encode("utf-8"))
+                        ))
                     ret.append(
                         " ".join([
                             '<audio',
@@ -737,7 +843,7 @@ def application(environ, start_response):
                             'style="width:100%%">',
                             '<source src="?wavfile={}" />',
                             '</audio><br />'
-                        ]).format(Current_record["Filename"]).encode("utf-8")
+                        ]).format(Current_record["Filename"])
                     )
                     ret.append(
                         ' '.join([
@@ -746,62 +852,76 @@ def application(environ, start_response):
                         ]).format(
                             keyword,
                             Current_record["Transcription"]
-                        ).encode("utf-8"))
-                    ret.append("What did you hear?<br />".encode("utf-8"))
+                        ))
+                    ret.append("What did you hear?<br />")
                     ret.append(' '.join([
                         '<form method="POST"',
                         'onsubmit="return ValidateForm()">'
-                    ]).encode("utf-8"))
+                    ]))
                     ret.append(
                         '<input type="hidden" name="RowID" value="{}"/>'.format(
                             rowID
-                        ).encode("utf-8")
+                        )
                     )
                     ret.append("""<input type="radio" id="update_result_correct" name="result" value="correct" {} onclick="document.getElementById('update_verified_transcription').disabled=true"/> <label for="update_result_correct">The transcription is correct. I heard the same thing</label><br />""".format(
                         Result_correct
-                    ).encode("utf-8"))
+                    ))
                     ret.append("""<input type="radio" id="update_result_update" name="result" value="update" {} onclick="document.getElementById('update_verified_transcription').disabled=false"/> <label for="update_result_update">The transcription is not correct. This is what I heard:</label><br /><textarea id="update_verified_transcription" name="verified_transcription" style="margin-left: 20px" {}>{}</textarea><br />""".format(
                         Result_update,
                         Verified_transcription_state,
                         Current_record["Verified_transcription"]
-                    ).encode("utf-8"))
+                    ))
                     ret.append("""<input type="radio" id="update_result_nothing" name="result" value="noise" {} onclick="document.getElementById('update_verified_transcription').disabled=true"/> <label for="update_result_nothing">This was just noise with no voices.</label><br />""".format(
                         Result_nothing
-                    ).encode("utf-8"))
-                    ret.append("""<input type="radio" id="update_result_unclear" name="result" value="unclear" {} onclick="document.getElementById('update_verified_transcription').disabled=true"/> <label for="update_result_unclear">This was too unclear to understand.</label><br />""".format(
-                        Result_unclear
-                    ).encode("utf-8"))
+                    ))
+                    ret.append("""<input type="radio" id="update_result_unclear" name="result" value="unclear" {} onclick="document.getElementById('update_verified_transcription').disabled=true"/> <label for="update_result_unclear">This was not directed to {} or was too unclear to understand.</label><br />""".format(
+                        Result_unclear,
+                        keyword
+                    ))
+                    ret.append("""<label for="Speaker">Speaker</label><br /><input type="text" id="Speaker" name="Speaker" value="{}" list="speakerList"><datalist id="speakerList">""".format(Current_record["Speaker"] if len(Current_record["Speaker"]) else speaker))
+                    for speaker in speakers:
+                        ret.append("""<option value="{}">""".format(speaker))
+                    ret.append("""</datalist><br /><br />""")
+                    if(Current_record["Type"] == 'active'):
+                        Verified_intent = Current_record["verified_intent"]
+                        if(Verified_intent == "None"):
+                            Verified_intent = Current_record["intent"]
+                        ret.append("""Intent: {} ({})<br />""".format(Current_record["intent"], Current_record["score"]))
+                        ret.append("""Correct intent: <select name="Verified_Intent">""")
+                        ret.append("""<option value="unclear">unclear</option>""")
+                        for intent in fetch_intents(c):
+                            selected = ""
+                            if(intent == Verified_intent):
+                                selected = " selected"
+                            ret.append("""<option{}>{}</option>""".format(selected, intent))
+                        ret.append("""</select><br /><br />""")
                     ret.append(
-                        '<input type="submit" value="Submit"/><br />'.encode(
-                            "utf-8"
-                        )
+                        '<input type="submit" value="Submit"/><br />'
                     )
                     if(prev_rowID):
                         ret.append(
                             ' '.join([
                                 '<input type="button" value="Prev"',
                                 'onclick="GoRowID({})"/>'
-                            ]).format(prev_rowID).encode("utf-8")
+                            ]).format(prev_rowID)
                         )
                     if(next_rowID):
                         ret.append(
                             ' '.join([
                                 '<input type="button" value="Next"',
                                 'onclick="GoRowID({})"/>'
-                            ]).format(next_rowID).encode("utf-8")
+                            ]).format(next_rowID)
                         )
                     else:
-                        ret.append("""All transcriptions verified""".encode(
-                            "utf-8"
-                        ))
+                        ret.append("""All transcriptions verified""")
                     ret.append('''
 </div><!-- Verify -->
 <div id="Train" class="tabcontent">
 <form name="Train">
-'''.encode('utf-8')
+'''
                     )
                     for info in plugins.get_plugins_by_category('stt_trainer'):
-                        ret.append('''<input type="button" value="{plugin_name}" onclick="Train(true,'{plugin_name}','checkenviron')"><br />'''.format(plugin_name=info.name).encode("utf-8"))
+                        ret.append('''<input type="button" value="{plugin_name}" onclick="Train(true,'{plugin_name}','checkenviron')"><br />'''.format(plugin_name=info.name))
                     ret.append('''
 </form>
 <div id="Result">
@@ -809,16 +929,16 @@ def application(environ, start_response):
 <div id="spinner">
 </div>
 </div><!-- Train -->
-'''.encode('UTF-8')
+'''
                     )
-                    ret.append("""</body></html>""".encode("utf-8"))
+                    ret.append("""</body></html>""")
                 else:
                     ret = [
                         "".join([
                             "<html>",
                             "<head><title>Nothing to validate</title></head>",
                             "<body><h1>Nothing to validate</h1></body></html>"
-                        ]).encode("utf-8")
+                        ])
                     ]
             except sqlite3.OperationalError as e:
                 ret.append(
@@ -826,8 +946,8 @@ def application(environ, start_response):
                         '</head>',
                         '<body>SQLite error: {}</body>',
                         '</html>'
-                    ]).format(e).encode("utf-8"))
-        return ret
+                    ]).format(e))
+        return [line.encode("UTF-8") for line in ret]
 
 
 class ThreadingWSGIServer(ThreadingMixIn, wsgiref.simple_server.WSGIServer):

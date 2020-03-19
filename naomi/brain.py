@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
+import sqlite3
 from . import paths
 from . import profile
 
@@ -21,9 +22,6 @@ class Brain(object):
         self._plugins.append(plugin)
         # print("Checking {} for intents".format(plugin._plugin_info.name))
         if(hasattr(plugin, "intents")):
-            # print("Found intents")
-            # print(plugin)
-            # print(dir(plugin))
             self._intentparser.add_intents(plugin.intents())
 
     def train(self):
@@ -111,6 +109,10 @@ class Brain(object):
         Passes user input to the appropriate module, testing it against
         each candidate module's isValid function.
 
+        Note, this should be set up as a generator so that multiple intents
+        can be returned. As it is, we are relying on the intent parser to
+        pass the intents back in order of highest score to lowest.
+
         Arguments:
         text -- user input, typically speech, to be parsed by a module
 
@@ -124,6 +126,35 @@ class Brain(object):
                 # can find out which intent activated it
                 intents[intent]['intent'] = intent
                 if intents[intent]['score'] > 0.05:
+                    if(profile.get_arg('save_active_audio')):
+                        # Write the intent information to audiolog
+                        # We don't actually know what record we are on, so
+                        # just add the information to the most recent active
+                        # record.
+                        audiolog = paths.sub("audiolog")
+                        audiolog_db = os.path.join(audiolog, "audiolog.db")
+                        conn = sqlite3.connect(audiolog_db)
+                        c = conn.cursor()
+                        c.execute(
+                            " ".join([
+                                "update audiolog set",
+                                    "intent = ?,",
+                                    "score = ?",
+                                "where filename =(",
+                                    "select filename",
+                                    "from audiolog",
+                                    "where datetime=(",
+                                        "select max(datetime) from audiolog",
+                                    ")",
+                                ")"
+                            ]),
+                            (
+                                intent,
+                                intents[intent]['score']
+                            )
+                        )
+                        conn.commit()
+
                     return(intents[intent])
             self._logger.debug(
                 "No module was able to handle any of these phrases: {}".format(

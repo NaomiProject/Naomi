@@ -1,9 +1,12 @@
 import os.path
+import re
 import tempfile
 from collections import OrderedDict
 from naomi import paths
 from naomi import plugin
 from naomi import profile
+from naomi.run_command import run_command
+from naomi.run_command import process_completedprocess
 from . import sphinxvocab
 try:
     try:
@@ -36,6 +39,36 @@ def check_program_exists(program):
     return response
 
 
+def check_pocketsphinx_model(directory):
+    # Start by assuming the files exist. If any file is found to not
+    # exist, then set this to False
+    FilesExist = True
+    if(not os.path.isfile(os.path.join(directory, "mdef.txt"))):
+        if(os.path.isfile(os.path.join(directory, "mdef"))):
+            command = [
+                "pocketsphinx_mdef_convert",
+                "-text",
+                os.path.join(directory, "mdef"),
+                os.path.join(directory, "mdef.txt")
+            ]
+            completedprocess = run_command(command)
+            print("Command {} returned {}".format(
+                " ".join(completedprocess.args),
+                completedprocess.returncode
+            ))
+        if(not os.path.isfile(os.path.join(directory, "mdef.txt"))):
+            FilesExist = False
+    if(not os.path.isfile(os.path.join(directory, "means"))):
+        FilesExist = False
+    if(not os.path.isfile(os.path.join(directory, "mixture_weights"))):
+        FilesExist = False
+    if(not os.path.isfile(os.path.join(directory, "sendump"))):
+        FilesExist = False
+    if(not os.path.isfile(os.path.join(directory, "variances"))):
+        FilesExist = False
+    return FilesExist
+
+
 class PocketsphinxSTTPlugin(plugin.STTPlugin):
     """
     The default Speech-to-Text implementation which relies on PocketSphinx.
@@ -56,7 +89,8 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             raise ImportError("Pocketsphinx not installed!")
 
         vocabulary_path = self.compile_vocabulary(
-            sphinxvocab.compile_vocabulary)
+            sphinxvocab.compile_vocabulary
+        )
 
         lm_path = sphinxvocab.get_languagemodel_path(vocabulary_path)
         dict_path = sphinxvocab.get_dictionary_path(vocabulary_path)
@@ -218,6 +252,64 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             for path in fst_model_paths:
                 if os.path.isfile(path):
                     fst_model = path
+        # If either the hmm dir or fst model is missing, then
+        # download the standard model
+        if not(hmm_dir and fst_model):
+            # Start by checking to see if we have a copy of the standard
+            # model for this user's chosen language and download it if not.
+            # Check for the files we need
+            language = profile.get_profile_var(['language'])
+            base_working_dir = paths.sub("pocketsphinx")
+            if not os.path.isdir(base_working_dir):
+                os.mkdir(base_working_dir)
+            standard_dir = os.path.join(base_working_dir, "standard")
+            if not os.path.isdir(standard_dir):
+                os.mkdir(standard_dir)
+            standard_dir = os.path.join(standard_dir, language)
+            if not os.path.isdir(standard_dir):
+                os.mkdir(standard_dir)
+            hmm_dir = standard_dir
+            formatteddict_path = os.path.join(
+                hmm_dir,
+                "cmudict.formatted.dict"
+            )
+            if(not check_pocketsphinx_model(hmm_dir)):
+                # Check and see if we already have a copy of the standard
+                # language model
+                cmd = [
+                    'git',
+                    'clone',
+                    '-b',
+                    language,
+                    'https://github.com/NaomiProject/CMUSphinx_standard_language_models.git',
+                    hmm_dir
+                ]
+                completedprocess = run_command(cmd)
+                self._logger.info(process_completedprocess(completedprocess))
+
+                with open(os.path.join(standard_dir, "cmudict.dict"), "r") as in_file:
+                    with open(formatteddict_path, "w+") as out_file:
+                        for line in in_file:
+                            # Remove whitespace at beginning and end
+                            line = line.strip()
+                            # remove the number in parentheses (if there is one)
+                            line = re.sub('([^\\(]+)\\(\\d+\\)', '\\1', line)
+                            # compress all multiple whitespaces into a single whitespace
+                            line = re.sub('\s+', ' ', line)
+                            # replace the first whitespace with a tab
+                            line = line.replace(' ', '\t', 1)
+                            print(line, file=out_file)
+                # Use phonetisaurus to prepare an fst model
+                cmd = [
+                    "phonetisaurus-train",
+                    "--lexicon", formatteddict_path,
+                    "--seq2_del",
+                    "--dir_prefix", os.path.join(hmm_dir, "train")
+                ]
+                completedprocess = run_command(cmd)
+                self._logger.info(process_completedprocess(completedprocess))
+                fst_model = os.path.join(hmm_dir, "train", "model.fst")
+
         phonetisaurus_executable = profile.get_profile_var(
             ['pocketsphinx', 'phonetisaurus_executable']
         )
@@ -233,7 +325,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                     ('pocketsphinx', 'hmm_dir'), {
                         'title': _('PocketSphinx hmm file'),
                         'description': "".join([
-                            _('PocketSphinx hidden markov model file')
+                            _('PocketSphinx hidden markov model directory')
                         ]),
                         'default': hmm_dir
                     }
