@@ -401,6 +401,13 @@ class Naomi(object):
                 plugin = info.plugin_class(info)
                 self.brain.add_plugin(plugin)
             except Exception as e:
+                if(self._logger.getEffectiveLevel() > logging.DEBUG):
+                    print(
+                        "Plugin {} skipped! (Reason: {})".format(
+                            info.name,
+                            e.message if hasattr(e, 'message') else 'Unknown'
+                        )
+                    )
                 self._logger.warning(
                     "Plugin '%s' skipped! (Reason: %s)", info.name,
                     e.message if hasattr(e, 'message') else 'Unknown',
