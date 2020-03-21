@@ -21,6 +21,7 @@ WEEKDAY_NAMES = {
 class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
 
     def intents(self):
+        _ = self.gettext
         return {
             'WeatherIntent': {
                 'keywords': {
@@ -62,17 +63,17 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                     ]
                 },
                 'templates': [
-                    "what's the weather in {LocationKeyword}",
-                    "what's the forecast for {DayKeyword}",
-                    "what's the forecast for {LocationKeyword}",
-                    "what's the forecast for {LocationKeyword} on {DayKeyword}",
-                    "what's the forecast for {LocationKeyword} on {DayKeyword} {TimeKeyword}",
-                    "is it {WeatherTypePresentKeyword} in {LocationKeyword}",
-                    "will it {WeatherTypeFutureKeyword} this {TimeKeyword}",
-                    "will it {WeatherTypeFutureKeyword} {DayKeyword}",
-                    "will it {WeatherTypeFutureKeyword} {DayKeyword} {TimeKeyword}",
-                    "when will it {WeatherTypeFutureKeyword}",
-                    "when will is {WeatherTypeFutureKeyword} in {LocationKeyword}"
+                    _("WHAT IS THE WEATHER IN {LocationKeyword}"),
+                    _("WHAT IS THE FORECAST FOR {DayKeyword}"),
+                    _("WHAT IS THE FORECAST FOR {LocationKeyword}"),
+                    _("WHAT IS THE FORECAST FOR {LocationKeyword} ON {DayKeyword}"),
+                    _("WHAT IS THE FORECAST FOR {LocationKeyword} ON {DayKeyword} {TimeKeyword}"),
+                    _("IS IT {WeatherTypePresentKeyword} IN {LocationKeyword}"),
+                    _("WILL IT {WeatherTypeFutureKeyword} THIS {TimeKeyword}"),
+                    _("WILL IT {WeatherTypeFutureKeyword} {DayKeyword}"),
+                    _("WILL IT {WeatherTypeFutureKeyword} {DayKeyword} {TimeKeyword}"),
+                    _("WHEN WILL IT {WeatherTypeFutureKeyword}"),
+                    _("WHEN WILL IT {WeatherTypeFutureKeyword} IN {LocationKeyword}")
                 ],
                 'action': self.handle
             }

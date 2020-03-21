@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 import email
 import imaplib
+import logging
+import re
 import smtplib
 from dateutil import parser
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from urllib import request as urllib_request
-import re
+from email.mime.text import MIMEText
 from pytz import timezone
-import logging
-from naomi import profile
+from urllib import request as urllib_request
+from . import i18n
+from . import paths
+from . import profile
+
+
+_ = i18n.GettextMixin(i18n.parse_translations(paths.data('locale'))).gettext
 
 
 # AaronC - This is currently used to clean phone numbers
@@ -39,17 +44,21 @@ def check_imap_config():
         logging.info('Email imap server not set')
         success = False
     PORT = profile.get(['email', 'imap', 'port'], 993)
-    try:
-        conn = imaplib.IMAP4_SSL(SERVER, PORT)
-        conn.login(USERNAME, PASSWORD)
-        conn.logout()
-    except TimeoutError:
-        logging.info('IMAP connection timed out (check server name)')
-        success = False
-    except imaplib.IMAP4.error as e:
-        if hasattr(e, 'args'):
-            logging.info(e.args[0])
-        success = False
+    if(success):
+        try:
+            conn = imaplib.IMAP4_SSL(SERVER, PORT)
+            conn.login(USERNAME, PASSWORD)
+            conn.logout()
+        except TimeoutError:
+            logging.info('IMAP connection timed out (check server name)')
+            success = False
+        except OSError as e:
+            logging.info('IMAP connection error: {}'.format(e))
+            success = False
+        except imaplib.IMAP4.error as e:
+            if hasattr(e, 'args'):
+                logging.info(e.args[0])
+            success = False
     return success
 
 
@@ -68,18 +77,22 @@ def check_smtp_config():
         logging.info('Email smtp server not set')
         success = False
     PORT = profile.get(['email', 'smtp', 'port'], 587)
-    try:
-        session = smtplib.SMTP(SERVER, PORT)
-        session.starttls()
-        session.login(USERNAME, PASSWORD)
-        session.quit()
-    except TimeoutError:
-        logging.info('SMTP connection timed out (check server name)')
-        success = False
-    except imaplib.IMAP4.error as e:
-        if hasattr(e, 'args'):
-            logging.info(e.args[0])
-        success = False
+    if(success):
+        try:
+            session = smtplib.SMTP(SERVER, PORT)
+            session.starttls()
+            session.login(USERNAME, PASSWORD)
+            session.quit()
+        except TimeoutError:
+            logging.info('SMTP connection timed out (check server name)')
+            success = False
+        except OSError as e:
+            logging.info('SMTP connection error: {}'.format(e))
+            success = False
+        except imaplib.IMAP4.error as e:
+            if hasattr(e, 'args'):
+                logging.info(e.args[0])
+            success = False
     return success
 
 
@@ -327,8 +340,15 @@ def is_negative(phrase):
     Arguments:
         phrase -- the input phrase to-be evaluated
     """
-    return bool(re.search(r'\b(no(t)?|don\'t|stop|end|n|false)\b', phrase,
-                          re.IGNORECASE))
+    if(isinstance(phrase, bool)):
+        return not phrase
+    return bool(
+        re.search(
+            _('\b(no(t)?|don\'t|stop|end|n|false)\b'),
+            phrase,
+            re.IGNORECASE
+        )
+    )
 
 
 def is_positive(phrase):
@@ -338,6 +358,12 @@ def is_positive(phrase):
         Arguments:
         phrase -- the input phrase to-be evaluated
     """
-    return bool(re.search(r'\b(sure|yes|yeah|go|yup|y|true)\b',
-                          phrase,
-                          re.IGNORECASE))
+    if(isinstance(phrase, bool)):
+        return phrase
+    return bool(
+        re.search(
+            _('\b(sure|yes|yeah|go|yup|y|true)\b'),
+            phrase,
+            re.IGNORECASE
+        )
+    )

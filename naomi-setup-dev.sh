@@ -598,7 +598,7 @@ function setup_wizard() {
             version="3.0"
             month=$(date +%-m)
             offset=12
-            mileston=$((month+offset))
+            milestone=$((month+offset))
             echo '{"use_release":"milestone", "version":"Naomi-'$version'.M'$milestone'", "auto_update":"false"}' > ~/.naomi/configs/.naomi_options.json
             cd ~
             mv ~/Naomi ~/Naomi-Temp
@@ -687,6 +687,15 @@ function setup_wizard() {
             pip3 install googleapis-common-protos==1.5.9
             pip3 install grpcio
             touch download_google_json
+            cd ~/.naomi/scripts/
+            wget https://git.io/JeBlW -O pocketsphinx-setup.sh
+            cd ~
+            bash ~/.naomi/scripts/pocketsphinx-setup.sh -y 2>&1 | tee ~/.naomi/pocketsphinx-build.log
+            echo
+            echo -e "\e[1;36mBuild complete.  Press any key to review the output."
+            read -N1 -s key
+            nano ~/.naomi/pocketsphinx-build.log
+            cd ~
             break
             ;;
          3)

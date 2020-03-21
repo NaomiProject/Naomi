@@ -8,6 +8,7 @@ import inspect
 import logging
 import hashlib
 import os
+import re
 import shutil
 import sys
 import yaml
@@ -23,6 +24,7 @@ _profile = {}
 _profile_read = False
 _test_profile = False
 _args = {}
+profile_file = ""
 
 
 # Store an argument in a static location so it is
@@ -52,7 +54,7 @@ def set_profile(custom_profile):
 
 
 def get_profile(command=""):
-    global _profile, _profile_read, _test_profile
+    global _profile, _profile_read, _test_profile, profile_file
     _logger = logging.getLogger(__name__)
     command = command.strip().lower()
     if command == "reload":
@@ -142,6 +144,9 @@ def get_profile(command=""):
                     )
                     raise
 
+        # set profile location
+        profile_file = new_configfile
+
         # Read config
         # set a loop so we can keep looping back until the config file exists
         config_read = False
@@ -218,20 +223,30 @@ def get_profile_password(path, default=None):
     either the default value (if there is one) or None.
     """
     _logger = logging.getLogger(__name__)
-    allowed=[]
-    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'app_utils.py'))
-    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'commandline.py'))
-    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),'application.py'))
+    allowed = []
+    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app_utils.py'))
+    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'commandline.py'))
+    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'application.py'))
     filename = inspect.getframeinfo(sys._getframe(1))[0]
     if(filename in allowed):
         if (isinstance(path, str)):
             path = [path]
-        first_id = hashlib.sha256(run_command("cat /etc/machine-id".split(), capture=1).stdout).hexdigest()
+        first_id = hashlib.sha256(
+            run_command(
+                "cat /etc/machine-id".split(),
+                capture=1
+            ).stdout
+        ).hexdigest()
         second_id = hashlib.sha256(run_command("hostid".split(), capture=1).stdout).hexdigest()
         try:
             third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
-            third_id = hashlib.sha256(run_command("""grep -oP 'UUID="\\K[^"]+'""".split(), capture=4,
-                                                stdin=third_idb1).stdout).hexdigest()
+            third_id = hashlib.sha256(
+                run_command(
+                    """grep -oP 'UUID="\\K[^"]+'""".split(),
+                    capture=4,
+                    stdin=third_idb1
+                ).stdout
+            ).hexdigest()
         except FileNotFoundError:
             _logger.warning(
                 " ".join([
@@ -410,3 +425,47 @@ def set_profile_password(path, value):
     cipher_suite = Fernet(key)
     cipher_text = cipher_suite.encrypt(value.encode("utf-8")).decode("utf-8")
     set_profile_var(path, cipher_text)
+
+
+# FIXME I should put a default for listboxes here so that by default
+# any value chosen has to be a member of the options.key() list.
+def validate(definition, response):
+    valid = False
+    if(len(response.strip()) == 0):
+        # Always accept an empty response as valid
+        valid = True
+    else:
+        try:
+            validfunction = definition["validation"]
+            valid = validfunction(response)
+        except KeyError:
+            try:
+                if(definition["type"] in ["listbox"]):
+                    # Use the default validation, which is to make sure whatever
+                    # is selected is a member of options
+                    try:
+                        valid = response in definition["options"]()
+                    except TypeError:
+                        # must not be a function, assume it is a list
+                        valid = response in definition["options"]
+                else:
+                    valid = True
+            except KeyError:
+                # must be a textbox with no validation
+                valid = True
+        except TypeError:
+            # Not a function
+            validstr = str(definition["validation"]).strip().lower()
+            # Is it a boolean?
+            if validstr in ('true', 'yes', 'on'):
+                valid = True
+            elif validstr in ('false', 'no', 'off'):
+                valid = False
+            elif validstr == 'email':
+                valid = True if re.match('^[^@]+@[^@]+\\.[^@\\.]+$', response) else False
+            elif validstr in ('int', 'integer'):
+                try:
+                    valid = str(int(response)) == response
+                except ValueError:
+                    valid = False
+    return valid

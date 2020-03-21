@@ -39,7 +39,7 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
         """
         _ = self.gettext
         try:
-            messages = app_utils.fetch_emails(filter="(UNSEEN)", limit=5)
+            messages = app_utils.fetch_emails(email_filter="(UNSEEN)", limit=5)
         except imaplib.IMAP4.error:
             mic.say(
                 _("I'm sorry. I'm not authenticated to work with your Email account.")

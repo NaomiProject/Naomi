@@ -14,6 +14,7 @@ from naomi import plugin
 from naomi import pluginstore
 from naomi import profile
 from naomi.run_command import run_command
+from naomi.run_command import process_completedprocess
 
 
 # This checks a directory to make sure the pocketsphinx model files
@@ -46,24 +47,6 @@ def check_pocketsphinx_model(directory):
     if(not os.path.isfile(os.path.join(directory, "variances"))):
         FilesExist = False
     return FilesExist
-
-
-def process_completedprocess(completedprocess):
-    result = "failure"
-    command = " ".join(completedprocess.args)
-    print('{}...{}'.format(command, completedprocess.returncode))
-    instructions = "<br />Check log for details<br />"
-    if(completedprocess.stdout):
-        instructions += completedprocess.stdout.decode("utf-8").strip()
-    if(completedprocess.returncode == 0):
-        result = "success"
-        instructions = ""
-    return '{}...<span class="{}">{}</span>{}'.format(
-        command,
-        result,
-        result.upper(),
-        instructions
-    )
 
 
 class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
@@ -122,11 +105,16 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                         'clone',
                         '-b',
                         self.language,
-                        'git@github.com:NaomiProject/CMUSphinx_standard_language_models.git',
+                        'https://github.com/NaomiProject/CMUSphinx_standard_language_models.git',
                         self.standard_dir
                     ]
                     completedprocess = run_command(cmd)
-                    response.append(process_completedprocess(completedprocess))
+                    response.append(
+                        process_completedprocess(
+                            completedprocess,
+                            output='html'
+                        )
+                    )
                     if(completedprocess.returncode != 0):
                         continue_next = False
                 response.append("Environment configured")
@@ -181,13 +169,21 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     '-mswav', 'yes'
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode != 0):
                     continue_next = False
                 nextcommand = "buildweights"
             if(command == "buildweights"):
+                bw = '/usr/lib/sphinxtrain/bw'
+                if os.path.isfile('/usr/local/libexec/sphinxtrain/bw'):
+                    bw = '/usr/local/libexec/sphinxtrain/bw'
                 cmd = [
-                    os.path.join('/usr', 'local', 'libexec', 'sphinxtrain', 'bw'),
+                    bw,
                     '-hmmdir', self.model_dir,
                     '-moddeffn', os.path.join(self.model_dir, 'mdef.txt'),
                     '-ts2cbfn', '.ptm.',
@@ -202,22 +198,35 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     '-accumdir', self.working_dir
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode != 0):
                     continue_next = False
                 nextcommand = "mllr"
             if(command == "mllr"):
                 # MLLR is a cheap adaptation method that is suitable when the amount of data is limited. It's good for online adaptation.
                 # MLLR works best for a continuous model. It's effect for semi-continuous models is limited.
+                mllr = '/usr/lib/sphinxtrain/mllr_solve'
+                if os.path.isfile('/usr/local/libexec/sphinxtrain/mllr_solve'):
+                    mllr = '/usr/local/libexec/sphinxtrain/mllr_solve'
                 cmd = [
-                    os.path.join("/usr", "local", "libexec", "sphinxtrain", "mllr_solve"),
+                    mllr,
                     '-meanfn', os.path.join(self.model_dir, 'means'),
                     '-varfn', os.path.join(self.model_dir, 'variances'),
                     '-outmllrfn', os.path.join(self.model_dir, 'mllr_matrix'),
                     '-accumdir', self.working_dir
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode != 0):
                     continue_next = False
                 nextcommand = "map"
@@ -230,8 +239,11 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     shutil.rmtree(self.adapt_dir)
                     response.append("Cleared adapt directory {}".format(self.adapt_dir))
                 shutil.copytree(self.model_dir, self.adapt_dir)
+                map_adapt = '/usr/lib/sphinxtrain/map_adapt'
+                if os.path.isfile('/usr/local/libexec/sphinxtrain/map_adapt'):
+                    map_adapt = '/usr/local/libexec/sphinxtrain/map_adapt'
                 cmd = [
-                    os.path.join('/usr', 'local', 'libexec', 'sphinxtrain', 'map_adapt'),
+                    map_adapt,
                     '-moddeffn', os.path.join(self.model_dir, 'mdef.txt'),
                     '-ts2cbfn', '.ptm.',
                     '-meanfn', os.path.join(self.model_dir, 'means'),
@@ -245,22 +257,35 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     '-maptmatfn', os.path.join(self.adapt_dir, 'transition_matrices')
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode != 0):
                     continue_next = False
                 nextcommand = "sendump"
             if(command == "sendump"):
                 # Recreating the adapted sendump file
                 # a sendump file saves space and is supported by pocketsphinx
+                mk_s2sendump = '/usr/lib/sphinxtrain/mk_s2sendump'
+                if os.path.isfile('/usr/local/libexec/sphinxtrain/mk_s2sendump'):
+                    mk_s2sendump = '/usr/local/libexec/sphinxtrain/mk_s2sendump'
                 cmd = [
-                    os.path.join('/usr', 'local', 'libexec', 'sphinxtrain', 'mk_s2sendump'),
+                    mk_s2sendump,
                     '-pocketsphinx', 'yes',
                     '-moddeffn', os.path.join(self.adapt_dir, 'mdef.txt'),
                     '-mixwfn', os.path.join(self.adapt_dir, 'mixture_weights'),
                     '-sendumpfn', os.path.join(self.adapt_dir, 'sendump')
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode != 0):
                     continue_next = False
                 nextcommand = "updateprofile"
@@ -290,7 +315,12 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     "--dir_prefix", os.path.join(self.adapt_dir, "train")
                 ]
                 completedprocess = run_command(cmd)
-                response.append(process_completedprocess(completedprocess))
+                response.append(
+                    process_completedprocess(
+                        completedprocess,
+                        output='html'
+                    )
+                )
                 if(completedprocess.returncode == 0):
                     # Now set the values in profile
                     profile.set_profile_var(
@@ -328,7 +358,10 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                     c.execute(query)
                     words_used = [x[0].upper() for x in c.fetchall()]
                     # Pull the list of words from the local standard phrases
-                    phrases = [word.upper() for word in profile.get(['keyword'], ['NAOMI'])]
+                    keywords = profile.get_profile_var(['keyword'])
+                    if(isinstance(keywords, str)):
+                        keywords = [keywords]
+                    phrases = [keyword.upper() for keyword in keywords]
                     custom_standard_phrases_dir = paths.sub(os.path.join(
                         "data",
                         "standard_phrases"
@@ -355,11 +388,20 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                                 info,
                                 profile.get_profile()
                             )
+                            # get_phrases is vestigial now
                             if(hasattr(plugin, "get_phrases")):
                                 for phrase in plugin.get_phrases():
                                     phrases.extend([
                                         word.upper() for word in phrase.split()
                                     ])
+                            # get the phrases from the plugin intents
+                            if(hasattr(plugin, "intents")):
+                                intents = plugin.intents()
+                                for intent in intents:
+                                    for template in intents[intent]['templates']:
+                                        phrases.extend([
+                                            word.upper() for word in template.split()
+                                        ])
                         except Exception as e:
                             message = "Unknown"
                             if hasattr(e, "message"):

@@ -263,19 +263,13 @@ class PluginStore(object):
                                     reason = e.msg
                                 if not reason:
                                     reason = 'Unknown'
-                                if self._logger.isEnabledFor(logging.DEBUG):
-                                    self._logger.warning(
-                                        "Plugin at '{}' skipped! (Reason: {})".format(
-                                            root,
-                                            reason
-                                        ),
-                                        exc_info=True
-                                    )
-                                else:
-                                    print("Plugin at '{}' skipped! (Reason: {})".format(
+                                self._logger.warning(
+                                    "Plugin at '{}' skipped! (Reason: {})".format(
                                         root,
                                         reason
-                                    ))
+                                    ),
+                                    exc_info=True
+                                )
                             else:
                                 if plugin_info.name in self._plugins:
                                     self._logger.warning(

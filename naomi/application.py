@@ -118,10 +118,13 @@ class Naomi(object):
         #         quit()
         if(profile.get_arg("repopulate") or profile.get_arg("profile_missing") or not settings_complete):
             populate.run()
+            keyword = profile.get_profile_var(['keyword'], ['Naomi'])
+            if(isinstance(keyword, list)):
+                keyword = keyword[0]
             print(self._interface.status_text(_(
                 "Configuring {}"
             ).format(
-                profile.get_profile_var(['keyword'], ['Naomi'])[0]
+                keyword
             )))
             for setting in self.settings():
                 self._interface.get_setting(
@@ -224,6 +227,7 @@ class Naomi(object):
                 ['print_transcript'],
                 False
             )
+        profile.set_arg('print_transcript', print_transcript)
 
         # passive_listen
         if(not passive_listen):
@@ -250,6 +254,9 @@ class Naomi(object):
                 save_noise = profile.get_profile_flag(
                     ['audiolog', 'save_noise']
                 )
+            profile.set_arg('save_passive_audio', save_passive_audio)
+            profile.set_arg('save_active_audio', save_active_audio)
+            profile.set_arg('save_noise', save_noise)
 
         # load visualizations
         visualizations.load_visualizations(self)
@@ -394,6 +401,13 @@ class Naomi(object):
                 plugin = info.plugin_class(info)
                 self.brain.add_plugin(plugin)
             except Exception as e:
+                if(self._logger.getEffectiveLevel() > logging.DEBUG):
+                    print(
+                        "Plugin {} skipped! (Reason: {})".format(
+                            info.name,
+                            e.message if hasattr(e, 'message') else 'Unknown'
+                        )
+                    )
                 self._logger.warning(
                     "Plugin '%s' skipped! (Reason: %s)", info.name,
                     e.message if hasattr(e, 'message') else 'Unknown',
@@ -1056,7 +1070,7 @@ class Naomi(object):
                 # The nosec comment on the next line has to be there to say
                 # "Yes, I know I'm doing something unsecure" or codacy has a
                 # fit
-                with urllib.request.urlopen(urllib.request.Request(url)) as f:  #nosec
+                with urllib.request.urlopen(urllib.request.Request(url)) as f:  # nosec
                     file_contents = f.read().decode('utf-8')
                 for line in csv.DictReader(
                     io.StringIO(file_contents),

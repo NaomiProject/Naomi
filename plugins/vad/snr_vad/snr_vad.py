@@ -104,9 +104,16 @@ class SNRPlugin(plugin.VADPlugin, unittest.TestCase):
                     (value + 1) / 2
                 ) for key, value in self.distribution.items()
             }
-        if(snr < self._threshold):
+        threshold = self._threshold
+        # If we are already recording, reduce the threshold so as
+        # the user's voice trails off, we continue to record.
+        # Here I am setting it to the halfway point between threshold
+        # and mean.
+        if(recording):
+            threshold = (mean + threshold) / 2
+        if(snr < threshold):
             response = False
         else:
-            self._logger.info("Voice Detected: {}".format(snr))
+            self._logger.info("Voice Detected: {}/{}".format(snr, threshold))
             response = True
         return response

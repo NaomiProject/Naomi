@@ -48,8 +48,9 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
             'NewsIntent': {
                 'templates': [
                     _("READ THE NEWS"),
-                    _("WHAT'S HAPPENING"),
-                    _("WHAT ARE TODAY'S HEADLINES")
+                    _("WHAT IS IN THE NEWS"),
+                    _("WHAT IS HAPPENING IN THE NEWS"),
+                    _("WHAT ARE TODAY'S NEWS HEADLINES")
                 ],
                 'action': self.handle
             }
