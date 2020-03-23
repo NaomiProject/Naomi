@@ -501,7 +501,7 @@ function setup_wizard() {
     echo "export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv" >> Naomi
     echo "source ~/.local/bin/virtualenvwrapper.sh" >> Naomi
     echo "workon Naomi" >> Naomi
-    echo "python $NAOMI_DIR/Naomi.py \$@" >> Naomi
+    echo "python3 $NAOMI_DIR/Naomi.py \$@" >> Naomi
     echo "deactivate" >> Naomi
     echo
     echo
