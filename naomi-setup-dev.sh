@@ -477,7 +477,7 @@ function setup_wizard() {
             CONTINUE
         fi
     fi
-    pip install --user virtualenvwrapper
+    pip3 install --user virtualenvwrapper
     echo 'sourcing virtualenvwrapper.sh'
     export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv
     source ~/.local/bin/virtualenvwrapper.sh
