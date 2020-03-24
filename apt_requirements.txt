@@ -24,6 +24,19 @@ python3-pocketsphinx
 pocketsphinx
 sphinxbase-utils
 sphinxtrain
+#### Phonetisaurus is used to build dictionaries
+gcc
+g++
+make
+python-pip
+autoconf
+libtool
+git
+gfortran
+autoconf-archive
+subversion
+swig
+bison
 
 # TTS
 ## flite
