@@ -1,3 +1,5 @@
+# Core requirements
+python3-pip
 libatlas3-base
 libssl-dev
 libncurses5-dev
@@ -5,12 +7,29 @@ gnupg
 dirmngr
 gettext
 gfortran
-portaudio19-dev
-libasound2-dev
 util-linux
 
-# pocketsphinx
+# Plugins
+## AudioEngine
+### PyAudio
+portaudio19-dev
+libasound2-dev
+pulseaudio
+pulseaudio-utils
+pulsemixer
+
+## STT
+### pocketsphinx is default for wakeword spotting
 python3-pocketsphinx
 pocketsphinx
 sphinxbase-utils
 sphinxtrain
+
+# TTS
+## flite
+flite
+
+# SpeechHandler
+## MPDControl
+mpd
+

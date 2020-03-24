@@ -6,7 +6,6 @@ import io
 import logging
 import math
 import os
-import platform
 import re
 import shutil
 import tempfile
@@ -578,7 +577,7 @@ class Naomi(object):
                         "type": "listbox",
                         "title": _("Please select an audio engine"),
                         "options": self.get_audio_engines,
-                        "default": "alsa" if re.match(r'linux', platform.system().lower()) else "pyaudio"
+                        "default": "pyaudio"
                     }
                 ),
                 (
@@ -587,7 +586,7 @@ class Naomi(object):
                         "title": _("please select an output device"),
                         "options": self.get_output_devices,
                         "validation": self.validate_output_device,
-                        "default": "default"
+                        "default": "pulse"
                     }
                 ),
                 (
@@ -596,7 +595,7 @@ class Naomi(object):
                         "title": _("Please select an input device"),
                         "options": self.get_input_devices,
                         "validation": self.validate_input_device,
-                        "default": "default"
+                        "default": "pulse"
                     }
                 ),
                 (

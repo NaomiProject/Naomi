@@ -276,6 +276,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             if(not check_pocketsphinx_model(hmm_dir)):
                 # Check and see if we already have a copy of the standard
                 # language model
+                print("Downloading and installing the {} pocketsphinx language model".format(language))
                 cmd = [
                     'git',
                     'clone',
@@ -287,6 +288,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 completedprocess = run_command(cmd)
                 self._logger.info(process_completedprocess(completedprocess))
 
+                print("Formatting the g2p dictionary")
                 with open(os.path.join(standard_dir, "cmudict.dict"), "r") as in_file:
                     with open(formatteddict_path, "w+") as out_file:
                         for line in in_file:
@@ -300,6 +302,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                             line = line.replace(' ', '\t', 1)
                             print(line, file=out_file)
                 # Use phonetisaurus to prepare an fst model
+                print("Training an FST model")
                 cmd = [
                     "phonetisaurus-train",
                     "--lexicon", formatteddict_path,
