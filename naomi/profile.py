@@ -109,10 +109,11 @@ def get_profile(command=""):
                     paths.CONFIG_PATH
                 )
             )
+        new_configfile = paths.sub(os.path.join('configs', 'profile.yml'))
+
         # For backwards compatibility, move old profile.yml to newly
         # created config dir
         old_configfile = paths.sub('profile.yml')
-        new_configfile = paths.sub(os.path.join('configs', 'profile.yml'))
         if os.path.exists(old_configfile):
             if os.path.exists(new_configfile):
                 _logger.warning(
@@ -150,23 +151,23 @@ def get_profile(command=""):
         # Read config
         # set a loop so we can keep looping back until the config file exists
         config_read = False
-        while (not config_read):
+        while(not config_read):
             try:
                 with open(new_configfile, "r") as f:
                     _profile = yaml.safe_load(f)
                     _profile_read = True
                     config_read = True
-            except IOError:
+            except(IOError, FileNotFoundError):
                 _logger.info(
                     "{} is missing".format(new_configfile)
                 )
                 # set up a temporary profile just to be able to ask the
                 # question of which language the user wants.
+                set_arg("Profile_missing", True)
                 _profile = {'language': 'en-US'}
                 _profile_read = True
-                set_arg("Profile_missing", True)
-                raise
-            except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
+                config_read = True  # Break the loop
+            except(yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
                 _logger.error(
                     "Unable to parse config file: {} {}".format(
                         e.problem.strip(),
@@ -174,11 +175,6 @@ def get_profile(command=""):
                     )
                 )
                 raise
-        configfile = paths.config('profile.yml')
-        with open(configfile, "r") as f:
-            _profile = yaml.safe_load(f)
-        _profile_read = True
-        _test_profile = False
     return _profile
 
 
