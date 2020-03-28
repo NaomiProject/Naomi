@@ -28,6 +28,18 @@ class PadatiousTTIPlugin(plugin.TTIPlugin):
             # this prevents collisions between intents
             intent_base = intent
             intent_inc = 0
+            locale = profile.get("language")
+            while intent in self.intent_map['intents']:
+                intent_inc += 1
+                intent = "{}{}".format(intent_base, intent_inc)
+            if('locale' in intents[intent_base]):
+                # If the selected locale is not available, try matching just
+                # the language ("en-US" -> "en")
+                if(locale not in intents[intent_base]['locale']):
+                    for language in intents[intent_base]['locale']:
+                        if(language[:2] == locale[:2]):
+                            locale = language
+                            break
             while intent in self.intent_map['intents']:
                 intent_inc += 1
                 intent = "{}{}".format(intent_base, intent_inc)
@@ -36,18 +48,18 @@ class PadatiousTTIPlugin(plugin.TTIPlugin):
                 'name': intent_base,
                 'templates': []
             }
-            templates = intents[intent_base]['templates']
+            templates = intents[intent_base]['locale'][locale]['templates']
             if('keywords' in intents[intent_base]):
-                for keyword in intents[intent_base]['keywords']:
+                for keyword in intents[intent_base]['locale'][locale]['keywords']:
                     keyword_token = "{}_{}".format(intent, keyword)
                     self.keywords[keyword_token] = {
-                        'words': intents[intent_base]['keywords'][keyword],
+                        'words': intents[intent_base]['locale'][locale]['keywords'][keyword],
                         'name': keyword
                     }
                     # print("Adding keyword '{}': {}".format(keyword_token,intents[intent_base]['keywords'][keyword]))
                     # map the keywords into the intents
                     templates = [t.replace(keyword, keyword_token) for t in templates]
-                    self.container.add_entity(keyword_token, intents[intent_base]['keywords'][keyword])
+                    self.container.add_entity(keyword_token, intents[intent_base]['locale'][locale]['keywords'][keyword])
             self.intent_map['intents'][intent]['templates'] = templates
             self.container.add_intent(intent, templates)
 

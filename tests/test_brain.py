@@ -16,7 +16,11 @@ class ExampleSpeechHandlerPlugin(plugin.SpeechHandlerPlugin):
     def intents(self):
         return {
             'TestIntent': {
-                'templates': self.test_phrases,
+                'locale': {
+                    'en-US': {
+                        'templates': self.test_phrases,
+                    }
+                },
                 'action': None
             }
         }

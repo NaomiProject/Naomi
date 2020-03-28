@@ -9,15 +9,31 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
     def intents(self):
         return {
             'ShutdownIntent': {
-                'templates': [
-                    "SHUTDOWN",
-                    "TURN YOURSELF OFF"
-                ],
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "SHUTDOWN",
+                            "TURN YOURSELF OFF"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "ÉTEINS-TOI",
+                            "ÉTEIGNEZ-VOUS"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "BEENDE DICH",
+                            "SCHALTEN SIE SICH AUS"
+                        ]
+                    }
+                },
                 'action': self.handle
             }
         }
 
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         """
         Responds to user-input, typically speech text, by relaying the
         meaning of life.

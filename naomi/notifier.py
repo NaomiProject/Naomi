@@ -65,12 +65,6 @@ class Notifier(object):
 
     def handle_email_notifications(self, last_date):
         """Places new Gmail notifications in the Notifier's queue."""
-        self._logger.info("Checking email since {}".format(last_date))
-        emails = app_utils.fetch_emails(since=last_date, email_filter="(UNSEEN)")
-        self._logger.info("{} new emails".format(len(emails)))
-        if emails:
-            last_date = app_utils.get_most_recent_date(emails)
-
         def handle_email(e):
             # if the subject line matches the first line of the email, then
             # discard the subject line. If not, then append the body to the
@@ -121,8 +115,16 @@ class Notifier(object):
                 self._mic.say("New email from %s." % app_utils.get_sender(e))
             return True
 
-        for e in emails:
-            self.q.put(handle_email(e))
+        self._logger.info("Checking email since {}".format(last_date))
+        try:
+            emails = app_utils.fetch_emails(since=last_date, email_filter="(UNSEEN)")
+            self._logger.info("{} new emails".format(len(emails)))
+            if emails:
+                last_date = app_utils.get_most_recent_date(emails)
+            for e in emails:
+                self.q.put(handle_email(e))
+        except Exception:
+            self._logger.warn("Problem checking email")
 
         return last_date
 
@@ -131,7 +133,7 @@ class Notifier(object):
         try:
             notif = self.q.get(block=False)
             return notif
-        except Queue.Empty:
+        except queue.Empty:
             return None
 
     def get_all_notifications(self):
@@ -173,9 +175,9 @@ class EmailMic(object):
     # This gets called if the handler is supposed to wait for input.
     @staticmethod
     def active_listen(timeout=3):
-        #input_text = input("YOU: ")
-        #unicodedata.normalize('NFD', input_text).encode('ascii', 'ignore')
-        #self.prev = input_text
+        # input_text = input("YOU: ")
+        # unicodedata.normalize('NFD', input_text).encode('ascii', 'ignore')
+        # self.prev = input_text
         return [""]
 
     def listen(self):

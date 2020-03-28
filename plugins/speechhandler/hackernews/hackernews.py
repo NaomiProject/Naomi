@@ -31,11 +31,29 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
     def intents(self):
         return {
             'HackerNewsIntent': {
-                'templates': [
-                    "READ HACKER NEWS",
-                    "WHAT IS IN HACKER NEWS",
-                    "WHAT ARE THE HACKER NEWS HEADLINES"
-                ],
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "READ HACKER NEWS",
+                            "WHAT IS IN HACKER NEWS",
+                            "WHAT ARE THE HACKER NEWS HEADLINES"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "LISEZ LES NOUVELLES DES HACKERS",
+                            "CE QUI EST DANS LES NOUVELLES HACKER",
+                            "QUELLES SONT LES TITRES DE NOUVELLES HACKER"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "HACKER NEWS LESEN",
+                            "WAS IST IN HACKER NEWS",
+                            "WAS SIND DIE HACKER NEWS HEADLINES"
+                        ]
+                    },
+                },
                 'action': self.handle
             }
         }

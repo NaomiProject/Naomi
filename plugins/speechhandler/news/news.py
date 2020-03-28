@@ -43,15 +43,34 @@ def get_top_articles(language='en', num_headlines=5):
 
 class NewsPlugin(plugin.SpeechHandlerPlugin):
     def intents(self):
-        _ = self.gettext
         return {
             'NewsIntent': {
-                'templates': [
-                    _("READ THE NEWS"),
-                    _("WHAT IS IN THE NEWS"),
-                    _("WHAT IS HAPPENING IN THE NEWS"),
-                    _("WHAT ARE TODAY'S NEWS HEADLINES")
-                ],
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "READ THE NEWS",
+                            "WHAT IS IN THE NEWS",
+                            "WHAT IS HAPPENING IN THE NEWS",
+                            "WHAT ARE TODAY'S HEADLINES"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "LIRE LES NOUVELLES",
+                            "CE QUI EST DANS LES NOUVELLES",
+                            "CE QUI SE PASSE DANS LES NOUVELLES",
+                            "QUELS SONT LES TITRES D'AUJOURD'HUI"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "LIES DIE NACHRICHTEN",
+                            "WAS IST IN DEN NACHRICHTEN",
+                            "WAS PASSIERT IN DEN NACHRICHTEN",
+                            "WAS SIND HEUTE SCHLAGZEILEN"
+                        ]
+                    }
+                },
                 'action': self.handle
             }
         }
@@ -82,7 +101,8 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
         text += ' '
         text += '... '.join(
             '%d) %s' % (i, a.title)
-            for i, a in enumerate(articles, start=1))
+            for i, a in enumerate(articles, start=1)
+        )
         mic.say(text)
 
         email = profile.get(['email', 'address'])

@@ -20,13 +20,28 @@ class NotificationsPlugin(plugin.SpeechHandlerPlugin):
         )
 
     def intents(self):
-        _ = self.gettext
         return {
             'NotificationsIntent': {
-                'templates': [
-                    _("DO I HAVE ANY FACEBOOK NOTIFICATIONS"),
-                    _("CHECK MY NOTIFICATIONS")
-                ],
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "DO I HAVE ANY FACEBOOK NOTIFICATIONS",
+                            "CHECK MY NOTIFICATIONS"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "AI-JE DES NOTIFICATIONS FACEBOOK",
+                            "CONSULTEZ MES NOTIFICATIONS"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "HABE ICH EINE FACEBOOK-MITTEILUNG",
+                            "PRÜFEN SIE MEINE MITTEILUNGEN"
+                        ]
+                    }
+                },
                 'action': self.handle
             }
         }

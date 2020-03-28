@@ -157,7 +157,9 @@ def email_user(SUBJECT="", BODY=""):
                 recipient=recipient
             )
     else:
-        phone_number = clean_number(profile.get_profile_password(['phone_number']))
+        phone_number = clean_number(
+            profile.get_profile_password(['phone_number'])
+        )
         carrier = profile.get(['carrier'])
         if phone_number and carrier:
             recipient = "{}@{}".format(
@@ -196,6 +198,8 @@ def fetch_emails(since=None, email_filter="", markRead=False, limit=None):
     """
     host = profile.get_profile_var(['email', 'imap', 'server'])
     port = int(profile.get_profile_var(['email', 'imap', 'port'], "993"))
+    msgs = []
+
     conn = imaplib.IMAP4_SSL(host, port)
     conn.debug = 0
 
@@ -205,7 +209,6 @@ def fetch_emails(since=None, email_filter="", markRead=False, limit=None):
     )
     conn.select(readonly=(not markRead))
 
-    msgs = []
     (retcode, messages) = conn.search(None, email_filter)
     if retcode == 'OK' and messages != [b'']:
         numUnread = len(messages[0].split(b' '))
@@ -223,7 +226,6 @@ def fetch_emails(since=None, email_filter="", markRead=False, limit=None):
                 msgs.append(msg)
     conn.close()
     conn.logout()
-
     return msgs
 
 
@@ -288,7 +290,10 @@ def mark_read(msg):
         profile.get_profile_password(['email', 'password'])
     )
     conn.select(readonly=False)
-    (retcode, messages) = conn.search(None, "(HEADER Message-ID {})".format(msg['Message-ID']))
+    (retcode, messages) = conn.search(
+        None,
+        "(HEADER Message-ID {})".format(msg['Message-ID'])
+    )
     if(retcode == 'OK' and len(messages)):
         conn.store(messages[0].split()[0], '+FLAGS', '\Seen')
     conn.close()

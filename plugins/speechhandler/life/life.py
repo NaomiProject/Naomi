@@ -5,13 +5,28 @@ from naomi import plugin
 
 class MeaningOfLifePlugin(plugin.SpeechHandlerPlugin):
     def intents(self):
-        _ = self.gettext
         return {
             'MeaningOfLifeIntent': {
-                'templates': [
-                    _("WHAT IS THE MEANING OF LIFE"),
-                    _("WHAT IS THE ULTIMATE ANSWER TO THE ULTIMATE QUESTION OF LIFE THE UNIVERSE AND EVERYTHING")
-                ],
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "WHAT IS THE MEANING OF LIFE",
+                            "WHAT IS THE ULTIMATE ANSWER TO THE ULTIMATE QUESTION OF LIFE THE UNIVERSE AND EVERYTHING"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "QUEL EST LE SENS DE LA VIE",
+                            "QUELLE EST LA RÉPONSE ULTIME À LA QUESTION ULTIME DE VIE L'UNIVERS ET TOUT"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "WAS IST DER SINN DES LEBENS",
+                            "WAS IST DIE ULTIMATIVE ANTWORT AUF DIE ULTIMATIVE FRAGE DES LEBENS DES UNIVERSUMS UND ALLES"
+                        ]
+                    }
+                },
                 'action': self.handle
             }
         }
