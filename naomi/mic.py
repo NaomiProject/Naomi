@@ -155,6 +155,11 @@ class Mic(object):
                 self._conn.commit()
             except sqlite3.OperationalError:
                 self._logger.info("verified_intent column exists")
+            try:
+                c.execute("alter table audiolog add column tti_engine")
+                self._conn.commit()
+            except sqlite3.OperationalError:
+                self._logger.info("tti_engine column exists")
             c.execute(" ".join([
                 "create table if not exists trainings(",
                 "   datetime,",
@@ -166,15 +171,15 @@ class Mic(object):
             c.execute(
                 " ".join([
                     "insert into audiolog(",
-                        "datetime,",
-                        "engine,",
-                        "filename,",
-                        "type,",
-                        "transcription,",
-                        "verified_transcription,",
-                        "speaker,",
-                        "reviewed,",
-                        "wer",
+                    "   datetime,",
+                    "   engine,",
+                    "   filename,",
+                    "   type,",
+                    "   transcription,",
+                    "   verified_transcription,",
+                    "   speaker,",
+                    "   reviewed,",
+                    "   wer",
                     ")values(?,?,?,?,?,'','','','')"
                 ]),
                 (

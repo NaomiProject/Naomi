@@ -23,14 +23,31 @@ class BirthdayPlugin(plugin.SpeechHandlerPlugin):
         )
 
     def intents(self):
-        _ = self.gettext
         return {
             'FBBirthdayIntent': {
-                'templates': [
-                    _("WHOSE BIRTHDAY IS IT TODAY"),
-                    _("ARE THERE ANY BIRTHDAYS TODAY"),
-                    _("DO ANY OF MY FRIENDS HAVE BIRTHDAYS TODAY")
-                ],
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "WHOSE BIRTHDAY IS IT TODAY",
+                            "ARE THERE ANY BIRTHDAYS TODAY",
+                            "DO ANY OF MY FRIENDS HAVE BIRTHDAYS TODAY"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "DONT L'ANNIVERSAIRE EST AUJOURD'HUI",
+                            "Y A-T-IL DES ANNIVERSAIRES AUJOURD'HUI",
+                            "EST-CE QUE MES AMIS ONT DES ANNIVERSAIRES AUJOURD'HUI"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "WESSEN GEBURTSTAG IST ES HEUTE",
+                            "Y A-T-IL DES ANNIVERSAIRES AUJOURD'HUI",
+                            "HABEN JEDER MEINER FREUNDE HEUTE GEBURTSTAGE?"
+                        ]
+                    },
+                },
                 'action': self.handle
             }
         }

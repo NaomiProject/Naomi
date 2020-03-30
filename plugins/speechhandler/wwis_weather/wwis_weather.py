@@ -21,60 +21,116 @@ WEEKDAY_NAMES = {
 class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
 
     def intents(self):
-        _ = self.gettext
         return {
             'WeatherIntent': {
-                'keywords': {
-                    'WeatherTypePresentKeyword': [
-                        'snowing',
-                        'raining',
-                        'windy',
-                        'sleeting',
-                        'sunny'
-                    ],
-                    'WeatherTypeFutureKeyword': [
-                        'snow',
-                        'rain',
-                        'be windy',
-                        'sleet',
-                        'be sunny'
-                    ],
-                    'LocationKeyword': [
-                        'seattle',
-                        'san francisco',
-                        'tokyo'
-                    ],
-                    'TimeKeyword': [
-                        "morning",
-                        "afternoon",
-                        "evening",
-                        "night"
-                    ],
-                    'DayKeyword': [
-                        "today",
-                        "tomorrow",
-                        "sunday",
-                        "monday",
-                        "tuesday",
-                        "wednesday",
-                        "thursday",
-                        "friday",
-                        "saturday"
-                    ]
+                'locale': {
+                    'en-US': {
+                        'keywords': {
+                            'WeatherTypePresentKeyword': [
+                                'SNOWING',
+                                'RAINING',
+                                'WINDY',
+                                'SLEETING',
+                                'SUNNY'
+                            ],
+                            'WeatherTypeFutureKeyword': [
+                                'SNOW',
+                                'RAIN',
+                                'BE WINDY',
+                                'SLEET',
+                                'BE SUNNY'
+                            ],
+                            'LocationKeyword': [
+                                'SEATTLE',
+                                'SAN FRANCISCO',
+                                'TOKYO'
+                            ],
+                            'TimeKeyword': [
+                                "MORNING",
+                                "AFTERNOON",
+                                "EVENING",
+                                "NIGHT"
+                            ],
+                            'DayKeyword': [
+                                "TODAY",
+                                "TOMORROW",
+                                "SUNDAY",
+                                "MONDAY",
+                                "TUESDAY",
+                                "WEDNESDAY",
+                                "THURSDAY",
+                                "FRIDAY",
+                                "SATURDAY"
+                            ]
+                        },
+                        'templates': [
+                            "WHAT IS THE WEATHER IN {LocationKeyword}",
+                            "WHAT IS THE FORECAST FOR {DayKeyword}",
+                            "WHAT IS THE FORECAST FOR {LocationKeyword}",
+                            "WHAT IS THE FORECAST FOR {LocationKeyword} ON {DayKeyword}",
+                            "WHAT IS THE FORECAST FOR {LocationKeyword} ON {DayKeyword} {TimeKeyword}",
+                            "IS IT {WeatherTypePresentKeyword} IN {LocationKeyword}",
+                            "WILL IT {WeatherTypeFutureKeyword} THIS {TimeKeyword}",
+                            "WILL IT {WeatherTypeFutureKeyword} {DayKeyword}",
+                            "WILL IT {WeatherTypeFutureKeyword} {DayKeyword} {TimeKeyword}",
+                            "WHEN WILL IT {WeatherTypeFutureKeyword}",
+                            "WHEN WILL IT {WeatherTypeFutureKeyword} IN {LocationKeyword}"
+                        ]
+                    },
+                    'fr-FR': {
+                        'keywords': {
+                            'WeatherTypePresentKeyword': [
+                                'IL NEIGE',
+                                'IL PLUIE',
+                                'IL VENT'
+                            ],
+                            'WeatherTypeTodayFutureKeyword': [
+                                'SERA-T-IL NEIGE',
+                                'PLEUVRA-T-IL',
+                                'DU VENT',
+                                'SERA-CE VENTEUX',
+                                'SERA-T-IL DU VENT',
+                                'SERA-T-IL ENSOLEILLÉ'
+                            ],
+                            'WeatherTypeTomorrowFutureKeyword': [
+                            ],
+                            'LocationKeyword': [
+                                'SEATTLE',
+                                'SAN FRANCISCO',
+                                'TOKYO'
+                            ],
+                            'TimeKeyword': [
+                                "MATIN",
+                                "MIDI",
+                                "SOIR"
+                            ],
+                            'DayKeyword': [
+                                "AUJOURD'HUI",
+                                "DEMAIN",
+                                "DIMANCHE",
+                                "LUNDI",
+                                "MARDI",
+                                "MERCREDI",
+                                "JEUDI",
+                                "VENDREDI",
+                                "SAMEDI"
+                            ]
+                        },
+                        'templates': [
+                            "QUELLE EST LA MÉTÉO À {LocationKeyword}",
+                            "QUELLES SONT LES PRÉVISIONS POUR {DayKeyword}",
+                            "QUELLES SONT LES PRÉVISIONS POUR {LocationKeyword}",
+                            "QUELLES SONT LES PRÉVISIONS POUR {LocationKeyword} {DayKeyword}",
+                            "QUELLES SONT LES PRÉVISIONS POUR {LocationKeyword} LE {DayKeyword} {TimeKeyword}",
+                            "{WeatherTypePresentKeyword} À {LocationKeyword}",
+                            "{WeatherTypeFutureKeyword} CET {TodayTimeKeyword}",
+                            "{WeatherTypeFutureKeyword} {DayKeyword}",
+                            "{WeatherTypeFutureKeyword} {DayKeyword} {TimeKeyword}",
+                            "{WeatherTypeFutureKeyword}",
+                            "{WeatherTypeFutureKeyword} À {LocationKeyword}"
+                        ]
+                    }
                 },
-                'templates': [
-                    _("WHAT IS THE WEATHER IN {LocationKeyword}"),
-                    _("WHAT IS THE FORECAST FOR {DayKeyword}"),
-                    _("WHAT IS THE FORECAST FOR {LocationKeyword}"),
-                    _("WHAT IS THE FORECAST FOR {LocationKeyword} ON {DayKeyword}"),
-                    _("WHAT IS THE FORECAST FOR {LocationKeyword} ON {DayKeyword} {TimeKeyword}"),
-                    _("IS IT {WeatherTypePresentKeyword} IN {LocationKeyword}"),
-                    _("WILL IT {WeatherTypeFutureKeyword} THIS {TimeKeyword}"),
-                    _("WILL IT {WeatherTypeFutureKeyword} {DayKeyword}"),
-                    _("WILL IT {WeatherTypeFutureKeyword} {DayKeyword} {TimeKeyword}"),
-                    _("WHEN WILL IT {WeatherTypeFutureKeyword}"),
-                    _("WHEN WILL IT {WeatherTypeFutureKeyword} IN {LocationKeyword}")
-                ],
                 'action': self.handle
             }
         }
@@ -112,6 +168,16 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                         # This is only active if the currently selected region is a dictionary and not a city
                         # 'active': lambda: True if isinstance(self.locations[profile.get_profile_var(["wwis_weather", "country"])][profile.get_profile_var(["wwis_weather", "region"])], dict) else False
                         'active': self.city_isactive
+                    }
+                ),
+                (
+                    ('wwis_weather', 'temperature'), {
+                        'type': 'listbox',
+                        'title': _("Would you prefer weather in Celcius or Fahrenheit?"),
+                        'description': _("Allows you to receive your weather forecast in either Celcius or Fahrenheit"),
+                        'options': ['Celcius', 'Fahrenheit'],
+                        'active': lambda: True if profile.check_profile_var_exists(['wwis_weather', 'country']) and len(profile.get_profile_var(["wwis_weather", "country"])) > 0 else False,
+                        'default': 'Fahrenheit'
                     }
                 )
             ]
@@ -222,8 +288,12 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
             for day in weatherdata["city"]["forecast"]["forecastDay"]:
                 forecast[day["forecastDate"]] = {}
                 forecast[day["forecastDate"]]["weather"] = day["weather"]
-                forecast[day["forecastDate"]]["high"] = day["maxTempF"]
-                forecast[day["forecastDate"]]["low"] = day["minTempF"]
+                if profile.get(['wwis_weather', 'temperature'], "f")[:1].lower() == "f":
+                    forecast[day["forecastDate"]]["high"] = day["maxTempF"]
+                    forecast[day["forecastDate"]]["low"] = day["minTempF"]
+                else:
+                    forecast[day["forecastDate"]]["high"] = day["maxTemp"]
+                    forecast[day["forecastDate"]]["low"] = day["minTemp"]
             if(not forecast):
                 mic.say(
                     _("Sorry, forecast information is not currently available for {} in {}").format(

@@ -6,10 +6,26 @@ class StopPlugin(plugin.SpeechHandlerPlugin):
     def intents(self):
         return {
             'StopIntent': {
-                'templates': [
-                    "STOP",
-                    "SHUT UP"
-                ],
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "STOP",
+                            "SHUT UP"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "ARRÊTEZ",
+                            "TAIS-TOI"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "STOPP",
+                            "HALT DIE KLAPPE"
+                        ]
+                    }
+                },
                 'action': self.handle
             }
         }

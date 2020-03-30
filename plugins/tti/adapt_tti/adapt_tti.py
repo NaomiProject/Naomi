@@ -76,21 +76,33 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
             # this prevents collisions between intents
             intent_base = intent
             intent_inc = 0
+            locale = profile.get("language")
             while intent in self.intent_map['intents']:
                 intent_inc += 1
                 intent = "{}{}".format(intent_base, intent_inc)
-            if('keywords' in intents[intent_base]):
-                for keyword in intents[intent_base]['keywords']:
+            if('locale' in intents[intent_base]):
+                # If the selected locale is not available, try matching just
+                # the language ("en-US" -> "en")
+                if(locale not in intents[intent_base]['locale']):
+                    for language in intents[intent_base]['locale']:
+                        if(language[:2] == locale[:2]):
+                            locale = language
+                            break
+            while intent in self.intent_map['intents']:
+                intent_inc += 1
+                intent = "{}{}".format(intent_base, intent_inc)
+            if('keywords' in intents[intent_base]['locale'][locale]):
+                for keyword in intents[intent_base]['locale'][locale]['keywords']:
                     keyword_token = "{}_{}".format(intent, keyword)
                     self.keywords[keyword_token] = {
-                        'words': intents[intent_base]['keywords'][keyword],
+                        'words': intents[intent_base]['locale'][locale]['keywords'][keyword],
                         'name': keyword
                     }
-            if('regex' in intents[intent_base]):
-                for regex_name in intents[intent_base]['regex']:
+            if('regex' in intents[intent_base]['locale'][locale]):
+                for regex_name in intents[intent_base]['locale'][locale]['regex']:
                     regex_token = "{}_{}".format(intent, regex_name)
                     self.regex[regex_token] = []
-                    for regex in intents[intent_base]['regex'][regex_name]:
+                    for regex in intents[intent_base]['locale'][locale]['regex'][regex_name]:
                         self.regex[regex_token].append(regex.replace(regex_name, regex_token))
                 # pprint(self.regex)
             self.intent_map['intents'][intent] = {
@@ -99,7 +111,7 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
                 'templates': [],
                 'words': {}
             }
-            for phrase in intents[intent_base]['templates']:
+            for phrase in intents[intent_base]['locale'][locale]['templates']:
                 # Save the phrase so we can search for undefined keywords
                 self.intent_map['intents'][intent]['templates'].append(phrase)
                 # Make a count of word frequency. The fact that small connector
@@ -124,7 +136,7 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
             # Since a word is only counted once per example, regardless of how many times it appears,
             # if the number of times it was counted matches the number of examples, then
             # this is a "required" word.
-            phrase_count = len(intents[intent_base]['templates'])
+            phrase_count = len(intents[intent_base]['locale'][locale]['templates'])
             for word in self.intent_map['intents'][intent]['words']:
                 # print("Word: '{}' Count: {} Phrases: {} Weight: {}".format(word, self.intent_map['intents'][intent]['words'][word], phrase_count, weight(self.intent_map['intents'][intent]['words'][word], phrase_count)))
                 Weight = weight(self.intent_map['intents'][intent]['words'][word]['count'], phrase_count)

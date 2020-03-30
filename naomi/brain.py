@@ -125,36 +125,40 @@ class Brain(object):
                 # Add the intent to the response so the handler method
                 # can find out which intent activated it
                 intents[intent]['intent'] = intent
-                if intents[intent]['score'] > 0.05:
-                    if(profile.get_arg('save_active_audio')):
-                        # Write the intent information to audiolog
-                        # We don't actually know what record we are on, so
-                        # just add the information to the most recent active
-                        # record.
-                        audiolog = paths.sub("audiolog")
-                        audiolog_db = os.path.join(audiolog, "audiolog.db")
-                        conn = sqlite3.connect(audiolog_db)
-                        c = conn.cursor()
-                        c.execute(
-                            " ".join([
-                                "update audiolog set",
-                                    "intent = ?,",
-                                    "score = ?",
-                                "where filename =(",
-                                    "select filename",
-                                    "from audiolog",
-                                    "where datetime=(",
-                                        "select max(datetime) from audiolog",
-                                    ")",
-                                ")"
-                            ]),
-                            (
-                                intent,
-                                intents[intent]['score']
-                            )
+                if(profile.get_arg("print_transcript")):
+                    print("{} {}".format(intent, intents[intent]['score']))
+                if(profile.get_arg('save_active_audio')):
+                    # Write the intent information to audiolog
+                    # We don't actually know what record we are on, so
+                    # just add the information to the most recent active
+                    # record.
+                    audiolog = paths.sub("audiolog")
+                    audiolog_db = os.path.join(audiolog, "audiolog.db")
+                    conn = sqlite3.connect(audiolog_db)
+                    c = conn.cursor()
+                    c.execute(
+                        " ".join([
+                            "update audiolog set",
+                            "   intent = ?,",
+                            "   score = ?,",
+                            "   tti_engine = ?",
+                            "where filename =(",
+                            "   select filename",
+                            "   from audiolog",
+                            "   where datetime=(",
+                            "       select max(datetime) from audiolog",
+                            "   )",
+                            ")"
+                        ]),
+                        (
+                            intent,
+                            intents[intent]['score'],
+                            str(self._intentparser.__class__)
                         )
-                        conn.commit()
+                    )
+                    conn.commit()
 
+                if intents[intent]['score'] > 0.05:
                     return(intents[intent])
             self._logger.debug(
                 "No module was able to handle any of these phrases: {}".format(

@@ -61,18 +61,41 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
         )
 
     def intents(self):
-        _ = self.gettext
         playlists = [pl.upper() for pl in self._music.get_playlists()]
         return {
             'MPDControlIntent': {
-                'keywords': {
-                    'PlayList': playlists
+                'locale': {
+                    'en-US': {
+                        'keywords': {
+                            'PlayList': playlists
+                        },
+                        'templates': [
+                            "PLAY SOMETHING",
+                            "PLAY MUSIC",
+                            "PLAY {PlayList}"
+                        ]
+                    },
+                    'fr-FR': {
+                        'keywords': {
+                            'PlayList': playlists
+                        },
+                        'templates': [
+                            "JOUER QUELQUE CHOSE",
+                            "JOUER DE LA MUSIQUE",
+                            "JOUER {PlayList}"
+                        ]
+                    },
+                    'de-DE': {
+                        'keywords': {
+                            'PlayList': playlists
+                        },
+                        'templates': [
+                            "SPIELEN SIE ETWAS",
+                            "SPIELEN MUSIK",
+                            "SPIELE {PlayList}"
+                        ]
+                    }
                 },
-                'templates': [
-                    "PLAY SOMETHING",
-                    "PLAY MUSIC",
-                    "PLAY {PlayList}"
-                ],
                 'action': self.handle
             }
         }

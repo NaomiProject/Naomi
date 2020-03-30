@@ -41,15 +41,34 @@ class JokePlugin(plugin.SpeechHandlerPlugin):
             raise ValueError('Unsupported language!')
 
     def intents(self):
-        _ = self.gettext
         return {
             'JokeIntent': {
-                'templates': [
-                    _("TELL ME A JOKE"),
-                    _("DO YOU KNOW ANY JOKES"),
-                    _("CAN YOU TELL ME A JOKE"),
-                    _("MAKE ME LAUGH")
-                ],
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "TELL ME A JOKE",
+                            "DO YOU KNOW ANY JOKES",
+                            "CAN YOU TELL ME A JOKE",
+                            "MAKE ME LAUGH"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "RACONTE MOI UNE BLAGUE",
+                            "CONNAISSEZ-VOUS DES PLAISANTERIES",
+                            "PEUX-TU ME DIRE UNE BLAGUE",
+                            "FAIS MOI RIRE"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "ERZÄHL MIR EINEN WITZ",
+                            "KENNEN SIE JEDE WITZ",
+                            "KÖNNEN SIE MIR EINEN WITZ ERZÄHLEN",
+                            "BRING MICH ZUM LACHEN"
+                        ]
+                    }
+                },
                 'action': self.handle
             }
         }

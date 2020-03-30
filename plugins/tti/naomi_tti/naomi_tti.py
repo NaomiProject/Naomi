@@ -45,23 +45,34 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             # this prevents collisions between intents by different authors
             intent_base = intent
             intent_inc = 0
+            locale = profile.get("language")
             while intent in self.intent_map['intents']:
                 intent_inc += 1
                 intent = "{}{}".format(intent_base, intent_inc)
-            if('keywords' in intents[intent_base]):
+            if('locale' in intents[intent_base]):
+                # If the selected locale is not available, try matching just
+                # the language ("en-US" -> "en")
+                if(locale not in intents[intent_base]['locale']):
+                    for language in intents[intent_base]['locale']:
+                        if(language[:2] == locale[:2]):
+                            locale = language
+                            break
+            if(locale not in intents[intent_base]['locale']):
+                raise KeyError("Language not supported")
+            if('keywords' in intents[intent_base]['locale'][locale]):
                 if intent not in self.keywords:
                     self.keywords[intent] = {}
-                for keyword in intents[intent_base]['keywords']:
+                for keyword in intents[intent_base]['locale'][locale]['keywords']:
                     if keyword not in self.keywords[intent]:
                         self.keywords[intent][keyword] = []
-                    self.keywords[intent][keyword].extend([word.upper() for word in intents[intent_base]['keywords'][keyword]])
+                    self.keywords[intent][keyword].extend([word.upper() for word in intents[intent_base]['locale'][locale]['keywords'][keyword]])
             self.intent_map['intents'][intent] = {
                 'action': intents[intent_base]['action'],
                 'name': intent_base,
                 'templates': [],
                 'words': {}
             }
-            for phrase in intents[intent_base]['templates']:
+            for phrase in intents[intent_base]['locale'][locale]['templates']:
                 # Save the phrase so we can search for undefined keywords
                 self.intent_map['intents'][intent]['templates'].append(phrase)
                 for word in phrase.split():
@@ -73,7 +84,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                     # having a way oversized impact.
                     if(
                         word not in profile.get(
-                            ['naomi_tti','words_to_ignore'],
+                            ['naomi_tti', 'words_to_ignore'],
                             ['ANY', 'ARE', 'DO', 'IS', 'THE', 'TO', 'WHAT']
                         )
                     ):
@@ -90,7 +101,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             # number of examples (this way words that are used frequently
             # get a higher weight, while those appearing in only one template
             # get a much lower weight.
-            phrase_count = len(intents[intent_base]['templates'])
+            phrase_count = len(intents[intent_base]['locale'][locale]['templates'])
             for word in self.intent_map['intents'][intent]['words']:
                 self.intent_map['intents'][intent]['words'][word] /= phrase_count
                 self._logger.info("word {} appears {} times in {}: {}".format(word, phrase_count, intent, self.intent_map['intents'][intent]['words'][word]))

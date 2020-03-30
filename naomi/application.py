@@ -233,29 +233,36 @@ class Naomi(object):
             passive_listen = profile.get_profile_flag(["passive_listen"])
 
         # Audiolog settings
-        if(save_audio):
-            save_passive_audio = True
-            save_active_audio = True
-            save_noise = True
-        elif(not(save_passive_audio or save_active_audio or save_noise)):
-            # get the settings from the profile
-            if(profile.get_profile_flag(['audiolog', 'save_audio'], False)):
+        if(use_mic == USE_STANDARD_MIC):
+            if(save_audio):
                 save_passive_audio = True
                 save_active_audio = True
                 save_noise = True
-            else:
-                save_passive_audio = profile.get_profile_flag(
-                    ['audiolog', 'save_passive_audio']
-                )
-                save_active_audio = profile.get_profile_flag(
-                    ['audiolog', 'save_active_audio']
-                )
-                save_noise = profile.get_profile_flag(
-                    ['audiolog', 'save_noise']
-                )
-            profile.set_arg('save_passive_audio', save_passive_audio)
-            profile.set_arg('save_active_audio', save_active_audio)
-            profile.set_arg('save_noise', save_noise)
+            elif(not(save_passive_audio or save_active_audio or save_noise)):
+                # get the settings from the profile
+                if(profile.get_profile_flag(['audiolog', 'save_audio'], False)):
+                    save_passive_audio = True
+                    save_active_audio = True
+                    save_noise = True
+                else:
+                    save_passive_audio = profile.get_profile_flag(
+                        ['audiolog', 'save_passive_audio']
+                    )
+                    save_active_audio = profile.get_profile_flag(
+                        ['audiolog', 'save_active_audio']
+                    )
+                    save_noise = profile.get_profile_flag(
+                        ['audiolog', 'save_noise']
+                    )
+        else:
+            # If not using the standard mic, turn off audiolog
+            save_passive_audio = False
+            save_active_audio = False
+            save_noise = False
+            save_audio = False
+        profile.set_arg('save_passive_audio', save_passive_audio)
+        profile.set_arg('save_active_audio', save_active_audio)
+        profile.set_arg('save_noise', save_noise)
 
         # load visualizations
         visualizations.load_visualizations(self)
