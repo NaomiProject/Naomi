@@ -36,7 +36,8 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
                         'templates': [
                             "READ HACKER NEWS",
                             "WHAT IS IN HACKER NEWS",
-                            "WHAT ARE THE HACKER NEWS HEADLINES"
+                            "WHAT ARE THE HACKER NEWS HEADLINES",
+                            "WHAT IS HAPPENING IN HACKER NEWS"
                         ]
                     },
                     'fr-FR': {

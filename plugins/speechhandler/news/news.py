@@ -47,27 +47,45 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
             'NewsIntent': {
                 'locale': {
                     'en-US': {
+                        'keywords': {
+                            'NewsKeyword': [
+                                'NEWS',
+                                'HEADLINES'
+                            ]
+                        },
                         'templates': [
-                            "READ THE NEWS",
-                            "WHAT IS IN THE NEWS",
-                            "WHAT IS HAPPENING IN THE NEWS",
-                            "WHAT ARE TODAY'S HEADLINES"
+                            "READ THE {NewsKeyword}",
+                            "WHAT IS IN THE {NewsKeyword}",
+                            "WHAT IS HAPPENING IN THE {NewsKeyword}",
+                            "WHAT ARE TODAY'S {NewsKeyword}"
                         ]
                     },
                     'fr-FR': {
+                        'keywords': {
+                            'NewsKeyword': [
+                                "NOUVELLES",
+                                "TITRES D'AUJOURD'HUI"
+                            ]
+                        },
                         'templates': [
-                            "LIRE LES NOUVELLES",
-                            "CE QUI EST DANS LES NOUVELLES",
-                            "CE QUI SE PASSE DANS LES NOUVELLES",
-                            "QUELS SONT LES TITRES D'AUJOURD'HUI"
+                            "LIRE LES {NewsKeyword}",
+                            "CE QUI EST DANS LES {NewsKeyword}",
+                            "CE QUI SE PASSE DANS LES {NewsKeyword}",
+                            "QUELS SONT LES {NewsKeyword}"
                         ]
                     },
                     'de-DE': {
+                        'keywords':{
+                            'NewsKeyword': [
+                                "NACHRICHTEN",
+                                "SCHLAGZEILEN"
+                            ]
+                        },
                         'templates': [
-                            "LIES DIE NACHRICHTEN",
-                            "WAS IST IN DEN NACHRICHTEN",
-                            "WAS PASSIERT IN DEN NACHRICHTEN",
-                            "WAS SIND HEUTE SCHLAGZEILEN"
+                            "LIES DIE {NewsKeyword}",
+                            "WAS IST IN DEN {NewsKeyword}",
+                            "WAS PASSIERT IN DEN {NewsKeyword}",
+                            "WAS SIND HEUTE {NewsKeyword}"
                         ]
                     }
                 },

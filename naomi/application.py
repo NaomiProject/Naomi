@@ -1281,7 +1281,7 @@ class Naomi(object):
                         else:
                             required_file = os.path.join(
                                 install_dir,
-                                "python_required.txt"
+                                "python_requirements.txt"
                             )
                             if os.path.isfile(required_file):
                                 # Install any python packages required

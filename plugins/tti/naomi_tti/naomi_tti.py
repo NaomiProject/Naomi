@@ -85,7 +85,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                     if(
                         word not in profile.get(
                             ['naomi_tti', 'words_to_ignore'],
-                            ['ANY', 'ARE', 'DO', 'IS', 'THE', 'TO', 'WHAT']
+                            ['ANY', 'ARE', 'DO', 'IN', 'IS', 'THE', 'TO', 'WHAT']
                         )
                     ):
                         try:
@@ -229,16 +229,25 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             intentscores = {}
             for intent in self.intent_map['intents']:
                 score = 0
+                # build up a score based on the words that match.
                 for word in words:
                     if word in self.intent_map['intents'][intent]['words']:
                         intents_count = len(self.intent_map['intents'])
                         word_appears_in = len(self.words[word])
-                        # print("Word: {} Weight: {} Intents: {} Appears in: {}".format(word, weight, intents_count, word_appears_in))
                         score += self.intent_map['intents'][intent]['words'][word] * (intents_count - word_appears_in) / intents_count
-                intentscores[intent] = score / len(words)
+                # penalize the variant if it does not contain important words
+                # highscore would be if the variant contains at least each of
+                # the keywords
+                highscore = sum(self.intent_map['intents'][intent]['words'].values())
+                penalty = 0
+                for word in self.intent_map['intents'][intent]['words']:
+                    if word not in words:
+                        penalty += self.intent_map['intents'][intent]['words'][word]
+                intentscores[intent] = score * (highscore - penalty) / highscore
             # list intents and scores
             for intent in intentscores.keys():
                 self._logger.info("\t{}: {}".format(intent, intentscores[intent]))
+                # print("\t{}: {}".format(intent, intentscores[intent]))
             # Take the intent with the highest score
             # print("==========intentscores============")
             # pprint(intentscores)

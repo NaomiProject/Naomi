@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Update .po files to receive updated translation strings
 # Create one .po file for the files in the main naomi directory,
@@ -28,8 +28,9 @@ def update_translation_files(
         new_phrases_file = os.path.join(locale_temp_dir, "temp.pot")
         cmd = [
             pygettext_path,
-            "-k", "gettext",
-            "-d", "temp",
+            "-L", "Python",
+            "-kgettext",
+            "-o", "temp.pot",
             "-p", locale_temp_dir
         ]
         for dirName, subdirList, fileList in os.walk(base_dir):
@@ -67,7 +68,8 @@ def update_translation_files(
             print("Updated %s" % language_file)
             # clean up the copied .po file
             os.remove(language_temp_file)
-        os.remove(new_phrases_file)
+        if(os.path.isfile(new_phrases_file)):
+            os.remove(new_phrases_file)
     else:
         logger.warn(
             "Skipping %s, %s directory does not exist" % (
@@ -160,18 +162,8 @@ def main():
                     languages.append(language)
 
     if(len(languages) > 0):
-        pygettext_path = "/".join([
-            "",
-            "usr",
-            "share",
-            "doc",
-            "python2.7",
-            "examples",
-            "Tools",
-            "i18n",
-            "pygettext.py"
-        ])
-        if(check_executable(pygettext_path)):
+        pygettext_path = "xgettext"
+        if(check_executable("xgettext")):
             if(check_executable("msgcat")):
                 # Update the translations for the "naomi" folder and subfolders
                 update_translation_files(
@@ -252,9 +244,9 @@ def main():
             logger.error(
                 '\n'.join([
                     "File %s does not exist." % pygettext_path,
-                    "Please install the examples package for python 2.7:",
+                    "Please install the gettext package:",
                     "",
-                    "sudo apt install python2.7-examples"
+                    "sudo apt install gettext"
                 ])
             )
     else:
