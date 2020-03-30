@@ -484,10 +484,12 @@ def application(environ, start_response):
                                     recording_type = "unclear"
                                     print("Setting recording_type to unclear")
                             # calculate the word error rate
-                            WER = wer(
-                                transcription,
-                                verified_transcription
-                            )
+                            WER = 0
+                            if(len(transcription) > 0):
+                                WER = wer(
+                                    transcription,
+                                    verified_transcription
+                                )
                             c.execute(
                                 " ".join([
                                     "update audiolog set ",
