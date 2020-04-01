@@ -97,7 +97,7 @@ def update_translation_files(
                                 new_phrases_file
                             )
                         )
-                        for line in subprocess.check_output(
+                        for line in subprocess.check_output(  # nosec
                             ["msgcat", language_temp_file, new_phrases_file]
                         ).decode('utf-8').split("\n"):
                             if(line == "# #-#-#-#-#  temp.pot (PACKAGE VERSION)  #-#-#-#-#"):
