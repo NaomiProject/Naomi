@@ -1,3 +1,4 @@
+# #-#-#-#-#  fr-FR.po (Naomi 3.0)  #-#-#-#-#
 # Naomi 3.0 mpdcontrol
 # Copyright (C) 2020 Naomi Project
 # This file is distributed under the same MIT license as the Naomi package.
@@ -6,16 +7,18 @@
 #, fuzzy
 msgid ""
 msgstr ""
+"#-#-#-#-#  fr-FR.po (Naomi 3.0)  #-#-#-#-#\n"
 "Project-Id-Version: Naomi 3.0\n"
 "Report-Msgid-Bugs-To: aaron.chantrill@projectnaomi.com\n"
 "POT-Creation-Date: 2020-04-01 17:25+1300\n"
-"PO-Revision-Date: 2020-04-01 17:25+1300\n"
+"PO-Revision-Date: 2020-04-01 21:30+1300\n"
 "Last-Translator: Aaron Chantrill <aaron.chantrill@projectnaomi.com>\n"
 "Language-Team: fr-FR <fr-FR@projectnaomi.com>\n"
 "Language: fr-FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
 
 #: /home/pi/Naomi-Translations/plugins/speechhandler/mpdcontrol/mpdcontrol.py:46
 msgid "MPD Server"
