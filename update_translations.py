@@ -140,7 +140,7 @@ def update_translation_files(
                                 line = '"Language-Team: {} <{}@projectnaomi.com>\\n"'.format(language, language)
                             if(line == '"Content-Type: text/plain; charset=CHARSET\\n"'):
                                 line = '"Content-Type: text/plain; charset=UTF-8\\n"'
-                            if(line == '"Content-Transfer-Encoding: 8bit\n"'):
+                            if(line == '"Content-Transfer-Encoding: 8bit\\n"'):
                                 line = "\n".join([
                                     '"Content-Transfer-Encoding: 8bit\\n"',
                                     plural_forms
