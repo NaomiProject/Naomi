@@ -13,7 +13,7 @@ import subprocess
 import tempfile
 from datetime import datetime
 
-import pdb
+
 PROGRAM = "Naomi"
 VERSION = "3.0"
 LICENSE = "MIT"
@@ -30,14 +30,16 @@ def update_translation_files(
     email
 ):
     now = datetime.now()
-    tdiff=round(100 * (now - datetime.utcnow()).seconds / 3600)
-    zone = str(tdiff) if tdiff<0 else "+{}".format(tdiff)
+    tdiff = round(100 * (now - datetime.utcnow()).seconds / 3600)
+    zone = "+{}".format(tdiff)
+    if(tdiff < 0):
+        zone = str(tdiff)
     year = str(now.year)
     month = str(now.month).zfill(2)
     day = str(now.day).zfill(2)
     hour = str(now.hour).zfill(2)
     minute = str(now.minute).zfill(2)
-    second = str(now.second).zfill(2)
+    # second = str(now.second).zfill(2)
 
     if(os.path.isdir(locale_dir)):
         # temp file working directory
@@ -59,104 +61,112 @@ def update_translation_files(
                 cmd.append(os.path.join(dirName, file))
 
         # create the new phrases file
-        print(" ".join(cmd))
+        logger.info(" ".join(cmd))
         subprocess.check_call(cmd)
-
-        for language in languages:
-            # make a copy of the .po file containing the current
-            # translations
-            language_file = os.path.join(locale_dir, "%s.po" % language)
-            language_temp_file = os.path.join(
-                locale_temp_dir, "%s.po" % language
-            )
-            plural_forms = '"Plural-Forms: nplurals=2; plural=(n != 1);\\n"'
-            if(language == "fr-FR"):
-                plural_forms = '"Plural-Forms: nplurals=2; plural=(n>1);\\n"'
-            if(os.path.isfile(language_file)):
-                print("cp {} {}".format(language_file, language_temp_file))
-                shutil.copyfile(language_file, language_temp_file)
-            else:
-                # create a language file
-                print("touch {}".format(language_temp_file))
-                open(language_temp_file, "w").close()
-            # combine the generated pot file with the temporary po file
-            # and write them back to the working po file location
-            with open(language_file, "w") as fp:
-                try:
-                    print("msgcat {} {}".format(language_temp_file, new_phrases_file))
-                    header = False
-                    prev_line = ""
-                    skip1 = False
-                    skip2 = False
-                    for line in subprocess.check_output(
-                        ["msgcat", language_temp_file, new_phrases_file]
-                    ).decode('utf-8').split("\n"):
-                        if(line == "# #-#-#-#-#  temp.pot (PACKAGE VERSION)  #-#-#-#-#"):
-                            skip1 = True
-                        if(skip1):
-                            if(line == "#, fuzzy"):
-                                skip1 = False
-                            else:
-                                continue
-                        if(line == '"#-#-#-#-#  temp.pot (PACKAGE VERSION)  #-#-#-#-#\\n"'):
-                            skip2 = True
-                        if(skip2):
-                            if(line == ""):
-                                skip2 = False
-                            else:
-                                continue
-                        # Eliminate duplicate lines
-                        if(line == prev_line):
-                            continue
-                        prev_line = line
-                        if(line == "# SOME DESCRIPTIVE TITLE."):
-                            line = "# {} {} {}".format(PROGRAM, VERSION, plugin)
-                        if(line == "# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER"):
-                            line = "# Copyright (C) {} {}".format(year, "Naomi Project")
-                        if(line == "# This file is distributed under the same license as the PACKAGE package."):
-                            line = "# This file is distributed under the same {} license as the {} package.".format(LICENSE, PROGRAM)
-                        if(line == "# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR."):
-                            line = "# {} <{}>, {}".format(name, email, year)
-                        if(line == '"Project-Id-Version: PACKAGE VERSION\\n"'):
-                            line = '"Project-Id-Version: {}\\n"'.format('Naomi 3.0')
-                        if(line == '"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n"'):
-                            line = '"Last-Translator: {} <{}>\\n"'.format(name, email)
-                        if(line == '"Language: \\n"'):
-                            line = '"Language: {}\\n"'.format(language)
-                        if(line == '"Report-Msgid-Bugs-To: \\n"'):
-                            line = '"Report-Msgid-Bugs-To: {}\\n"'.format(email)
-                        if(line[:19] == '"PO-Revision-Date: '):
-                            line = '"PO-Revision-Date: {}-{}-{} {}:{}{}\\n"'.format(year, month, day, hour, minute, zone)
-                        if(line == '"Language-Team: LANGUAGE <LL@li.org>\\n"'):
-                            line = '"Language-Team: {} <{}@projectnaomi.com>\\n"'.format(language, language)
-                        if(line == '"Content-Type: text/plain; charset=CHARSET\\n"'):
-                            line = '"Content-Type: text/plain; charset=UTF-8\\n"'
-                        if(line == '"Content-Transfer-Encoding: 8bit\n"'):
-                            line = "\n".join([
-                                '"Content-Transfer-Encoding: 8bit\\n"',
-                                plural_forms
-                            ])
-                        if(line[:15] == '"Plural-Forms: '):
-                            continue
-                        if(line == '"# #-#-#-#-#  temp.pot (PACKAGE VERSION)  #-#-#-#-#\\n"'):
-                            skip2 = True
-                        fp.write("{}\n".format(line))
-                except subprocess.CalledProcessError as e:
-                    logger.error(e.output)
-                fp.close()
-            print("Updated %s" % language_file)
-            # clean up the copied .po file
-            print("rm {}".format(language_temp_file))
-            os.remove(language_temp_file)
         if(os.path.isfile(new_phrases_file)):
-            print("rm {}".format(new_phrases_file))
-            os.remove(new_phrases_file)
+            for language in languages:
+                # make a copy of the .po file containing the current
+                # translations
+                language_file = os.path.join(locale_dir, "%s.po" % language)
+                operation = "Created"
+                if(os.path.isfile(language_file)):
+                    operation = "Updated"
+                language_temp_file = os.path.join(
+                    locale_temp_dir, "%s.po" % language
+                )
+                plural_forms = '"Plural-Forms: nplurals=2; plural=(n != 1);\\n"'
+                if(language == "fr-FR"):
+                    plural_forms = '"Plural-Forms: nplurals=2; plural=(n>1);\\n"'
+                if(os.path.isfile(language_file)):
+                    logger.info("cp {} {}".format(language_file, language_temp_file))
+                    shutil.copyfile(language_file, language_temp_file)
+                else:
+                    # create a language file
+                    logger.info("touch {}".format(language_temp_file))
+                    open(language_temp_file, "w").close()
+                # combine the generated pot file with the temporary po file
+                # and write them back to the working po file location
+                with open(language_file, "w") as fp:
+                    try:
+                        prev_line = ""
+                        skip1 = False
+                        skip2 = False
+                        logger.info(
+                            "msgcat {} {}".format(
+                                language_temp_file,
+                                new_phrases_file
+                            )
+                        )
+                        for line in subprocess.check_output(
+                            ["msgcat", language_temp_file, new_phrases_file]
+                        ).decode('utf-8').split("\n"):
+                            if(line == "# #-#-#-#-#  temp.pot (PACKAGE VERSION)  #-#-#-#-#"):
+                                skip1 = True
+                            if(skip1):
+                                if(line == "#, fuzzy"):
+                                    skip1 = False
+                                else:
+                                    continue
+                            if(line == '"#-#-#-#-#  temp.pot (PACKAGE VERSION)  #-#-#-#-#\\n"'):
+                                skip2 = True
+                            if(skip2):
+                                if(line == ""):
+                                    skip2 = False
+                                else:
+                                    continue
+                            # Eliminate duplicate lines
+                            if(line == prev_line):
+                                continue
+                            prev_line = line
+                            if(line == "# SOME DESCRIPTIVE TITLE."):
+                                line = "# {} {} {}".format(PROGRAM, VERSION, plugin)
+                            if(line == "# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER"):
+                                line = "# Copyright (C) {} {}".format(year, "Naomi Project")
+                            if(line == "# This file is distributed under the same license as the PACKAGE package."):
+                                line = "# This file is distributed under the same {} license as the {} package.".format(LICENSE, PROGRAM)
+                            if(line == "# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR."):
+                                line = "# {} <{}>, {}".format(name, email, year)
+                            if(line == '"Project-Id-Version: PACKAGE VERSION\\n"'):
+                                line = '"Project-Id-Version: {}\\n"'.format('Naomi 3.0')
+                            if(line == '"Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n"'):
+                                line = '"Last-Translator: {} <{}>\\n"'.format(name, email)
+                            if(line == '"Language: \\n"'):
+                                line = '"Language: {}\\n"'.format(language)
+                            if(line == '"Report-Msgid-Bugs-To: \\n"'):
+                                line = '"Report-Msgid-Bugs-To: {}\\n"'.format(email)
+                            if(line[:19] == '"PO-Revision-Date: '):
+                                line = '"PO-Revision-Date: {}-{}-{} {}:{}{}\\n"'.format(year, month, day, hour, minute, zone)
+                            if(line == '"Language-Team: LANGUAGE <LL@li.org>\\n"'):
+                                line = '"Language-Team: {} <{}@projectnaomi.com>\\n"'.format(language, language)
+                            if(line == '"Content-Type: text/plain; charset=CHARSET\\n"'):
+                                line = '"Content-Type: text/plain; charset=UTF-8\\n"'
+                            if(line == '"Content-Transfer-Encoding: 8bit\n"'):
+                                line = "\n".join([
+                                    '"Content-Transfer-Encoding: 8bit\\n"',
+                                    plural_forms
+                                ])
+                            if(line[:15] == '"Plural-Forms: '):
+                                continue
+                            if(line == '"# #-#-#-#-#  temp.pot (PACKAGE VERSION)  #-#-#-#-#\\n"'):
+                                skip2 = True
+                            fp.write("{}\n".format(line))
+                    except subprocess.CalledProcessError as e:
+                        logger.error(e.output)
+                    fp.close()
+                print("{} {}".format(operation, language_file))
+                # clean up the copied .po file
+                logger.info("rm {}".format(language_temp_file))
+                os.remove(language_temp_file)
+            if(os.path.isfile(new_phrases_file)):
+                logger.info("rm {}".format(new_phrases_file))
+                os.remove(new_phrases_file)
     else:
-        logger.warn(
+        logger.warning(
             "Skipping %s, %s directory does not exist" % (
                 base_dir, locale_dir
             )
         )
+
 
 def check_executable(executable):
     try:
@@ -173,6 +183,7 @@ def check_executable(executable):
         return True
     except OSError:
         return False
+
 
 def main():
     logger = logging.getLogger("update_translations")
@@ -222,7 +233,7 @@ def main():
     )
     args = parser.parse_args()
     logging.basicConfig(
-        level=logging.DEBUG if args.debug else logging.ERROR
+        level=logging.DEBUG if args.debug else logging.WARNING
     )
     if(args.language is None):
         languages = existing_languages
@@ -327,7 +338,7 @@ def main():
                 print("Finished.")
                 print(
                     " ".join([
-                        "Unfortunately, this program has probably introduced",
+                        "Unfortunately, this program may have introduced",
                         "duplicate lines into the .po file headers.",
                         "Please clean them up while updating the translations.",
                         "Thank you."
@@ -352,7 +363,7 @@ def main():
                 ])
             )
     else:
-        print("No languages listed for updating. Exiting.")
+        logger.error("No languages listed for updating. Exiting.")
 
 
 if __name__ == "__main__":
