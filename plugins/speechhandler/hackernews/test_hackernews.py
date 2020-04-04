@@ -4,13 +4,21 @@ from naomi import testutils, diagnose
 from . import hackernews
 
 
-class TestGmailPlugin(unittest.TestCase):
+class TestHackerNewsPlugin(unittest.TestCase):
     def setUp(self):
         self.plugin = testutils.get_plugin_instance(
-            hackernews.HackerNewsPlugin)
+            hackernews.HackerNewsPlugin
+        )
 
+<<<<<<< HEAD
     @unittest.skipIf(not diagnose.check_network_connection(),
                      "No internet connection")
+=======
+    @unittest.skipIf(
+        not diagnose.check_network_connection(),
+        "No internet connection"
+    )
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
     def test_handle_method(self):
         mic = testutils.TestMic(inputs=["No."])
         self.plugin.handle(

@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import imaplib
+<<<<<<< HEAD
 import re
+=======
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
 from naomi import app_utils
 from naomi import plugin
 
@@ -11,12 +14,41 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
         _ = self.gettext
         return {
             'CheckEmailIntent': {
+<<<<<<< HEAD
                 'templates': [
                     _("READ MY EMAIL"),
                     _("CHECK MY INBOX"),
                     _("DO I HAVE ANY EMAIL"),
                     _("ARE THERE ANY NEW EMAILS")
                 ],
+=======
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "READ MY EMAIL",
+                            "CHECK MY INBOX",
+                            "DO I HAVE ANY EMAIL",
+                            "ARE THERE ANY NEW EMAILS"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "LIRE MON EMAIL",
+                            "VÉRIFIEZ MA BOÎTE DE RÉCEPTION",
+                            "AI-JE UN COURRIEL",
+                            "Y A-T-IL DE NOUVEAUX COURRIELS"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "LESEN SIE MEINE E-MAIL",
+                            "PRÜFEN SIE MEINEN EINGANG",
+                            "HABE ICH E-MAIL?",
+                            "GIBT ES NEUE E-MAILS"
+                        ]
+                    }
+                },
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
                 'action': self.handle
             }
         }
@@ -39,7 +71,11 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
         """
         _ = self.gettext
         try:
+<<<<<<< HEAD
             messages = app_utils.fetch_emails(filter="(UNSEEN)", limit=5)
+=======
+            messages = app_utils.fetch_emails(email_filter="(UNSEEN)", limit=5)
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
         except imaplib.IMAP4.error:
             mic.say(
                 _("I'm sorry. I'm not authenticated to work with your Email account.")

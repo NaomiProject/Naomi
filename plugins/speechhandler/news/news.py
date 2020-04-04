@@ -43,6 +43,7 @@ def get_top_articles(language='en', num_headlines=5):
 
 class NewsPlugin(plugin.SpeechHandlerPlugin):
     def intents(self):
+<<<<<<< HEAD
         _ = self.gettext
         return {
             'NewsIntent': {
@@ -51,6 +52,36 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
                     _("WHAT'S HAPPENING"),
                     _("WHAT ARE TODAY'S HEADLINES")
                 ],
+=======
+        return {
+            'NewsIntent': {
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "READ THE NEWS",
+                            "WHAT IS IN THE NEWS",
+                            "WHAT IS HAPPENING IN THE NEWS",
+                            "WHAT ARE TODAY'S HEADLINES"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "LIRE LES NOUVELLES",
+                            "CE QUI EST DANS LES NOUVELLES",
+                            "CE QUI SE PASSE DANS LES NOUVELLES",
+                            "QUELS SONT LES TITRES D'AUJOURD'HUI"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "LIES DIE NACHRICHTEN",
+                            "WAS IST IN DEN NACHRICHTEN",
+                            "WAS PASSIERT IN DEN NACHRICHTEN",
+                            "WAS SIND HEUTE SCHLAGZEILEN"
+                        ]
+                    }
+                },
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
                 'action': self.handle
             }
         }
@@ -81,7 +112,8 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
         text += ' '
         text += '... '.join(
             '%d) %s' % (i, a.title)
-            for i, a in enumerate(articles, start=1))
+            for i, a in enumerate(articles, start=1)
+        )
         mic.say(text)
 
         email = profile.get(['email', 'address'])

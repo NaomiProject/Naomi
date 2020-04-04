@@ -50,3 +50,31 @@ def run_command(command, capture=0, stdin=None):
             command
         )
     return completedprocess
+
+
+def process_completedprocess(completedprocess, output='text'):
+    result = "failure"
+    command = " ".join(completedprocess.args)
+    response = ""
+    if(output == 'html'):
+        response = "<br />Check log for details<br />"
+    if(completedprocess.stdout):
+        response = " - {}".format(
+            completedprocess.stdout.decode("utf-8").strip()
+        )
+    if(completedprocess.returncode == 0):
+        result = "success"
+        response = ""
+    if(output == 'html'):
+        return '{}...<span class="{}">{}</span>{}'.format(
+            command,
+            result,
+            result.upper(),
+            response
+        )
+    else:
+        return '{}...{}{}'.format(
+            command,
+            result,
+            response
+        )

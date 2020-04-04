@@ -28,6 +28,7 @@ class ClockPlugin(plugin.SpeechHandlerPlugin):
         )
 
     def intents(self):
+<<<<<<< HEAD
         _ = self.gettext
         return {
             'ClockIntent': {
@@ -36,6 +37,33 @@ class ClockPlugin(plugin.SpeechHandlerPlugin):
                     _("TELL ME THE TIME"),
                     _("WHAT IS THE TIME")
                 ],
+=======
+        return {
+            'ClockIntent': {
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "WHAT TIME IS IT",
+                            "TELL ME THE TIME",
+                            "WHAT IS THE TIME"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "QUELLE HEURE EST-IL",
+                            "DITES MOI L'HEURE",
+                            "QUELLE EST L'HEURE"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "WIE SPÄT IST ES",
+                            "TELL ME THE TIME",
+                            "WIE SPÄT IST ES"
+                        ]
+                    },
+                },
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
                 'action': self.handle
             }
         }

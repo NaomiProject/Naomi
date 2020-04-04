@@ -118,10 +118,20 @@ class Naomi(object):
         #         quit()
         if(profile.get_arg("repopulate") or profile.get_arg("profile_missing") or not settings_complete):
             populate.run()
+<<<<<<< HEAD
             print(self._interface.status_text(_(
                 "Configuring {}"
             ).format(
                 profile.get_profile_var(['keyword'], ['Naomi'])[0]
+=======
+            keyword = profile.get_profile_var(['keyword'], ['Naomi'])
+            if(isinstance(keyword, list)):
+                keyword = keyword[0]
+            print(self._interface.status_text(_(
+                "Configuring {}"
+            ).format(
+                keyword
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
             )))
             for setting in self.settings():
                 self._interface.get_setting(
@@ -224,22 +234,19 @@ class Naomi(object):
                 ['print_transcript'],
                 False
             )
+        profile.set_arg('print_transcript', print_transcript)
 
         # passive_listen
         if(not passive_listen):
             passive_listen = profile.get_profile_flag(["passive_listen"])
 
         # Audiolog settings
-        if(save_audio):
-            save_passive_audio = True
-            save_active_audio = True
-            save_noise = True
-        elif(not(save_passive_audio or save_active_audio or save_noise)):
-            # get the settings from the profile
-            if(profile.get_profile_flag(['audiolog', 'save_audio'], False)):
+        if(use_mic == USE_STANDARD_MIC):
+            if(save_audio):
                 save_passive_audio = True
                 save_active_audio = True
                 save_noise = True
+<<<<<<< HEAD
             else:
                 save_passive_audio = profile.get_profile_flag(
                     ['audiolog', 'save_passive_audio']
@@ -250,6 +257,33 @@ class Naomi(object):
                 save_noise = profile.get_profile_flag(
                     ['audiolog', 'save_noise']
                 )
+=======
+            elif(not(save_passive_audio or save_active_audio or save_noise)):
+                # get the settings from the profile
+                if(profile.get_profile_flag(['audiolog', 'save_audio'], False)):
+                    save_passive_audio = True
+                    save_active_audio = True
+                    save_noise = True
+                else:
+                    save_passive_audio = profile.get_profile_flag(
+                        ['audiolog', 'save_passive_audio']
+                    )
+                    save_active_audio = profile.get_profile_flag(
+                        ['audiolog', 'save_active_audio']
+                    )
+                    save_noise = profile.get_profile_flag(
+                        ['audiolog', 'save_noise']
+                    )
+        else:
+            # If not using the standard mic, turn off audiolog
+            save_passive_audio = False
+            save_active_audio = False
+            save_noise = False
+            save_audio = False
+        profile.set_arg('save_passive_audio', save_passive_audio)
+        profile.set_arg('save_active_audio', save_active_audio)
+        profile.set_arg('save_noise', save_noise)
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
 
         # load visualizations
         visualizations.load_visualizations(self)
@@ -394,6 +428,13 @@ class Naomi(object):
                 plugin = info.plugin_class(info)
                 self.brain.add_plugin(plugin)
             except Exception as e:
+                if(self._logger.getEffectiveLevel() > logging.DEBUG):
+                    print(
+                        "Plugin {} skipped! (Reason: {})".format(
+                            info.name,
+                            e.message if hasattr(e, 'message') else 'Unknown'
+                        )
+                    )
                 self._logger.warning(
                     "Plugin '%s' skipped! (Reason: %s)", info.name,
                     e.message if hasattr(e, 'message') else 'Unknown',
@@ -564,7 +605,11 @@ class Naomi(object):
                         "type": "listbox",
                         "title": _("Please select an audio engine"),
                         "options": self.get_audio_engines,
+<<<<<<< HEAD
                         "default": "alsa" if re.match(r'linux', platform.system().lower()) else "pyaudio"
+=======
+                        "default": "pyaudio"
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
                     }
                 ),
                 (
@@ -573,7 +618,11 @@ class Naomi(object):
                         "title": _("please select an output device"),
                         "options": self.get_output_devices,
                         "validation": self.validate_output_device,
+<<<<<<< HEAD
                         "default": "default"
+=======
+                        "default": "pulse"
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
                     }
                 ),
                 (
@@ -582,7 +631,11 @@ class Naomi(object):
                         "title": _("Please select an input device"),
                         "options": self.get_input_devices,
                         "validation": self.validate_input_device,
+<<<<<<< HEAD
                         "default": "default"
+=======
+                        "default": "pulse"
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
                     }
                 ),
                 (
@@ -1056,7 +1109,7 @@ class Naomi(object):
                 # The nosec comment on the next line has to be there to say
                 # "Yes, I know I'm doing something unsecure" or codacy has a
                 # fit
-                with urllib.request.urlopen(urllib.request.Request(url)) as f:  #nosec
+                with urllib.request.urlopen(urllib.request.Request(url)) as f:  # nosec
                     file_contents = f.read().decode('utf-8')
                 for line in csv.DictReader(
                     io.StringIO(file_contents),

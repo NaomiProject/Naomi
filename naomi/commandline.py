@@ -383,7 +383,7 @@ class commandline(object):
                 print("")
                 response = value
                 once = False
-                while not ((once) and (self.validate(definition, response))):
+                while not ((once) and (profile.validate(definition, response))):
                     once = True
                     tmp_response = self.simple_input(
                         "    " + self.instruction_text(
@@ -418,7 +418,7 @@ class commandline(object):
                 value = profile.get_profile_password(setting, default)
                 response = value
                 once = False
-                while not ((once) and (self.validate(definition, response))):
+                while not ((once) and (profile.validate(definition, response))):
                     once = True
                     tmp_response = self.simple_password(
                         "    " + self.instruction_text(
@@ -448,7 +448,11 @@ class commandline(object):
                 value = profile.get_profile_password(setting, default)
                 response = value
                 once = False
+<<<<<<< HEAD
                 while not ((once) and (self.validate(definition, response))):
+=======
+                while not ((once) and (profile.validate(definition, response))):
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
                     once = True
                     tmp_response = self.simple_input(
                         "    " + self.instruction_text(
@@ -492,7 +496,7 @@ class commandline(object):
                 print("")
                 response = value
                 once = False
-                while not ((once) and (self.validate(definition, response))):
+                while not ((once) and (profile.validate(definition, response))):
                     once = True
                     tmp_response = self.simple_input(
                         "    " + self.instruction_text(_('{} ("?" for help)').format(definition["title"])),
@@ -514,49 +518,6 @@ class commandline(object):
             # Just set the value to an empty value so we know we don't need to
             # address this again.
             profile.set_profile_var(setting, "")
-
-    # FIXME I should put a default for listboxes here so that by default
-    # any value chosen has to be a member of the options.key() list.
-    @staticmethod
-    def validate(definition, response):
-        valid = False
-        if(len(response.strip()) == 0):
-            valid = True
-        else:
-            try:
-                validfunction = definition["validation"]
-                valid = validfunction(response)
-            except KeyError:
-                try:
-                    if(definition["type"] in ["listbox"]):
-                        # Use the default validation, which is to make sure whatever
-                        # is selected is a member of options
-                        try:
-                            valid = response in definition["options"]()
-                        except TypeError:
-                            # must not be a function, assume it is a list
-                            valid = response in definition["options"]
-                    else:
-                        valid = True
-                except KeyError:
-                    # must be a textbox with no validation
-                    valid = True
-            except TypeError:
-                # Not a function
-                validstr = str(definition["validation"]).strip().lower()
-                # Is it a boolean?
-                if validstr in ('true', 'yes', 'on'):
-                    valid = True
-                elif validstr in ('false', 'no', 'off'):
-                    valid = False
-                elif validstr == 'email':
-                    valid = True if re.match('^[^@]+@[^@]+\\.[^@\\.]+$', response) else False
-                elif validstr in ('int', 'integer'):
-                    try:
-                        valid = str(int(response)) == response
-                    except ValueError:
-                        valid = False
-        return valid
 
     @staticmethod
     def separator():

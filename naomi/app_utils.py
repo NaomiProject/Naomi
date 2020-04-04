@@ -1,15 +1,31 @@
 # -*- coding: utf-8 -*-
 import email
 import imaplib
+<<<<<<< HEAD
 import smtplib
 from dateutil import parser
 from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from urllib import request as urllib_request
+=======
+import logging
 import re
+import smtplib
+from dateutil import parser
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from pytz import timezone
+<<<<<<< HEAD
 import logging
 from naomi import profile
+=======
+from urllib import request as urllib_request
+from . import i18n
+from . import paths
+from . import profile
+
+
+_ = i18n.GettextMixin(i18n.parse_translations(paths.data('locale'))).gettext
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
 
 
 # AaronC - This is currently used to clean phone numbers
@@ -39,6 +55,7 @@ def check_imap_config():
         logging.info('Email imap server not set')
         success = False
     PORT = profile.get(['email', 'imap', 'port'], 993)
+<<<<<<< HEAD
     try:
         conn = imaplib.IMAP4_SSL(SERVER, PORT)
         conn.login(USERNAME, PASSWORD)
@@ -50,6 +67,23 @@ def check_imap_config():
         if hasattr(e, 'args'):
             logging.info(e.args[0])
         success = False
+=======
+    if(success):
+        try:
+            conn = imaplib.IMAP4_SSL(SERVER, PORT)
+            conn.login(USERNAME, PASSWORD)
+            conn.logout()
+        except TimeoutError:
+            logging.info('IMAP connection timed out (check server name)')
+            success = False
+        except OSError as e:
+            logging.info('IMAP connection error: {}'.format(e))
+            success = False
+        except imaplib.IMAP4.error as e:
+            if hasattr(e, 'args'):
+                logging.info(e.args[0])
+            success = False
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
     return success
 
 
@@ -68,6 +102,7 @@ def check_smtp_config():
         logging.info('Email smtp server not set')
         success = False
     PORT = profile.get(['email', 'smtp', 'port'], 587)
+<<<<<<< HEAD
     try:
         session = smtplib.SMTP(SERVER, PORT)
         session.starttls()
@@ -80,6 +115,24 @@ def check_smtp_config():
         if hasattr(e, 'args'):
             logging.info(e.args[0])
         success = False
+=======
+    if(success):
+        try:
+            session = smtplib.SMTP(SERVER, PORT)
+            session.starttls()
+            session.login(USERNAME, PASSWORD)
+            session.quit()
+        except TimeoutError:
+            logging.info('SMTP connection timed out (check server name)')
+            success = False
+        except OSError as e:
+            logging.info('SMTP connection error: {}'.format(e))
+            success = False
+        except imaplib.IMAP4.error as e:
+            if hasattr(e, 'args'):
+                logging.info(e.args[0])
+            success = False
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
     return success
 
 
@@ -144,7 +197,13 @@ def email_user(SUBJECT="", BODY=""):
                 recipient=recipient
             )
     else:
+<<<<<<< HEAD
         phone_number = clean_number(profile.get_profile_password(['phone_number']))
+=======
+        phone_number = clean_number(
+            profile.get_profile_password(['phone_number'])
+        )
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
         carrier = profile.get(['carrier'])
         if phone_number and carrier:
             recipient = "{}@{}".format(
@@ -183,6 +242,11 @@ def fetch_emails(since=None, email_filter="", markRead=False, limit=None):
     """
     host = profile.get_profile_var(['email', 'imap', 'server'])
     port = int(profile.get_profile_var(['email', 'imap', 'port'], "993"))
+<<<<<<< HEAD
+=======
+    msgs = []
+
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
     conn = imaplib.IMAP4_SSL(host, port)
     conn.debug = 0
 
@@ -192,7 +256,10 @@ def fetch_emails(since=None, email_filter="", markRead=False, limit=None):
     )
     conn.select(readonly=(not markRead))
 
+<<<<<<< HEAD
     msgs = []
+=======
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
     (retcode, messages) = conn.search(None, email_filter)
     if retcode == 'OK' and messages != [b'']:
         numUnread = len(messages[0].split(b' '))
@@ -210,7 +277,10 @@ def fetch_emails(since=None, email_filter="", markRead=False, limit=None):
                 msgs.append(msg)
     conn.close()
     conn.logout()
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
     return msgs
 
 
@@ -275,7 +345,14 @@ def mark_read(msg):
         profile.get_profile_password(['email', 'password'])
     )
     conn.select(readonly=False)
+<<<<<<< HEAD
     (retcode, messages) = conn.search(None, "(HEADER Message-ID {})".format(msg['Message-ID']))
+=======
+    (retcode, messages) = conn.search(
+        None,
+        "(HEADER Message-ID {})".format(msg['Message-ID'])
+    )
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
     if(retcode == 'OK' and len(messages)):
         conn.store(messages[0].split()[0], '+FLAGS', '\Seen')
     conn.close()
@@ -327,8 +404,20 @@ def is_negative(phrase):
     Arguments:
         phrase -- the input phrase to-be evaluated
     """
+<<<<<<< HEAD
     return bool(re.search(r'\b(no(t)?|don\'t|stop|end|n|false)\b', phrase,
                           re.IGNORECASE))
+=======
+    if(isinstance(phrase, bool)):
+        return not phrase
+    return bool(
+        re.search(
+            _('\b(no(t)?|don\'t|stop|end|n|false)\b'),
+            phrase,
+            re.IGNORECASE
+        )
+    )
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
 
 
 def is_positive(phrase):
@@ -338,6 +427,18 @@ def is_positive(phrase):
         Arguments:
         phrase -- the input phrase to-be evaluated
     """
+<<<<<<< HEAD
     return bool(re.search(r'\b(sure|yes|yeah|go|yup|y|true)\b',
                           phrase,
                           re.IGNORECASE))
+=======
+    if(isinstance(phrase, bool)):
+        return phrase
+    return bool(
+        re.search(
+            _('\b(sure|yes|yeah|go|yup|y|true)\b'),
+            phrase,
+            re.IGNORECASE
+        )
+    )
+>>>>>>> 4807170d0d65eecc9e80d62e2084e7482de024c8
