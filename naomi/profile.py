@@ -61,47 +61,47 @@ def get_profile(command=""):
         raise ValueError("command '{}' not understood".format(command))
     if not _profile_read:
         # Open and read the profile
-        # Create .naomi dir if it does not exist yet
+        # Create .config/naomi dir if it does not exist yet
         if not os.path.exists(paths.SUB_PATH):
             try:
                 os.makedirs(paths.SUB_PATH)
             except OSError:
                 _logger.error(
-                    "Could not create .naomi dir: '{}'".format(
+                    "Could not create .config/naomi dir: '{}'".format(
                         paths.SUB_PATH
                     ),
                     exc_info=True
                 )
                 raise
 
-        # Check if .naomi dir is writable
+        # Check if .config/naomi dir is writable
         if not os.access(paths.SUB_PATH, os.W_OK):
             _logger.critical(
                 " ".join([
-                    ".naomi dir {:s} is not writable. Naomi",
+                    ".config/naomi dir {:s} is not writable. Naomi",
                     "won't work correctly."
                 ]).format(
                     paths.SUB_PATH
                 )
             )
-        # Create .naomi/configs dir if it does not exist yet
+        # Create .config/naomi/configs dir if it does not exist yet
         if not os.path.exists(paths.CONFIG_PATH):
             try:
                 os.makedirs(paths.CONFIG_PATH)
             except OSError:
                 _logger.error(
-                    "Could not create .naomi/configs dir: '{}'".format(
+                    "Could not create .config/naomi/configs dir: '{}'".format(
                         paths.CONFIG_PATH
                     ),
                     exc_info=True
                 )
                 raise
 
-        # Check if .naomi/configs dir is writable
+        # Check if .config/naomi/configs dir is writable
         if not os.access(paths.CONFIG_PATH, os.W_OK):
             _logger.critical(
                 " ".join([
-                    ".naomi/configs dir {:s} is not writable. Naomi",
+                    ".config/naomi/configs dir {:s} is not writable. Naomi",
                     "won't work correctly."
                 ]).format(
                     paths.CONFIG_PATH

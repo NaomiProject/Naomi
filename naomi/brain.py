@@ -51,7 +51,7 @@ class Brain(object):
         phrases = keyword.copy()
 
         # Get the contents of the
-        # .naomi/data/standard_phrases/{language}.txt
+        # .config/naomi/data/standard_phrases/{language}.txt
         # file
         # The purpose of this file is to provide some
         # words that Naomi can recognize rather than only

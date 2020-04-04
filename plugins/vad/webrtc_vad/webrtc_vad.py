@@ -51,7 +51,7 @@ class WebRTCPlugin(plugin.VADPlugin, unittest.TestCase):
                     "Please adjust the value of",
                     "audio: ",
                     "  input_chunksize:",
-                    "in your ~/.naomi/profile.yml file."
+                    "in your ~/.config/naomi/configs/profile.yml file."
                 ]).format(
                     input_device._input_rate,
                     input_device._input_rate * 0.01,
