@@ -1,0 +1,28 @@
+name: 'Nightly Publish'
+
+on:
+  schedule:
+    - cron:  '0 4 * * *'
+
+jobs:
+  nightly-publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+
+    - name: Nightly Publish
+      env:
+        BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+      run: |
+        git clone https://github.com/NaomiProject/Naomi.git
+        cd Naomi
+        git checkout naomi-dev
+        git pull
+        cd ../
+        mv Naomi Naomi-Nightly
+        zip -r Naomi-Nightly.zip Naomi-Nightly
+        curl -X DELETE -uabcasteel:${{ secrets.BINTRAY_KEY }} https://api.bintray.com/content/naomiproject/rpi-repo2/nightly/Naomi-Nightly.zip
+        curl -T Naomi-Nightly.zip -uabcasteel:${{ secrets.BINTRAY_KEY }} https://api.bintray.com/content/naomiproject/rpi-repo2/Naomi/Nightly/nightly/Naomi-Nightly.zip?publish=1
