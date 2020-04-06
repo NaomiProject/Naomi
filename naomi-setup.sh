@@ -3,7 +3,7 @@
 #########################################
 # Installing python and necessary packages
 # for Naomi. This script will install python
-# into the ~/.naomi/local/bin directory and
+# into the ~/.config/naomi/local/bin directory and
 # install naomi & requirements in their
 # respective directories.
 #########################################
@@ -215,9 +215,9 @@ if [ $OPTION = "2" ]; then
         fi
     fi
     # installing python 3.5.3
-    echo 'Installing python 3.5.3 to ~/.naomi/local'
-    mkdir -p ~/.naomi/local
-    cd ~/.naomi/local
+    echo 'Installing python 3.5.3 to ~/.config/naomi/local'
+    mkdir -p ~/.config/naomi/local
+    cd ~/.config/naomi/local
     NAME=Python
     VERSION=3.5.3
     VERNAME=$NAME-$VERSION
@@ -250,9 +250,9 @@ if [ $OPTION = "2" ]; then
     cd $VERNAME
     ./configure
     make
-    make altinstall prefix=~/.naomi/local  # specify local installation directory
-    ln -s ~/.naomi/local/bin/python3.5 ~/.naomi/local/bin/python
-    cd ..  # ~/.naomi/local
+    make altinstall prefix=~/.config/naomi/local  # specify local installation directory
+    ln -s ~/.config/naomi/local/bin/python3.5 ~/.config/naomi/local/bin/python
+    cd ..  # ~/.config/naomi/local
 
     # install setuptools and pip for package management
     NAME=setuptools
@@ -275,8 +275,8 @@ if [ $OPTION = "2" ]; then
     fi
     unzip $ZIPFILE
     cd $VERNAME
-    ~/.naomi/local/bin/python setup.py install  # specify the path to the python you installed above
-    cd .. # ~/.naomi/local
+    ~/.config/naomi/local/bin/python setup.py install  # specify the path to the python you installed above
+    cd .. # ~/.config/naomi/local
 
     # The old version of pip expects to access pypi.org using http. PyPi now
     # requires ssl for all connections.
@@ -297,17 +297,17 @@ if [ $OPTION = "2" ]; then
         exit 1
     fi
     tar xvzf $TARFILE
-    cd $VERNAME # ~/.naomi/local/pip-18.1
-    ~/.naomi/local/bin/python setup.py install  # specify the path to the python you installed above
+    cd $VERNAME # ~/.config/naomi/local/pip-18.1
+    ~/.config/naomi/local/bin/python setup.py install  # specify the path to the python you installed above
 
     # install naomi & dependencies
     echo "Returning to $NAOMI_DIR"
     cd $NAOMI_DIR
-    ~/.naomi/local/bin/pip install -r python_requirements.txt
+    ~/.config/naomi/local/bin/pip install -r python_requirements.txt
 
     # start the naomi setup process
     echo "#!/bin/bash" > Naomi
-    echo "~/.naomi/local/bin/python $NAOMI_DIR/Naomi.py \$@" >> Naomi
+    echo "~/.config/naomi/local/bin/python $NAOMI_DIR/Naomi.py \$@" >> Naomi
 fi
 if [ $OPTION = "3" ]; then
     if [ $APT -eq 1 ]; then
@@ -351,8 +351,8 @@ if [ $OPTION = "2" ]; then
     echo
     echo "You will need to use Naomi's special python and pip commands when"
     echo "installing modules or testing with Naomi:"
-    echo "  ~/.naomi/local/bin/python"
-    echo "  ~/.naomi/local/bin/pip"
+    echo "  ~/.config/naomi/local/bin/python"
+    echo "  ~/.config/naomi/local/bin/pip"
     echo
 fi
 echo "In the future, run $NAOMI_DIR/Naomi to start Naomi"

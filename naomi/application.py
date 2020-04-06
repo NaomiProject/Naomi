@@ -1141,7 +1141,7 @@ class Naomi(object):
                 pluginstore.printplugin(print_plugins[name], installed_plugins)
 
     # Right now what install_plugins does is git clone the plugin into the
-    # user's plugin dir (~/.naomi/plugins) and then run install.py if there
+    # user's plugin dir (~/.config/naomi/plugins) and then run install.py if there
     # is one, or python_requirements.txt if there is one.
     def install_plugins(self, plugins):
         flat_plugins = [y for x in plugins for y in x]
