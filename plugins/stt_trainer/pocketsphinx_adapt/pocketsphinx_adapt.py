@@ -398,7 +398,7 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                             if(hasattr(plugin, "intents")):
                                 intents = plugin.intents()
                                 for intent in intents:
-                                    for template in intents[intent]['templates']:
+                                    for template in intents[intent]['locale'][self.language]['templates']:
                                         phrases.extend([
                                             word.upper() for word in template.split()
                                         ])
@@ -411,6 +411,13 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                                     info.name, message
                                 )
                             )
+                            self._logger.warning(
+                                "Plugin '{}' skipped! (Reason: {})".format(
+                                    info.name, message
+                                ),
+                                exc_info=True
+                            )
+
                     # Get the set of all words in words_used that do not appear
                     # in phrases
                     print("Phrases:")

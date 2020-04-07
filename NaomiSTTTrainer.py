@@ -949,6 +949,9 @@ def application(environ, start_response):
                         '<body>SQLite error: {}</body>',
                         '</html>'
                     ]).format(e))
+        # Save (commit) the changes
+        conn.commit()
+        conn.close()
         return [line.encode("UTF-8") for line in ret]
 
 
