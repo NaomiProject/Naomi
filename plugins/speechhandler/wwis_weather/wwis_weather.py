@@ -313,7 +313,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                 tomorrow.month,
                 tomorrow.day
             )
-            if("today" in text.lower()):
+            if(_("today") in text.lower()):
                 if(todaydate in forecast.keys()):
                     mic.say(
                         _("The weather today in {} is {}").format(
@@ -321,7 +321,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                         )
                     )
                     snark = False
-            elif("tomorrow" in text.lower()):
+            elif(_("tomorrow") in text.lower()):
                 if(tomorrowdate in forecast.keys()):
                     mic.say(
                         _("The weather tomorrow in {} will be {}").format(
@@ -334,9 +334,9 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                 first = True
                 for day in sorted(forecast.keys()):
                     if(day == todaydate):
-                        DOW = "today"
+                        DOW = _("today")
                     elif(day == tomorrowdate):
-                        DOW = "tomorrow"
+                        DOW = _("tomorrow")
                     else:
                         DOW = WEEKDAY_NAMES[datetime.datetime.strptime(day, "%Y-%m-%d").weekday()]
                     if(first):

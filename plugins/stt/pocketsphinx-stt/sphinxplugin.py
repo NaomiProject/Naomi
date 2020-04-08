@@ -66,6 +66,8 @@ def check_pocketsphinx_model(directory):
         FilesExist = False
     if(not os.path.isfile(os.path.join(directory, "variances"))):
         FilesExist = False
+    if(not os.path.isfile(os.path.join(directory, "model", "train.fst"))):
+        FilesExist = False
     return FilesExist
 
 
@@ -159,6 +161,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             os.remove(self._logfile)
 
     def settings(self):
+        language = profile.get(['language'])
         # Get the defaults for settings
         # hmm_dir
         hmm_dir = profile.get(
@@ -254,7 +257,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                     fst_model = path
         # If either the hmm dir or fst model is missing, then
         # download the standard model
-        if not(hmm_dir and fst_model):
+        if not(hmm_dir and os.path.isdir(hmm_dir) and fst_model and os.path.isfile(fst_model)):
             # Start by checking to see if we have a copy of the standard
             # model for this user's chosen language and download it if not.
             # Check for the files we need
@@ -269,6 +272,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             if not os.path.isdir(standard_dir):
                 os.mkdir(standard_dir)
             hmm_dir = standard_dir
+            fst_model = os.path.join(hmm_dir, "train", "model.fst")
             formatteddict_path = os.path.join(
                 hmm_dir,
                 "cmudict.formatted.dict"
@@ -287,7 +291,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 ]
                 completedprocess = run_command(cmd)
                 self._logger.info(process_completedprocess(completedprocess))
-
+            if(not os.path.isfile(formatteddict_path)):
                 print("Formatting the g2p dictionary")
                 with open(os.path.join(standard_dir, "cmudict.dict"), "r") as in_file:
                     with open(formatteddict_path, "w+") as out_file:
@@ -301,6 +305,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                             # replace the first whitespace with a tab
                             line = line.replace(' ', '\t', 1)
                             print(line, file=out_file)
+            if(not os.path.isfile(fst_model)):
                 # Use phonetisaurus to prepare an fst model
                 print("Training an FST model")
                 cmd = [
@@ -311,7 +316,6 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 ]
                 completedprocess = run_command(cmd)
                 self._logger.info(process_completedprocess(completedprocess))
-                fst_model = os.path.join(hmm_dir, "train", "model.fst")
 
         phonetisaurus_executable = profile.get_profile_var(
             ['pocketsphinx', 'phonetisaurus_executable']
