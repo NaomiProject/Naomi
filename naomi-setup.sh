@@ -38,8 +38,10 @@ CONTINUE() {
 SUDO_COMMAND() {
     echo
     printf "${RED}Notice:${NC} this program is about to use sudo to run the following command:${NL}"
-    printf "  ${GREEN}${1}${NC}${NL}"
-    CONTINUE
+    printf "[$(pwd)]\$ ${GREEN}${1}${NC}${NL}"
+    if [ "$SUDO_APPROVE" != "y" ]; then
+        CONTINUE
+    fi
     $1
 }
 CHECK_HEADER() {
@@ -50,6 +52,17 @@ CHECK_PROGRAM() {
     type -p "$1" > /dev/null 2>&1
     echo $?
 }
+
+# Check command line options
+getopts ":y" SUDO_APPROVE
+if [ "$SUDO_APPROVE" == "y" ]; then
+    echo 'Skipping approvals'
+else
+    echo 'Seeking approvals'
+fi
+
+# Create our working directory
+mkdir -p ~/.config/naomi/sources
 
 for var in "$@"; do
     if [ "$var" = "--virtualenv" ]; then
@@ -105,6 +118,8 @@ if [ $OPTION = "0" ]; then
     echo '   like a virtual machine or Raspberry Pi)'
     echo '4) Exit without installing'
     echo
+    echo 'Note: This process can take quite a bit of time (up to three hours)'
+    echo
     while [ $OPTION != "1" ] && [ $OPTION != "2" ] && [ $OPTION != "3" ] && [ $OPTION != "4" ]; do
         read -e -p 'Please select: ' OPTION
         if [ $OPTION != "1" ] && [ $OPTION != "2" ] && [ $OPTION != "3" ] && [ $OPTION != "4" ]; then
@@ -119,8 +134,9 @@ echo "NAOMI_DIR = $NAOMI_DIR"
 
 if [ $APT -eq 1 ]; then
     SUDO_COMMAND "sudo apt-get update"
+    SUDO_COMMAND "sudo apt upgrade"
     # install dependencies
-    SUDO_COMMAND "sudo apt-get install gettext portaudio19-dev libasound2-dev -y"
+    SUDO_COMMAND "sudo ./naomi_apt_requirements.sh"
 else
     ERROR=""
     if [[ $(CHECK_PROGRAM msgfmt) -ne "0" ]]; then
@@ -132,88 +148,88 @@ else
     if [[ $(CHECK_HEADER asoundlib.h) -ne "0" ]]; then
         ERROR="${ERROR} libasound development file asoundlib.h not found${NL}"
     fi
+    if [[ $(CHECK_PROGRAM python3) -ne "0" ]]; then
+        ERROR="${ERROR} python3 not found${NL}"
+    fi
+    if [[ $(CHECK_PROGRAM pip3) -ne "0" ]]; then
+        ERROR="${ERROR} pip3 not found${NL}"
+    fi
     if [ ! -z "$ERROR" ]; then
-        echo "Missing dependencies:${NL}${NL}$ERROR"
+        echo "Missing depenancies:${NL}${NL}$ERROR"
         CONTINUE
-    else
-        printf "${GREEN}All depenancies look okay${NC}${NL}"
     fi
 fi
-if [ $OPTION = "1" ]; then
-    echo 'VirtualEnv setup'
-    if [ $APT -eq 1 ]; then
-        echo 'Making sure you have the latest python, pip, python3 and pip3 installed on your system'
-        SUDO_COMMAND "sudo apt-get install python python-pip python3 python3-pip"
-    else
-        ERROR=""
-        if [[ $(CHECK_PROGRAM python) -ne "0" ]]; then
-            ERROR="${ERROR} python not found${NL}"
-        fi
-        if [[ $(CHECK_PROGRAM pip) -ne "0" ]]; then
-            ERROR="${ERROR} pip not found${NL}"
-        fi
-        if [[ $(CHECK_PROGRAM python3) -ne "0" ]]; then
-            ERROR="${ERROR} python3 not found${NL}"
-        fi
-        if [[ $(CHECK_PROGRAM pip3) -ne "0" ]]; then
-            ERROR="${ERROR} pip3 not found${NL}"
-        fi
-        if [ ! -z "$ERROR" ]; then
-            echo "Missing depenancies:${NL}${NL}$ERROR"
-            CONTINUE
-        fi
-    fi
-    pip install --user virtualenvwrapper
+# make sure pulseaudio is running
+pulseaudio --check
+if [ $? -ne 0 ]; then
+    pulseaudio -D
+fi
+if [ $OPTION == "1" ]; then
+    pip3 install --user virtualenv virtualenvwrapper=='4.8.4'
     echo 'sourcing virtualenvwrapper.sh'
+    export WORKON_HOME=$HOME/.virtualenvs
+    export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
     export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv
     source ~/.local/bin/virtualenvwrapper.sh
+    export VIRTUALENVWRAPPER_ENV_BIN_DIR=bin
     echo 'checking if Naomi virtualenv exists'
     workon Naomi > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         echo 'Naomi virtualenv does not exist. Creating.'
         PATH=$PATH:~/.local/bin mkvirtualenv -p python3 Naomi
-        workon Naomi
     fi
-    if [ $(which pip) = $HOME/.virtualenvs/Naomi/bin/pip ]; then
-        echo 'in the Naomi virtualenv'
+    workon Naomi
+    if [ "$(which pip)" == "$HOME/.virtualenvs/Naomi/bin/pip" ]; then
+        echo -e "\e[1;36mIf you want, we can add the call to start virtualenvwrapper directly"
+        echo -e "to the end of your \e[1;35m~/.bashrc\e[1;36m file, so if you want to use the same"
+        echo "python that Naomi does for debugging or installing additional"
+        echo -e "dependencies, all you have to type is \e[1;35m'workon Naomi'\e[1;36m"
+        echo " "
+        echo "Otherwise, you will need to enter:"
+        echo -e "\e[1;35m'VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv'\e[1;36m"
+        echo -e "\e[1;35m'source ~/.local/bin/virtualenvwrapper.sh'\e[1;36m"
+        echo -e "before you will be able activate the Naomi environment with \e[1;35m'workon Naomi'\e[1;36m"
+        echo " "
+        echo "All of this will be incorporated into the Naomi script, so to simply"
+        echo -e "launch Naomi, all you have to type is \e[1;35m'./Naomi'\e[1;36m regardless of your choice here."
+        echo " "
+        echo -e "\e[1;36m[\e[1;33m?\e[1;36m] Would you like to start VirtualEnvWrapper automatically? \e[0m"
+        echo -e "\e[1;36m"
+        echo "  Y)es, start virtualenvwrapper whenever I start a shell"
+        echo "  N)o, don't start virtualenvwrapper for me"
+        echo -n -e "\e[1;36mChoice [\e[1;35mY\e[1;36m/\e[1;35mN\e[1;36m]: \e[0m"
+        export OPTION=""
+        while [ "$OPTION" != "Y" ] && [ "$OPTION" != "y" ] && [ "$OPTION" != "N" ] && [ "$OPTION" != "n" ]; do
+            read -e -p 'Please select: ' OPTION
+            if [ "$OPTION" != "Y" ] && [ "$OPTION" != "y" ] && [ "$OPTION" != "N" ] && [ "$OPTION" != "n" ]; then
+                echo "Please choose 'Y' or 'N'"
+            fi
+        done
+        if [ "$OPTION" == "Y" ] || [ "$OPTION" == "y" ]; then
+            echo "export WORKON_HOME=$HOME/.virtualenvs" >> ~/.bashrc
+            echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.bashrc
+            echo "export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv" >> ~/.bashrc
+            echo "source ~/.local/bin/virtualenvwrapper.sh" >> ~/.bashrc
+        fi
         pip install -r python_requirements.txt
-        deactivate
+        if [ $? -ne 0 ]; then
+            echo "Error installing python requirements: $!"
+            exit 1
+        fi
     else
         echo "Something went wrong, not in virtual environment..." >&2
         exit 1
     fi
     # start the naomi setup process
     echo "#!/bin/bash" > Naomi
+    echo "export WORKON_HOME=$HOME/.virtualenvs" >> Naomi
+    echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> Naomi
     echo "export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv" >> Naomi
     echo "source ~/.local/bin/virtualenvwrapper.sh" >> Naomi
     echo "workon Naomi" >> Naomi
     echo "python $NAOMI_DIR/Naomi.py \$@" >> Naomi
-    echo "deactivate" >> Naomi
 fi
-if [ $OPTION = "2" ]; then
-    if [ $APT -eq "1" ] ; then
-        # libssl-dev required to get the python _ssl module working
-        echo "Making sure you have GnuPG and dirmngr installed"
-        SUDO_COMMAND "sudo apt-get install libssl-dev libncurses5-dev gnupg dirmngr"
-    else
-        ERROR=""
-        if [[ $(CHECK_PROGRAM gpg) -ne "0" ]]; then
-            ERROR="${ERROR} gnupg program gpg not found${NL}"
-        fi
-        if [[ $(CHECK_PROGRAM dirmngr) -ne "0" ]]; then
-            ERROR="${ERROR} dirmngr program dirmngr not found${NL}"
-        fi
-        if [[ $(CHECK_HEADER portaudio.h) -ne "0" ]]; then
-            ERROR="${ERROR} portaudio development file portaudio.h not found${NL}"
-        fi
-        if [[ $(CHECK_HEADER asoundlib.h) -ne "0" ]]; then
-            ERROR="${ERROR} libasound development file asoundlib.h not found${NL}"
-        fi
-        if [ ! -z "$ERROR" ]; then
-            echo "Missing dependencies:${NL}${NL}$ERROR"
-            CONTINUE
-        fi
-    fi
+if [ $OPTION == "2" ]; then
     # installing python 3.5.3
     echo 'Installing python 3.5.3 to ~/.config/naomi/local'
     mkdir -p ~/.config/naomi/local
@@ -309,35 +325,152 @@ if [ $OPTION = "2" ]; then
     echo "#!/bin/bash" > Naomi
     echo "~/.config/naomi/local/bin/python $NAOMI_DIR/Naomi.py \$@" >> Naomi
 fi
-if [ $OPTION = "3" ]; then
-    if [ $APT -eq 1 ]; then
-        echo 'Making sure you have the latest python3 and pip3 installed on your system'
-        SUDO_COMMAND "sudo apt-get install python3 python3-pip"
-    else
-        ERROR=""
-        if [[ $(CHECK_PROGRAM python3) -ne "0" ]]; then
-            ERROR="${ERROR} python3 not found${NL}"
-        fi
-        if [[ $(CHECK_PROGRAM pip3) -ne "0" ]]; then
-            ERROR="${ERROR} pip3 not found${NL}"
-        fi
-        if [ ! -z "$ERROR" ]; then
-            echo "Missing depenancies:${NL}${NL}$ERROR"
-            CONTINUE
-        fi
-    fi
+if [ $OPTION == "3" ]; then
     pip3 install -r python_requirements.txt
     # start the naomi setup process
     echo "#!/bin/bash" > Naomi
     echo "python3 $NAOMI_DIR/Naomi.py \$@" >> Naomi
 fi
-if [ $OPTION = "4" ]; then
+if [ $OPTION == "4" ]; then
     echo 'Exiting'
     exit 0
 fi
+# Build Phonetisaurus
+# Building and installing openfst
+echo
+echo -e "\e[1;32mBuilding and installing openfst...\e[0m"
+cd ~/.config/naomi/sources
+
+if [ ! -f "openfst-1.6.9.tar.gz" ]; then
+    wget http://www.openfst.org/twiki/pub/FST/FstDownload/openfst-1.6.9.tar.gz
+fi
+tar -zxvf openfst-1.6.9.tar.gz
+cd openfst-1.6.9
+autoreconf -i
+./configure --enable-static --enable-shared --enable-far --enable-lookahead-fsts --enable-const-fsts --enable-pdt --enable-ngram-fsts --enable-linear-fsts --prefix=/usr
+make
+SUDO_COMMAND "sudo make install"
+if [ $? -ne 0 ]; then
+    echo $!
+    exit 1
+fi
+
+if [ -z "$(which fstinfo)" ]; then
+    echo "ERROR: openfst not installed"
+    exit 1
+fi
+
+# Building and installing mitlm-0.4.2
+echo
+echo -e "\e[1;32mInstalling & Building mitlm-0.4.2...\e[0m"
+cd ~/.config/naomi/sources
+git clone https://github.com/mitlm/mitlm.git
+cd mitlm
+./autogen.sh
+make
+echo "Installing mitlm"
+SUDO_COMMAND "sudo make install"
+if [ $? -ne 0 ]; then
+    echo $!
+    exit 1
+fi
+
+# Building and installing CMUCLMTK
+echo
+echo -e "\e[1;32mInstalling & Building cmuclmtk...\e[0m"
+cd ~/.config/naomi/sources
+svn co https://svn.code.sf.net/p/cmusphinx/code/trunk/cmuclmtk/
+cd cmuclmtk
+./autogen.sh
+make
+echo "Installing CMUCLMTK"
+SUDO_COMMAND "sudo make install"
+
+echo "Linking shared libraries"
+SUDO_COMMAND "sudo ldconfig"
+
+# Building and installing phonetisaurus
+echo
+echo -e "\e[1;32mInstalling & Building phonetisaurus...\e[0m"
+cd ~/.config/naomi/sources
+git clone https://github.com/AdolfVonKleist/Phonetisaurus.git
+cd Phonetisaurus
+./configure --enable-python
+make
+echo "Installing Phonetisaurus"
+SUDO_COMMAND "sudo make install"
+cd python
+cp -iv ../.libs/Phonetisaurus.so ./
+if [ "$OPTION" == "1" ]; then
+    SUDO_COMMAND "sudo python setup.py install"
+fi
+if [ "$OPTION" == "2" ]; then
+    SUDO_COMMAND "sudo ~/.config/naomi/local/bin/python setup.py install"
+fi
+if [ "$OPTION" == "3" ]; then
+    SUDO_COMMAND "sudo python3 setup.py install"
+fi
+
+if [ -z "$(which phonetisaurus-g2pfst)" ]; then
+    echo "ERROR: phonetisaurus-g2pfst does not exist"
+    EXIT 1
+fi
+
+# Installing & Building sphinxbase
+echo
+echo -e "\e[1;32mBuilding and installing sphinxbase...\e[0m"
+cd ~/.config/naomi/sources
+git clone --recursive https://github.com/cmusphinx/pocketsphinx-python.git
+cd pocketsphinx-python/sphinxbase
+./autogen.sh
+make
+SUDO_COMMAND "sudo make install"
+
+# Installing & Building pocketsphinx
+echo
+echo -e "\e[1;32mBuilding and installing pocketsphinx...\e[0m"
+cd ~/.config/naomi/sources/pocketsphinx-python/pocketsphinx
+./autogen.sh
+make
+SUDO_COMMAND "sudo make install"
+
+# Installing PocketSphinx Python module
+echo
+echo -e "\e[1;32mInstalling PocketSphinx module...\e[0m"
+cd ~/.config/naomi/sources/pocketsphinx-python
+if [ "$OPTION" == "1" ]; then
+    python setup.py install
+fi
+if [ "$OPTION" == "2" ]; then
+    ~/.config/naomi/local/bin/python setup.py install
+fi
+if [ "$OPTION" == "3" ]; then
+    SUDO_COMMAND "sudo python3 setup.py install"
+fi
+
+cd $NAOMI_DIR
+if [ -z "$(which text2wfreq)" ]; then
+    echo "ERROR: text2wfreq does not exist"
+    EXIT 1
+fi
+if [ -z "$(which text2idngram)" ]; then
+    echo "ERROR: text2idngram does not exist"
+    EXIT 1
+fi
+if [ -z "$(which idngram2lm)" ]; then
+    echo "ERROR: idngram2lm does not exist"
+    EXIT 1
+fi
+
 ./compile_translations.sh
+
 chmod a+x Naomi
-if [ $OPTION = "1" ]; then
+
+echo "Installation is complete"
+echo "You can delete the directories in ~/.config/naomi/sources if you like"
+echo
+
+if [ $OPTION == "1" ]; then
     echo
     echo "You will need to activate the Naomi virtual environment when installing"
     echo "or testing python modules for Naomi using the following command:"
@@ -347,7 +480,7 @@ if [ $OPTION = "1" ]; then
     echo "  source ~/.local/bin/virtualenvwrapper.sh"
     echo
 fi
-if [ $OPTION = "2" ]; then
+if [ $OPTION == "2" ]; then
     echo
     echo "You will need to use Naomi's special python and pip commands when"
     echo "installing modules or testing with Naomi:"
@@ -358,3 +491,4 @@ fi
 echo "In the future, run $NAOMI_DIR/Naomi to start Naomi"
 echo
 ./Naomi --repopulate
+

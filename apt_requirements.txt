@@ -20,10 +20,9 @@ pulsemixer
 
 ## STT
 ### pocketsphinx is default for wakeword spotting
-python3-pocketsphinx
-pocketsphinx
-sphinxbase-utils
-sphinxtrain
+swig
+bison
+
 #### Phonetisaurus is used to build dictionaries
 gcc
 g++
