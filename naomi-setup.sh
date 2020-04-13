@@ -197,14 +197,21 @@ if [ $OPTION = "1" ]; then
         echo -e "\e[1;36m"
         echo "  Y)es, start virtualenvwrapper whenever I start a shell"
         echo "  N)o, don't start virtualenvwrapper for me"
-        echo -n -e "\e[1;36mChoice [\e[1;35mY\e[1;36m/\e[1;35mN\e[1;36m]: \e[0m"
+        echo -n -e "\e[1;36mChoice [\e[1;35mY\e[1;36m/\e[1;35mn\e[1;36m]: \e[0m"
         export AUTO_START=""
-        while [ "$AUTO_START" != "Y" ] && [ "$AUTO_START" != "y" ] && [ "$AUTO_START" != "N" ] && [ "$AUTO_START" != "n" ]; do
-            read -e -p 'Please select: ' AUTO_START
-            if [ "$AUTO_START" != "Y" ] && [ "$AUTO_START" != "y" ] && [ "$AUTO_START" != "N" ] && [ "$AUTO_START" != "n" ]; then
-                echo "Please choose 'Y' or 'N'"
-            fi
-        done
+        if [ "$SUDO_APPROVE" = "-y" ]; then
+            AUTO_START="Y"
+        else
+            while [ "$AUTO_START" != "Y" ] && [ "$AUTO_START" != "y" ] && [ "$AUTO_START" != "N" ] && [ "$AUTO_START" != "n" ]; do
+                read -e -p 'Please select: ' AUTO_START
+                if [ "$AUTO_START" = "" ]; then
+                    AUTO_START="Y"
+                fi
+                if [ "$AUTO_START" != "Y" ] && [ "$AUTO_START" != "y" ] && [ "$AUTO_START" != "N" ] && [ "$AUTO_START" != "n" ]; then
+                    echo "Please choose 'Y' or 'N'"
+                fi
+            done
+        fi
         if [ "$AUTO_START" = "Y" ] || [ "$AUTO_START" = "y" ]; then
             echo "export WORKON_HOME=$HOME/.virtualenvs" >> ~/.bashrc
             echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.bashrc
