@@ -26,6 +26,7 @@ LT_CYAN='\033[1;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 OPTION="0"
+SUDO_APPROVE="n"
 
 CONTINUE() {
     read -n1 -p "Press 'q' to quit, any other key to continue: " CONTINUE
@@ -39,7 +40,7 @@ SUDO_COMMAND() {
     echo
     printf "${RED}Notice:${NC} this program is about to use sudo to run the following command:${NL}"
     printf "[$(pwd)]\$ ${GREEN}${1}${NC}${NL}"
-    if [ "$SUDO_APPROVE" != "y" ]; then
+    if [ "$SUDO_APPROVE" != "-y" ]; then
         CONTINUE
     fi
     $1
@@ -53,29 +54,26 @@ CHECK_PROGRAM() {
     echo $?
 }
 
-# Check command line options
-getopts ":y" SUDO_APPROVE
-if [ "$SUDO_APPROVE" == "y" ]; then
-    echo 'Skipping approvals'
-else
-    echo 'Seeking approvals'
-fi
-
-# Create our working directory
+# Create our working directory (unfortunately this does not currently take into accunt the 
+# $
 mkdir -p ~/.config/naomi/sources
 
+# Check command line options
 for var in "$@"; do
     if [ "$var" = "--virtualenv" ]; then
         OPTION="1"
+        SUDO_APPROVE="-y"
     fi
     if [ "$var" = "--local-compile" ]; then
         OPTION="2"
+        SUDO_APPROVE="-y"
     fi
     if [ "$var" = "--system" ]; then
         OPTION="3"
+        SUDO_APPROVE="-y"
     fi
     if [ "$var" = "--help" ]; then
-        echo "USAGE: $0 [--virtualenv | --local | --primary | --help]"
+        echo "USAGE: $0 [-y|--yes] [--virtualenv | --local | --primary | --help]"
         echo
         echo "  --virtualenv    - install Naomi using a virtualenv environment for Naomi"
         echo "                    (this is the recommended choice. You will need to issue"
@@ -93,6 +91,9 @@ for var in "$@"; do
         echo "                    computer. You will probably need to use the 'pip3' command"
         echo "                    to install additional libraries for Naomi.)"
         echo "                    USE AT YOUR OWN RISK!"
+        echo
+        echo "  Including any of the above options will also cause the script to accept all"
+        echo "  default options and run without user intervention"
         echo
         echo "  --help          - Print this message and exit"
         exit 0
@@ -130,13 +131,12 @@ fi
 # Assume this program is in the main Naomi directory
 # so we can save and return to it.
 NAOMI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
-echo "NAOMI_DIR = $NAOMI_DIR"
 
 if [ $APT -eq 1 ]; then
     SUDO_COMMAND "sudo apt-get update"
-    SUDO_COMMAND "sudo apt upgrade"
+    SUDO_COMMAND "sudo apt upgrade $SUDO_APPROVE"
     # install dependencies
-    SUDO_COMMAND "sudo ./naomi_apt_requirements.sh"
+    SUDO_COMMAND "sudo ./naomi_apt_requirements.sh $SUDO_APPROVE"
 else
     ERROR=""
     if [[ $(CHECK_PROGRAM msgfmt) -ne "0" ]]; then
@@ -164,7 +164,7 @@ pulseaudio --check
 if [ $? -ne 0 ]; then
     pulseaudio -D
 fi
-if [ $OPTION == "1" ]; then
+if [ $OPTION = "1" ]; then
     pip3 install --user virtualenv virtualenvwrapper=='4.8.4'
     echo 'sourcing virtualenvwrapper.sh'
     export WORKON_HOME=$HOME/.virtualenvs
@@ -179,7 +179,7 @@ if [ $OPTION == "1" ]; then
         PATH=$PATH:~/.local/bin mkvirtualenv -p python3 Naomi
     fi
     workon Naomi
-    if [ "$(which pip)" == "$HOME/.virtualenvs/Naomi/bin/pip" ]; then
+    if [ "$(which pip)" = "$HOME/.virtualenvs/Naomi/bin/pip" ]; then
         echo -e "\e[1;36mIf you want, we can add the call to start virtualenvwrapper directly"
         echo -e "to the end of your \e[1;35m~/.bashrc\e[1;36m file, so if you want to use the same"
         echo "python that Naomi does for debugging or installing additional"
@@ -198,14 +198,14 @@ if [ $OPTION == "1" ]; then
         echo "  Y)es, start virtualenvwrapper whenever I start a shell"
         echo "  N)o, don't start virtualenvwrapper for me"
         echo -n -e "\e[1;36mChoice [\e[1;35mY\e[1;36m/\e[1;35mN\e[1;36m]: \e[0m"
-        export OPTION=""
-        while [ "$OPTION" != "Y" ] && [ "$OPTION" != "y" ] && [ "$OPTION" != "N" ] && [ "$OPTION" != "n" ]; do
-            read -e -p 'Please select: ' OPTION
-            if [ "$OPTION" != "Y" ] && [ "$OPTION" != "y" ] && [ "$OPTION" != "N" ] && [ "$OPTION" != "n" ]; then
+        export AUTO_START=""
+        while [ "$AUTO_START" != "Y" ] && [ "$AUTO_START" != "y" ] && [ "$AUTO_START" != "N" ] && [ "$AUTO_START" != "n" ]; do
+            read -e -p 'Please select: ' AUTO_START
+            if [ "$AUTO_START" != "Y" ] && [ "$AUTO_START" != "y" ] && [ "$AUTO_START" != "N" ] && [ "$AUTO_START" != "n" ]; then
                 echo "Please choose 'Y' or 'N'"
             fi
         done
-        if [ "$OPTION" == "Y" ] || [ "$OPTION" == "y" ]; then
+        if [ "$AUTO_START" = "Y" ] || [ "$AUTO_START" = "y" ]; then
             echo "export WORKON_HOME=$HOME/.virtualenvs" >> ~/.bashrc
             echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.bashrc
             echo "export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv" >> ~/.bashrc
@@ -229,7 +229,7 @@ if [ $OPTION == "1" ]; then
     echo "workon Naomi" >> Naomi
     echo "python $NAOMI_DIR/Naomi.py \$@" >> Naomi
 fi
-if [ $OPTION == "2" ]; then
+if [ $OPTION = "2" ]; then
     # installing python 3.5.3
     echo 'Installing python 3.5.3 to ~/.config/naomi/local'
     mkdir -p ~/.config/naomi/local
@@ -325,13 +325,13 @@ if [ $OPTION == "2" ]; then
     echo "#!/bin/bash" > Naomi
     echo "~/.config/naomi/local/bin/python $NAOMI_DIR/Naomi.py \$@" >> Naomi
 fi
-if [ $OPTION == "3" ]; then
+if [ $OPTION = "3" ]; then
     pip3 install -r python_requirements.txt
     # start the naomi setup process
     echo "#!/bin/bash" > Naomi
     echo "python3 $NAOMI_DIR/Naomi.py \$@" >> Naomi
 fi
-if [ $OPTION == "4" ]; then
+if [ $OPTION = "4" ]; then
     echo 'Exiting'
     exit 0
 fi
@@ -401,13 +401,13 @@ echo "Installing Phonetisaurus"
 SUDO_COMMAND "sudo make install"
 cd python
 cp -iv ../.libs/Phonetisaurus.so ./
-if [ "$OPTION" == "1" ]; then
+if [ "$OPTION" = "1" ]; then
     SUDO_COMMAND "sudo python setup.py install"
 fi
-if [ "$OPTION" == "2" ]; then
+if [ "$OPTION" = "2" ]; then
     SUDO_COMMAND "sudo ~/.config/naomi/local/bin/python setup.py install"
 fi
-if [ "$OPTION" == "3" ]; then
+if [ "$OPTION" = "3" ]; then
     SUDO_COMMAND "sudo python3 setup.py install"
 fi
 
@@ -438,13 +438,13 @@ SUDO_COMMAND "sudo make install"
 echo
 echo -e "\e[1;32mInstalling PocketSphinx module...\e[0m"
 cd ~/.config/naomi/sources/pocketsphinx-python
-if [ "$OPTION" == "1" ]; then
+if [ "$OPTION" = "1" ]; then
     python setup.py install
 fi
-if [ "$OPTION" == "2" ]; then
+if [ "$OPTION" = "2" ]; then
     ~/.config/naomi/local/bin/python setup.py install
 fi
-if [ "$OPTION" == "3" ]; then
+if [ "$OPTION" = "3" ]; then
     SUDO_COMMAND "sudo python3 setup.py install"
 fi
 
@@ -470,7 +470,7 @@ echo "Installation is complete"
 echo "You can delete the directories in ~/.config/naomi/sources if you like"
 echo
 
-if [ $OPTION == "1" ]; then
+if [ $OPTION = "1" ]; then
     echo
     echo "You will need to activate the Naomi virtual environment when installing"
     echo "or testing python modules for Naomi using the following command:"
@@ -480,7 +480,7 @@ if [ $OPTION == "1" ]; then
     echo "  source ~/.local/bin/virtualenvwrapper.sh"
     echo
 fi
-if [ $OPTION == "2" ]; then
+if [ $OPTION = "2" ]; then
     echo
     echo "You will need to use Naomi's special python and pip commands when"
     echo "installing modules or testing with Naomi:"
