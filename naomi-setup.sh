@@ -425,6 +425,11 @@ echo
 echo -e "\e[1;32mBuilding and installing sphinxbase...\e[0m"
 cd ~/.config/naomi/sources
 git clone --recursive https://github.com/cmusphinx/pocketsphinx-python.git
+if [ $? -ne 0 ]; then
+    printf "${ERROR}Error cloning pocketsphinx${NC}${NL}"
+    exit 1
+fi
+
 cd pocketsphinx-python/sphinxbase
 ./autogen.sh
 make
