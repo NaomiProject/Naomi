@@ -365,6 +365,11 @@ echo
 echo -e "\e[1;32mInstalling & Building mitlm-0.4.2...\e[0m"
 cd ~/.config/naomi/sources
 git clone https://github.com/mitlm/mitlm.git
+if [ $? -ne 0 ]; then
+    printf "${ERROR}Error cloning mitlm${NC}${NL}"
+    exit 1
+fi
+
 cd mitlm
 ./autogen.sh
 make
@@ -380,6 +385,11 @@ echo
 echo -e "\e[1;32mInstalling & Building cmuclmtk...\e[0m"
 cd ~/.config/naomi/sources
 svn co https://svn.code.sf.net/p/cmusphinx/code/trunk/cmuclmtk/
+if [ $? -ne 0 ]; then
+    printf "${ERROR}Error cloning cmuclmtk${NC}${NL}"
+    exit 1
+fi
+
 cd cmuclmtk
 ./autogen.sh
 make
@@ -394,17 +404,21 @@ echo
 echo -e "\e[1;32mInstalling & Building phonetisaurus...\e[0m"
 cd ~/.config/naomi/sources
 git clone https://github.com/AdolfVonKleist/Phonetisaurus.git
+if [ $? -ne 0 ]; then
+    printf "${ERROR}Error cloning Phonetisaurus${NC}${NL}"
+    exit 1
+fi
 cd Phonetisaurus
 ./configure --enable-python
 make
 echo "Installing Phonetisaurus"
 SUDO_COMMAND "sudo make install"
 
-echo "cd python"
+printf "[$(pwd)]\$ ${GREEN}cd python${NC}${NL}"
 cd python
 echo $(pwd)
 
-cp -iv ../.libs/Phonetisaurus.so ./
+cp -v ../.libs/Phonetisaurus.so ./
 if [ "$OPTION" = "1" ]; then
     SUDO_COMMAND "sudo python setup.py install"
 fi
