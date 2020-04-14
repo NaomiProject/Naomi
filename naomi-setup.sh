@@ -54,8 +54,9 @@ CHECK_PROGRAM() {
     echo $?
 }
 
-# Create our working directory (unfortunately this does not currently take into accunt the 
-# $
+# Create our working directory
+# FIXME unfortunately this does not currently take into account the 
+# $NAOMI_SUB environment variable)
 mkdir -p ~/.config/naomi/sources
 
 # Check command line options
@@ -107,19 +108,19 @@ fi
 
 # Main program logic
 if [ $OPTION = "0" ]; then
-    echo 'There are three methods to install Naomi:'
-    echo
-    echo '1) Use virtualenvwrapper to create a virtual Python 3 environment'
-    echo '   for Naomi (recommended)'
-    echo '2) Download, compile, and install a local copy of Python for Naomi'
-    echo '   (may not work for some users)'
-    echo '3) Use your primary Python 3 environment (this can be dangerous'
-    echo '   and can break other software on your system. It is only'
-    echo '   recommended for machines you intend to devote to running Naomi,'
-    echo '   like a virtual machine or Raspberry Pi)'
-    echo '4) Exit without installing'
-    echo
-    echo 'Note: This process can take quite a bit of time (up to three hours)'
+    printf "${LT_BLUE}There are three methods to install Naomi:${NL}"
+    printf "${NL}"
+    printf "1) Use virtualenvwrapper to create a virtual Python 3 environment${NL}"
+    printf "   for Naomi (${GREEN}recommended${LT_BLUE})${NL}"
+    printf "2) Download, compile, and install a local copy of Python for Naomi${NL}"
+    printf "   (may not work for some users)${NL}"
+    printf "3) Use your primary Python 3 environment (this can be dangerous${NL}"
+    printf "   and can break other software on your system. It is only${NL}"
+    printf "   recommended for machines you intend to devote to running Naomi,${NL}"
+    printf "   like a virtual machine or Raspberry Pi)${NL}"
+    printf "4) Exit without installing${NL}"
+    printf "${NL}"
+    printf "${RED}Note: This process can take quite a bit of time (up to three hours)${NC}${NL}"
     echo
     while [ $OPTION != "1" ] && [ $OPTION != "2" ] && [ $OPTION != "3" ] && [ $OPTION != "4" ]; do
         read -e -p 'Please select: ' OPTION
@@ -128,6 +129,23 @@ if [ $OPTION = "0" ]; then
         fi
     done
 fi
+
+case $OPTION in
+    "1")
+        printf "${GREEN}Installing using VirtualEnvWrapper${NC}${NL}"
+        ;;
+    "2")
+        printf "${GREEN}Installing using custom built python${NC}${NL}"
+        ;;
+    "3")
+        printf "${GREEN}Installing using default python3${NC}${NL}"
+        ;;
+    "4")
+        printf "${GREEN}Exiting${NC}${NL}"
+        exit 1
+        ;;
+esac
+
 # Assume this program is in the main Naomi directory
 # so we can save and return to it.
 NAOMI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -237,17 +255,20 @@ if [ $OPTION = "1" ]; then
     echo "python $NAOMI_DIR/Naomi.py \$@" >> Naomi
 fi
 if [ $OPTION = "2" ]; then
-    # installing python 3.5.3
-    echo 'Installing python 3.5.3 to ~/.config/naomi/local'
+    # installing python
+    echo 'Installing python 3.7.7 to ~/.config/naomi/local'
+    # libffi-dev required to build cython, required for setuptools, required for pip
+    # libsqlite3-dev required to build sqlite3 module
+    SUDO_COMMAND "sudo apt install libffi-dev libsqlite3-dev $SUDO_APPROVE"
     mkdir -p ~/.config/naomi/local
-    cd ~/.config/naomi/local
+    cd ~/.config/naomi/sources
     NAME=Python
-    VERSION=3.5.3
+    VERSION=3.7.7
     VERNAME=$NAME-$VERSION
-    CHKSUM=d8890b84d773cd7059e597dbefa510340de8336ec9b9e9032bf030f19291565a
+    CHKSUM=d348d978a5387512fbc7d7d52dd3a5ef
     TARFILE=$VERNAME.tgz
     URL=https://www.python.org/ftp/python/$VERSION/$TARFILE
-    KEYID=3A5CA953F73C700D # Larry Hastings <larry@hastings.org>
+    KEYID=2D347EA6AA65421D # Ned Deily (Python release signing key) <nad@python.org>
     if [ ! -f $TARFILE ]; then
         wget $URL
     fi
@@ -262,7 +283,8 @@ if [ $OPTION = "2" ]; then
         echo "Can't verify $TARFILE signature" >&2
         exit 1
     fi
-    echo "$CHKSUM $TARFILE" | sha256sum -c -
+    echo "$CHKSUM $TARFILE" | md5sum -c -
+
     if [ $? -eq 0 ]; then
         echo "Python checksum verified"
     else
@@ -271,62 +293,33 @@ if [ $OPTION = "2" ]; then
     fi
     tar xvzf $TARFILE
     cd $VERNAME
-    ./configure
+    export PYTHONHOME=$(cd ~/.config/naomi/local && pwd)
+    printf "[$(pwd)]\$ ${GREEN}./configure --prefix=${PYTHONHOME}${NC}${NL}"
+    ./configure --prefix=$PYTHONHOME
+    printf "[$(pwd)]\$ ${GREEN}make${NC}${NL}"
     make
-    make altinstall prefix=~/.config/naomi/local  # specify local installation directory
-    ln -s ~/.config/naomi/local/bin/python3.5 ~/.config/naomi/local/bin/python
+    printf "[$(pwd)]\$ ${GREEN}make altinstall prefix=${PYTHONHOME}${NC}${NL}"
+    make altinstall prefix=$PYTHONHOME  # specify local installation directory
+
+    echo "****************"
+    echo "Python Installed to ${PYTHONHOME}/bin/python"
+    echo "****************"
+    ln -s ~/.config/naomi/local/bin/python${VERSION:0:3} ~/.config/naomi/local/bin/python
+    ln -s ~/.config/naomi/local/bin/pip${VERSION:0:3} ~/.config/naomi/local/bin/pip
+    echo "Links created"
     cd ..  # ~/.config/naomi/local
-
-    # install setuptools and pip for package management
-    NAME=setuptools
-    VERSION=40.6.3
-    VERNAME=$NAME-$VERSION
-    CHKSUM=3b474dad69c49f0d2d86696b68105f3a6f195f7ab655af12ef9a9c326d2b08f8
-    ZIPFILE=$VERNAME.zip
-    URL=https://files.pythonhosted.org/packages/37/1b/b25507861991beeade31473868463dad0e58b1978c209de27384ae541b0b/$ZIPFILE
-    # URL=https://files.pythonhosted.org/packages/37/1b/b25507861991beeade31473868463dad0e58b1978c209de27384ae541b0b/setuptools-40.6.3.zip
-    echo 'Installing setuptools'
-    if [ ! -f $ZIPFILE ]; then
-        wget $URL
-    fi
-    echo "$CHKSUM $ZIPFILE" | sha256sum -c -
-    if [ $? -eq 0 ]; then
-        echo "SetupTools checksum verified"
-    else
-        echo "SetupTools checksum verification failed" >&2
-        exit 1
-    fi
-    unzip $ZIPFILE
-    cd $VERNAME
-    ~/.config/naomi/local/bin/python setup.py install  # specify the path to the python you installed above
-    cd .. # ~/.config/naomi/local
-
-    # The old version of pip expects to access pypi.org using http. PyPi now
-    # requires ssl for all connections.
-    NAME=pip
-    VERSION=18.1
-    VERNAME=$NAME-$VERSION
-    CHKSUM=c0a292bd977ef590379a3f05d7b7f65135487b67470f6281289a94e015650ea1
-    TARFILE=$VERNAME.tar.gz
-    URL=https://files.pythonhosted.org/packages/45/ae/8a0ad77defb7cc903f09e551d88b443304a9bd6e6f124e75c0fbbf6de8f7/$TARFILE
-    if [ ! -f $TARFILE ]; then
-        wget $URL
-    fi
-    echo "$CHKSUM $TARFILE" | sha256sum -c -
-    if [ $? -eq 0 ]; then
-        echo "$TARFILE checksum verified"
-    else
-        echo "$TARFILE checksum failed" >&2
-        exit 1
-    fi
-    tar xvzf $TARFILE
-    cd $VERNAME # ~/.config/naomi/local/pip-18.1
-    ~/.config/naomi/local/bin/python setup.py install  # specify the path to the python you installed above
 
     # install naomi & dependencies
     echo "Returning to $NAOMI_DIR"
     cd $NAOMI_DIR
-    ~/.config/naomi/local/bin/pip install -r python_requirements.txt
+    # Create a custom cache dir so we don't use cached files from our main python
+    export XDG_CACHE_HOME=~/.config/naomi/local/cache
+    mkdir -p "$XDG_CACHE_HOME"
+    ~/.config/naomi/local/bin/pip install --cache-dir=~/.config/naomi/local/cache -r python_requirements.txt
+    if [ $? -ne 0 ]; then
+        echo "Error installing python_requirements.txt"
+        exit 1
+    fi
 
     # start the naomi setup process
     echo "#!/bin/bash" > Naomi
@@ -406,7 +399,11 @@ cd Phonetisaurus
 make
 echo "Installing Phonetisaurus"
 SUDO_COMMAND "sudo make install"
+
+echo "cd python"
 cd python
+echo $(pwd)
+
 cp -iv ../.libs/Phonetisaurus.so ./
 if [ "$OPTION" = "1" ]; then
     SUDO_COMMAND "sudo python setup.py install"
