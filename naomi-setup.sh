@@ -238,7 +238,7 @@ if [ $OPTION = "1" ]; then
         fi
         pip install -r python_requirements.txt
         if [ $? -ne 0 ]; then
-            echo "Error installing python requirements: $!"
+            echo "Error installing python requirements: $!" >&2
             exit 1
         fi
     else
@@ -317,7 +317,7 @@ if [ $OPTION = "2" ]; then
     mkdir -p "$XDG_CACHE_HOME"
     ~/.config/naomi/local/bin/pip install --cache-dir=~/.config/naomi/local/cache -r python_requirements.txt
     if [ $? -ne 0 ]; then
-        echo "Error installing python_requirements.txt"
+        echo "Error installing python_requirements.txt" >&2
         exit 1
     fi
 
@@ -326,7 +326,11 @@ if [ $OPTION = "2" ]; then
     echo "~/.config/naomi/local/bin/python $NAOMI_DIR/Naomi.py \$@" >> Naomi
 fi
 if [ $OPTION = "3" ]; then
-    pip3 install -r python_requirements.txt
+    pip3 install --user -r python_requirements.txt
+    if [ $? -ne 0 ]; then
+        echo "Error installing python_requirements.txt" >&2
+        exit 1
+    fi
     # start the naomi setup process
     echo "#!/bin/bash" > Naomi
     echo "python3 $NAOMI_DIR/Naomi.py \$@" >> Naomi
@@ -351,12 +355,12 @@ autoreconf -i
 make
 SUDO_COMMAND "sudo make install"
 if [ $? -ne 0 ]; then
-    echo $!
+    echo $! >&2
     exit 1
 fi
 
 if [ -z "$(which fstinfo)" ]; then
-    echo "ERROR: openfst not installed"
+    echo "ERROR: openfst not installed" >&2
     exit 1
 fi
 
@@ -378,7 +382,7 @@ make
 echo "Installing mitlm"
 SUDO_COMMAND "sudo make install"
 if [ $? -ne 0 ]; then
-    echo $!
+    echo $! >&2
     exit 1
 fi
 
@@ -388,7 +392,7 @@ echo -e "\e[1;32mInstalling & Building cmuclmtk...\e[0m"
 cd ~/.config/naomi/sources
 svn co https://svn.code.sf.net/p/cmusphinx/code/trunk/cmuclmtk/
 if [ $? -ne 0 ]; then
-    printf "${ERROR}Error cloning cmuclmtk${NC}${NL}"
+    echo "Error cloning cmuclmtk" >&2
     exit 1
 fi
 
@@ -408,7 +412,7 @@ cd ~/.config/naomi/sources
 if [ ! -d "Phonetisaurus" ]; then
     git clone https://github.com/AdolfVonKleist/Phonetisaurus.git
     if [ $? -ne 0 ]; then
-        printf "${ERROR}Error cloning Phonetisaurus${NC}${NL}"
+        echo "Error cloning Phonetisaurus" >&2
         exit 1
     fi
 fi
@@ -434,7 +438,7 @@ if [ "$OPTION" = "3" ]; then
 fi
 
 if [ -z "$(which phonetisaurus-g2pfst)" ]; then
-    echo "ERROR: phonetisaurus-g2pfst does not exist"
+    echo "ERROR: phonetisaurus-g2pfst does not exist" >&2
     EXIT 1
 fi
 
@@ -445,7 +449,7 @@ cd ~/.config/naomi/sources
 if [ ! -d "pocketsphinx-python" ]; then
     git clone --recursive https://github.com/cmusphinx/pocketsphinx-python.git
     if [ $? -ne 0 ]; then
-        printf "${ERROR}Error cloning pocketsphinx${NC}${NL}"
+        echo "Error cloning pocketsphinx" >&2
         exit 1
     fi
 fi
@@ -479,15 +483,15 @@ fi
 
 cd $NAOMI_DIR
 if [ -z "$(which text2wfreq)" ]; then
-    echo "ERROR: text2wfreq does not exist"
+    echo "ERROR: text2wfreq does not exist" >&2
     EXIT 1
 fi
 if [ -z "$(which text2idngram)" ]; then
-    echo "ERROR: text2idngram does not exist"
+    echo "ERROR: text2idngram does not exist" >&2
     EXIT 1
 fi
 if [ -z "$(which idngram2lm)" ]; then
-    echo "ERROR: idngram2lm does not exist"
+    echo "ERROR: idngram2lm does not exist" >&2
     EXIT 1
 fi
 
@@ -520,4 +524,3 @@ fi
 echo "In the future, run $NAOMI_DIR/Naomi to start Naomi"
 echo
 ./Naomi --repopulate
-
