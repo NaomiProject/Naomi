@@ -364,10 +364,12 @@ fi
 echo
 echo -e "\e[1;32mInstalling & Building mitlm-0.4.2...\e[0m"
 cd ~/.config/naomi/sources
-git clone https://github.com/mitlm/mitlm.git
-if [ $? -ne 0 ]; then
-    printf "${ERROR}Error cloning mitlm${NC}${NL}"
-    exit 1
+if [ ! -d "mitlm" ]; then
+    git clone https://github.com/mitlm/mitlm.git
+    if [ $? -ne 0 ]; then
+        printf "${ERROR}Error cloning mitlm${NC}${NL}"
+        exit 1
+    fi
 fi
 
 cd mitlm
@@ -403,10 +405,12 @@ SUDO_COMMAND "sudo ldconfig"
 echo
 echo -e "\e[1;32mInstalling & Building phonetisaurus...\e[0m"
 cd ~/.config/naomi/sources
-git clone https://github.com/AdolfVonKleist/Phonetisaurus.git
-if [ $? -ne 0 ]; then
-    printf "${ERROR}Error cloning Phonetisaurus${NC}${NL}"
-    exit 1
+if [ ! -d "Phonetisaurus" ]; then
+    git clone https://github.com/AdolfVonKleist/Phonetisaurus.git
+    if [ $? -ne 0 ]; then
+        printf "${ERROR}Error cloning Phonetisaurus${NC}${NL}"
+        exit 1
+    fi
 fi
 cd Phonetisaurus
 ./configure --enable-python
@@ -438,10 +442,12 @@ fi
 echo
 echo -e "\e[1;32mBuilding and installing sphinxbase...\e[0m"
 cd ~/.config/naomi/sources
-git clone --recursive https://github.com/cmusphinx/pocketsphinx-python.git
-if [ $? -ne 0 ]; then
-    printf "${ERROR}Error cloning pocketsphinx${NC}${NL}"
-    exit 1
+if [ ! -d "pocketsphinx-python" ]; then
+    git clone --recursive https://github.com/cmusphinx/pocketsphinx-python.git
+    if [ $? -ne 0 ]; then
+        printf "${ERROR}Error cloning pocketsphinx${NC}${NL}"
+        exit 1
+    fi
 fi
 
 cd pocketsphinx-python/sphinxbase
