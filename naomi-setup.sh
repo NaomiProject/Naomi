@@ -26,7 +26,7 @@ LT_CYAN='\033[1;36m'
 WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 OPTION="0"
-SUDO_APPROVE="n"
+SUDO_APPROVE=""
 
 CONTINUE() {
     read -n1 -p "Press 'q' to quit, any other key to continue: " CONTINUE
