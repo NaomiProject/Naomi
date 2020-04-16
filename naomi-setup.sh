@@ -155,6 +155,10 @@ if [ $APT -eq 1 ]; then
     SUDO_COMMAND "sudo apt upgrade $SUDO_APPROVE"
     # install dependencies
     SUDO_COMMAND "sudo ./naomi_apt_requirements.sh $SUDO_APPROVE"
+    if [ $? -ne 0 ]; then
+        echo "Error installing apt packages" >&2
+        exit 1
+    fi
 else
     ERROR=""
     if [[ $(CHECK_PROGRAM msgfmt) -ne "0" ]]; then
@@ -173,7 +177,7 @@ else
         ERROR="${ERROR} pip3 not found${NL}"
     fi
     if [ ! -z "$ERROR" ]; then
-        echo "Missing depenancies:${NL}${NL}$ERROR"
+        echo "Missing dependencies:${NL}${NL}$ERROR"
         CONTINUE
     fi
 fi
