@@ -16,7 +16,6 @@ portaudio19-dev
 libasound2-dev
 pulseaudio
 pulseaudio-utils
-pulsemixer
 
 ## STT
 ### pocketsphinx is default for wakeword spotting
