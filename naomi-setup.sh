@@ -74,7 +74,7 @@ for var in "$@"; do
         SUDO_APPROVE="-y"
     fi
     if [ "$var" = "--help" ]; then
-        echo "USAGE: $0 [-y|--yes] [--virtualenv | --local | --primary | --help]"
+        echo "USAGE: $0 [-y|--yes] [--virtualenv | --local-compile | --system | --help]"
         echo
         echo "  --virtualenv    - install Naomi using a virtualenv environment for Naomi"
         echo "                    (this is the recommended choice. You will need to issue"
