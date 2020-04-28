@@ -1,7 +1,7 @@
 # Naomi core dependencies
 APScheduler
 argparse
-mock
+mock==3.0.5
 pytz
 PyYAML
 requests
