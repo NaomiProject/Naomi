@@ -390,7 +390,7 @@ class Mic(object):
             # Otherwise, you might have problems where Naomi
             # reacts to the beep before you have a chance to
             # say anything if you are not using passive listening
-            with open(filename, 'rb' as f:
+            with open(filename, 'rb') as f:
                 self._output_device.play_fp(f)
 
     # Stop talking and delete the queue

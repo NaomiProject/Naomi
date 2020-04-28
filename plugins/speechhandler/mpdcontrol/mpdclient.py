@@ -41,7 +41,7 @@ class MPDClient(object):
             if isinstance(e, socket.error):
                 message = "%s (Errno: %d)" % (e.strerror, e.errno)
             else:
-                if(hasattr(e, "message"):
+                if(hasattr(e, "message")):
                     message = e.message
                 else:
                     message = str(e)
