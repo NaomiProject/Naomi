@@ -671,7 +671,7 @@ class Naomi(object):
                         "description": _(
                             "I need to know the url of your email server if you want me to check your emails for you"),
                         "active": lambda: True if len(
-                            profile.get_profile_var(["email", "address"]).strip()) > 0 else False
+                            profile.get_profile_password(["email", "address"]).strip()) > 0 else False
                     }
                 ),
                 (
@@ -681,7 +681,7 @@ class Naomi(object):
                         "default": "993",
                         "validation": "int",
                         "active": lambda: True if (
-                            len(profile.get_profile_var(["email", "address"]).strip()) > 0
+                            len(profile.get_profile_password(["email", "address"]).strip()) > 0
                         ) and (
                             len(profile.get_profile_var(["email", "imap"])) > 0
                         ) else False
@@ -693,7 +693,7 @@ class Naomi(object):
                         "description": _(
                             "I need to know the url for an SMTP email server to send emails to or for you."),
                         "active": lambda: True if len(
-                            profile.get_profile_var(["email", "address"]).strip()) > 0 else False
+                            profile.get_profile_password(["email", "address"]).strip()) > 0 else False
                     }
                 ),
                 (
@@ -703,7 +703,7 @@ class Naomi(object):
                         "default": "587",
                         "validation": "int",
                         "active": lambda: True if (
-                            len(profile.get_profile_var(["email", "address"]).strip()) > 0
+                            len(profile.get_profile_password(["email", "address"]).strip()) > 0
                         ) and (
                             len(profile.get_profile_var(["email", "imap"])) > 0
                         ) else False
@@ -716,7 +716,7 @@ class Naomi(object):
                         "description": _(
                             "Your username is normally either your full email address or just the part before the '@' symbol."),
                         "active": lambda: True if len(
-                            profile.get_profile_var(["email", "address"]).strip()) > 0 else False
+                            profile.get_profile_password(["email", "address"]).strip()) > 0 else False
                     }
                 ),
                 (
@@ -1144,7 +1144,9 @@ class Naomi(object):
     # user's plugin dir (~/.config/naomi/plugins) and then run install.py if there
     # is one, or python_requirements.txt if there is one.
     def install_plugins(self, plugins):
-        flat_plugins = [y for x in plugins for y in x]
+        flat_plugins = [" ".join(x) for x in plugins]
+        # flat_plugins = [y for x in plugins for y in x]
+        print(flat_plugins)
         csvfile = self.get_remote_plugin_repositories(flat_plugins)
         for row in csvfile:
             # Keeps track of any failure inside the naming while loop
@@ -1304,7 +1306,7 @@ class Naomi(object):
                         ))
 
     def update_plugins(self, plugins):
-        flat_plugins = [y for x in plugins for y in x]
+        flat_plugins = [" ".join(x) for x in plugins]
         csvfile = self.get_remote_plugin_repositories()
         for row in csvfile:
             if(row['Name'] in flat_plugins):
@@ -1386,7 +1388,7 @@ class Naomi(object):
     # If silent is set to True, then do not prompt the user. This allows
     # this function to be used from a script.
     def remove_plugins(self, plugins, silent=False):
-        flat_plugins = [y for x in plugins for y in x]
+        flat_plugins = [" ".join(x) for x in plugins]
         for plugin in flat_plugins:
             plugin_found = False
             for info in self.plugins._plugins.values():
@@ -1420,7 +1422,7 @@ class Naomi(object):
 
     @staticmethod
     def enable_plugins(plugins):
-        flat_plugins = [y for x in plugins for y in x]
+        flat_plugins = [" ".join(x) for x in plugins]
         plugins_enabled = 0
         for plugin in flat_plugins:
             plugin_enabled = False
@@ -1453,7 +1455,7 @@ class Naomi(object):
             profile.save_profile()
 
     def disable_plugins(self, plugins):
-        flat_plugins = [y for x in plugins for y in x]
+        flat_plugins = [" ".join(x) for x in plugins]
         plugins_disabled = 0
         # We don't know what category the plugin is in from just the name
         # so the first thing we have to do is figure out the category
