@@ -206,8 +206,6 @@ def main(args=None):
     if p_args.list_available:
         app.list_available_plugins(p_args.list_available)
         sys.exit(0)
-    print("Plugin to install")
-    print(p_args.plugins_to_install)
     if p_args.plugins_to_install:
         app.install_plugins(p_args.plugins_to_install)
         sys.exit(0)
