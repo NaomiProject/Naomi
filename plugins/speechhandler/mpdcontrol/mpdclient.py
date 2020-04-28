@@ -41,7 +41,10 @@ class MPDClient(object):
             if isinstance(e, socket.error):
                 message = "%s (Errno: %d)" % (e.strerror, e.errno)
             else:
-                message = e.message
+                if(hasattr(e, "message"):
+                    message = e.message
+                else:
+                    message = str(e)
             self._logger.warning(
                 'Connection error while trying to access server %s:%d: %s',
                 self._server, self._port, message)
