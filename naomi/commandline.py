@@ -248,8 +248,13 @@ class commandline(object):
                 prompt += self.default_text(', '.join(default)) + self.default_prompt()
         prompt += self.input_text()
         # don't use print here so no automatic carriage return
-        # sys.stdout.write(prompt)
-        response = input(prompt)
+        # if you pass the prompt to input, it will be written to
+        # stderr, so if you are doing something like:
+        # $ ./Naomi --debug --repopulate 2>naomi.log
+        # to capture stderr to a log and also configure Naomi,
+        # it won't work.
+        sys.stdout.write(prompt)
+        response = input()
         # if the user pressed enter without entering anything,
         # set the response to default
         if(default and not response):
