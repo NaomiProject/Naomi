@@ -73,35 +73,35 @@ def main(args=None):
     )
     pr_man.add_argument(
         '--install',
-        nargs="+",
+        nargs=1,
         dest='plugins_to_install',
         action='append',
         help='Install plugin and exit'
     )
     pr_man.add_argument(
         '--update',
-        nargs="*",
+        nargs="?",
         dest='plugins_to_update',
         action='append',
-        help='Update specific plugin(s) or all plugins and exit'
+        help='Update specific plugin or all plugins and exit'
     )
     pr_man.add_argument(
         '--remove',
-        nargs='+',
+        nargs=1,
         dest='plugins_to_remove',
         action='append',
         help='Remove (uninstall) plugins and exit'
     )
     pr_man.add_argument(
         '--disable',
-        nargs='+',
+        nargs=1,
         dest='plugins_to_disable',
         action='append',
         help='Disable plugins and exit'
     )
     pr_man.add_argument(
         '--enable',
-        nargs='+',
+        nargs=1,
         dest='plugins_to_enable',
         action='append',
         help='Enable plugins and exit'

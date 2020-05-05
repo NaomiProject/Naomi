@@ -372,17 +372,26 @@ class Mic(object):
     # Output methods
     def play_file(self, filename):
         global queue
-        with open(filename, 'rb') as f:
-            queue.append(f.read())
-        if(hasattr(self.current_thread, "is_alive")):
-            if self.current_thread.is_alive():
-                # if Naomi is currently talking, then we are done
-                return
-        # otherwise, start talking
-        self.current_thread = threading.Thread(
-            target=self.say_thread
-        )
-        self.current_thread.start()
+        if(profile.get_arg('listen_while_talking', False)):
+            with open(filename, 'rb') as f:
+                queue.append(f.read())
+            if(hasattr(self.current_thread, "is_alive")):
+                if self.current_thread.is_alive():
+                    # if Naomi is currently talking, then we are done
+                    return
+            # otherwise, start talking
+            self.current_thread = threading.Thread(
+                target=self.say_thread
+            )
+            self.current_thread.start()
+        else:
+            # If Naomi is not supposed to listen while talking,
+            # then use the synchronous play here.
+            # Otherwise, you might have problems where Naomi
+            # reacts to the beep before you have a chance to
+            # say anything if you are not using passive listening
+            with open(filename, 'rb') as f:
+                self._output_device.play_fp(f)
 
     # Stop talking and delete the queue
     def stop(self):
