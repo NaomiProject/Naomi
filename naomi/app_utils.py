@@ -264,7 +264,6 @@ def get_sender_email(msg):
 
 
 def get_message_text(msg):
-    subject = msg['Subject']
     if(msg.is_multipart()):
         for part in msg.walk():
             ctype = part.get_content_type()

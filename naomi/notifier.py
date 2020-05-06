@@ -10,9 +10,9 @@ class Notifier(object):
         self._logger = logging.getLogger(__name__)
         self._logger.info("Setting up notifier")
         self.notifiers = []
-        
+
         # add all notifier plugins
-        notification_clients=pluginstore.PluginStore()
+        notification_clients = pluginstore.PluginStore()
         notification_clients.detect_plugins("notificationclient")
         for info in notification_clients.get_plugins():
             notifier = info.plugin_class(

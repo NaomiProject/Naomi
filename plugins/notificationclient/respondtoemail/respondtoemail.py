@@ -35,8 +35,8 @@ class RespondToEmailPlugin(plugin.NotificationClientPlugin):
             # if the subject line matches the first line of the email, then
             # discard the subject line. If not, then append the body to the
             # subject line.
-            subject=e["Subject"]
-            body=app_utils.get_message_text(e)
+            subject = e["Subject"]
+            body = app_utils.get_message_text(e)
             if(body[:len(subject)] != subject):
                 body = " ".join([subject, body])
             message = self._brain._intentparser.cleantext(body)
