@@ -274,8 +274,6 @@ def get_message_text(msg):
                 break
     else:
         body = re.sub('[\\r\\n\\t]+', ' ', msg.get_payload())
-    if(body[:len(subject)] != subject):
-        body = " ".join([subject, body])
     return body
 
 

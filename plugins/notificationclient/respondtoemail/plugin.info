@@ -1,0 +1,10 @@
+[Plugin]
+Name = Respond to Email
+Version = 1.0.0
+License = MIT
+URL = https://github.com/NaomiProject/Naomi
+Description = Responds to emails containing the wake word
+
+[Author]
+Name = Naomi Project
+URL = https://github.com/NaomiProject/Naomi
