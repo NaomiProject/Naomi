@@ -384,10 +384,10 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
                 "YOU'RE": "YOU ARE",
                 "YOU'VE": "YOU HAVE"
             }
-            for i in range(len(words)):
+            for i, word in enumerate(words):
                 # expand contractions
-                if words[i] in contractions:
-                    words[i] = contractions[words[i]]
+                if word in contractions:
+                    words[i] = contractions[word]
                 # remove punctuation from beginning and end of words
                 while len(words[i]) > 0 and words[i][:1] not in [chr(i) for i in range(65, 91)]:
                     words[i] = words[i][1:]
