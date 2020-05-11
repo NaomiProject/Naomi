@@ -259,6 +259,7 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def determine_intent(self, phrase):
         pass
 
+    # FIXME this does not belong here. It should be in a special language object
     @staticmethod
     def cleantext(text):
         language = profile.get(["language"], "en-US")[:2]

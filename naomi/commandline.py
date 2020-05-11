@@ -61,6 +61,7 @@ class commandline(object):
             affirmative = 'yes'
             negative = 'no'
 
+    # FIXME this does not belong here.
     def get_language(self, language=None, once=False):
         global _
         languages = {

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import contextlib
-import queue
 import random
 from naomi import app_utils
 from naomi import plugin
@@ -10,7 +9,6 @@ from naomi import profile
 class RespondToEmailPlugin(plugin.NotificationClientPlugin):
     def __init__(self, *args, **kwargs):
         super(RespondToEmailPlugin, self).__init__(*args, **kwargs)
-        self.q = queue.Queue()
         # check to see if we can connect to an email account
         if(app_utils.check_imap_config()):
             self.gather = self.handle_email_notifications
@@ -95,7 +93,7 @@ class RespondToEmailPlugin(plugin.NotificationClientPlugin):
             if emails:
                 last_date = app_utils.get_most_recent_date(emails)
             for e in emails:
-                self.q.put(handle_email(e))
+                handle_email(e)
         except Exception as ex:
             self._logger.warn(str(ex))
 

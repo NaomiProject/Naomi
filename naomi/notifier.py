@@ -28,6 +28,7 @@ class Notifier(object):
 
         sched = BackgroundScheduler(timezone="UTC", daemon=True)
         sched.start()
+        # FIXME add an interval setting to profile so this can be overridden
         sched.add_job(self.gather, 'interval', seconds=30)
         atexit.register(lambda: sched.shutdown(wait=False))
 
