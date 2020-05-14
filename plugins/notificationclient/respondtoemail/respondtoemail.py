@@ -41,7 +41,18 @@ class RespondToEmailPlugin(plugin.NotificationClientPlugin):
             keywords = profile.get(["keyword"], ['NAOMI'])
             if(isinstance(keywords, str)):
                 keywords = [keywords]
-            if(any(x.upper() in message for x in keywords)):
+            handleEmail = False
+            respond_to_emails = profile.get(['respond_to_emails'], None)
+            if(respond_to_emails is not None):  # check respond_to_email exists
+                print("respond to emails is {}".format(respond_to_emails))
+                print("len: {}".format(len(respond_to_emails)))
+                print("From: {}".format(app_utils.get_sender_email(e)))
+                if((len(respond_to_emails) == 0)or(app_utils.get_sender_email(e) in respond_to_emails)):  # sender is okay
+                    print("sender okay")
+                    if(any(x.upper() in message for x in keywords)):  # wake word detected
+                        print("wake word detected")
+                        handleEmail = True
+            if(handleEmail):
                 # This message should be marked as read
                 app_utils.mark_read(e)
                 emailmic = EmailMic(

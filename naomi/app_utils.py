@@ -79,7 +79,14 @@ def check_smtp_config():
     PORT = profile.get(['email', 'smtp', 'port'], 587)
     if(success):
         try:
-            session = smtplib.SMTP(SERVER, PORT)
+            session = smtplib.SMTP(
+                SERVER,
+                PORT,
+                profile.get(
+                    ['email', 'smtp', 'timeout'],
+                    10
+                )
+            )
             session.starttls()
             session.login(USERNAME, PASSWORD)
             session.quit()
