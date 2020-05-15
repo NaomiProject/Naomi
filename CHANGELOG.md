@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.0 (15/05/2020)
+## v3.0 (Work in progress)
 
 ### Core updates
 #### Python3
