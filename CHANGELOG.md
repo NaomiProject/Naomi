@@ -25,22 +25,22 @@ you can now just use
 input_channels=profile(['audio','input_channels'], 1)
 ```
 This API includes the following commands:
-set_arg(name, value)
-get_arg(name, default=None)
-set_profile(custom_profile)
-get_profile(command="")
-save_profile()
-get(path, default=None) - alias for get_profile_var
-get_profile_var(path, default=None)
-set_profile_var(path, value)
-remove_profile_var(path)
-get_password(path, default=None) - alias for get_profile_password
-get_profile_password(path, default=None)
-set_profile_password(path, value)
-get_profile_flag(path, default=None) - retrieves boolean
-exists(path) - alias for get_profile_var_exists
-get_profile_var_exists(path)
-validate(definition, response)
+* set_arg(name, value)
+* get_arg(name, default=None)
+* set_profile(custom_profile)
+* get_profile(command="")
+* save_profile()
+* get(path, default=None) - alias for get_profile_var
+* get_profile_var(path, default=None)
+* set_profile_var(path, value)
+* remove_profile_var(path)
+* get_password(path, default=None) - alias for get_profile_password
+* get_profile_password(path, default=None)
+* set_profile_password(path, value)
+* get_profile_flag(path, default=None) - retrieves boolean
+* exists(path) - alias for get_profile_var_exists
+* get_profile_var_exists(path)
+* validate(definition, response)
 
 #### Naomi user directory moved
 Naomi's user configuration files have moved from ~/.naomi to ~/.config/naomi to better follow current Linux protocol. Naomi's profile.yml file has moved from ~/.naomi/profile.yml to ~/.config/naomi/configs/profile.yml
@@ -85,13 +85,14 @@ In the update_translations.py script, switched from pygettext to xgettext becaus
 #### Naomi Plugin Exchange
 Developed a method for 3rd party plugin authors to list their plugins in Naomi, so plugins can be easily searched and installed from within Naomi.
 Current command line flags include
---install <plugin>
---update [<plugin>]
---remove <plugin>
---disable <plugin>
---enable <plugin>
---list-active-plugins
---list-available-plugins
+* --install <plugin>
+* --update [<plugin>]
+* --remove <plugin>
+* --disable <plugin>
+* --enable <plugin>
+* --list-active-plugins
+* --list-available-plugins
+
 AustinC is working on providing a web front end for exploring plugins written by or endorsed by the Naomi Project.
 
 #### Visualizations Plugin
@@ -108,16 +109,16 @@ This script went through a lot of permutations this year. Right now it should cr
 
 #### Email access routines moved to app_utils
 There should no longer be any reason for plugin developers to need direct access to the user's email username or password. Routines for sending and checking emails are now embedded in app_utils. Thes include:
-  check_imap_config()
-  check_smtp_config()
-  send_email(SUBJECT, BODY, TO)
-  email_user(SUBJECT="", BODY="")
-  fetch_emails(since=None, email_filter="", markRead=False, limit=None)
-  get_sender(msg)
-  get_sender_email(msg)
-  get_message_text(msg)
-  mark_read(msg)
-  get_most_recent_date(emails)
+* check_imap_config()
+* check_smtp_config()
+* send_email(SUBJECT, BODY, TO)
+* email_user(SUBJECT="", BODY="")
+* fetch_emails(since=None, email_filter="", markRead=False, limit=None)
+* get_sender(msg)
+* get_sender_email(msg)
+* get_message_text(msg)
+* mark_read(msg)
+* get_most_recent_date(emails)
 
 ### Plugin updates
 #### Updated to MPD2
