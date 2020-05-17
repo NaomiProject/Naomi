@@ -39,6 +39,9 @@ google-cloud-speech
 googleapis-common-protos
 grpcio
 
+# google tts
+google-cloud-texttospeech
+
 # webrtcvad
 webrtcvad
 
