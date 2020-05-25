@@ -1,14 +1,38 @@
-#
 # AustinC; Colored Formatting is broken down into different blockes
-# based off of use cases (i.e. format, foreground color,
-# background color & log defaults)
+# based off of use cases (i.e. color defaults, log defaults,
+# format, foreground color, background color)
 # To use both colors & logd use:
-# from coloredformatting import colors, logd
-#
+# from coloredformatting import customcolors, logd
 
 
+class naomidefaults:
+    ################################
+    #                              #
+    #        Naomi Defaults        #
+    #                              #
+    ################################
+    B_C='\033[1;96m'        #Bright Cyan           For logo
+    B_R='\033[1;91m'        #Bright Red            For alerts/errors
+    B_G='\033[1;92m'        #Bright Green          For initiating a process i.e. "Installing blah blah..." or calling attention to thing in outputs
+    B_Y='\033[1;93m'        #Bright Yellow         For urls & emails
+    B_Black='\033[1;90m'    #Bright Black          For lower text
+    B_Blue='\033[1;94m'     #Bright Blue           For prompt question
+    B_M='\033[1;95m'        #Bright Magenta        For prompt choices
+    B_W='\033[1;97m'        #Bright White          For standard text output
+    ################################
+    #                              #
+    #        Named Defaults        #
+    #                              #
+    ################################
+    logo='\033[1;96m'       #Bright Cyan           For logo
+    ae='\033[1;91m'         #Bright Red            For alerts/errors
+    ip='\033[1;92m'         #Bright Green          For initiating a process i.e. "Installing blah blah..." or calling attention to thing in outputs
+    ue='\033[1;93m'         #Bright Yellow         For urls & emails
+    lt='\033[1;90m'         #Bright Black          For lower text
+    pq='\033[1;94m'         #Bright Blue           For prompt question
+    pc='\033[1;95m'         #Bright Magenta        For prompt choices
+    sto='\033[1;97m'        #Bright White          For standard text output
 
-#
 # How to use
 #    from coloredformatting import colors
 #
@@ -20,9 +44,7 @@
 #    and invisible work with the main class
 #    i.e. colors.bold
 #
-
-
-class colors:
+class customcolors:
     ################################
     #                              #
     #          FORMATTING          #
