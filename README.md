@@ -27,7 +27,7 @@
     <a href="">
     	<img src="https://img.shields.io/badge/contributions-welcome-orange.svg">
     </a>
-    <a href="https://discord.gg/knequ9t">
+    <a href="https://discord.gg/EVNQya3">
     	<img src="https://discordapp.com/api/guilds/320348612813127684/embed.png">
     </a>
     <a href="https://opensource.org/licenses/MIT">
@@ -41,10 +41,6 @@
   <a href="#download">Download</a> •
   <a href="#credits">Credits</a> •
   <a href="#license">License</a>
-</p>
-
-<p align="center">
-	<img src="https://projectnaomi.com/hero.png">
 </p>
 
 ## Key Features
@@ -62,7 +58,7 @@
 
 ## Documentation
 
-All the documentation is available on our [website](https://projectnaomi.com/docs)!
+All the documentation is available on our [website](https://projectnaomi.com/dev/docs)!
 
 ## Download
 
