@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#from blessings import Terminal
+from blessings import Terminal
 from getpass import getpass
 from naomi import app_utils
 from naomi import i18n
@@ -43,7 +43,7 @@ def println(string):
 class commandline(object):
     def __init__(self):
         global _, t, affirmative, negative
-        #t = Terminal()
+        t = Terminal()
         # If the language has already been set, no need to change it.
         # If the language has not been set, we will need to set it before
         # interacting with the user
