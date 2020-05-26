@@ -165,9 +165,9 @@ def greet_user():
         ]))
     )
     print(
-        "    " + interface.instruction_text(
-            _("just hit 'Enter' with a blank field to continue.")
-        )
+        "    " + interface.instruction_text(_("just hit '"))
+               + interface.strong_text(_("Enter"))
+               + interface.instruction_text(_("' with a blank field to continue."))
     )
     print("")
 
@@ -1272,7 +1272,7 @@ def get_beep_or_voice():
     else:
         temp = beep_choice
     print(
-        _("{beep} for beeps or {voice} for voice.").format(
+        "    " + _("{beep} for beeps or {voice} for voice.").format(
             beep="".join([
                 interface.choices_text(),
                 beep_choice,
