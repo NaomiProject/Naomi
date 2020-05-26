@@ -120,6 +120,8 @@ class Brain(object):
             A tuple containing a text and the module that can handle it
         """
         for text in texts:
+            # convert text to upper case and remove any punctuation
+            text = self._intentparser.cleantext(text)
             intents = self._intentparser.determine_intent(text)
             for intent in intents:
                 # Add the intent to the response so the handler method

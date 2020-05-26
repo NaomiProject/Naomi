@@ -79,7 +79,14 @@ def check_smtp_config():
     PORT = profile.get(['email', 'smtp', 'port'], 587)
     if(success):
         try:
-            session = smtplib.SMTP(SERVER, PORT)
+            session = smtplib.SMTP(
+                SERVER,
+                PORT,
+                profile.get(
+                    ['email', 'smtp', 'timeout'],
+                    10
+                )
+            )
             session.starttls()
             session.login(USERNAME, PASSWORD)
             session.quit()
@@ -264,7 +271,6 @@ def get_sender_email(msg):
 
 
 def get_message_text(msg):
-    subject = msg['Subject']
     if(msg.is_multipart()):
         for part in msg.walk():
             ctype = part.get_content_type()
@@ -274,8 +280,6 @@ def get_message_text(msg):
                 break
     else:
         body = re.sub('[\\r\\n\\t]+', ' ', msg.get_payload())
-    if(body[:len(subject)] != subject):
-        body = " ".join([subject, body])
     return body
 
 

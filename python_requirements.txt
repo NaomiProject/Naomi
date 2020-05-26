@@ -50,3 +50,7 @@ cython
 pandas
 sklearn
 jiwer
+
+# Development
+flake8
+

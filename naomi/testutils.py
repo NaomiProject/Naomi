@@ -37,6 +37,11 @@ def test_profile():
         TEST_PROFILE['google']['credentials_json'] = config['google']['credentials_json']
     except(KeyError, NameError):
         pass
+    try:
+        TEST_PROFILE['key'] = config['key']
+        TEST_PROFILE['email'] = config['email']
+    except(KeyError, NameError):
+        pass
     return TEST_PROFILE
 
 
