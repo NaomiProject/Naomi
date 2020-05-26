@@ -5,7 +5,7 @@ from naomi import app_utils
 from naomi import i18n
 from naomi import paths
 from naomi import profile
-from . import coloredformatting as cf
+from naomi import coloredformatting as cf
 import re
 import sys
 
