@@ -1285,6 +1285,7 @@ def get_beep_or_voice():
             ])
         )
     )
+    print("")
     response = interface.simple_input(
         interface.format_prompt(
             "?",
