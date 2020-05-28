@@ -53,7 +53,7 @@ CHECK_PROGRAM() {
 
 unknown_os ()
 {
-  printf "${B_R}Notice:${B_W} Unfortunately, your operating system distribution and version are not supported by this script.${NL}"
+  printf "${B_R}Notice:${B_W} Unfortunately, your operating system distribution and version are not supported by this script at this time.${NL}"
   echo
   printf "${B_R}Notice:${B_W} You can find a list of supported OSes and distributions on our website: ${B_Y}https://projectnaomi.com/dev/docs/installation/${NL}"
   echo
@@ -280,12 +280,11 @@ if [ ! -f ~/.config/naomi/configs/profile.yml ]; then
     echo
     printf "${B_W}=========================================================================${NL}"
     printf "${B_W}Welcome to Naomi. This process is designed to make getting started with${NL}"
-    printf "${B_W}Naomi quick and easy. Would you like help setting up your system?${NL}"
+    printf "${B_W}Naomi quick and easy. This process can take up to 3 hours to complete.${NL}"
+    printf "${B_W}Would you like to continue with the process now or wait for another time?${NL}"
     echo
-    printf "${B_W}Note: Some options can cause the process to take up to 3 hours${NL}"
-    echo
-    printf "${B_M}  Y${B_W})es, I'd like the guided setup.${NL}"
-    printf "${B_M}  N${B_W})ope, just get me a command line and get out of my way!${NL}"
+    printf "${B_M}  Y${B_W})es, I'd like the proceed with the setup.${NL}"
+    printf "${B_M}  N${B_W})ope, I will come back at another time.${NL}"
     echo
     printf "${B_Blue}Choice [${B_M}Y${B_Blue}/${B_M}N${B_Blue}]: ${B_W}"
     while true; do
@@ -305,7 +304,7 @@ if [ ! -f ~/.config/naomi/configs/profile.yml ]; then
             if [ -n "$(command -v apt-get)" ]; then
               apt_setup_wizard
             elif [ -n "$(command -v yum)" ]; then
-              yum_setup_wizard
+              unknown_os
             else
               unknown_os
             fi
