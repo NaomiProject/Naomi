@@ -188,6 +188,7 @@ curl_check ()
 }
 
 function apt_setup_wizard() {
+  if [ ! -f ~/Naomi/README.md ]; then
     echo
     printf "${B_G}Starting Naomi Apt Setup Wizard...${NL}${B_W}"
     . <( wget -O - "https://installers.projectnaomi.com/script.deb.sh" );
@@ -219,8 +220,32 @@ function apt_setup_wizard() {
       echo
       exit 1
     fi
+  else
+    bash ~/Naomi/installers/script.deb.sh -y 2>&1 | tee ~/.config/naomi/naomi-dev-build.log
+    echo
+    echo
+    echo
+    echo
+    printf "${B_W}=========================================================================${NL}"
+    echo
+    printf "${B_W}That's all, installation is complete! All that is left is the profile${NL}"
+    printf "${B_W}population process and after that Naomi will start.${NL}"
+    echo
+    printf "${B_W}In the future, to start Naomi type '${B_G}Naomi${B_W}' in a terminal${NL}"
+    echo
+    printf "${B_W}Please type '${B_G}Naomi --repopulate${B_W}' on the prompt below to populate your profile...${NL}"
+    read -N1 -s anykey
+    mv ~/Naomi-Temp/Naomi.sh ~/Naomi/Naomi.sh
+    sudo rm -Rf ~/Naomi-Temp
+    # Launch Naomi Population
+    cd ~/Naomi
+    chmod a+x Naomi.sh
+    cd ~
+    exec bash
+  fi
 }
 function yum_setup_wizard() {
+  if [ ! -f ~/Naomi/README.md ]; then
     echo
     echo
     echo
@@ -250,9 +275,34 @@ function yum_setup_wizard() {
       cd ~
       exec bash
     else
+      echo
       printf "${B_R}Notice: ${B_W}Naomi Yum Setup Wizard Failed.${NL}"
+      echo
       exit 1
     fi
+  else
+    bash ~/Naomi/installers/script.rpm.sh -y 2>&1 | tee ~/.config/naomi/naomi-rpm-build.log
+    echo
+    echo
+    echo
+    echo
+    printf "${B_W}=========================================================================${NL}"
+    echo
+    printf "${B_W}That's all, installation is complete! All that is left is the profile${NL}"
+    printf "${B_W}population process and after that Naomi will start.${NL}"
+    echo
+    printf "${B_W}In the future, to start Naomi type '${B_G}Naomi${B_W}' in a terminal${NL}"
+    echo
+    printf "${B_W}Please type '${B_G}Naomi --repopulate${B_W}' on the prompt below to populate your profile...${NL}"
+    read -N1 -s anykey
+    mv ~/Naomi-Temp/Naomi.sh ~/Naomi/Naomi.sh
+    sudo rm -Rf ~/Naomi-Temp
+    # Launch Naomi Population
+    cd ~/Naomi
+    chmod a+x Naomi.sh
+    cd ~
+    exec bash
+  fi
 }
 
 tput reset
