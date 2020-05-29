@@ -27,6 +27,7 @@ NL="
 "
 OPTION="0"
 SUDO_APPROVE=""
+REQUIRE_AUTH=""
 
 CONTINUE() {
     read -n1 -p "Press 'q' to quit, any other key to continue: " CONTINUE
@@ -78,7 +79,37 @@ setup_wizard() {
     printf "${B_W}SECURITY SETUP:${NL}"
     printf "${B_W}Let's examine a few security settings.${NL}"
     echo
-    sleep 3
+    printf "${B_W}By default, Naomi is configured to require a password to perform actions as${NL}"
+    printf "${B_W}root (e.g. 'sudo ...') as well as confirm commands before continuing.${NL}"
+    printf "${B_W}This means you will have to watch the setup process to confirm everytime a new${NL}"
+    printf "${B_W}command needs to run.${NL}"
+    echo
+    printf "${B_W}However you can enable Naomi to continue the process uninterupted for a hands off experience${NL}"
+    echo
+    printf "${B_W}Would you like the setup to run uninterupted or would you like to look over the setup process?${NL}"
+    echo
+    printf "${B_M}  1${B_W}) All the process to run uninterupted${NL}"
+    printf "${B_M}  2${B_W}) Require authentication to continue and run commands${NL}"
+    printf "${B_Blue}Choice [${B_M}1${B_Blue}-${B_M}2${B_Blue}]: ${B_W}"
+    while true; do
+        read -N1 -s key
+        case $key in
+         [1])
+            printf "${B_M}$key ${B_W}- Proceeding uninterupted${NL}"
+            REQUIRE_AUTH="0"
+            SUDO_APPROVE="-y"
+            break
+            ;;
+         [2])
+            printf "${B_M}$key ${B_W}- Requiring authentication${NL}"
+            REQUIRE_AUTH="1"
+            SUDO_APPROVE=""
+            break
+            ;;
+        esac
+    done
+    echo
+    echo
     echo
 
     echo
@@ -108,7 +139,11 @@ setup_wizard() {
     # Download and setup Naomi Dev repo as default
     echo
     printf "${B_G}Installing 'git'...${B_W}${NL}"
-    SUDO_COMMAND "sudo apt-get install git -y"
+    if [ $REQUIRE_AUTH -eq 1 ]; then
+      SUDO_COMMAND "sudo apt-get install git $SUDO_APPROVE"
+    else
+      sudo apt-get install git $SUDO_APPROVE
+    fi
     echo
     printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
     cd ~
@@ -120,14 +155,23 @@ setup_wizard() {
     NAOMI_DIR="$(cd ~/Naomi && pwd)"
 
     if [ $APT -eq 1 ]; then
-      SUDO_COMMAND "sudo apt-get update"
-      SUDO_COMMAND "sudo apt upgrade $SUDO_APPROVE"
-      # install dependencies
-      SUDO_COMMAND "sudo ./naomi_apt_requirements.sh $SUDO_APPROVE"
-      if [ $? -ne 0 ]; then
-        printf "${B_R}Notice:${B_W} Error installing apt packages${NL}" >&2
-        exit 1
-      fi
+      if [ $REQUIRE_AUTH -eq 1 ]; then
+        SUDO_COMMAND "sudo apt-get update"
+        SUDO_COMMAND "sudo apt upgrade $SUDO_APPROVE"
+        SUDO_COMMAND "sudo ./naomi_apt_requirements.sh $SUDO_APPROVE"
+        if [ $? -ne 0 ]; then
+          printf "${B_R}Notice:${B_W} Error installing apt packages${NL}" >&2
+          exit 1
+        fi
+      else
+        sudo apt-get update
+        sudo apt upgrade $SUDO_APPROVE
+        sudo ./naomi_apt_requirements.sh $SUDO_APPROVE
+        if [ $? -ne 0 ]; then
+          printf "${B_R}Notice:${B_W} Error installing apt packages${NL}" >&2
+          exit 1
+        fi
+      fi      
     else
       ERROR=""
       if [[ $(CHECK_PROGRAM msgfmt) -ne "0" ]]; then
@@ -366,10 +410,17 @@ setup_wizard() {
     autoreconf -i
     ./configure --enable-static --enable-shared --enable-far --enable-lookahead-fsts --enable-const-fsts --enable-pdt --enable-ngram-fsts --enable-linear-fsts --prefix=/usr
     make
-    SUDO_COMMAND "sudo make install"
-    if [ $? -ne 0 ]; then
-      echo $! >&2
-      exit 1
+    if [ $REQUIRE_AUTH -eq 1 ]; then
+      SUDO_COMMAND "sudo make install"
+      if [ $? -ne 0 ]; then
+        echo $! >&2
+        exit 1
+      fi
+    else
+      sudo make install
+      if [ $? -ne 0 ]; then
+        echo $! >&2
+        exit 1
     fi
 
     if [ -z "$(which fstinfo)" ]; then
@@ -392,10 +443,18 @@ setup_wizard() {
     ./autogen.sh
     make
     printf "${B_G}Installing mitlm${B_W}${NL}"
-    SUDO_COMMAND "sudo make install"
-    if [ $? -ne 0 ]; then
-      echo $! >&2
-      exit 1
+    if [ $REQUIRE_AUTH -eq 1 ]; then
+      SUDO_COMMAND "sudo make install"
+      if [ $? -ne 0 ]; then
+        echo $! >&2
+        exit 1
+      fi
+    else
+      sudo make install
+      if [ $? -ne 0 ]; then
+        echo $! >&2
+        exit 1
+      fi
     fi
 
     # Building and installing CMUCLMTK
@@ -411,10 +470,18 @@ setup_wizard() {
     ./autogen.sh
     make
     printf "${B_G}Installing CMUCLMTK${B_W}${NL}"
-    SUDO_COMMAND "sudo make install"
+    if [ $REQUIRE_AUTH -eq 1 ]; then
+      SUDO_COMMAND "sudo make install"
+    else
+      sudo make install
+    fi
 
     printf "${B_G}Linking shared libraries${B_W}${NL}"
-    SUDO_COMMAND "sudo ldconfig"
+    if [ $REQUIRE_AUTH -eq 1 ]; then
+      SUDO_COMMAND "sudo ldconfig"
+    else
+      sudo ldconfig
+    fi
 
     # Building and installing phonetisaurus
     echo
@@ -431,13 +498,22 @@ setup_wizard() {
     ./configure --enable-python
     make
     printf "${B_G}Installing Phonetisaurus${B_W}${NL}"
-    SUDO_COMMAND "sudo make install"
+    printf "${B_G}Linking shared libraries${B_W}${NL}"
+    if [ $REQUIRE_AUTH -eq 1 ]; then
+      SUDO_COMMAND "sudo make install"
+    else
+      sudo make install
+    fi
 
     printf "[$(pwd)]\$ ${B_G}cd python${B_W}${NL}"
     cd python
     echo $(pwd)
     cp -v ../.libs/Phonetisaurus.so ./
-    SUDO_COMMAND "sudo python setup.py install"
+    if [ $REQUIRE_AUTH -eq 1 ]; then
+      SUDO_COMMAND "sudo python setup.py install"
+    else
+      sudo python setup.py install
+    fi
 
     if [ -z "$(which phonetisaurus-g2pfst)" ]; then
       printf "${ERROR} ${B_R}Notice:${B_W} phonetisaurus-g2pfst does not exist${NL}" >&2
@@ -458,7 +534,11 @@ setup_wizard() {
     cd pocketsphinx-python/sphinxbase
     ./autogen.sh
     make
-    SUDO_COMMAND "sudo make install"
+    if [ $REQUIRE_AUTH -eq 1 ]; then
+      SUDO_COMMAND "sudo make install"
+    else
+      sudo make install
+    fi
 
     # Installing & Building pocketsphinx
     echo
@@ -466,7 +546,11 @@ setup_wizard() {
     cd ~/.config/naomi/sources/pocketsphinx-python/pocketsphinx
     ./autogen.sh
     make
-    SUDO_COMMAND "sudo make install"
+    if [ $REQUIRE_AUTH -eq 1 ]; then
+      SUDO_COMMAND "sudo make install"
+    else
+      sudo make install
+    fi
 
     # Installing PocketSphinx Python module
     echo
