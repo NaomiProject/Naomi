@@ -5,6 +5,7 @@ from naomi import app_utils
 from naomi import i18n
 from naomi import paths
 from naomi import profile
+from . import coloredformatting as cf
 import re
 import sys
 
@@ -141,76 +142,91 @@ class commandline(object):
     # properties
     @staticmethod
     def normal_text(text=""):
+        #return cf.naomidefaults.sto + text
         return t.normal + text
 
     # this is for emphasis
     @staticmethod
     def strong_text(text=""):
+        #return cf.naomidefaults.ip + text
         return t.bold_cyan + text
 
     # this is for instructions
     @staticmethod
     def instruction_text(text=""):
+        #return cf.naomidefaults.sto + text
         return t.bold_blue + text
 
     # This is for the brackets surrounding the icon
     @staticmethod
     def icon_text(text=""):
+        #return cf.naomidefaults.sto + text
         return t.bold_cyan + text
 
     # This is for question text
     @staticmethod
     def question_text(text=""):
+        #return cf.naomidefaults.pq + text
         return t.bold_blue + text
 
     # This is for the question icon
     @staticmethod
     def question_icon(text=""):
+        #return cf.naomidefaults.pq + text
         return t.bold_yellow + text
 
     # This is for alert text
     @staticmethod
     def alert_text(text=""):
+        #return cf.naomidefaults.ae + text
         return t.bold_red + text
 
     # This is for the alert icon
     @staticmethod
     def alert_icon(text=""):
+        #return cf.naomidefaults.ae + text
         return t.bold_cyan + text
 
     # This is for listing choices available to choose from
     @staticmethod
     def choices_text(text=""):
+        #return cf.naomidefaults.pc + text
         return t.bold_cyan + text
 
     # This is for displaying the default choice when there is a default
     @staticmethod
     def default_text(text=""):
+        #return cf.naomidefaults.sto + text
         return t.normal + text
 
     # This is for the prompt after the default text
     @staticmethod
     def default_prompt(text="// "):
+        #return cf.naomidefaults.pc + text
         return t.bold_blue + text
 
     # This is the color for the text as the user is entering a choice
     @staticmethod
     def input_text(text=""):
+        #return cf.naomidefaults.pc + text
         return t.normal + text
 
     # This is text for a url
     @staticmethod
     def url_text(text=""):
+        #return cf.naomidefaults.ue + text + cf.naomidefaults.sto
         return t.bold_cyan + t.underline + text + t.normal
 
     # This is for a status message
     @staticmethod
     def status_text(text=""):
+        #return cf.naomidefaults.ip + text
         return t.bold_magenta + text
 
     # This is a positive alert
     @staticmethod
     def success_text(text=""):
+        #return cf.naomidefaults.ip + text
         return t.bold_green + text
 
     def format_prompt(self, icon, prompt):

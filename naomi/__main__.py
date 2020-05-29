@@ -5,6 +5,9 @@ import argparse
 from . import application
 from . import app_utils
 from . import profile
+from . import coloredformatting as cf
+logo = cf.naomidefaults.logo
+sto = cf.naomidefaults.sto
 
 
 USE_STANDARD_MIC = application.USE_STANDARD_MIC
@@ -141,12 +144,19 @@ def main(args=None):
     )
     p_args = parser.parse_args(args)
 
-    print("************************************************************")
-    print("*                    Naomi Assistant                       *")
-    print("* Made by the Naomi Community, based on the Jasper Project *")
-    print("* Source code available from                               *")
-    print("*    https://github.com/NaomiProject/Naomi                 *")
-    print("************************************************************")
+    print(logo)
+    print("      ___           ___           ___           ___                  ")
+    print("     /\__\         /\  \         /\  \         /\__\          ___    ")
+    print("    /::|  |       /::\  \       /::\  \       /::|  |        /\  \   ")
+    print("   /:|:|  |      /:/\:\  \     /:/\:\  \     /:|:|  |        \:\  \  ")
+    print("  /:/|:|  |__   /::\~\:\  \   /:/  \:\  \   /:/|:|__|__      /::\__\ ")
+    print(" /:/ |:| /\__\ /:/\:\ \:\__\ /:/__/ \:\__\ /:/ |::::\__\  __/:/\/__/ ")
+    print(" \/__|:|/:/  / \/__\:\/:/  / \:\  \ /:/  / \/__/~~/:/  / /\/:/  /    ")
+    print("     |:/:/  /       \::/  /   \:\  /:/  /        /:/  /  \::/__/     ")
+    print("     |::/  /        /:/  /     \:\/:/  /        /:/  /    \:\__\     ")
+    print("     /:/  /        /:/  /       \::/  /        /:/  /      \/__/     ")
+    print("     \/__/         \/__/         \/__/         \/__/                 ")
+    print(sto)
 
     # Set up logging
     logging.basicConfig(
