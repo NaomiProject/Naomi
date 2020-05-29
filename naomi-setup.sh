@@ -312,4 +312,12 @@ if [ ! -f ~/.config/naomi/configs/profile.yml ]; then
             ;;
         esac
     done
+else
+  printf "${B_W}=========================================================================${NL}"
+  printf "${B_W}It looks like you already have Naomi installed.${NL}"
+  printf "${B_W}To start name just type '${B_G}Naomi${B_W}' in any terminal.${NL}"
+  echo
+  printf "${B_W}Note: If you are getting this message but have not ran the${NL}"
+  printf "${B_W}setup before or if you have installed Naomi in the past, please${NL}"
+  printf "${B_W}check and remove the ${B_G}profile.yml${B_W} from the ${B_G}.config/naomi/configs/${B_W} directory.${NL}"
 fi
