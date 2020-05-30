@@ -8,6 +8,7 @@ dirmngr
 gettext
 gfortran
 util-linux
+jq
 
 # Plugins
 ## AudioEngine
