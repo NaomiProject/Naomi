@@ -22,7 +22,9 @@ except NameException:
 ```
 you can now just use
 ```
-input_channels=profile(['audio','input_channels'], 1)
+from naomi import profile
+...
+input_channels=profile.get(['audio','input_channels'], 1)
 ```
 This API includes the following commands:
 * set_arg(name, value)
@@ -41,6 +43,8 @@ This API includes the following commands:
 * exists(path) - alias for get_profile_var_exists
 * get_profile_var_exists(path)
 * validate(definition, response)
+
+This also means that it is no longer necessary to pass a variable containing a copy of the profile to each module. The profile is stored in a static variable and available to any module that imports the profile module.
 
 #### Naomi user directory moved
 Naomi's user configuration files have moved from ~/.naomi to ~/.config/naomi to better follow current Linux protocol. Naomi's profile.yml file has moved from ~/.naomi/profile.yml to ~/.config/naomi/configs/profile.yml
