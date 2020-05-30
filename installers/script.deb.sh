@@ -442,6 +442,7 @@ setup_wizard() {
       if [ $? -ne 0 ]; then
         echo $! >&2
         exit 1
+      fi
     fi
 
     if [ -z "$(which fstinfo)" ]; then
