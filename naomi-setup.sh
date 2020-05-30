@@ -221,6 +221,7 @@ function apt_setup_wizard() {
       exit 1
     fi
   else
+    chmod a+x ~/Naomi/installers/script.deb.sh
     bash ~/Naomi/installers/script.deb.sh
     echo
     echo
@@ -281,6 +282,7 @@ function yum_setup_wizard() {
       exit 1
     fi
   else
+    chmod a+x ~/Naomi/installers/script.rpm.sh
     bash ~/Naomi/installers/script.rpm.sh
     echo
     echo
