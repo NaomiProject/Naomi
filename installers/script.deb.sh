@@ -393,6 +393,8 @@ setup_wizard() {
     echo "    if [ $(git rev-parse HEAD) != $(git rev-parse @{u}) ] ; then" >> Naomi.sh
     echo "      git pull" >> Naomi.sh
     echo "      sudo apt-get -o Acquire::ForceIPv4=true update -y" >> Naomi.sh
+    echo "      sudo apt -o upgrade -y" >> Naomi.sh
+    echo "      sudo ./naomi_apt_requirements.sh -y" >> Naomi.sh
     echo "    fi" >> Naomi.sh
     echo "  fi" >> Naomi.sh
     echo "  export WORKON_HOME=$HOME/.virtualenvs" >> Naomi.sh
