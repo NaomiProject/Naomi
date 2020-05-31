@@ -84,7 +84,7 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
             response = []
             continue_next = True
             nextcommand = ""
-            if(command == "checkenviron"):
+            if(command == ""):
                 response.append(
                     "<h2>Preparing to adapt Pocketsphinx model</h2>"
                 )
@@ -93,6 +93,8 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                         self.language
                     )
                 )
+                nextcommand = "checkenviron"
+            if(command == "checkenviron"):
                 # Now run through the steps to adapt the standard model
                 # Start by checking to see if we have a copy of the standard
                 # model for this user's chosen language and download it if not.

@@ -239,12 +239,12 @@ def fetch_intents(c):
     # plugins, plus any intents in either intents or verified intents
     c.execute(" ".join([
         "select intent from (",
-            "select ",
-                "intent",
-            "from audiolog",
-            "union select",
-                "verified_intent as intent",
-            "from audiolog",
+        "   select ",
+        "       intent",
+        "   from audiolog",
+        "   union select",
+        "       verified_intent as intent",
+        "   from audiolog",
         ")a where intent not in ('', 'unclear') order by intent"
     ]))
     _intents = {}
@@ -328,11 +328,11 @@ def application(environ, start_response):
                         namevalue[1].replace('+', ' ')
                     )
                 if(namevalue[0].lower() == "engine"):
-                    engine = namevalue[1]
+                    engine = unquote(namevalue[1])
                 if(namevalue[0].lower() == "command"):
-                    command = namevalue[1].lower()
+                    command = unquote(namevalue[1].lower())
                 if(namevalue[0].lower() == "description"):
-                    description.append(namevalue[1])
+                    description.append(unquote(namevalue[1]))
                 if(namevalue[0].lower() == "speaker"):
                     speaker = namevalue[1].replace('+', ' ')
                 if(namevalue[0].lower() == "verified_intent"):
@@ -579,9 +579,12 @@ def application(environ, start_response):
 </style>
 <script language="javascript">
     var spin=0; // global spinner control
+    var spintimer;
     function startSpinner(){
-        // wait for any old spinners to exit before starting a new spinner.
-        spintimer=window.setTimeout(function(){spin=1;moveSpinner(0)},250);
+        // kill any old spinner
+        window.clearTimeout(spintimer);
+        spin=1;
+        spintimer=window.setTimeout(function(){moveSpinner(0)},250);
     }
     function moveSpinner(position){
         var s=document.getElementById("spinner");
@@ -606,6 +609,7 @@ def application(environ, start_response):
         }
     }
     function stopSpinner(){
+        window.clearTimeout(spintimer);
         spin=0;
     }
     function openTab(evt, tabName) {
@@ -685,7 +689,7 @@ def application(environ, start_response):
         return Ret;
     }
 
-    function Train(clear,engine,command){
+    function Train(clear, engine, command, description){
         stopSpinner();
         if(clear){
             document.getElementById("Result").innerHTML = "";
@@ -715,7 +719,7 @@ def application(environ, start_response):
 
         xhttp.open("POST",url,true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhttp.send("engine="+engine+"&command="+command);
+        xhttp.send("engine="+encodeURIComponent(engine)+"&command="+encodeURIComponent(command)+"&description="+encodeURIComponent(description));
         startSpinner();
     }
 </script>""")
@@ -729,8 +733,7 @@ def application(environ, start_response):
 </div>
 <!-- Tab content -->
 <div id="Verify" class="tabcontent active">
-'''
-                    )
+                    ''')
 
                     Current_record = Get_row(c, rowID)
 
@@ -920,10 +923,9 @@ def application(environ, start_response):
 </div><!-- Verify -->
 <div id="Train" class="tabcontent">
 <form name="Train">
-'''
-                    )
+                    ''')
                     for info in plugins.get_plugins_by_category('stt_trainer'):
-                        ret.append('''<input type="button" value="{plugin_name}" onclick="Train(true,'{plugin_name}','checkenviron')"><br />'''.format(plugin_name=info.name))
+                        ret.append('''<input type="button" value="{plugin_name}" onclick="Train(true,'{plugin_name}','','')"><br />'''.format(plugin_name=info.name))
                     ret.append('''
 </form>
 <div id="Result">
@@ -931,8 +933,7 @@ def application(environ, start_response):
 <div id="spinner">
 </div>
 </div><!-- Train -->
-'''
-                    )
+                    ''')
                     ret.append("""</body></html>""")
                 else:
                     ret = [
