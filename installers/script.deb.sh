@@ -378,32 +378,32 @@ setup_wizard() {
     printf "${B_W}${NL}"
     echo
     echo
-    echo "#!/bin/bash" > Naomi.sh
-    echo "" >> Naomi.sh
-    echo "B_W='\033[1;97m' #Bright White  For standard text output" >> Naomi.sh
-    echo 'NL="' >> Naomi.sh
-    echo '"' >> Naomi.sh
-    echo "" >> Naomi.sh
-    echo "function Naomi() {" >> Naomi.sh
-    echo "  if [ jq '.auto_update' ~/.config/naomi/configs/.naomi_options.json -eq 'true' && jq '.version' ~/.config/naomi/configs/.naomi_options.json -eq 'Naomi-Nightly' ]; then" >> Naomi.sh
-    echo '    printf "${B_W}=========================================================================${NL}' >> Naomi.sh
-    echo '    printf "${B_W}Checking for Naomi Updates...${NL}"' >> Naomi.sh
-    echo "    cd ~/Naomi" >> Naomi.sh
-    echo "    git fetch" >> Naomi.sh
-    echo "    if [ $(git rev-parse HEAD) != $(git rev-parse @{u}) ] ; then" >> Naomi.sh
-    echo "      git pull" >> Naomi.sh
-    echo "      sudo apt-get -o Acquire::ForceIPv4=true update -y" >> Naomi.sh
-    echo "      sudo apt -o upgrade -y" >> Naomi.sh
-    echo "      sudo ./naomi_apt_requirements.sh -y" >> Naomi.sh
-    echo "    fi" >> Naomi.sh
-    echo "  fi" >> Naomi.sh
-    echo "  export WORKON_HOME=$HOME/.virtualenvs" >> Naomi.sh
-    echo "  export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> Naomi.sh
-    echo "  export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv" >> Naomi.sh
-    echo "  source ~/.local/bin/virtualenvwrapper.sh" >> Naomi.sh
-    echo "  workon Naomi" >> Naomi.sh
-    echo "  python $NAOMI_DIR/Naomi.py \$@" >> Naomi.sh
-    echo "}" >> Naomi.sh
+    echo "#!/bin/bash" > ~/Naomi/Naomi.sh
+    echo "" >> ~/Naomi/Naomi.sh
+    echo "B_W='\033[1;97m' #Bright White  For standard text output" >> ~/Naomi/Naomi.sh
+    echo 'NL="' >> ~/Naomi/Naomi.sh
+    echo '"' >> ~/Naomi/Naomi.sh
+    echo "" >> ~/Naomi/Naomi.sh
+    echo "function Naomi() {" >> ~/Naomi/Naomi.sh
+    echo "  if [ jq '.auto_update' ~/.config/naomi/configs/.naomi_options.json -eq 'true' && jq '.version' ~/.config/naomi/configs/.naomi_options.json -eq 'Naomi-Nightly' ]; then" >> ~/Naomi/Naomi.sh
+    echo '    printf "${B_W}=========================================================================${NL}' >> ~/Naomi/Naomi.sh
+    echo '    printf "${B_W}Checking for Naomi Updates...${NL}"' >> ~/Naomi/Naomi.sh
+    echo "    cd ~/Naomi" >> ~/Naomi/Naomi.sh
+    echo "    git fetch" >> ~/Naomi/Naomi.sh
+    echo "    if [ $(git rev-parse HEAD) != $(git rev-parse @{u}) ] ; then" >> ~/Naomi/Naomi.sh
+    echo "      git pull" >> ~/Naomi/Naomi.sh
+    echo "      sudo apt-get -o Acquire::ForceIPv4=true update -y" >> ~/Naomi/Naomi.sh
+    echo "      sudo apt -o upgrade -y" >> ~/Naomi/Naomi.sh
+    echo "      sudo ./naomi_apt_requirements.sh -y" >> ~/Naomi/Naomi.sh
+    echo "    fi" >> ~/Naomi/Naomi.sh
+    echo "  fi" >> ~/Naomi/Naomi.sh
+    echo "  export WORKON_HOME=$HOME/.virtualenvs" >> ~/Naomi/Naomi.sh
+    echo "  export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/Naomi/Naomi.sh
+    echo "  export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv" >> ~/Naomi/Naomi.sh
+    echo "  source ~/.local/bin/virtualenvwrapper.sh" >> ~/Naomi/Naomi.sh
+    echo "  workon Naomi" >> ~/Naomi/Naomi.sh
+    echo "  python $NAOMI_DIR/Naomi.py \$@" >> ~/Naomi/Naomi.sh
+    echo "}" >> ~/Naomi/Naomi.sh
     echo
     echo
     echo
