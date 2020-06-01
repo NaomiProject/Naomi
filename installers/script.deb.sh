@@ -142,6 +142,7 @@ setup_wizard() {
     if [ $REQUIRE_AUTH -eq 1 ]; then
       SUDO_COMMAND "sudo apt-get install git $SUDO_APPROVE"
     else
+      printf "${B_W}${NL}"
       sudo apt-get install git $SUDO_APPROVE
     fi
     echo
@@ -164,6 +165,7 @@ setup_wizard() {
           exit 1
         fi
       else
+        printf "${B_W}${NL}"
         sudo apt-get update
         sudo apt upgrade $SUDO_APPROVE
         sudo ./naomi_apt_requirements.sh $SUDO_APPROVE
@@ -441,6 +443,7 @@ setup_wizard() {
         exit 1
       fi
     else
+      printf "${B_W}${NL}"
       sudo make install
       if [ $? -ne 0 ]; then
         echo $! >&2
@@ -475,6 +478,7 @@ setup_wizard() {
         exit 1
       fi
     else
+      printf "${B_W}${NL}"
       sudo make install
       if [ $? -ne 0 ]; then
         echo $! >&2
@@ -498,6 +502,7 @@ setup_wizard() {
     if [ $REQUIRE_AUTH -eq 1 ]; then
       SUDO_COMMAND "sudo make install"
     else
+      printf "${B_W}${NL}"
       sudo make install
     fi
 
@@ -505,6 +510,7 @@ setup_wizard() {
     if [ $REQUIRE_AUTH -eq 1 ]; then
       SUDO_COMMAND "sudo ldconfig"
     else
+      printf "${B_W}${NL}"
       sudo ldconfig
     fi
 
@@ -527,6 +533,7 @@ setup_wizard() {
     if [ $REQUIRE_AUTH -eq 1 ]; then
       SUDO_COMMAND "sudo make install"
     else
+      printf "${B_W}${NL}"
       sudo make install
     fi
 
@@ -537,6 +544,7 @@ setup_wizard() {
     if [ $REQUIRE_AUTH -eq 1 ]; then
       SUDO_COMMAND "sudo python setup.py install"
     else
+      printf "${B_W}${NL}"
       sudo python setup.py install
     fi
 
@@ -562,6 +570,7 @@ setup_wizard() {
     if [ $REQUIRE_AUTH -eq 1 ]; then
       SUDO_COMMAND "sudo make install"
     else
+      printf "${B_W}${NL}"
       sudo make install
     fi
 
@@ -574,6 +583,7 @@ setup_wizard() {
     if [ $REQUIRE_AUTH -eq 1 ]; then
       SUDO_COMMAND "sudo make install"
     else
+      printf "${B_W}${NL}"
       sudo make install
     fi
 
