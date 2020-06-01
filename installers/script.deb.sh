@@ -156,6 +156,9 @@ setup_wizard() {
       git pull
     fi
 
+    find ~/Naomi -maxdepth 1 -iname '*.py' -type f -exec chmod a+x {} \;
+    find ~/Naomi -maxdepth 1 -iname '*.sh' -type f -exec chmod a+x {} \;
+
     NAOMI_DIR="$(cd ~/Naomi && pwd)"
 
     if [ $APT -eq 1 ]; then
@@ -416,6 +419,9 @@ setup_wizard() {
     echo
     echo
     echo
+
+    find ~/Naomi -maxdepth 1 -iname '*.py' -type f -exec chmod a+x {} \;
+    find ~/Naomi -maxdepth 1 -iname '*.sh' -type f -exec chmod a+x {} \;
 
     echo
     printf "${B_W}=========================================================================${NL}"
