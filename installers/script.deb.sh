@@ -88,7 +88,7 @@ setup_wizard() {
     echo
     printf "${B_W}Would you like the setup to run uninterupted or would you like to look over the setup process?${NL}"
     echo
-    printf "${B_M}  1${B_W}) All the process to run uninterupted${NL}"
+    printf "${B_M}  1${B_W}) Allow the process to run uninterupted${NL}"
     printf "${B_M}  2${B_W}) Require authentication to continue and run commands${NL}"
     printf "${B_Blue}Choice [${B_M}1${B_Blue}-${B_M}2${B_Blue}]: ${B_W}"
     while true; do
