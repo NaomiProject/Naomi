@@ -146,12 +146,14 @@ setup_wizard() {
       sudo apt-get install git $SUDO_APPROVE
     fi
     echo
-    printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
-    cd ~
-    git clone https://github.com/NaomiProject/Naomi.git
-    cd ~/Naomi
-    git checkout naomi-dev
-    git pull
+    if [ ! -f ~/Naomi/README.md ]; then
+      printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
+      cd ~
+      git clone https://github.com/NaomiProject/Naomi.git
+      cd ~/Naomi
+      git checkout naomi-dev
+      git pull
+    fi
 
     NAOMI_DIR="$(cd ~/Naomi && pwd)"
 
