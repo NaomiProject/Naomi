@@ -407,7 +407,7 @@ setup_wizard() {
     echo "      sudo ./naomi_apt_requirements.sh -y" >> ~/Naomi/Naomi.sh
     echo "    fi" >> ~/Naomi/Naomi.sh
     echo "  else" >> ~/Naomi/Naomi.sh
-    echo '    printf "${B_R}Notice: ${B_W}Naomi Auto Update Failed!${NL}"'
+    echo '    printf "${B_R}Notice: ${B_W}Naomi Auto Update Failed!${NL}"' >> ~/Naomi/Naomi.sh
     echo "  fi" >> ~/Naomi/Naomi.sh
     echo "  export WORKON_HOME=$HOME/.virtualenvs" >> ~/Naomi/Naomi.sh
     echo "  export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/Naomi/Naomi.sh
