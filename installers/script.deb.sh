@@ -146,6 +146,7 @@ setup_wizard() {
       sudo apt-get install git $SUDO_APPROVE
     fi
     echo
+    cd ~/Naomi
     if [ ! -f ~/Naomi/README.md ]; then
       printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
       cd ~
