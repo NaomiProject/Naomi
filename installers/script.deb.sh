@@ -41,7 +41,13 @@ SUDO_COMMAND() {
     echo
     printf "${B_R}Notice:${B_W} this program is about to use sudo to run the following command:${NL}"
     printf "[$(pwd)]\$ ${B_G}${1}${B_W}${NL}"
-    if [ "$SUDO_APPROVE" != "-y" ]; then
+    echo
+    read -n1 -p "${B_W}If you want to allow the process to run uninterrupted type '${B_G}S${B_W}' now.${NL}" SKIP
+    if [ "$SKIP" = "S" ] || [ "$SKIP" = "s" ]; then
+        REQUIRE_AUTH="0"
+        SUDO_APPROVE="-y"
+        CONTINUE
+    else [ "$SUDO_APPROVE" != "-y" ]; then
         CONTINUE
     fi
     $1
@@ -84,18 +90,18 @@ setup_wizard() {
     printf "${B_W}This means you will have to watch the setup process to confirm everytime a new${NL}"
     printf "${B_W}command needs to run.${NL}"
     echo
-    printf "${B_W}However you can enable Naomi to continue the process uninterupted for a hands off experience${NL}"
+    printf "${B_W}However you can enable Naomi to continue the process uninterrupted for a hands off experience${NL}"
     echo
-    printf "${B_W}Would you like the setup to run uninterupted or would you like to look over the setup process?${NL}"
+    printf "${B_W}Would you like the setup to run uninterrupted or would you like to look over the setup process?${NL}"
     echo
-    printf "${B_M}  1${B_W}) Allow the process to run uninterupted${NL}"
+    printf "${B_M}  1${B_W}) Allow the process to run uninterrupted${NL}"
     printf "${B_M}  2${B_W}) Require authentication to continue and run commands${NL}"
     printf "${B_Blue}Choice [${B_M}1${B_Blue}-${B_M}2${B_Blue}]: ${B_W}"
     while true; do
         read -N1 -s key
         case $key in
          [1])
-            printf "${B_M}$key ${B_W}- Proceeding uninterupted${NL}"
+            printf "${B_M}$key ${B_W}- Proceeding uninterrupted${NL}"
             REQUIRE_AUTH="0"
             SUDO_APPROVE="-y"
             break
@@ -118,6 +124,122 @@ setup_wizard() {
     printf "${B_W}Now setting up the file stuctures & requirements${NL}"
     echo
     sleep 3
+    echo
+
+    echo
+    printf "${B_W}=========================================================================${NL}"
+    printf "${B_W}NAOMI SETUP:${NL}"
+    printf "${B_W}Naomi is continuously updated. There are three options to choose from:${NL}"
+    echo
+    printf "${B_W}'${B_G}Stable${B_W}' versions are thoroughly tested official releases of Naomi. Use${NL}"
+    printf "${B_W}the stable version for your production environment if you don't need the${NL}"
+    printf "${B_W}latest enhancements and prefer a robust system${NL}"
+    echo
+    printf "${B_W}'${B_G}Milestone${B_W}' versions are intermediary releases of the next Naomi version,${NL}"
+    printf "${B_W}released about once a month, and they include the new recently added${NL}"
+    printf "${B_W}features and bugfixes. They are a good compromise between the current${NL}"
+    printf "${B_W}stable version and the bleeding-edge and potentially unstable nightly version.${NL}"
+    echo
+    printf "${B_W}'${B_G}Nightly${B_W}' versions are at most 1 or 2 days old and include the latest code.${NL}"
+    printf "${B_W}Use nightly for testing out very recent changes, but be aware some nightly${NL}"
+    printf "${B_W}versions might be unstable. Use in production at your own risk!${NL}"
+    echo
+    printf "${B_W}Note: '${B_G}Nightly${B_W}' comes with automatic updates by default!${NL}"
+    echo
+    printf "${B_M}  1${B_W}) Use the recommended ('${B_G}Stable${B_W}')${NL}"
+    printf "${B_M}  2${B_W}) Monthly releases sound good to me ('${B_G}Milestone${B_W}')${NL}"
+    printf "${B_M}  3${B_W}) I'm a developer or want the cutting edge, put me on '${B_G}Nightly${B_W}'${NL}"
+    printf "${B_Blue}Choice [${B_M}1${B_Blue}-${B_M}3${B_Blue}]: ${B_W}"
+    while true; do
+        read -N1 -s key
+        case $key in
+         1)
+            printf "${B_M}$key ${B_W}- Easy Peasy!${NL}"
+            version="2.2"
+            echo '{"use_release":"stable", "version":"Naomi-'$version'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
+            cd ~
+            if [ ! -f ~/Naomi/README.md ]; then
+              printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
+              cd ~
+              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/stable/Naomi-$version.zip" -o Naomi-$version.zip
+              unzip Naomi-$version.zip
+              mv Naomi-$version Naomi
+              cd ~
+              sudo rm -Rf ~/Naomi-$version.zip
+              sudo rm -Rf ~/Naomi-$version
+            else
+              mv ~/Naomi ~/Naomi-Temp
+              cd ~
+              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/stable/Naomi-$version.zip" -o Naomi-$version.zip
+              unzip Naomi-$version.zip
+              mv Naomi-$version Naomi
+              cd ~
+              sudo rm -Rf ~/Naomi-$version.zip
+              sudo rm -Rf ~/Naomi-$version
+            fi
+            break
+            ;;
+         2)
+            printf "${B_M}$key ${B_W}- Good Choice!${NL}"
+            version="3.0"
+            month=$(date +%-m)
+            offset=12
+            milestone=$((month+offset))
+            echo '{"use_release":"milestone", "version":"Naomi-'$version'.M'$milestone'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
+            cd ~
+            if [ ! -f ~/Naomi/README.md ]; then
+              printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
+              cd ~
+              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/dev/Naomi-$version.M$milestone.zip" -o Naomi-$version.M$milestone.zip
+              unzip Naomi-$version.M$milestone.zip
+              mv Naomi-$version.M$milestone Naomi
+              cd ~
+              sudo rm -Rf ~/Naomi-$version.M$milestone.zip
+              sudo rm -Rf ~/Naomi-$version.M$milestone
+            else
+              mv ~/Naomi ~/Naomi-Temp
+              cd ~
+              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/dev/Naomi-$version.M$milestone.zip" -o Naomi-$version.M$milestone.zip
+              unzip Naomi-$version.M$milestone.zip
+              mv Naomi-$version.M$milestone Naomi
+              cd ~
+              sudo rm -Rf ~/Naomi-$version.M$milestone.zip
+              sudo rm -Rf ~/Naomi-$version.M$milestone
+            fi
+            break
+            ;;
+         3)
+            printf "${B_M}$key ${B_W}- You know what you are doing!${NL}"
+            echo '{"use_release":"nightly", "version":"Naomi-Nightly", "auto_update":"true"}' > ~/.config/naomi/configs/.naomi_options.json
+            cd ~
+            if [ ! -f ~/Naomi/README.md ]; then
+              printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
+              cd ~
+              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/nightly/Naomi-Nightly.zip" -o Naomi-Nightly.zip
+              unzip Naomi-Nightly.zip
+              mv Naomi-Nightly Naomi
+              cd ~
+              sudo rm -Rf ~/Naomi-Nightly.zip
+              sudo rm -Rf ~/Naomi-Nightly
+            else
+              mv ~/Naomi ~/Naomi-Temp
+              cd ~
+              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/nightly/Naomi-Nightly.zip" -o Naomi-Nightly.zip
+              unzip Naomi-Nightly.zip
+              mv Naomi-Nightly Naomi
+              cd ~
+              sudo rm -Rf ~/Naomi-Nightly.zip
+              sudo rm -Rf ~/Naomi-Nightly
+            fi
+            break
+            ;;
+         S)
+            printf "${B_M}$key ${B_W}- Skipping Section${NL}"
+            break
+            ;;
+        esac
+    done
+    echo
     echo
 
     # Create basic folder structures
@@ -146,21 +268,14 @@ setup_wizard() {
       sudo apt-get install git $SUDO_APPROVE
     fi
     echo
-    cd ~/Naomi
-    if [ ! -f ~/Naomi/README.md ]; then
-      printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
-      cd ~
-      git clone https://github.com/NaomiProject/Naomi.git
-      cd ~/Naomi
-      git checkout naomi-dev
-      git pull
-    fi
 
     find ~/Naomi -maxdepth 1 -iname '*.py' -type f -exec chmod a+x {} \;
     find ~/Naomi -maxdepth 1 -iname '*.sh' -type f -exec chmod a+x {} \;
+    find ~/Naomi/installers -maxdepth 1 -iname '*.sh' -type f -exec chmod a+x {} \;
 
     NAOMI_DIR="$(cd ~/Naomi && pwd)"
 
+    cd ~/Naomi
     if [ $APT -eq 1 ]; then
       if [ $REQUIRE_AUTH -eq 1 ]; then
         SUDO_COMMAND "sudo apt-get update"
@@ -306,86 +421,6 @@ setup_wizard() {
     echo 'Categories=None;' >> ~/Desktop/Naomi.desktop
     echo
     echo
-
-    echo
-    printf "${B_W}=========================================================================${NL}"
-    printf "${B_W}NAOMI SETUP:${NL}"
-    printf "${B_W}Naomi is continuously updated. There are three options to choose from:${NL}"
-    echo
-    printf "${B_W}'${B_G}Stable${B_W}' versions are thoroughly tested official releases of Naomi. Use${NL}"
-    printf "${B_W}the stable version for your production environment if you don't need the${NL}"
-    printf "${B_W}latest enhancements and prefer a robust system${NL}"
-    echo
-    printf "${B_W}'${B_G}Milestone${B_W}' versions are intermediary releases of the next Naomi version,${NL}"
-    printf "${B_W}released about once a month, and they include the new recently added${NL}"
-    printf "${B_W}features and bugfixes. They are a good compromise between the current${NL}"
-    printf "${B_W}stable version and the bleeding-edge and potentially unstable nightly version.${NL}"
-    echo
-    printf "${B_W}'${B_G}Nightly${B_W}' versions are at most 1 or 2 days old and include the latest code.${NL}"
-    printf "${B_W}Use nightly for testing out very recent changes, but be aware some nightly${NL}"
-    printf "${B_W}versions might be unstable. Use in production at your own risk!${NL}"
-    echo
-    printf "${B_W}Note: '${B_G}Nightly${B_W}' comes with automatic updates by default!${NL}"
-    echo
-    printf "${B_M}  1${B_W}) Use the recommended ('${B_G}Stable${B_W}')${NL}"
-    printf "${B_M}  2${B_W}) Monthly releases sound good to me ('${B_G}Milestone${B_W}')${NL}"
-    printf "${B_M}  3${B_W}) I'm a developer or want the cutting edge, put me on '${B_G}Nightly${B_W}'${NL}"
-    printf "${B_Blue}Choice [${B_M}1${B_Blue}-${B_M}3${B_Blue}]: ${B_W}"
-    while true; do
-        read -N1 -s key
-        case $key in
-         1)
-            printf "${B_M}$key ${B_W}- Easy Peasy!${NL}"
-            version="2.2"
-            echo '{"use_release":"stable", "version":"Naomi-'$version'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
-            cd ~
-            mv ~/Naomi ~/Naomi-Temp
-            cd ~
-            curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/stable/Naomi-$version.zip" -o Naomi-$version.zip
-            unzip Naomi-$version.zip
-            mv Naomi-$version Naomi
-            cd ~
-            break
-            ;;
-         2)
-            printf "${B_M}$key ${B_W}- Good Choice!${NL}"
-            version="3.0"
-            month=$(date +%-m)
-            offset=12
-            milestone=$((month+offset))
-            echo '{"use_release":"milestone", "version":"Naomi-'$version'.M'$milestone'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
-            cd ~
-            mv ~/Naomi ~/Naomi-Temp
-            cd ~
-            curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/dev/Naomi-$version.M$milestone.zip" -o Naomi-$version.M$milestone.zip
-            unzip Naomi-$version.M$milestone.zip
-            mv Naomi-$version.M$milestone Naomi
-            cd ~
-            break
-            ;;
-         3)
-            printf "${B_M}$key ${B_W}- You know what you are doing!${NL}"
-            echo '{"use_release":"nightly", "version":"Naomi-Nightly", "auto_update":"true"}' > ~/.config/naomi/configs/.naomi_options.json
-            cd ~
-            mv ~/Naomi ~/Naomi-Temp
-            cd ~
-            curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/nightly/Naomi-Nightly.zip" -o Naomi-Nightly.zip
-            unzip Naomi-Nightly.zip
-            mv Naomi-Nightly Naomi
-            cd ~
-            break
-            ;;
-         S)
-            printf "${B_M}$key ${B_W}- Skipping Section${NL}"
-            break
-            ;;
-        esac
-    done
-    echo
-    echo
-    printf "${B_W}${NL}"
-    echo
-    echo
     echo "#!/bin/bash" > ~/Naomi/Naomi.sh
     echo "" >> ~/Naomi/Naomi.sh
     echo "B_W='\033[1;97m' #Bright White  For standard text output" >> ~/Naomi/Naomi.sh
@@ -425,6 +460,7 @@ setup_wizard() {
 
     find ~/Naomi -maxdepth 1 -iname '*.py' -type f -exec chmod a+x {} \;
     find ~/Naomi -maxdepth 1 -iname '*.sh' -type f -exec chmod a+x {} \;
+    find ~/Naomi/installers -maxdepth 1 -iname '*.sh' -type f -exec chmod a+x {} \;
 
     echo
     printf "${B_W}=========================================================================${NL}"
