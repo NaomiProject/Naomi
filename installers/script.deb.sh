@@ -398,13 +398,15 @@ setup_wizard() {
     echo '    printf "${B_W}=========================================================================${NL}"' >> ~/Naomi/Naomi.sh
     echo '    printf "${B_W}Checking for Naomi Updates...${NL}"' >> ~/Naomi/Naomi.sh
     echo "    cd ~/Naomi" >> ~/Naomi/Naomi.sh
-    echo "    git fetch" >> ~/Naomi/Naomi.sh
+    echo "    git fetch -q " >> ~/Naomi/Naomi.sh
     echo '    if [ "$(git rev-parse HEAD)" != "$(git rev-parse @{u})" ] ; then' >> ~/Naomi/Naomi.sh
     echo '      printf "${B_W}Downloading & Installing Updates...${NL}"' >> ~/Naomi/Naomi.sh
     echo "      git pull" >> ~/Naomi/Naomi.sh
     echo "      sudo apt-get -o Acquire::ForceIPv4=true update -y" >> ~/Naomi/Naomi.sh
     echo "      sudo apt -o upgrade -y" >> ~/Naomi/Naomi.sh
     echo "      sudo ./naomi_apt_requirements.sh -y" >> ~/Naomi/Naomi.sh
+    echo "    else" >> ~/Naomi/Naomi.sh
+    echo '      printf "${B_W}No Updates Found.${NL}"' >> ~/Naomi/Naomi.sh
     echo "    fi" >> ~/Naomi/Naomi.sh
     echo "  else" >> ~/Naomi/Naomi.sh
     echo '    printf "${B_R}Notice: ${B_W}Naomi Auto Update Failed!${NL}"' >> ~/Naomi/Naomi.sh
