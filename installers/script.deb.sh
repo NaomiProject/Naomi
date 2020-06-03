@@ -30,25 +30,23 @@ SUDO_APPROVE=""
 REQUIRE_AUTH=""
 
 CONTINUE() {
-    read -n1 -p "Press 'q' to quit, any other key to continue: " CONTINUE
+    printf "${B_W}If you want to allow the process to run uninterrupted type '${B_G}S${B_W}'${NL}"
+    printf "${B_W}or press '${B_G}Q${B_W}' to quit, any other key to continue:${NL}"
+    read -n1 -p "" CONTINUE
     echo
     if [ "$CONTINUE" = "q" ] || [ "$CONTINUE" = "Q" ]; then
         echo "EXITING"
         exit 1
+    elif [ "$CONTINUE" = "S" ] || [ "$CONTINUE" = "s" ]; then
+        REQUIRE_AUTH="0"
+        SUDO_APPROVE="-y"
     fi
 }
 SUDO_COMMAND() {
     echo
     printf "${B_R}Notice:${B_W} this program is about to use sudo to run the following command:${NL}"
     printf "[$(pwd)]\$ ${B_G}${1}${B_W}${NL}"
-    echo
-    printf "${B_W}If you want to allow the process to run uninterrupted type '${B_G}S${B_W}' now.${NL}"
-    read -n1 -p "" SKIP
-    if [ "$SKIP" = "S" ] || [ "$SKIP" = "s" ]; then
-        REQUIRE_AUTH="0"
-        SUDO_APPROVE="-y"
-        CONTINUE
-    elif [ "$SUDO_APPROVE" != "-y" ]; then
+    if [ "$SUDO_APPROVE" != "-y" ]; then
         CONTINUE
     fi
     $1
