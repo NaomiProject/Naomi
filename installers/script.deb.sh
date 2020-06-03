@@ -47,7 +47,7 @@ SUDO_COMMAND() {
         REQUIRE_AUTH="0"
         SUDO_APPROVE="-y"
         CONTINUE
-    else [ "$SUDO_APPROVE" != "-y" ]; then
+    elif [ "$SUDO_APPROVE" != "-y" ]; then
         CONTINUE
     fi
     $1
