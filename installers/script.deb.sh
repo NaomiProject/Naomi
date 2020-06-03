@@ -126,6 +126,14 @@ setup_wizard() {
     sleep 3
     echo
 
+    # Create basic folder structures
+    echo
+    printf "${B_G}Creating File Structure...${B_W}${NL}"
+    mkdir -p ~/.config/naomi/
+    mkdir -p ~/.config/naomi/configs/
+    mkdir -p ~/.config/naomi/scripts/
+    mkdir -p ~/.config/naomi/sources/
+
     echo
     printf "${B_W}=========================================================================${NL}"
     printf "${B_W}NAOMI SETUP:${NL}"
@@ -241,14 +249,6 @@ setup_wizard() {
     done
     echo
     echo
-
-    # Create basic folder structures
-    echo
-    printf "${B_G}Creating File Structure...${B_W}${NL}"
-    mkdir -p ~/.config/naomi/
-    mkdir -p ~/.config/naomi/configs/
-    mkdir -p ~/.config/naomi/scripts/
-    mkdir -p ~/.config/naomi/sources/
 
     # Double check if apt-get is installed
     echo
