@@ -35,7 +35,8 @@ CONTINUE() {
     read -n1 -p "" CONTINUE
     echo
     if [ "$CONTINUE" = "q" ] || [ "$CONTINUE" = "Q" ]; then
-        echo "EXITING"
+        echo
+        printf "${B_R}EXITING${B_W}${NL}"
         exit 1
     elif [ "$CONTINUE" = "S" ] || [ "$CONTINUE" = "s" ]; then
         REQUIRE_AUTH="0"
