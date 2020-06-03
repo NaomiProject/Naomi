@@ -47,6 +47,7 @@ SUDO_COMMAND() {
     echo
     printf "${B_R}Notice:${B_W} this program is about to use sudo to run the following command:${NL}"
     printf "[$(pwd)]\$ ${B_G}${1}${B_W}${NL}"
+    echo
     if [ "$SUDO_APPROVE" != "-y" ]; then
         CONTINUE
     fi
