@@ -42,7 +42,8 @@ SUDO_COMMAND() {
     printf "${B_R}Notice:${B_W} this program is about to use sudo to run the following command:${NL}"
     printf "[$(pwd)]\$ ${B_G}${1}${B_W}${NL}"
     echo
-    read -n1 -p "${B_W}If you want to allow the process to run uninterrupted type '${B_G}S${B_W}' now.${NL}" SKIP
+    printf "${B_W}If you want to allow the process to run uninterrupted type '${B_G}S${B_W}' now.${NL}"
+    read -n1 -p "" SKIP
     if [ "$SKIP" = "S" ] || [ "$SKIP" = "s" ]; then
         REQUIRE_AUTH="0"
         SUDO_APPROVE="-y"
