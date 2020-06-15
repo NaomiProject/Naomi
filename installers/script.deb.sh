@@ -452,7 +452,7 @@ setup_wizard() {
     echo "  export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv" >> ~/Naomi/Naomi.sh
     echo "  source ~/.local/bin/virtualenvwrapper.sh" >> ~/Naomi/Naomi.sh
     echo "  workon Naomi" >> ~/Naomi/Naomi.sh
-    echo "  python $NAOMI_DIR/Naomi.py \$@" >> ~/Naomi/Naomi.sh
+    echo "  python $NAOMI_DIR/Naomi.py \"\$@\"" >> ~/Naomi/Naomi.sh
     echo "}" >> ~/Naomi/Naomi.sh
     echo
     echo

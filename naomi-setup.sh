@@ -5,4 +5,4 @@
 # located in the installers dir 
 #########################################
 
-bash ~/Naomi/installers/naomi-setup.sh
+bash ./installers/naomi-setup.sh
