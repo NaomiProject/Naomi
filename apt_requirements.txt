@@ -22,6 +22,7 @@ pulseaudio-utils
 ### pocketsphinx is default for wakeword spotting
 swig
 bison
+libpulse-dev
 
 #### Phonetisaurus is used to build dictionaries
 gcc

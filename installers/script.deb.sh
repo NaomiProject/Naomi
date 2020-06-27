@@ -607,7 +607,7 @@ setup_wizard() {
     printf "${B_G}Building and installing sphinxbase...${B_W}${NL}"
     cd ~/.config/naomi/sources
     if [ ! -d "pocketsphinx-python" ]; then
-      git clone --recursive https://github.com/cmusphinx/pocketsphinx-python.git
+      git clone --recursive https://github.com/bambocher/pocketsphinx-python.git
       if [ $? -ne 0 ]; then
         printf "${ERROR} ${B_R}Notice:${B_W} Error cloning pocketsphinx${NL}" >&2
         exit 1
