@@ -57,7 +57,7 @@ unknown_os ()
   echo
   printf "${B_R}Notice:${B_W} You can find a list of supported OSes and distributions on our website: ${B_Y}https://projectnaomi.com/dev/docs/installation/${NL}"
   echo
-  printf "${B_R}Notice:${B_W} Please email ${B_Y}contact@projectnaomi.com${B_W} and let us know if you run into any issues.${NL}"
+  printf "${B_R}Notice:${B_W} Please join our Discord or email us at ${B_Y}contact@projectnaomi.com${B_W} and let us know if you run into any issues.${NL}"
   exit 1
 }
 
@@ -218,7 +218,7 @@ function apt_setup_wizard() {
       echo
       exit 1
     fi
-  else
+  elif [ -f ~/Naomi/README.md && -f ~/Naomi/installers/script.deb.sh ]; then
     chmod a+x ~/Naomi/installers/script.deb.sh
     bash ~/Naomi/installers/script.deb.sh
     script_exit_code=$?
@@ -247,6 +247,14 @@ function apt_setup_wizard() {
       echo
       exit 1
     fi
+  else
+    printf "${B_W}=========================================================================${NL}"
+    printf "${B_W}It looks like you have Naomi source in the ${B_G}~/Naomi/${B_W} directory,${NL}"
+    printf "${B_W}however it looks to be out of date. Please update or remove the Naomi${NL}"
+    printf "${B_W}source and try running the installer again.${NL}"
+    echo
+    printf "${B_W}Please join our Discord or email us at ${B_Y}contact@projectnaomi.com${B_W} and let us know if you run into any issues.${NL}"
+    exit 1
   fi
 }
 function yum_setup_wizard() {
@@ -283,7 +291,7 @@ function yum_setup_wizard() {
       echo
       exit 1
     fi
-  else
+  elif [ -f ~/Naomi/README.md && -f ~/Naomi/installers/script.rpm.sh ]; then
     chmod a+x ~/Naomi/installers/script.rpm.sh
     bash ~/Naomi/installers/script.rpm.sh
     script_exit_code=$?
@@ -312,6 +320,14 @@ function yum_setup_wizard() {
       echo
       exit 1
     fi
+  else
+    printf "${B_W}=========================================================================${NL}"
+    printf "${B_W}It looks like you have Naomi source in the ${B_G}~/Naomi/${B_W} directory,${NL}"
+    printf "${B_W}however it looks to be out of date. Please update or remove the Naomi${NL}"
+    printf "${B_W}source and try running the installer again.${NL}"
+    echo
+    printf "${B_W}Please join our Discord or email us at ${B_Y}contact@projectnaomi.com${B_W} and let us know if you run into any issues.${NL}"
+    exit 1
   fi
 }
 
@@ -334,44 +350,44 @@ os_detect
 curl_check
 
 if [ ! -f ~/.config/naomi/configs/profile.yml ]; then
-    echo
-    echo
-    echo
-    echo
-    printf "${B_W}=========================================================================${NL}"
-    printf "${B_W}Welcome to Naomi. This process is designed to make getting started with${NL}"
-    printf "${B_W}Naomi quick and easy. This process can take up to 3 hours to complete.${NL}"
-    printf "${B_W}Would you like to continue with the process now or wait for another time?${NL}"
-    echo
-    printf "${B_M}  Y${B_W})es, I'd like the proceed with the setup.${NL}"
-    printf "${B_M}  N${B_W})ope, I will come back at another time.${NL}"
-    echo
-    printf "${B_Blue}Choice [${B_M}Y${B_Blue}/${B_M}N${B_Blue}]: ${B_W}"
-    while true; do
-        read -N1 -s key
-        case $key in
-         [Nn])
-            printf "${B_M}$key ${B_W}- Nope${NL}"
-            echo
-            printf "${B_W}Alright, Good luck & have fun!${NL}"
-            echo
-            break
-            break
-            ;;
-         [Yy])
-            printf "${B_M}$key ${B_W}- Yes${NL}"
-            echo
-            if [ -n "$(command -v apt-get)" ]; then
-              apt_setup_wizard
-            elif [ -n "$(command -v yum)" ]; then
-              unknown_os
-            else
-              unknown_os
-            fi
-            break
-            ;;
-        esac
-    done
+  echo
+  echo
+  echo
+  echo
+  printf "${B_W}=========================================================================${NL}"
+  printf "${B_W}Welcome to Naomi. This process is designed to make getting started with${NL}"
+  printf "${B_W}Naomi quick and easy. This process can take up to 3 hours to complete.${NL}"
+  printf "${B_W}Would you like to continue with the process now or wait for another time?${NL}"
+  echo
+  printf "${B_M}  Y${B_W})es, I'd like the proceed with the setup.${NL}"
+  printf "${B_M}  N${B_W})ope, I will come back at another time.${NL}"
+  echo
+  printf "${B_Blue}Choice [${B_M}Y${B_Blue}/${B_M}N${B_Blue}]: ${B_W}"
+  while true; do
+    read -N1 -s key
+    case $key in
+      [Nn])
+        printf "${B_M}$key ${B_W}- Nope${NL}"
+        echo
+        printf "${B_W}Alright, Good luck & have fun!${NL}"
+        echo
+        break
+        break
+        ;;
+      [Yy])
+        printf "${B_M}$key ${B_W}- Yes${NL}"
+        echo
+        if [ -n "$(command -v apt-get)" ]; then
+          apt_setup_wizard
+        elif [ -n "$(command -v yum)" ]; then
+          unknown_os
+        else
+          unknown_os
+        fi
+        break
+        ;;
+    esac
+  done
 else
   printf "${B_W}=========================================================================${NL}"
   printf "${B_W}It looks like you already have Naomi installed.${NL}"
