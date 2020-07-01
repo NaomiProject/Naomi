@@ -218,7 +218,7 @@ function apt_setup_wizard() {
       echo
       exit 1
     fi
-  elif [ -f ~/Naomi/README.md && -f ~/Naomi/installers/script.deb.sh ]; then
+  elif [ -f ~/Naomi/README.md ] && [ -f ~/Naomi/installers/script.deb.sh ]; then
     chmod a+x ~/Naomi/installers/script.deb.sh
     bash ~/Naomi/installers/script.deb.sh
     script_exit_code=$?
@@ -249,7 +249,7 @@ function apt_setup_wizard() {
     fi
   else
     printf "${B_W}=========================================================================${NL}"
-    printf "${B_W}It looks like you have Naomi source in the ${B_G}~/Naomi/${B_W} directory,${NL}"
+    printf "${B_W}It looks like you have Naomi source in the ${B_G}~/Naomi${B_W} directory,${NL}"
     printf "${B_W}however it looks to be out of date. Please update or remove the Naomi${NL}"
     printf "${B_W}source and try running the installer again.${NL}"
     echo
@@ -291,7 +291,7 @@ function yum_setup_wizard() {
       echo
       exit 1
     fi
-  elif [ -f ~/Naomi/README.md && -f ~/Naomi/installers/script.rpm.sh ]; then
+  elif [ -f ~/Naomi/README.md ] && [ -f ~/Naomi/installers/script.rpm.sh ]; then
     chmod a+x ~/Naomi/installers/script.rpm.sh
     bash ~/Naomi/installers/script.rpm.sh
     script_exit_code=$?
@@ -322,7 +322,7 @@ function yum_setup_wizard() {
     fi
   else
     printf "${B_W}=========================================================================${NL}"
-    printf "${B_W}It looks like you have Naomi source in the ${B_G}~/Naomi/${B_W} directory,${NL}"
+    printf "${B_W}It looks like you have Naomi source in the ${B_G}~/Naomi${B_W} directory,${NL}"
     printf "${B_W}however it looks to be out of date. Please update or remove the Naomi${NL}"
     printf "${B_W}source and try running the installer again.${NL}"
     echo
