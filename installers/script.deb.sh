@@ -244,6 +244,7 @@ setup_wizard() {
             ;;
          S)
             printf "${B_M}$key ${B_W}- Skipping Section${NL}"
+            echo '{"use_release":"testing", "version":"Naomi-Development", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
             break
             ;;
         esac
@@ -613,7 +614,7 @@ setup_wizard() {
         exit 1
       fi
     fi
-    cd pocketsphinx-python/sphinxbase
+    cd pocketsphinx-python/deps/sphinxbase
     ./autogen.sh
     make
     if [ $REQUIRE_AUTH -eq 1 ]; then
@@ -626,7 +627,7 @@ setup_wizard() {
     # Installing & Building pocketsphinx
     echo
     printf "${B_G}Building and installing pocketsphinx...${B_W}${NL}"
-    cd ~/.config/naomi/sources/pocketsphinx-python/pocketsphinx
+    cd ~/.config/naomi/sources/pocketsphinx-python/deps/pocketsphinx
     ./autogen.sh
     make
     if [ $REQUIRE_AUTH -eq 1 ]; then
