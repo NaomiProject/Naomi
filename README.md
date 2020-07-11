@@ -6,7 +6,7 @@
 </h1>
 
 <h4 align="center">An open source platform for developing always-on, voice-controlled applications. </br>
-	Based on the previous work from <a href="http://jasperproject.github.io" target="_blank">Jasper</a>.
+	Based on the previous work of <a href="http://jasperproject.github.io" target="_blank">Jasper</a>.
 </h4>
 
 <p align="center">
@@ -39,6 +39,8 @@
   <a href="#key-features">Key Features</a> •
   <a href="#documentation">Documentation</a> •
   <a href="#download">Download</a> •
+  <a href="#contribution">Contribution</a> •
+  <a href="#sponsor-naomi">Sponsor Naomi</a> •
   <a href="#credits">Credits</a> •
   <a href="#license">License</a>
 </p>
@@ -62,7 +64,34 @@ All the documentation is available on our [website](https://projectnaomi.com/dev
 
 ## Download
 
-You can [download](https://projectnaomi.com/download) latest installable version of Naomi from our website.
+You can [download](https://projectnaomi.com/download) the latest version of Naomi from our website.
+
+## Contribution
+
+Please make sure to read the [Contributing Guide](https://github.com/NaomiProject/Naomi/blob/naomi-dev/CONTRIBUTING.md) before making a pull request.
+
+Thank you to all the people who already contributed to Naomi!
+
+<a href="https://github.com/naomiproject/naomi/graphs/contributors"><img src="https://opencollective.com/projectnaomi/contributors.svg?width=890" /></a>
+
+## Sponsor Naomi
+
+Naomi is an MIT-licensed open source project with its ongoing development made possible entirely by the support of these awesome [backers](https://github.com/naomiproject/naomi/blob/naomi-dev/BACKERS.md). If you'd like to join them, please consider:
+
+- [Become a backer or sponsor on Open Collective](https://opencollective.com/projectnaomi).
+- [One-time donation via PayPal or crypto-currencies.](https://projectnaomi.com/support-naomi/#One-time-Donations)
+
+<h3>Sponsors via <a href="https://opencollective.com/projectnaomi">Open Collective</a></h3>
+
+<h4>Platinum</h4>
+
+<a href="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/0/avatar.svg?sanitize=true"></a>
+<a href="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/1/avatar.svg?sanitize=true"></a>
+
+<h4>Gold</h4>
+
+<a href="https://opencollective.com/projectnaomi/tiers/gold-sponsor/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/gold-sponsor/0/avatar.svg?sanitize=true" height="60px"></a>
+<a href="https://opencollective.com/projectnaomi/tiers/gold-sponsor/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/gold-sponsor/1/avatar.svg?sanitize=true" height="60px"></a>
 
 ## Credits
 
