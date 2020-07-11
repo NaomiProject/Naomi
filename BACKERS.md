@@ -12,29 +12,30 @@ Naomi is an MIT-licensed open source project with its ongoing development made p
 <h4 align="center">Platinum</h4>
 
 <div align="center">
-    <a href="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/0/avatar.svg?sanitize=true"></a>
-    <a href="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/1/avatar.svg?sanitize=true"></a>
+    <a href="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/0/avatar.svg"></a>
+    <a href="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/platinum-sponsor/1/avatar.svg"></a>
 </div>
 
 <h4 align="center">Gold</h4>
 
 <div align="center">
-    <a href="https://opencollective.com/projectnaomi/tiers/gold-sponsor/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/gold-sponsor/0/avatar.svg?sanitize=true"></a>
-    <a href="https://opencollective.com/projectnaomi/tiers/gold-sponsor/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/gold-sponsor/1/avatar.svg?sanitize=true"></a>
+    <a href="https://opencollective.com/projectnaomi/tiers/gold-sponsor/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/gold-sponsor/0/avatar.svg"></a>
+    <a href="https://opencollective.com/projectnaomi/tiers/gold-sponsor/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/gold-sponsor/1/avatar.svg"></a>
 </div>
 
 <h4 align="center">Silver</h4>
 
 <div align="center">
-    <a href="https://opencollective.com/projectnaomi/tiers/silver-sponsor/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/silver-sponsor/0/avatar.svg?sanitize=true"></a>
-    <a href="https://opencollective.com/projectnaomi/tiers/silver-sponsor/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/silver-sponsor/1/avatar.svg?sanitize=true"></a>
+    <a href="https://opencollective.com/projectnaomi/tiers/silver-sponsor/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/silver-sponsor/0/avatar.svg"></a>
+    <a href="https://opencollective.com/projectnaomi/tiers/silver-sponsor/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/silver-sponsor/1/avatar.svg"></a>
 </div>
 
 <h4 align="center">Bronze</h4>
 
 <div align="center">
-    <a href="https://opencollective.com/projectnaomi/tiers/bronze-sponsor/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/bronze-sponsor/0/avatar.svg?sanitize=true"></a>
-    <a href="https://opencollective.com/projectnaomi/tiers/bronze-sponsor/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/bronze-sponsor/1/avatar.svg?sanitize=true"></a>
+    <a href="https://opencollective.com/projectnaomi/tiers/bronze-sponsor/0/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/bronze-sponsor/0/avatar.svg"></a>
+    <a href="https://opencollective.com/projectnaomi/tiers/bronze-sponsor/1/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/bronze-sponsor/1/avatar.svg"></a>
+    <a href="https://opencollective.com/projectnaomi/tiers/bronze-sponsor/2/website" target="_blank" rel="noopener noreferrer"><img src="https://opencollective.com/projectnaomi/tiers/bronze-sponsor/2/avatar.svg"></a>
 </div>
 
 <h2 align="center">Backers via OpenCollective</h2>
