@@ -1,0 +1,13 @@
+version: '2'
+invalidStatus:
+  - "Status: In Progress"
+  - "Status: Blocked"
+  - "Status: On Hold"
+  - "Status: Pending"
+  - "Status: Review Needed"
+  - "Status: Revision Needed"
+  - "Status: Abandoned"
+  - "Status: Available"
+labelRule:
+  values:
+    - "Status: Completed"
