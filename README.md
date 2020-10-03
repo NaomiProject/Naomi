@@ -106,5 +106,5 @@ MIT
 
 ---
 
-> [projectnaomi.com](#) &nbsp;&middot;&nbsp;
+> [projectnaomi.com](https://projectnaomi.com) &nbsp;&middot;&nbsp;
 > GitHub [@naomiproject](https://github.com/naomiproject)
