@@ -40,6 +40,10 @@ def is_keyword(word):
         response = True
     return response
 
+# converts all non-keyword words to upper case in a template. This allows
+# case insensitive matching.
+def convert_template_to_upper(template):
+    return " ".join([word if is_keyword(word) else word.upper() for word in template.split()])
 
 class NaomiTTIPlugin(plugin.TTIPlugin):
     def __init__(self, *args, **kwargs):
@@ -79,6 +83,8 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             }
             for phrase in intents[intent_base]['locale'][locale]['templates']:
                 # Save the phrase so we can search for undefined keywords
+                # Convert the template to upper case
+                phrase = convert_template_to_upper(phrase)
                 self.intent_map['intents'][intent]['templates'].append(phrase)
                 for word in phrase.split():
                     if not is_keyword(word):
