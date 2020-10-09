@@ -72,3 +72,4 @@ target/
 # Ignore the generated ./Naomi file that starts Naomi.py with the 
 # proper python
 Naomi
+Naomi.sh
