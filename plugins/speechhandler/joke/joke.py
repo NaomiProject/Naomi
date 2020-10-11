@@ -46,9 +46,9 @@ class JokePlugin(plugin.SpeechHandlerPlugin):
                 'locale': {
                     'en-US': {
                         'templates': [
-                            "TELL ME A JOKE",
-                            "DO YOU KNOW ANY JOKES",
-                            "CAN YOU TELL ME A JOKE",
+                            "TELL ME A KNOCK KNOCK JOKE",
+                            "DO YOU KNOW ANY KNOCK KNOCK JOKES",
+                            "CAN YOU TELL ME A KNOCK KNOCK JOKE",
                             "MAKE ME LAUGH"
                         ]
                     },
