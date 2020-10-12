@@ -6,6 +6,7 @@ from jiwer import wer
 from naomi import paths
 from naomi import plugin
 from naomi import profile
+# from pprint import pprint
 
 
 # Replace the nth occurrance of sub
@@ -15,11 +16,15 @@ def replacenth(search_for, replace_with, string, n):
     try:
         # print("Searching for: '{}' in '{}'".format(search_for, string))
         # pprint([m.start() for m in re.finditer(search_for, string)])
-        where = [m.start() for m in re.finditer("{}{}{}".format(r"\b", search_for, r"\b"), string)][n - 1]
+        where = [m.start() for m in re.finditer(search_for, string)][n - 1]
         before = string[:where]
+        # print("Before: {}".format(before))
         after = string[where:]
+        # print("After: {}".format(after))
         after = after.replace(search_for, replace_with, 1)
+        # print("After: {}".format(after))
         string = before + after
+        # print("String: {}".format(string))
     except IndexError:
         # print("IndexError {}".format(n))
         pass
@@ -35,6 +40,10 @@ def is_keyword(word):
         response = True
     return response
 
+# converts all non-keyword words to upper case in a template. This allows
+# case insensitive matching.
+def convert_template_to_upper(template):
+    return " ".join([word if is_keyword(word) else word.upper() for word in template.split()])
 
 class NaomiTTIPlugin(plugin.TTIPlugin):
     def __init__(self, *args, **kwargs):
@@ -74,6 +83,8 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             }
             for phrase in intents[intent_base]['locale'][locale]['templates']:
                 # Save the phrase so we can search for undefined keywords
+                # Convert the template to upper case
+                phrase = convert_template_to_upper(phrase)
                 self.intent_map['intents'][intent]['templates'].append(phrase)
                 for word in phrase.split():
                     if not is_keyword(word):
@@ -170,7 +181,6 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
         return sorted(list(set(phrases)))
 
     def determine_intent(self, phrase):
-        # print(phrase)
         phrase = phrase.upper()
         score = {}
         allvariants = {phrase: {}}
@@ -318,13 +328,19 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 # substitutions in the template
                 if(possiblesubstitutions > 0):
                     for i in range(possiblesubstitutions):
-                        # print("i={}".format(i))
+                        # print("replacenth('{}','{}','{}',{})".format(
+                        #     '{}{}{}'.format('{', matchlist, '}'),
+                        #     word,
+                        #     currenttemplate,
+                        #     i + 1
+                        # ))
                         currenttemplate = replacenth(
                             '{}{}{}'.format('{', matchlist, '}'),
                             word,
                             currenttemplate,
                             i + 1
                         )
+                        # print("CurrentTemplate = {}".format(currenttemplate))
                         templates[currenttemplate] = wer(
                             currentvariant,
                             currenttemplate
@@ -339,7 +355,8 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
         # Now that we have a matching template, run through a list of all
         # substitutions in the template and see if there are any we have not
         # identified yet.
-        substitutions = re.findall('\{(.*?)\}', currenttemplate)
+        substitutions = re.findall(r'{(.*?)}', currenttemplate)
+        # print("Substitutions: {}".format(substitutions))
         if(substitutions):
             for substitution in substitutions:
                 subvar = "{}{}{}".format('{', substitution, '}')
@@ -352,8 +369,10 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 # print("Minimizing distance from '{}' to '{}' by substituting in '{}'".format(currentvariant,currenttemplate,subvar))
                 # print("Variant: {}".format(currentvariant))
                 variant = currentvariant.split()
+                variant.append("<END>")
                 # print("Template: {}".format(currenttemplate))
                 template = currenttemplate.split()
+                template.append("<END>")
                 n = len(variant) + 1
                 m = len(template) + 1
                 # print("Variant: '{}' length: {}".format(variant,n))
@@ -370,15 +389,11 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                     a[0][j] = j
                 for i in range(1, n):
                     for j in range(1, m):
+                        # print("{},{} V: {} T: {}".format(i,j,variant[i-1],template[j-1]))
                         if(variant[i - 1] == template[j - 1]):
                             c = 0
                         else:
                             c = 1
-                        a[i][j] = min(
-                            a[i - 1][j] + 1,
-                            a[i][j - 1] + 1,
-                            a[i - 1][j - 1] + c
-                        )
                         a[i][j] = c
                 # pprint(a)
                 # examine the resulting list of matched words
@@ -412,8 +427,8 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         substitutedvariant = variant[:start]
                         substitutedvariant.append(subvar)
                         substitutedvariant.extend(variant[end:])
-                        break
                         # print("SubstitutedVariant: {}".format(substitutedvariant))
+                        break
                     elif(a[i + 1][s + 1] == 0):
                         # the next item is a match, so start working backward
                         k = i
@@ -437,8 +452,8 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         substitutedvariant = variant[:start]
                         substitutedvariant.append(subvar)
                         substitutedvariant.extend(variant[end:])
-                        break
                         # print("SubstitutedVariant: {}".format(substitutedvariant))
+                        break
                 if(len(matched)):
                     # print("Match: '{}' to '{}'".format(substitution, matched))
                     try:
