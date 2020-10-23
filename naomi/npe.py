@@ -21,6 +21,7 @@ DEFAULT_PLUGIN_URL = "/".join([
     "master",
     "plugins.csv"
 ])
+_ = None  #  Fix Codacy complaint global variable undefined at module level
 
 
 class npe:
