@@ -1,8 +1,6 @@
 name: 'Nightly Publish'
 
-on:
-  schedule:
-    - cron:  '0 4 * * *'
+on: push
 
 jobs:
   nightly-publish:
@@ -22,6 +20,7 @@ jobs:
         cd ../
         mv Naomi Naomi-Nightly
         zip -r Naomi-Nightly.zip Naomi-Nightly
+        mv Naomi-Nightly.zip Naomi-Nightly/installers/
 
     - name: Upload ftp
       uses: sebastianpopp/ftp-action@releases/v2
@@ -29,4 +28,4 @@ jobs:
         host: ${{ secrets.FTP_SERVER }}
         user: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        localDir: "Naomi-Nightly.zip"
+        localDir: "Naomi-Nightly/installers/"
