@@ -19,10 +19,18 @@ pulseaudio
 pulseaudio-utils
 
 ## STT
-### pocketsphinx is default for wakeword spotting
+### PocketSphinx is default for wakeword spotting
 swig
 bison
 libpulse-dev
+
+### Mozilla Deepspeech
+build-essential
+libboost-all-dev
+cmake
+zlib1g-dev
+libbz2-dev
+liblzma-dev
 
 #### Phonetisaurus is used to build dictionaries
 gcc

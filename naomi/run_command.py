@@ -21,33 +21,40 @@ import subprocess
 # use cases. This module is currently only used in populate.py (for capturing
 # the system timezone) but I will need to use it a lot in my STT model
 # training plugins.
-def run_command(command, capture=0, stdin=None):
+# Aaron.Chantrill - added optional CWD parameter for specifying the directory
+# where the command should be run from.
+def run_command(command, capture=0, stdin=None, cwd=None):
     completedprocess = None
     if(capture == 1):
         completedprocess = subprocess.run(
             command,
-            stdout=subprocess.PIPE
+            stdout=subprocess.PIPE,
+            cwd=cwd
         )
     elif(capture == 2):
         completedprocess = subprocess.run(
             command,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
+            cwd=cwd
         )
     elif(capture == 3):
         completedprocess = subprocess.run(
             command,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT
+            stderr=subprocess.STDOUT,
+            cwd=cwd
         )
     elif (capture == 4):
         completedprocess = subprocess.run(
             command,
             stdout=subprocess.PIPE,
-            input=stdin.encode() if hasattr(stdin, "encode") else stdin
+            input=stdin.encode() if hasattr(stdin, "encode") else stdin,
+            cwd=cwd
         )
     else:
         completedprocess = subprocess.run(
-            command
+            command,
+            cwd=cwd
         )
     return completedprocess
 

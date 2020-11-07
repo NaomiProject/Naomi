@@ -130,6 +130,7 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
         sourcedir_path = paths.sub(os.path.join("sources", sourcedir_name))
         if(not os.path.isdir(sourcedir_path)):
             # use git to download the appropriate source directory
+            print("Downloading Mozilla DeepSpeech Source")
             cmd = [
                 'git',
                 'clone',
@@ -139,7 +140,8 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
             ]
             completed_process = run_command(cmd, 2)
             if(completed_process.returncode != 0):
-                print(completed_process.stderr.decode("UTF-8"))
+                self._logger.error(completed_process.stderr.decode("UTF-8"))
+                exit(1)
         # Download the release binaries. We need to get the
         # generate_scorer_package from here.
         binarydir_name = "native_client{}".format(version)
@@ -197,13 +199,23 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
                 build_dir = os.path.join(kenlm_sourcedir, "build")
                 if(not os.path.isdir(build_dir)):
                     os.makedirs(build_dir)
+                    os.chdir(build_dir)
                     cmd = [
-                        'cd', build_dir, '&&',
-                        'cmake', '..', '&&',
-                        'make'
+                        'cmake', '..'
                     ]
+                    completed_process = run_command(cmd, 2, cwd=build_dir)
+                    if(completed_process.returncode == 0):
+                        cmd = ['make']
+                        completed_process = run_command(cmd, 2, cwd=build_dir)
+                        if(completed_process.returncode != 0):
+                            self._logger.error(completed_process.stderr.decode("UTF-8"))
+                            exit(1)
+                    else:
+                        self._logger.error(completed_process.stderr.decode("UTF-8"))
+                        exit(1)
             else:
-                print(completed_process.stderr.decode("UTF-8"))
+                self._logger.error(completed_process.stderr.decode("UTF-8"))
+                exit(1)
 
         # Beam width used in the CTC decoder when building candidate
         # transcriptions
@@ -220,16 +232,24 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
 
         # These are paths. They are required.
         # Path to the model (protocol buffer binary file)
+        working_dir = os.path.expanduser(
+            profile.get(['deepspeech', 'working_dir'])
+        )
+        if(not os.path.isdir(working_dir)):
+            os.makedirs(working_dir)
+        download_url = 'https://github.com/mozilla/DeepSpeech/releases/download/{}/deepspeech-{}-models.pbmm'.format(version, deepspeech.version())
         self._MODEL = os.path.join(
-            os.path.expanduser(
-                profile.get(
-                    ['deepspeech', 'working_dir']
-                )
-            ),
+            working_dir,
             "model_{}.pbmm".format(version)
         )
-        print("Model: {}".format(self._MODEL))
-        if(not os.path.exists(self._MODEL)):
+        if(platform.machine() == 'armv7l'):
+            download_url = 'https://github.com/mozilla/DeepSpeech/releases/download/{}/deepspeech-{}-models.tflite'.format(version, deepspeech.version())
+            self._MODEL = os.path.join(
+                working_dir,
+                "model_{}.tflite".format(version)
+            )
+        self._logger.info("Model: {}".format(self._MODEL))
+        if(not os.path.isfile(self._MODEL)):
             download_url = 'https://github.com/mozilla/DeepSpeech/releases/download/{}/deepspeech-{}-models.pbmm'.format(version, deepspeech.version())
             filedata = urllib.request.urlopen(download_url)
             print("Downloading {}".format(download_url))
