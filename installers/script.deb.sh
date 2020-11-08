@@ -224,7 +224,7 @@ setup_wizard() {
             if [ ! -f ~/Naomi/README.md ]; then
               printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
               cd ~
-              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/nightly/Naomi-Nightly.zip" -o Naomi-Nightly.zip
+              curl -L "https://installers.projectnaomi.com/Naomi-Nightly.zip" -o Naomi-Nightly.zip
               unzip Naomi-Nightly.zip
               mv Naomi-Nightly Naomi
               cd ~
@@ -233,7 +233,7 @@ setup_wizard() {
             else
               mv ~/Naomi ~/Naomi-Temp
               cd ~
-              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/nightly/Naomi-Nightly.zip" -o Naomi-Nightly.zip
+              curl -L "https://installers.projectnaomi.com/Naomi-Nightly.zip" -o Naomi-Nightly.zip
               unzip Naomi-Nightly.zip
               mv Naomi-Nightly Naomi
               cd ~
