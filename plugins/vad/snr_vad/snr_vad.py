@@ -97,12 +97,13 @@ class SNRPlugin(plugin.VADPlugin, unittest.TestCase):
                 threshold=self._threshold
             )
         if(items > 100):
-            # Every 100 samples, rescale, allowing changes in
-            # the environment to be recognized more quickly.
+            # Every 50 samples (about 1-3 seconds), rescale,
+            # allowing changes in the environment to be
+            # recognized more quickly.
             self.distribution = {
                 key: (
                     (value + 1) / 2
-                ) for key, value in self.distribution.items()
+                ) for key, value in self.distribution.items() if value > 1
             }
         threshold = self._threshold
         # If we are already recording, reduce the threshold so as
