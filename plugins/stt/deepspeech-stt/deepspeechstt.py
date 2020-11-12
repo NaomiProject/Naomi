@@ -130,7 +130,7 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
         sourcedir_path = paths.sub(os.path.join("sources", sourcedir_name))
         if(not os.path.isdir(sourcedir_path)):
             # use git to download the appropriate source directory
-            print("Downloading Mozilla DeepSpeech Source")
+            print("Downloading (cloning) Mozilla DeepSpeech Source to {}".format(sourcedir_path))
             cmd = [
                 'git',
                 'clone',
