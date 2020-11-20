@@ -75,7 +75,6 @@ def compile_vocabulary(directory, phrases):
     text = " ".join(
         [("<s> %s </s>" % phrase.upper()) for phrase in phrases]
     )
-    print(text)
     # There's some strange issue when text2idngram sometime can't find any
     # input (although it's there). For a reason beyond me, this can be fixed
     # by appending a space char to the string.
