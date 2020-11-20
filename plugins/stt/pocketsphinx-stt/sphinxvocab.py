@@ -115,7 +115,7 @@ def compile_languagemodel(text, output_file):
     with open(vocab_file, 'r') as f:
         for line in f:
             line = line.strip()
-            if not line.startswith('#') and line not in ('<s>', '</s>'):
+            if not line.startswith('#') and line not in ('<s>', '</s>') and "{" not in line and "}" not in line:
                 words.append(line)
 
     if len(words) == 0:

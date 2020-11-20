@@ -20,6 +20,11 @@ def is_keyword(word):
     return response
 
 
+# Convert a word ("word") to a keyword ("{word}")
+def to_keyword(word):
+    return "{}{}{}".format("{", word, "}")
+
+
 class PadatiousTTIPlugin(plugin.TTIPlugin):
     container = IntentContainer('intent_cache')
 
@@ -49,9 +54,10 @@ class PadatiousTTIPlugin(plugin.TTIPlugin):
                 'templates': []
             }
             templates = intents[intent_base]['locale'][locale]['templates']
-            if('keywords' in intents[intent_base]):
+            if('keywords' in intents[intent_base]['locale'][locale]):
                 for keyword in intents[intent_base]['locale'][locale]['keywords']:
                     keyword_token = "{}_{}".format(intent, keyword)
+                    # print("Keyword_token: {}".format(keyword_token))
                     self.keywords[keyword_token] = {
                         'words': intents[intent_base]['locale'][locale]['keywords'][keyword],
                         'name': keyword
@@ -92,29 +98,25 @@ class PadatiousTTIPlugin(plugin.TTIPlugin):
                     phrase = line.strip()
                     if phrase:
                         phrases.append(phrase)
-        # There was no need to make a list of words while
-        # parsing the intent, so in this case, parse the
-        # words directly from the templates and keyword
-        # lists
+        # Return a list of phrases Naomi might hear.
         for intent in self.intent_map['intents']:
-            # print("Search {} for words".format(intent))
-            for phrase in self.intent_map['intents'][intent]['templates']:
-                # print("Parsing '{}'".format(phrase))
-                template_words = phrase.split()
-                for template_word in template_words:
-                    if is_keyword(template_word):
-                        # The keyword group name in self.keywords
-                        # does not include the curly braces, so strip
-                        # them off
-                        keyword = template_word[1:][:-1]
-                        if(keyword in self.keywords):
-                            for word in self.keywords[keyword]['words']:
-                                # print("Adding word: {} for keyword list: {}".format(word, keyword))
-                                phrases.append(word.upper())
-                    else:
-                        # print("Adding word: {}".format(template_word))
-                        phrases.append(template_word.upper())
-        return sorted(list(set(phrases)))
+            # pprint(self.intent_map['intents'][intent]['templates'])
+            if('templates' in self.intent_map['intents'][intent]):
+                templates = self.intent_map['intents'][intent]['templates']
+                # pprint(self.keywords)
+                keywords_list = [keyword for keyword in self.keywords]
+                # print("Keywords: {}".format(keywords_list))
+                for keyword in keywords_list:
+                    # This will not replace keywords that do not have a list associated with them, like regex and open keywords
+                    if(keyword[:len(intent) + 1] == "{}_".format(intent)):
+                        # print("Replacing {} with words from {} in templates".format(keyword,self.keywords[keyword]['words']))
+                        for template in templates:
+                            if(to_keyword(keyword) in template):
+                                templates.extend([template.replace(to_keyword(keyword), word.upper()) for word in self.keywords[keyword]['words']])
+                            # Now that we have expanded every instance of keyword in templates, delete any template that still contains keyword
+                            templates = [template for template in templates if not to_keyword(keyword) in template]
+                phrases.extend(templates)
+        return sorted(phrases)
 
     def determine_intent(self, phrase):
         response = {}

@@ -42,6 +42,11 @@ def is_keyword(word):
     return response
 
 
+# Convert a word ("word") to a keyword ("{word}")
+def to_keyword(word):
+    return "{}{}{}".format("{", word, "}")
+
+
 class AdaptTTIPlugin(plugin.TTIPlugin):
     tokenizer = EnglishTokenizer()
     trie = Trie()
@@ -193,7 +198,10 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
         phrases = []
         # include the keyword, otherwise
         if(passive_listen):
-            phrases.extend(profile.get(["keyword"]))
+            keywords = profile.get(["keyword"])
+            if not (isinstance(keywords, list)):
+                keywords = [keywords]
+            phrases.extend([word.upper() for word in keywords])
         # Include any custom phrases (things you say to Naomi
         # that don't match plugin phrases. Otherwise, there is
         # a high probability that something you say will be
@@ -214,21 +222,24 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
                         phrases.append(phrase)
 
         # for plugin in self._plugins:
-        #     phrases.extend(plugin.get_phrases())
-        # print("**************************************************************")
-        # pprint(self._intentparser)
-        # pprint(self._intentparser.keywords)
-        # print("**************************************************************")
-        for word in self.words:
-            if("{}{}".format(word[:1], word[-1:]) == "{}"):
-                # read in the associated list
-                for keyword in self.keywords:
-                    for word in self.keywords[keyword]:
-                        phrases.append(word)
-            else:
-                phrases.append(word)
-
-        return sorted(list(set(phrases)))
+        for intent in self.intent_map['intents']:
+            if('templates' in self.intent_map['intents'][intent]):
+                templates = self.intent_map['intents'][intent]['templates']
+                keywords_list = [keyword for keyword in self.keywords]
+                # print("Keywords: {}".format(keywords_list))
+                for keyword in keywords_list:
+                    # This will not replace keywords that do not have a list associated with them, like regex and open keywords
+                    # print("Replacing {} with words from {} in templates".format(keyword,keywords[keyword]))
+                    if(keyword[:len(intent)+1] == "{}_".format(intent)):
+                        short_keyword = self.keywords[keyword]['name']
+                        for template in templates:
+                            # print("Checking template: {} for keyword {}".format(template,short_keyword))
+                            if(to_keyword(short_keyword) in template):
+                                templates.extend([template.replace(to_keyword(short_keyword), word.upper()) for word in self.keywords[keyword]['words']])
+                            # Now that we have expanded every instance of keyword in templates, delete any template that still contains keyword
+                            templates = [template for template in templates if not to_keyword(short_keyword) in template]
+                phrases.extend(templates)
+        return sorted(phrases)
 
     def determine_intent(self, phrase):
         response = {}

@@ -40,10 +40,17 @@ def is_keyword(word):
         response = True
     return response
 
+
+# Convert a word ("word") to a keyword ("{word}")
+def to_keyword(word):
+    return "{}{}{}".format("{", word, "}")
+
+
 # converts all non-keyword words to upper case in a template. This allows
 # case insensitive matching.
 def convert_template_to_upper(template):
     return " ".join([word if is_keyword(word) else word.upper() for word in template.split()])
+
 
 class NaomiTTIPlugin(plugin.TTIPlugin):
     def __init__(self, *args, **kwargs):
@@ -142,9 +149,12 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
         phrases = []
         # include the keyword, otherwise
         if(passive_listen):
-            phrases.extend(profile.get(["keyword"]))
+            keywords = profile.get(["keyword"])
+            if not (isinstance(keywords, list)):
+                keywords = [keywords]
+            phrases.extend([word.upper() for word in keywords])
         # Include any custom phrases (things you say to Naomi
-        # that don't match plugin phrases. Otherwise, there is
+        # that don't match plugin phrases). Otherwise, there is
         # a high probability that something you say will be
         # interpreted as a command. For instance, the
         # "check_email" plugin has only "EMAIL" and "INBOX" as
@@ -160,25 +170,23 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 for line in f:
                     phrase = line.strip()
                     if phrase:
-                        phrases.append(phrase)
+                        phrases.append(phrase.upper())
 
-        # for plugin in self._plugins:
-        #     phrases.extend(plugin.get_phrases())
-        # print("**************************************************************")
-        # pprint(self._intentparser)
-        # pprint(self._intentparser.keywords)
-        # print("**************************************************************")
-        for word in self.words:
-            if(is_keyword(word)):
-                # read in the associated list
-                for intent in self.keywords:
-                    for keyword in self.keywords[intent]:
-                        for word in self.keywords[intent][keyword]:
-                            phrases.append(word)
-            else:
-                phrases.append(word)
-
-        return sorted(list(set(phrases)))
+        for intent in self.intent_map['intents']:
+            if('templates' in self.intent_map['intents'][intent]):
+                templates = self.intent_map['intents'][intent]['templates']
+                if(intent in self.keywords):
+                    keywords = self.keywords[intent]
+                    for keyword in keywords:
+                        # This will not replace keywords that do not have a list associated with them, like regex and open keywords
+                        # print("Replacing {} with words from {} in templates".format(keyword,keywords[keyword]))
+                        for template in templates:
+                            if(to_keyword(keyword) in template):
+                                templates.extend([template.replace(to_keyword(keyword), word.upper()) for word in keywords[keyword]])
+                            # Now that we have expanded every instance of keyword in templates, delete any template that still contains keyword
+                            templates = [template for template in templates if not to_keyword(keyword) in template]
+                phrases.extend(templates)
+        return sorted(phrases)
 
     def determine_intent(self, phrase):
         phrase = phrase.upper()
