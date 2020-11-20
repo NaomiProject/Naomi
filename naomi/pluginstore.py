@@ -47,11 +47,11 @@ def parse_info_file(infofile_path):
     )
     if(
         not os.path.isfile(license_file_full_path)
-    )and(
+    ) and (
         not os.path.isfile(license_file_full_path + ".md")
-    )and(
+    ) and (
         not os.path.isfile(license_file_full_path + ".txt")
-    )and(
+    ) and (
         not cp.has_option(*LICENSE_OPTION)
     ):
         options_missing = True
@@ -82,7 +82,7 @@ def printplugin(plugin, installed_plugins, *args, **kwargs):
                     plugin["Version"],
                     version
                 )
-    print("{} ({}{}) - {}".format(
+    return("{} ({}{}) - {}".format(
         plugin["Name"],
         plugin["Category"],
         message,
