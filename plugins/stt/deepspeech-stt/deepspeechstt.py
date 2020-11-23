@@ -242,7 +242,6 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
             working_dir,
             "model_{}.pbmm".format(version)
         )
-        print("machine: {}".format(platform.machine()))
         if(platform.machine() == 'armv7l'):
             download_url = 'https://github.com/mozilla/DeepSpeech/releases/download/{}/deepspeech-{}-models.tflite'.format(version, deepspeech.version())
             self._MODEL = os.path.join(
