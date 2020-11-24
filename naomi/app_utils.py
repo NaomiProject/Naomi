@@ -3,6 +3,7 @@ import email
 import imaplib
 import logging
 import re
+import requests
 import smtplib
 from dateutil import parser
 from email.mime.multipart import MIMEMultipart
@@ -376,3 +377,16 @@ def is_positive(phrase):
             re.IGNORECASE
         )
     )
+
+
+# Copied from https://stackoverflow.com/questions/16694907/download-large-file-in-python-with-requests/16696317#16696317
+def download_file(url, local_filename=None):
+    if(local_filename is None):
+        local_filename = url.split('/')[-1]
+    # NOTE the stream=True parameter below
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    return local_filename

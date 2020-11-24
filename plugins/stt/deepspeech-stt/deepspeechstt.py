@@ -2,8 +2,8 @@ import deepspeech
 import os
 import platform
 import scipy.io.wavfile as wav
-import urllib
 from collections import OrderedDict
+from naomi import app_utils
 from naomi import paths
 from naomi import plugin
 from naomi import profile
@@ -45,7 +45,7 @@ def generate_scorer(directory, phrases):
         '--binary_type', 'trie',
         '--top_k', '500000',
         '--arpa_order', '5',
-        '--max_arpa_memory', '85%',
+        '--max_arpa_memory', '10%',
         '--arpa_prune', '0|0|1',
         '--binary_a_bits', '255',
         '--binary_q_bits', '8',
@@ -250,13 +250,11 @@ class DeepSpeechSTTPlugin(plugin.STTPlugin):
             )
         self._logger.info("Model: {}".format(self._MODEL))
         if(not os.path.isfile(self._MODEL)):
-            download_url = 'https://github.com/mozilla/DeepSpeech/releases/download/{}/deepspeech-{}-models.pbmm'.format(version, deepspeech.version())
-            filedata = urllib.request.urlopen(download_url)
             print("Downloading {}".format(download_url))
             # FIXME it would be good to have a progress indicator here.
             # This can take a long time depending on your bandwidth.
-            with open(self._MODEL, 'wb') as f:
-                f.write(filedata.read())
+            self._MODEL = app_utils.download_file(download_url, self._MODEL)
+            print("Saved as {}".format(self._MODEL))
             print("Download completed")
         self._ds = deepspeech.Model(self._MODEL)
         scorer_file = os.path.join(
