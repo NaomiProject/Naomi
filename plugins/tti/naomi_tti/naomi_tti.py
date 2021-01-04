@@ -6,7 +6,6 @@ from jiwer import wer
 from naomi import paths
 from naomi import plugin
 from naomi import profile
-# from pprint import pprint
 
 
 # Replace the nth occurrance of sub
@@ -270,10 +269,16 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             # print("==========intentscores============")
             # pprint(intentscores)
             bestintent = max(intentscores, key=lambda key: intentscores[key])
+            # Change the intent scores into probabilities
+            totalscore = sum(intentscores.values())
+            if(totalscore > 0):
+                bestscore = intentscores[bestintent] / totalscore
+            else:
+                bestscore = 0
             variantscores[variant] = {
                 'intent': bestintent,
                 'input': phrase,
-                'score': intentscores[bestintent],
+                'score': bestscore,
                 'matches': allvariants[variant],
                 'action': self.intent_map['intents'][bestintent]['action']
             }
