@@ -45,7 +45,7 @@ def generate_scorer(directory, phrases):
         '--binary_type', 'trie',
         '--top_k', '500000',
         '--arpa_order', '5',
-        '--max_arpa_memory', '85%',
+        '--max_arpa_memory', '10%',
         '--arpa_prune', '0|0|1',
         '--binary_a_bits', '255',
         '--binary_q_bits', '8',
