@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import abc
 import contextlib
-import wave
 import slugify
+import time
+import wave
+from naomi import profile
 
 STANDARD_SAMPLE_RATES = (
     8000, 9600, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000, 88200,
@@ -95,16 +97,26 @@ class AudioDevice(object):
                 else:
                     yield frame
 
-    def play_fp(self, fp, chunksize=1024, add_padding=False):
+    def play_fp(self, fp):
+        chunksize = profile.get(['audio','output_chunksize'], 1024)
+        add_padding = profile.get(['audio','output_padding'], False)
+        pause = profile.get(['audio', 'output_pause'], 0)
         w = wave.open(fp, 'rb')
         channels = w.getnchannels()
+        samplewidth = w.getsampwidth()
         bits = w.getsampwidth() * 8
         rate = w.getframerate()
-        with self.open_stream(bits, channels, rate,
-                              chunksize=chunksize) as stream:
+        with self.open_stream(
+            bits,
+            channels,
+            rate,
+            chunksize=chunksize
+        ) as stream:
             data = w.readframes(chunksize)
-            if add_padding and len(data) > 0:
-                data += b'\00' * (chunksize - len(data))
+            datalen = len(data)
+            if add_padding and datalen > 0 and datalen < (chunksize * samplewidth):
+                data += b'\00' * (chunksize * samplewidth - datalen)
+                datalen = len(data)
             while data:
                 # Check to see if we need to stop
                 if(hasattr(self, "stop")):
@@ -112,8 +124,13 @@ class AudioDevice(object):
                     break
                 stream.write(data)
                 data = w.readframes(chunksize)
-                if add_padding and len(data) > 0:
-                    data += b'\00' * (chunksize - len(data))
+                datalen = len(data)
+                if add_padding and datalen > 0 and datalen < (chunksize * samplewidth):
+                    data += b'\00' * (chunksize * samplewidth - datalen)
+                    datalen = len(data)
+            # pause before closing the stream (reduce clipping)
+            if(pause > 0):
+                time.sleep(pause)
         w.close()
 
     def play_file(self, filename, *args, **kwargs):
