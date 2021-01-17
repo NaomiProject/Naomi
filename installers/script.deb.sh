@@ -192,7 +192,7 @@ setup_wizard() {
             printf "${B_M}$key ${B_W}- Good Choice!${NL}"
             version="3.0"
             month=$(date +%-m)
-            offset=12
+            offset=24
             milestone=$((month+offset))
             echo '{"use_release":"milestone", "version":"Naomi-'$version'.M'$milestone'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
             cd ~
