@@ -5,11 +5,14 @@ import slugify
 import time
 import wave
 from naomi import profile
+from pprint import pprint
+
 
 STANDARD_SAMPLE_RATES = (
     8000, 9600, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000, 88200,
     96000, 192000
 )
+
 
 DEVICE_TYPE_ALL = 'all'
 DEVICE_TYPE_INPUT = 'input'
@@ -97,9 +100,15 @@ class AudioDevice(object):
                 else:
                     yield frame
 
-    def play_fp(self, fp):
-        chunksize = profile.get(['audio','output_chunksize'], 1024)
-        add_padding = profile.get(['audio','output_padding'], False)
+    def play_fp(self, fp, *args, **kwargs):
+        if('chunksize' in kwargs):
+            chunksize = kwargs['chunksize']
+        else:
+            chunksize = profile.get(['audio','output_chunksize'], 1024)
+        if('add_padding' in kwargs):
+            add_padding = kwargs['add_padding']
+        else:
+            add_padding = profile.get(['audio','output_padding'], False)
         pause = profile.get(['audio', 'output_pause'], 0)
         w = wave.open(fp, 'rb')
         channels = w.getnchannels()

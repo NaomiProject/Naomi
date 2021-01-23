@@ -799,9 +799,7 @@ class Naomi(object):
         )
         try:
             output_device.play_file(
-                filename,
-                chunksize=output_chunksize,
-                add_padding=output_add_padding
+                filename
             )
         except Exception as e:
             print(e)
@@ -912,9 +910,7 @@ class Naomi(object):
             )
             if(os.path.isfile(filename)):
                 output_device.play_file(
-                    filename,
-                    chunksize=output_chunksize,
-                    add_padding=output_add_padding
+                    filename
                 )
             started = False
             for frame in input_device.record(
@@ -996,9 +992,7 @@ class Naomi(object):
                         wav_fp.writeframes(fragment)
                         wav_fp.close()
                         output_device.play_file(
-                            f.name,
-                            chunksize=output_chunksize,
-                            add_padding=output_add_padding
+                            f.name
                         )
                     heard = self._interface.simple_yes_no(
                         _("Did you hear yourself?")
