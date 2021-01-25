@@ -51,12 +51,18 @@ class Conversation(i18n.GettextMixin):
 
             utterance = self.mic.listen()
 
-            if utterance:
+            handled = False
+            while utterance and not handled:
                 intent = self.brain.query(utterance)
                 if intent:
                     try:
                         self._logger.info(intent)
-                        intent['action'](intent, self.mic)
+                        response = intent['action'](intent, self.mic)
+                        if response is None:
+                            handled = True
+                            utterance = ""
+                        else:
+                            (handled, utterance) = response
                     except Exception:
                         self._logger.error(
                             'Failed to execute module',
@@ -69,11 +75,12 @@ class Conversation(i18n.GettextMixin):
                                 self.gettext("Please try again later.")
                             ])
                         )
+                        handled = True
                     else:
                         self._logger.debug(
                             " ".join([
                                 "Handling of phrase '{}'",
-                                "by module '{}' completed"
+                                "by plugin '{}' completed"
                             ]).format(
                                 utterance,
                                 intent
@@ -86,5 +93,4 @@ class Conversation(i18n.GettextMixin):
                         self.gettext("Say that again?"),
                         self.gettext("I beg your pardon?")
                     ]))
-            else:
-                self.mic.say(self.gettext("Pardon?"))
+                    handled = True

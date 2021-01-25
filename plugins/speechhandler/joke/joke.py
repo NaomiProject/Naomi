@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import random
+import re
 from naomi import plugin
 from naomi import profile
 
@@ -83,8 +84,23 @@ class JokePlugin(plugin.SpeechHandlerPlugin):
         """
         joke = random.choice(self._jokes)
 
-        mic.say(self.gettext("Knock knock"))
-        mic.active_listen()
-        mic.say(joke[0])
-        mic.active_listen()
-        mic.say(joke[1])
+        matched, phrase = mic.expect(
+            "joke_who_is_there",             # name
+            self.gettext("Knock knock"),     # prompt or question
+            ["WHO'S THERE", "WHO IS THERE"]  # expected responses
+        )
+        if(matched):
+            matched, phrase = mic.expect(
+                "joke_{}_who".format(re.sub("[^a-z]", "_", joke[0].lower())),
+                joke[0],
+                ["{} WHO".format(joke[0].upper())]
+            )
+            if(matched):
+                mic.say(joke[1])
+                (matched, phrase) = mic.confirm("Was that joke funny?")
+                if matched:
+                    if(phrase == "Y"):
+                        mic.say("I'm glad you enjoyed it")
+                    else:
+                        mic.say("Oh, well, maybe the next one will be funny")
+        return(matched, phrase)

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from jiwer import wer
 from naomi.commandline import println
 from naomi import alteration
+from naomi import i18n
 from naomi import paths
 from naomi import profile
 import audioop
@@ -19,7 +21,7 @@ import wave
 queue = []
 
 
-class Mic(object):
+class Mic(i18n.GettextMixin):
     """
     The Mic class handles all interactions with the microphone and speaker.
     """
@@ -45,6 +47,8 @@ class Mic(object):
         save_active_audio=False,
         save_noise=False
     ):
+        translations = i18n.parse_translations(paths.data('locale'))
+        i18n.GettextMixin.__init__(self, translations, profile)
         self._logger = logging.getLogger(__name__)
         self._keyword = keyword
         self.tts_engine = tts_engine
@@ -72,9 +76,9 @@ class Mic(object):
         if(
             (
                 self._save_active_audio
-            )or(
+            ) or (
                 self._save_passive_audio
-            )or(
+            ) or (
                 self._save_noise
             )
         ):
@@ -96,9 +100,9 @@ class Mic(object):
         if(
             (
                 sample_type.lower() == "noise" and self._save_noise
-            )or(
+            ) or (
                 sample_type.lower() == "passive" and self._save_passive_audio
-            )or(
+            ) or (
                 sample_type.lower() == "active" and self._save_active_audio
             )
         ):
@@ -368,6 +372,122 @@ class Mic(object):
         else:
             self.wait_for_keyword(self._keyword)
             return self.active_listen()
+
+    def expect(self, name, prompt, phrases):
+        response = (None, None)
+        plugin_info = self.plugins.get_plugin(
+            self.special_stt_slug,
+            category='stt'
+        )
+        plugin_config = profile.get_profile()
+
+        # If the special_mode engine is not specifically set,
+        # copy the settings from the active stt engine.
+        expect_stt_engine = plugin_info.plugin_class(
+            name,
+            phrases,
+            plugin_info,
+            plugin_config
+        )
+        if(profile.check_profile_var_exists([
+            'special_stt',
+            'samplerate'
+        ])):
+            expect_stt_engine._samplerate = int(
+                profile.get_profile_var([
+                    'special_stt',
+                    'samplerate'
+                ])
+            )
+        else:
+            expect_stt_engine._samplerate = self.active_stt_engine._samplerate
+        if(profile.check_profile_var_exists([
+            'special_stt',
+            'volume_normalization'
+        ])):
+            expect_stt_engine._volume_normalization = float(
+                profile.get_profile_var([
+                    'special_stt',
+                    'volume_normalization'
+                ])
+            )
+        else:
+            expect_stt_engine._volume_normalization = self.active_stt_engine._volume_normalization
+        self.say(prompt)
+        with self._write_frames_to_file(
+            self._vad_plugin.get_audio(),
+            self.active_stt_engine._samplerate,
+            self.active_stt_engine._volume_normalization
+        ) as f:
+            try:
+                transcribed = expect_stt_engine.transcribe(f)
+            except Exception:
+                dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
+                self._logger.error("'Expect' transcription failed!", exc_info=dbg)
+            else:
+                if(self._print_transcript):
+                    println("<< {}\n".format(transcribed))
+                if(profile.get_arg("save_active_audio", False)):
+                    self._log_audio(f, transcribed, name)
+            # Now that we have a transcription, check if it matches one of the phrases
+            phrase, score = self.match_phrase(transcribed, phrases)
+            # If it does, then return True and the phrase
+            self._logger.info("Expecting: {} Got: {}".format(phrases, transcribed))
+            self._logger.info("Score: {}".format(score))
+            if(score > .5):
+                response = (True, phrase)
+            # Otherwise, return False and the active transcription
+            else:
+                transcribed = self.active_stt_engine.transcribe(f)
+                response = (False, transcribed)
+        return response
+
+    # confirm is a special case of expect which expects "yes" or "no"
+    def confirm(self, prompt):
+        # default to english
+        language = profile.get(['language'], 'en-US')[:2]
+        POSITIVE = ['YES', 'SURE']
+        NEGATIVE = ['NO', 'NOPE']
+        if(language == "fr"):
+            POSITIVE = ['OUI']
+            NEGATIVE = ['NON']
+        elif(language == "de"):
+            POSITIVE = ['JA']
+            NEGATIVE = ['NEIN']
+        (matched, phrase) = self.expect(
+            "confirm",
+            prompt,
+            POSITIVE + NEGATIVE
+        )
+        if(matched):
+            if phrase in POSITIVE:
+                return (matched, "Y")
+            else:
+                return (matched, "N")
+        else:
+            return (matched, phrase)
+
+    @staticmethod
+    def match_phrase(phrase, phrases):
+        # If phrase is a list, convert to a string
+        # (otherwise the "split" below throws an error)
+        if(isinstance(phrase, list)):
+            phrase = " ".join(phrase)
+        if phrase == "":
+            return ("", 0.0)
+        else:
+            # Just implement a quick edit distance
+            # FIXME replace this with a call to a real intent parser
+            templates = {}
+            for template in phrases:
+                phrase_len = len(phrase.split())
+                template_len = len(template.split())
+                if(phrase_len > template_len):
+                    templates[template] = (phrase_len - wer(template, phrase)) / phrase_len
+                else:
+                    templates[template] = (template_len - wer(phrase, template)) / template_len
+            besttemplate = max(templates, key=lambda key: templates[key])
+            return(besttemplate, templates[besttemplate])
 
     # Output methods
     def play_file(self, filename):

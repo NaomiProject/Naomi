@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from . import paths
+from naomi import paths
 import contextlib
 import gettext
 import logging
@@ -58,10 +58,27 @@ class TestMic(object):
     def active_listen(self, timeout=3):
         if self.idx < len(self.inputs):
             self.idx += 1
+            # print("YOU: {}".format(self.inputs[self.idx - 1]))
             return [self.inputs[self.idx - 1]]
         return [""]
 
+    # For now, assume the input matches a phrase
+    def expect(self, name, prompt, phrases):
+        self.say(prompt)
+        return (True, " ".join(self.active_listen()))
+
+    # For now, assume the input is "YES" or "NO"
+    def confirm(self, prompt):
+        (matched, phrase) = self.expect("confirm", prompt, ['YES', 'NO'])
+        if(matched):
+            if(phrase in ['YES']):
+                phrase = 'Y'
+            else:
+                phrase = 'N'
+        return (matched, phrase)
+
     def say(self, phrase):
+        # print("NAOMI: {}".format(phrase))
         self.outputs.append(phrase)
 
 
