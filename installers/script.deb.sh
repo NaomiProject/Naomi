@@ -164,7 +164,7 @@ setup_wizard() {
         case $key in
          1)
             printf "${B_M}$key ${B_W}- Easy Peasy!${NL}"
-            version="2.2"
+            version="3.0"
             echo '{"use_release":"stable", "version":"Naomi-'$version'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
             cd ~
             if [ ! -f ~/Naomi/README.md ]; then
@@ -190,10 +190,10 @@ setup_wizard() {
             ;;
          2)
             printf "${B_M}$key ${B_W}- Good Choice!${NL}"
-            version="3.0"
+            version="3.1"
             month=$(date +%-m)
-            offset=24
-            milestone=$((month+offset))
+            offset=1
+            milestone=$((month-offset))
             echo '{"use_release":"milestone", "version":"Naomi-'$version'.M'$milestone'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
             cd ~
             if [ ! -f ~/Naomi/README.md ]; then
