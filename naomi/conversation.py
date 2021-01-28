@@ -58,11 +58,14 @@ class Conversation(i18n.GettextMixin):
                     try:
                         self._logger.info(intent)
                         response = intent['action'](intent, self.mic)
-                        if response is None:
-                            handled = True
+                        if(isinstance(response, tuple) and len(response) == 2):
+                            (handled, utterance) = response
+                        elif(isinstance(response, bool)):
+                            handled = response
                             utterance = ""
                         else:
-                            (handled, utterance) = response
+                            handled = True
+                            utterance = ""
                     except Exception:
                         self._logger.error(
                             'Failed to execute module',
