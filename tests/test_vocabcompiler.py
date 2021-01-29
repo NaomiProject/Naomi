@@ -44,27 +44,27 @@ class TestVocabulary(unittest.TestCase):
             logging.disable(logging.ERROR)
             with self.assertRaises(OSError):
                 with mock.patch('os.makedirs', side_effect=OSError('test')):
-                    self.vocab.compile(None, nop_func, phrases)
+                    self.vocab.compile(nop_func, phrases)
             with self.assertRaises(OSError):
                 with mock.patch('%s.open' % vocabcompiler.__name__,
                                 create=True,
                                 side_effect=OSError('test')):
-                    self.vocab.compile(None, nop_func, phrases)
+                    self.vocab.compile(nop_func, phrases)
 
                 with self.assertRaises(StrangeCompilationError):
-                    self.vocab.compile(None, error_func, phrases)
+                    self.vocab.compile(error_func, phrases)
 
                 with self.assertRaises(StrangeCompilationError):
                     with mock.patch('os.remove',
                                     side_effect=OSError('test')):
-                        self.vocab.compile(None, error_func, phrases)
+                        self.vocab.compile(error_func, phrases)
 
             # Re-enable logging again
             logging.disable(logging.NOTSET)
 
-            self.vocab.compile(None, nop_func, phrases)
+            self.vocab.compile(nop_func, phrases)
             self.assertIsInstance(self.vocab.compiled_revision, str)
             self.assertTrue(self.vocab.is_compiled)
             self.assertTrue(self.vocab.matches_phrases(phrases))
-            self.vocab.compile(None, nop_func, phrases)
-            self.vocab.compile(None, nop_func, phrases, force=True)
+            self.vocab.compile(nop_func, phrases)
+            self.vocab.compile(nop_func, phrases, force=True)

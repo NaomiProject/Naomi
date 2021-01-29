@@ -1,17 +1,39 @@
 # -*- coding: utf-8 -*-
 import random
+import time
 from naomi import plugin
-import subprocess
+from naomi import profile
 
 
 class ShutdownPlugin(plugin.SpeechHandlerPlugin):
-    def get_phrases(self):
-        return [
-            self.gettext("SHUTDOWN"),
-            self.gettext("SHUT"),
-            self.gettext("DOWN")]
+    def intents(self):
+        return {
+            'ShutdownIntent': {
+                'locale': {
+                    'en-US': {
+                        'templates': [
+                            "SHUTDOWN",
+                            "TURN YOURSELF OFF"
+                        ]
+                    },
+                    'fr-FR': {
+                        'templates': [
+                            "ÉTEINS-TOI",
+                            "ÉTEIGNEZ-VOUS"
+                        ]
+                    },
+                    'de-DE': {
+                        'templates': [
+                            "BEENDE DICH",
+                            "SCHALTEN SIE SICH AUS"
+                        ]
+                    }
+                },
+                'action': self.handle
+            }
+        }
 
-    def handle(self, text, mic):
+    def handle(self, intent, mic):
         """
         Responds to user-input, typically speech text, by relaying the
         meaning of life.
@@ -20,11 +42,11 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         text -- user-input, typically transcribed speech
         mic -- used to interact with the user (for both input and output)
         """
-        name = self.profile['first_name']
+        name = profile.get_profile_var(['first_name'], '')
 
         messages = [
-            self.gettext("I'm going down."),
-            self.gettext("Shuting down now."),
+            self.gettext("I'm shutting down."),
+            self.gettext("Shutting down now."),
             self.gettext("Bye Bye."),
             self.gettext("Goodbye, {}").format(name)
         ]
@@ -32,16 +54,12 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         message = random.choice(messages)
 
         mic.say(message)
+        # specifically wait for Naomi to finish talking
+        # here, otherwise it will exit before getting to
+        # speak.
+        if(profile.get_arg('listen_while_talking', False)):
+            if hasattr(mic, "current_thread"):
+                while(mic.current_thread.is_alive()):
+                    time.sleep(1)
 
-        proc = subprocess.Popen(["pkill", "-f", "Naomi.py"],
-                                stdout=subprocess.PIPE)
-        proc.wait()
-
-    def is_valid(self, text):
-        """
-        Returns True if the input is related to the meaning of life.
-
-        Arguments:
-        text -- user-input, typically transcribed speech
-        """
-        return any(p.lower() in text.lower() for p in self.get_phrases())
+        quit()

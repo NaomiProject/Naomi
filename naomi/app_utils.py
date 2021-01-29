@@ -1,105 +1,334 @@
 # -*- coding: utf-8 -*-
-import smtplib
-from email.MIMEText import MIMEText
-from email.MIMEMultipart import MIMEMultipart
-import urllib2
-import re
-from pytz import timezone
+import email
+import imaplib
 import logging
+import re
+import requests
+import smtplib
+from dateutil import parser
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from pytz import timezone
+from urllib import request as urllib_request
+from . import i18n
+from . import paths
+from . import profile
 
 
-def send_email(SUBJECT, BODY, TO, FROM, SENDER, PASSWORD, SMTP_SERVER, SMTP_PORT):
+_ = i18n.GettextMixin(i18n.parse_translations(paths.data('locale'))).gettext
+
+
+# AaronC - This is currently used to clean phone numbers
+def clean_number(s):
+    return re.sub(r'[^0-9]', '', s)
+
+
+def get_date(email):
+    return parser.parse(email.get('date'))
+
+
+# The following two functions just check to make sure Naomi has
+# access to an imap server for receiving emails/text messages
+# and an smtp server for sending emails/texts
+def check_imap_config():
+    success = True
+    USERNAME = profile.get_profile_password(['email', 'username'])
+    if(not USERNAME):
+        logging.info('Email username not set')
+        success = False
+    PASSWORD = profile.get_profile_password(['email', 'password'])
+    if(not PASSWORD):
+        logging.info('Email password not set')
+        success = False
+    SERVER = profile.get(['email', 'imap', 'server'])
+    if(not SERVER):
+        logging.info('Email imap server not set')
+        success = False
+    PORT = profile.get(['email', 'imap', 'port'], 993)
+    if(success):
+        try:
+            conn = imaplib.IMAP4_SSL(SERVER, PORT)
+            conn.login(USERNAME, PASSWORD)
+            conn.logout()
+        except TimeoutError:
+            logging.info('IMAP connection timed out (check server name)')
+            success = False
+        except OSError as e:
+            logging.info('IMAP connection error: {}'.format(e))
+            success = False
+        except imaplib.IMAP4.error as e:
+            if hasattr(e, 'args'):
+                logging.info(e.args[0])
+            success = False
+    return success
+
+
+def check_smtp_config():
+    success = True
+    USERNAME = profile.get_profile_password(['email', 'username'])
+    if(not USERNAME):
+        logging.info('Email username not set')
+        success = False
+    PASSWORD = profile.get_profile_password(['email', 'password'])
+    if(not PASSWORD):
+        logging.info('Email password not set')
+        success = False
+    SERVER = profile.get(['email', 'smtp', 'server'])
+    if(not SERVER):
+        logging.info('Email smtp server not set')
+        success = False
+    PORT = profile.get(['email', 'smtp', 'port'], 587)
+    if(success):
+        try:
+            session = smtplib.SMTP(
+                SERVER,
+                PORT,
+                profile.get(
+                    ['email', 'smtp', 'timeout'],
+                    10
+                )
+            )
+            session.starttls()
+            session.login(USERNAME, PASSWORD)
+            session.quit()
+        except TimeoutError:
+            logging.info('SMTP connection timed out (check server name)')
+            success = False
+        except OSError as e:
+            logging.info('SMTP connection error: {}'.format(e))
+            success = False
+        except imaplib.IMAP4.error as e:
+            if hasattr(e, 'args'):
+                logging.info(e.args[0])
+            success = False
+    return success
+
+
+def send_email(
+    SUBJECT,
+    BODY,
+    TO
+):
     """Sends an HTML email."""
 
+    USERNAME = profile.get_profile_password(['email', 'username'])
+    SENDER = profile.get(['keyword'], ['Naomi'])[0]
+    FROM = profile.get_profile_password(['email', 'address'])
+    PASSWORD = profile.get_profile_password(['email', 'password'])
+    SERVER = profile.get(['email', 'smtp', 'server'])
+    PORT = profile.get(['email', 'smtp', 'port'], 587)
+
     msg = MIMEMultipart()
-    msg['From'] = SENDER
+    msg['From'] = "{} <{}>".format(SENDER, FROM)
     msg['To'] = TO
     msg['Subject'] = SUBJECT
-
     msg.attach(MIMEText(BODY.encode('UTF-8'), 'html', 'UTF-8'))
 
-    logging.info('using %s, and %s as port', SMTP_SERVER, SMTP_PORT)
+    logging.info('using %s, and %s as port', SERVER, PORT)
 
-    session = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+    session = smtplib.SMTP(SERVER, PORT)
 
     session.starttls()
 
-    session.login(FROM, PASSWORD)
-    session.sendmail(SENDER, TO, msg.as_string())
+    session.login(USERNAME, PASSWORD)
+    session.sendmail(msg['From'], msg['To'], msg.as_string())
     session.quit()
     logging.info('Successful.')
 
 
-def email_user(profile, SUBJECT="", BODY=""):
+def email_user(SUBJECT="", BODY=""):
     """
-    sends an email.
+    sends an email to the user.
 
     Arguments:
-        profile -- contains information related to the user (e.g., email
-                   address)
         SUBJECT -- subject line of the email
         BODY -- body text of the email
     """
+    SENDER = profile.get(['keyword'], ['Naomi'])[0]
     if not BODY:
         return False
 
-    body = 'Hello %s,' % profile['first_name']
+    body = 'Hello {},'.format(profile.get(['first_name']))
     body += '\n\n' + BODY.strip() + '\n\n'
-    body += 'Best Regards,\nNaomi\n'
+    body += 'Best Regards,\n{}\n'.format(SENDER)
 
     recipient = None
 
-
-    if profile['email']['address']:
-        recipient = profile['email']['address']
-        if profile['first_name'] and profile['last_name']:
-            first_name=profile['first_name']
-            last_name=profile['last_name']
+    if profile.get(['email', 'address']):
+        recipient = profile.get_profile_password(['email', 'address'])
+        first_name = profile.get(['first_name'])
+        last_name = profile.get(['last_name'])
+        if first_name and last_name:
             recipient = "{first_name} {last_name} <{recipient}>".format(
-                    first_name=profile['first_name'],
-                    last_name=profile['last_name'],
-                    recipient=recipient)
-
-
+                first_name=first_name,
+                last_name=last_name,
+                recipient=recipient
+            )
     else:
-        if profile['carrier'] and profile['phone_number']:
-            recipient = "%s@%s" % (
-                str(profile['phone_number']),
-                profile['carrier'])
+        phone_number = clean_number(
+            profile.get_profile_password(['phone_number'])
+        )
+        carrier = profile.get(['carrier'])
+        if phone_number and carrier:
+            recipient = "{}@{}".format(
+                str(phone_number),
+                carrier
+            )
 
     if not recipient:
         return False
 
     try:
-        user = profile['email']['address']
-        password = profile['email']['password']
-        server = profile['email']['smtp']
-        try:
-            port = profile ['email']['smtp_port']
-        except KeyError:
-            port = 587
+        send_email(
+            SUBJECT,
+            body,
+            recipient
+        )
 
-        send_email(SUBJECT, body, recipient, user,
-                   "Naomi <naomi>", password, server, port)
-
-    except Exception:
+    except Exception as e:
+        print(e)
         return False
     else:
         return True
 
 
-def get_timezone(profile):
+def fetch_emails(since=None, email_filter="", markRead=False, limit=None):
+    """
+        Fetches a list of unread email objects from a user's Email inbox.
+
+        Arguments:
+        since -- if provided, no emails before this date will be returned
+        markRead -- if True, marks all returned emails as read in target
+                    inbox
+
+        Returns:
+        A list of unread email objects.
+    """
+    host = profile.get_profile_var(['email', 'imap', 'server'])
+    port = int(profile.get_profile_var(['email', 'imap', 'port'], "993"))
+    msgs = []
+
+    conn = imaplib.IMAP4_SSL(host, port)
+    conn.debug = 0
+
+    conn.login(
+        profile.get_profile_password(['email', 'username']),
+        profile.get_profile_password(['email', 'password'])
+    )
+    conn.select(readonly=(not markRead))
+
+    (retcode, messages) = conn.search(None, email_filter)
+    if retcode == 'OK' and messages != [b'']:
+        numUnread = len(messages[0].split(b' '))
+        if limit and numUnread > limit:
+            return numUnread
+
+        for num in messages[0].split(b' '):
+            # parse email RFC822 format
+            logging.info("num = {}".format(num))
+            (retcode, data) = conn.fetch(num, '(RFC822)')
+            raw_email = data[0][1]
+            raw_email_str = raw_email.decode("utf-8")
+            msg = email.message_from_string(raw_email_str)
+            if not since or get_date(msg) > since:
+                msgs.append(msg)
+    conn.close()
+    conn.logout()
+    return msgs
+
+
+def get_sender(msg):
+    """
+        Returns the best-guess sender of an email.
+
+        Arguments:
+        email -- the email whose sender is desired
+
+        Returns:
+        Sender of the email.
+    """
+    sender = msg['From']
+    m = re.match(r'(.*)\s<.*>', sender)
+    if m:
+        return m.group(1)
+    return sender
+
+
+def get_sender_email(msg):
+    """
+        Returns the best-guess email address of the sender.
+
+        Arguments:
+        email -- the email whose sender is desired
+
+        Returns:
+        Sender of the email.
+    """
+    sender = msg['From']
+    m = re.match(r'.*\s<(.*)>', sender)
+    if m:
+        return m.group(1)
+    return sender
+
+
+def get_message_text(msg):
+    if(msg.is_multipart()):
+        for part in msg.walk():
+            ctype = part.get_content_type()
+            cdispo = str(part.get('Content-Disposition'))
+            if((ctype == "text/plain") and ('attachment' not in cdispo)):
+                body = re.sub('[\\r\\n\\t]+', ' ', part.get_payload())
+                break
+    else:
+        body = re.sub('[\\r\\n\\t]+', ' ', msg.get_payload())
+    return body
+
+
+def mark_read(msg):
+    host = profile.get_profile_var(['email', 'imap', 'server'])
+    port = int(profile.get_profile_var(['email', 'imap', 'port'], "993"))
+    conn = imaplib.IMAP4_SSL(host, port)
+    conn.debug = 0
+
+    conn.login(
+        profile.get_profile_password(['email', 'username']),
+        profile.get_profile_password(['email', 'password'])
+    )
+    conn.select(readonly=False)
+    (retcode, messages) = conn.search(
+        None,
+        "(HEADER Message-ID {})".format(msg['Message-ID'])
+    )
+    if(retcode == 'OK' and len(messages)):
+        conn.store(messages[0].split()[0], '+FLAGS', '\Seen')
+    conn.close()
+    conn.logout()
+
+
+def get_most_recent_date(emails):
+    """
+        Returns the most recent date of any email in the list provided.
+
+        Arguments:
+        emails -- a list of emails to check
+
+        Returns:
+        Date of the most recent email.
+    """
+    dates = [get_date(e) for e in emails]
+    dates.sort(reverse=True)
+    if dates:
+        return dates[0]
+    return None
+
+
+def get_timezone():
     """
     Returns the pytz timezone for a given profile.
 
-    Arguments:
-        profile -- contains information related to the user (e.g., email
-                   address)
+    Arguments: None
     """
-    try:
-        return timezone(profile['timezone'])
-    except:
-        return None
+    return timezone(profile.get(['timezone']))
 
 
 def generate_tiny_URL(URL):
@@ -110,7 +339,7 @@ def generate_tiny_URL(URL):
         URL -- the original URL to-be compressed
     """
     target = "http://tinyurl.com/api-create.php?url=" + URL
-    response = urllib2.urlopen(target)
+    response = urllib_request.urlopen(target)  # nosec
     return response.read()
 
 
@@ -121,8 +350,15 @@ def is_negative(phrase):
     Arguments:
         phrase -- the input phrase to-be evaluated
     """
-    return bool(re.search(r'\b(no(t)?|don\'t|stop|end|n)\b', phrase,
-                          re.IGNORECASE))
+    if(isinstance(phrase, bool)):
+        return not phrase
+    return bool(
+        re.search(
+            _('\b(no(t)?|don\'t|stop|end|n|false)\b'),
+            phrase,
+            re.IGNORECASE
+        )
+    )
 
 
 def is_positive(phrase):
@@ -132,6 +368,25 @@ def is_positive(phrase):
         Arguments:
         phrase -- the input phrase to-be evaluated
     """
-    return bool(re.search(r'\b(sure|yes|yeah|go|yup|y)\b',
-                          phrase,
-                          re.IGNORECASE))
+    if(isinstance(phrase, bool)):
+        return phrase
+    return bool(
+        re.search(
+            _('\b(sure|yes|yeah|go|yup|y|true)\b'),
+            phrase,
+            re.IGNORECASE
+        )
+    )
+
+
+# Copied from https://stackoverflow.com/questions/16694907/download-large-file-in-python-with-requests/16696317#16696317
+def download_file(url, local_filename=None):
+    if(local_filename is None):
+        local_filename = url.split('/')[-1]
+    # NOTE the stream=True parameter below
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+    return local_filename

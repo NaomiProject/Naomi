@@ -7,12 +7,8 @@ from . import news
 class TestGmailPlugin(unittest.TestCase):
     def setUp(self):
         self.plugin = testutils.get_plugin_instance(
-            news.NewsPlugin)
-
-    def test_is_valid_method(self):
-        self.assertTrue(self.plugin.is_valid(
-            "Find me some of the top news stories."))
-        self.assertFalse(self.plugin.is_valid("What time is it?"))
+            news.NewsPlugin
+        )
 
     @unittest.skipIf(not diagnose.check_network_connection(),
                      "No internet connection")

@@ -41,7 +41,10 @@ class MPDClient(object):
             if isinstance(e, socket.error):
                 message = "%s (Errno: %d)" % (e.strerror, e.errno)
             else:
-                message = e.message
+                if(hasattr(e, "message")):
+                    message = e.message
+                else:
+                    message = str(e)
             self._logger.warning(
                 'Connection error while trying to access server %s:%d: %s',
                 self._server, self._port, message)
@@ -76,10 +79,24 @@ class MPDClient(object):
                 item = conn.playlistinfo(index)[0]
 
         if item:
-            return Song(id=item['id'],
-                        title=item['title'],
-                        artist=item['artist'],
-                        album=item['album'])
+            title='unknown'
+            if 'title' in item:
+              title=item['title']
+
+            artist='unknown'
+            if 'artist' in item:
+              artist=item['artist']
+
+            album='unknown'
+            if 'album' in item:
+              album=item['album']
+
+            song=Song(id=item['id'],
+                      title=title,
+                      artist=artist,
+                      album=album)
+
+            return song
 
         return None
 

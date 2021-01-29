@@ -1,0 +1,10 @@
+[Plugin]
+Name = stop
+Version = 0.0.1
+License = MIT
+URL = https://github.com/NaomiProject/Naomi
+Description = Stops whatever Naomi is doing
+
+[Author]
+Name = Naomi Project
+URL = https://github.com/NaomiProject/Naomi

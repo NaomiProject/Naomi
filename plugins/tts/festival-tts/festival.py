@@ -1,12 +1,14 @@
-import logging
 import pipes
 import subprocess
 import tempfile
+import unittest
 from naomi import diagnose
 from naomi import plugin
+from naomi import profile
 
 
 if not all(diagnose.check_executable(e) for e in ('text2wave', 'festival')):
+    raise unittest.SkipTest('Skipping festival, executables "test2wave" and/or "festival" not found')
     raise ImportError('Executables "text2wave" and/or  "festival" not found!')
 
 
@@ -17,9 +19,7 @@ class FestivalTTSPlugin(plugin.TTSPlugin):
     """
 
     def __init__(self, *args, **kwargs):
-        plugin.TTSPlugin.__init__(self, *args, **kwargs)
-
-        self._logger = logging.getLogger(__name__)
+        plugin.FestivalTTSPlugin.__init__(self, *args, **kwargs)
 
         available_voices = self.get_voices()
         if len(available_voices) == 0:
@@ -29,10 +29,7 @@ class FestivalTTSPlugin(plugin.TTSPlugin):
                              "support!")
         self._logger.info('Available voices: %s', ', '.join(available_voices))
 
-        try:
-            voice = self.profile['festival-tts']['voice']
-        except KeyError:
-            voice = None
+        voice = profile.get(['festival-tts', 'voice'])
 
         if voice is None or voice not in available_voices:
             if voice is not None:
@@ -48,12 +45,12 @@ class FestivalTTSPlugin(plugin.TTSPlugin):
         cmd = ['festival', '--pipe']
         self._logger.debug("Executing festival command '%s'", command)
         with tempfile.SpooledTemporaryFile() as in_f:
-            in_f.write(command)
+            in_f.write(command.encode("utf-8"))
             in_f.seek(0)
             with tempfile.SpooledTemporaryFile() as out_f:
                 subprocess.call(cmd, stdin=in_f, stdout=out_f)
                 out_f.seek(0)
-                output = out_f.read().strip()
+                output = out_f.read().decode("utf-8").strip()
         self._logger.debug("Festival command output '%s'",
                            output.replace('\n', '\\n'))
         return output
@@ -73,7 +70,7 @@ class FestivalTTSPlugin(plugin.TTSPlugin):
         cmd = ['text2wave', '-eval', '(voice_%s)' % self.voice]
         with tempfile.SpooledTemporaryFile() as out_f:
             with tempfile.SpooledTemporaryFile() as in_f:
-                in_f.write(phrase)
+                in_f.write(phrase.encode("utf-8"))
                 in_f.seek(0)
                 with tempfile.SpooledTemporaryFile() as err_f:
                     self._logger.debug(

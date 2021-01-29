@@ -1,8 +1,6 @@
 name: 'Nightly Publish'
 
-on:
-  schedule:
-    - cron:  '0 4 * * *'
+on: push
 
 jobs:
   nightly-publish:
@@ -24,5 +22,12 @@ jobs:
         cd ../
         mv Naomi Naomi-Nightly
         zip -r Naomi-Nightly.zip Naomi-Nightly
-        curl -X DELETE -uabcasteel:${{ secrets.BINTRAY_KEY }} https://api.bintray.com/content/naomiproject/rpi-repo2/nightly/Naomi-Nightly.zip
-        curl -T Naomi-Nightly.zip -uabcasteel:${{ secrets.BINTRAY_KEY }} https://api.bintray.com/content/naomiproject/rpi-repo2/Naomi/Nightly/nightly/Naomi-Nightly.zip?publish=1
+        mv Naomi-Nightly.zip Naomi-Nightly/installers/
+
+    - name: Upload ftp
+      uses: sebastianpopp/ftp-action@releases/v2
+      with:
+        host: ${{ secrets.FTP_SERVER }}
+        user: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        localDir: "Naomi-Nightly/installers/"

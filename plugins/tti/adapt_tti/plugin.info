@@ -1,0 +1,10 @@
+[Plugin]
+Name = Adapt TTI
+Version = 1.0.0
+License = MIT
+URL = https://projectnaomi.com
+Description = Allows the Mycroft Adapt Text to Intent parser to be used with Naomi
+
+[Author]
+Name = Naomi Project
+URL = https://projectnaomi.com

@@ -1,93 +1,191 @@
 # -*- coding: utf-8 -*-
 import difflib
 import logging
+from collections import OrderedDict
 from naomi import plugin
+from naomi import profile
 from . import mpdclient
 
 
 class MPDControlPlugin(plugin.SpeechHandlerPlugin):
+
     def __init__(self, *args, **kwargs):
         super(MPDControlPlugin, self).__init__(*args, **kwargs)
-
         self._logger = logging.getLogger(__name__)
 
+        server = profile.get(['mpdclient', 'server'], 'localhost')
         try:
-            server = self.profile['mpdclient']['server']
-        except KeyError:
-            server = 'localhost'
-
-        try:
-            port = int(self.profile['mpdclient']['port'])
-        except (KeyError, ValueError) as e:
+            port = int(profile.get(['mpdclient', 'port'], 6600))
+        except ValueError:
             port = 6600
-            if isinstance(e, ValueError):
-                self._logger.warning(
-                    "Configured port is invalid, using %d instead",
-                    port)
+            self._logger.warning(
+                "Configured port is invalid, using %d instead",
+                port
+            )
 
-        try:
-            password = self.profile['mpdclient']['password']
-        except KeyError:
-            password = ''
+        password = profile.get(['mpdclient', 'password'], '')
+        self._autoplay = profile.get(['mpdclient', 'autoplay'], False)
 
-        self._music = mpdclient.MPDClient(server=server, port=port,
-                                          password=password)
+        # In reticent mode Naomi is quieter.
+        self._reticient = profile.get_profile_flag(
+            ['mpdclient', 'reticient'],
+            False
+        )
 
-    def get_phrases(self):
-        return [self.gettext('MUSIC'), self.gettext('SPOTIFY')]
+        self._music = mpdclient.MPDClient(
+            server=server,
+            port=port,
+            password=password
+        )
 
-    def handle(self, text, mic):
+    def settings(self):
+        _ = self.gettext
+        return OrderedDict(
+            {
+                ('mpdclient', 'server'): {
+                    "title": _("MPD Server"),
+                    "description": _("If you have set up an MPD server, please enter it here."),
+                    "default": "localhost"
+                },
+                ('mpdclient', 'port'): {
+                    "title": _("MPD Port"),
+                    "description": _("What port should I use to contact MPD on that server?"),
+                    "default": 6600
+                },
+                ('mpdclient', 'reticent'): {
+                    "type": "boolean",
+                    "title": "Should I try to be quiet while music is playing?",
+                    "default": False
+                }
+            }
+        )
+
+    def intents(self):
+        playlists = [pl.upper() for pl in self._music.get_playlists()]
+        return {
+            'MPDControlIntent': {
+                'locale': {
+                    'en-US': {
+                        'keywords': {
+                            'PlayList': playlists
+                        },
+                        'templates': [
+                            "PLAY SOMETHING",
+                            "PLAY MUSIC",
+                            "PLAY {PlayList}"
+                        ]
+                    },
+                    'fr-FR': {
+                        'keywords': {
+                            'PlayList': playlists
+                        },
+                        'templates': [
+                            "JOUER QUELQUE CHOSE",
+                            "JOUER DE LA MUSIQUE",
+                            "JOUER {PlayList}"
+                        ]
+                    },
+                    'de-DE': {
+                        'keywords': {
+                            'PlayList': playlists
+                        },
+                        'templates': [
+                            "SPIELEN SIE ETWAS",
+                            "SPIELEN MUSIK",
+                            "SPIELE {PlayList}"
+                        ]
+                    }
+                },
+                'action': self.handle
+            }
+        }
+
+    def handle(self, intent, mic):
         """
-        Responds to user-input, typically speech text, by telling a joke.
+        Responds to user-input, typically speech text, by playing music
 
         Arguments:
-            text -- user-input, typically transcribed speech
+            intent -- the returned intent object
             mic -- used to interact with the user (for both input and output)
         """
-
         _ = self.gettext  # Alias for better readability
 
-        mic.say(_("Please give me a moment, I'm starting the music mode."))
+        self.say(mic, _("Wait, I'm starting the music mode."))
 
         phrases = [
-            _('PLAY'), _('PAUSE'), _('STOP'),
-            _('NEXT'), _('PREVIOUS'),
-            _('LOUDER'), _('SOFTER'),
+            _('PLAY'),
+            _('PAUSE'),
+            _('STOP'),
+            _('NEXT'),
+            _('PREVIOUS'),
+            _('LOUDER'),
+            _('SOFTER'),
             _('PLAYLIST'),
-            _('CLOSE'), _('EXIT')
+            _('CLOSE'),
+            _('EXIT')
         ]
+        if(mic.passive_listen):
+            # If we are using passive listening mode,
+            # make sure naomi knows its keyword so it
+            # does not confuse it with one of the commands
+            if(mic._keyword not in phrases):
+                if(isinstance(mic._keyword, list)):
+                    phrases.extend(mic._keyword)
+                else:
+                    phrases.append(mic._keyword)
 
         self._logger.debug('Loading playlists...')
         phrases.extend([pl.upper() for pl in self._music.get_playlists()])
 
+        if('PlayList' in intent['matches']):
+            playlist = intent['matches']['PlayList'][0]
+            print("Loading playlist {}".format(playlist))
+            self.load_playlist(playlist)
+            self.say(mic, _('Playlist %s loaded.') % playlist)
+            self._music.play()
+
+        if self._autoplay:
+            self._music.play()
+            song = self._music.get_current_song()
+            if song and not self._reticient:
+                self.say(
+                    mic,
+                    _(
+                        'Playing {song.title} by {song.artist}...'
+                    ).format(song=song)
+                )
+
         self._logger.debug('Starting music mode...')
         with mic.special_mode('music', phrases):
             self._logger.debug('Music mode started.')
-            mic.say(_('Music mode started!'))
+            self.say(mic, _('Music mode started!'))
             mode_not_stopped = True
             while mode_not_stopped:
-                mic.wait_for_keyword()
-
-                # Pause if necessary
-                playback_state = self._music.get_playback_state()
-                if playback_state == mpdclient.PLAYBACK_STATE_PLAYING:
-                    self._music.pause()
-                    texts = mic.active_listen()
-                    self._music.play()
+                if(mic.passive_listen):
+                    texts = mic.wait_for_keyword()
                 else:
-                    texts = mic.active_listen()
+                    mic.wait_for_keyword()
+
+                    # Pause if necessary
+                    playback_state = self._music.get_playback_state()
+                    if playback_state == mpdclient.PLAYBACK_STATE_PLAYING:
+                        self._music.pause()
+                        texts = mic.active_listen()
+                        self._music.play()
+                    else:
+                        texts = mic.active_listen()
 
                 text = ''
                 if texts:
                     text = ', '.join(texts).upper()
 
                 if not text:
-                    mic.say(_('Pardon?'))
+                    self.say(mic, _('Pardon?'))
                     continue
 
                 mode_not_stopped = self.handle_music_command(text, mic)
 
-        mic.say(_('Music Mode stopped!'))
+        self.say(mic, _('Music Mode stopped!'))
         self._logger.debug("Music mode stopped.")
 
     def handle_music_command(self, command, mic):
@@ -110,31 +208,36 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
 
             # Load playlist
             if playlist:
-                playback_state = self._music.get_playback_state()
-                self._music.load_playlist(playlist)
-                mic.say(_('Playlist %s loaded.') % playlist)
-                if playback_state == mpdclient.PLAYBACK_STATE_PLAYING:
-                    self._music.play()
+                self.load_playlist(playlist)
+                self.say(mic, _('Playlist %s loaded.') % playlist)
+                self._music.play()
             else:
-                mic.say(_("Sorry, I can't find a playlist with that name."))
+                self.say(
+                    mic,
+                    _("Sorry, I can't find a playlist with that name.")
+                )
         elif _('STOP').upper() in command:
             self._music.stop()
-            mic.say(_('Music stopped.'))
+            self.say(mic, _('Music stopped.'))
         elif _('PLAY').upper() in command:
             self._music.play()
             song = self._music.get_current_song()
-            if song:
-                mic.say(_('Playing {song.title} by {song.artist}...').format(
-                    song=song))
+            if song and not self._reticient:
+                self.say(
+                    mic,
+                    _(
+                        'Playing {song.title} by {song.artist}...'
+                    ).format(song=song)
+                )
         elif _('PAUSE').upper() in command:
             playback_state = self._music.get_playback_state()
             if playback_state == mpdclient.PLAYBACK_STATE_PLAYING:
                 self._music.pause()
-                mic.say(_('Music paused.'))
+                self.say(mic, _('Music paused.'))
             else:
-                mic.say(_('Music is not playing.'))
+                self.say(mic, _('Music is not playing.'))
         elif _('LOUDER').upper() in command:
-            mic.say(_('Increasing volume.'))
+            self.say(mic, _('Increasing volume.'))
             self._music.volume(10, relative=True)
         elif _('SOFTER').upper() in command:
             mic.say(_('Decreasing volume.'))
@@ -142,27 +245,52 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
         elif any(cmd.upper() in command for cmd in (
                 _('NEXT'), _('PREVIOUS'))):
             if _('NEXT').upper() in command:
-                mic.say(_('Next song'))
+                self.say(mic, _('Next song'))
                 self._music.play()  # backwards necessary to get mopidy to work
                 self._music.next()
             else:
-                mic.say(_('Previous song'))
+                self.say(mic, _('Previous song'))
                 self._music.play()  # backwards necessary to get mopidy to work
                 self._music.previous()
             song = self._music.get_current_song()
-            if song:
-                mic.say(_('Playing {song.title} by {song.artist}...').format(
-                    song=song))
+            if song and not self._reticient:
+                self.say(
+                    mic,
+                    _(
+                        'Playing {song.title} by {song.artist}...'
+                    ).format(song=song)
+                )
         elif any(cmd.upper() in command for cmd in (_('CLOSE'), _('EXIT'))):
+            if _('EXIT').upper() in command:
+                self._music.stop()
+                self.say(mic, _('Music stopped.'))
             return False
 
         return True
 
-    def is_valid(self, text):
-        """
-        Returns True if the input is related to jokes/humor.
+    def load_playlist(self, playlist):
+        playlists = self._music.get_playlists()
+        playlists_upper = [pl.upper() for pl in playlists]
+        matches = difflib.get_close_matches(
+            playlist,
+            playlists_upper
+        )
+        if len(matches) > 0:
+            playlist_index = playlists_upper.index(matches[0])
+            playlist = playlists[playlist_index]
 
-        Arguments:
-        text -- user-input, typically transcribed speech
-        """
-        return any(phrase in text.upper() for phrase in self.get_phrases())
+        self._music.load_playlist(playlist)
+
+    # This is a special say mode for MPDClient
+    # If playback is occurring, pause it before speaking
+    # This is especially important when using the alsa engine
+    # since that engine does not seem to be able to play two
+    # streams of audio simultaneously
+    def say(self, mic, text):
+        playback_state = self._music.get_playback_state()
+        if playback_state == mpdclient.PLAYBACK_STATE_PLAYING:
+            self._music.pause()
+            mic.say(text)
+            self._music.play()
+        else:
+            mic.say(text)

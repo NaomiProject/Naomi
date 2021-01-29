@@ -3,12 +3,18 @@ import os
 import pipes
 import subprocess
 import tempfile
+import unittest
 from naomi import diagnose
 from naomi import plugin
+from naomi import profile
+
 
 EXECUTABLE = 'flite'
 
 if not diagnose.check_executable(EXECUTABLE):
+    raise unittest.SkipTest(
+        "Skipping flite-tts, executable '{}' not found".format(EXECUTABLE)
+    )
     raise ImportError("Executable '%s' not found!" % EXECUTABLE)
 
 
@@ -22,15 +28,17 @@ class FliteTTSPlugin(plugin.TTSPlugin):
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
 
         self._logger = logging.getLogger(__name__)
-        self._logger.warning("This TTS plugin doesn't have multilanguage " +
-                             "support!")
-        try:
-            voice = self.profile['flite-tts']['voice']
-        except KeyError:
+        self._logger.warning(
+            "This TTS plugin doesn't have multilanguage support!"
+        )
+        voice = profile.get(['flite-tts', 'voice'], 'slt')
+        self._logger.info("Voice: {}".format(voice))
+        voices = self.get_voices()
+        if not voice or voice not in voices:
+            self._logger.info(
+                "Voice {} not in Voices {}".format(voice, voices)
+            )
             voice = ''
-        else:
-            if not voice or voice not in self.get_voices():
-                voice = ''
         self.voice = voice
 
     @classmethod
@@ -41,15 +49,24 @@ class FliteTTSPlugin(plugin.TTSPlugin):
             subprocess.call(cmd, stdout=out_f)
             out_f.seek(0)
             for line in out_f:
-                if line.startswith('Voices available: '):
-                    voices.extend([x.strip() for x in line[18:].split()
+                strline = line.decode("utf-8")
+                if strline.startswith('Voices available: '):
+                    voices.extend([x.strip() for x in strline[18:].split()
                                    if x.strip()])
         return voices
 
-    def say(self, phrase):
+    # This plugin can receive a voice as a third parameter. This allows easier
+    # testing of different voices.
+    def say(self, phrase, voice=None):
         cmd = ['flite']
-        if self.voice:
-            cmd.extend(['-voice', self.voice])
+        if not voice:
+            # If a voice was not passed in, use the value from profile
+            voice = self.voice
+        if voice:
+            self._logger.info("voice = {}".format(voice))
+            cmd.extend(['-voice', voice])
+        else:
+            self._logger.info("voice is false")
         cmd.extend(['-t', phrase])
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as f:
             fname = f.name

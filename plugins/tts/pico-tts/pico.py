@@ -4,12 +4,15 @@ import pipes
 import re
 import subprocess
 import tempfile
+import unittest
 from naomi import diagnose
 from naomi import plugin
+from naomi import profile
 
 EXECUTABLE = 'pico2wave'
 
 if not diagnose.check_executable(EXECUTABLE):
+    raise unittest.SkipTest("Skipping Pico, executable '%s' not found!" % EXECUTABLE)
     raise ImportError("Executable '%s' not found!" % EXECUTABLE)
 
 
@@ -22,10 +25,7 @@ class PicoTTSPlugin(plugin.TTSPlugin):
     def __init__(self, *args, **kwargs):
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
 
-        try:
-            language = self.profile['language']
-        except KeyError:
-            language = 'en-US'
+        language = profile.get(['language'], 'en-US')
 
         available_languages = self.get_languages()
         if language not in available_languages:
@@ -40,7 +40,7 @@ class PicoTTSPlugin(plugin.TTSPlugin):
         with tempfile.SpooledTemporaryFile() as f:
             subprocess.call(cmd, stderr=f)
             f.seek(0)
-            output = f.read()
+            output = f.read().decode('utf-8')
         pattern = re.compile(r'Unknown language: NULL\nValid languages:\n' +
                              r'((?:[a-z]{2}-[A-Z]{2}\n)+)')
         matchobj = pattern.match(output)

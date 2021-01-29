@@ -1,12 +1,15 @@
-import logging
 import re
 import subprocess
 import tempfile
+import unittest
+from collections import OrderedDict
 from naomi import diagnose
 from naomi import plugin
+from naomi import profile
 from . import juliusvocab
 
 if not diagnose.check_executable('julius'):
+    raise unittest.SkipTest("Skipping julius, 'julius' executable not found")
     raise ImportError("Can't find julius executable")
 
 
@@ -19,27 +22,23 @@ class JuliusSTTPlugin(plugin.STTPlugin):
     """
     def __init__(self, *args, **kwargs):
         plugin.STTPlugin.__init__(self, *args, **kwargs)
-        self._logger = logging.getLogger(__name__)
-
-        self._logger.warning("This STT plugin doesn't have multilanguage " +
-                             "support!")
 
         vocabulary_path = self.compile_vocabulary(
-            juliusvocab.compile_vocabulary)
+            juliusvocab.compile_vocabulary
+        )
 
         self._dfa_file = juliusvocab.get_dfa_path(vocabulary_path)
         self._dict_file = juliusvocab.get_dict_path(vocabulary_path)
 
-        try:
-            hmmdefs = self.profile['julius']['hmmdefs']
-        except KeyError:
-            hmmdefs = "/usr/share/voxforge/julius/acoustic_model_files/hmmdefs"
+        hmmdefs = profile.get(
+            ['julius', 'hmmdefs'],
+            "/usr/share/voxforge/julius/acoustic_model_files/hmmdefs"
+        )
 
-        try:
-            tiedlist = self.profile['julius']['tiedlist']
-        except KeyError:
-            tiedlist = "/usr/share/voxforge/julius/acoustic_model_files/" + \
-                       "tiedlist"
+        tiedlist = profile.get(
+            ['julius', 'tiedlist'],
+            "/usr/share/voxforge/julius/acoustic_model_files/tiedlist"
+        )
 
         self._hmmdefs = hmmdefs
         self._tiedlist = tiedlist
@@ -68,6 +67,31 @@ class JuliusSTTPlugin(plugin.STTPlugin):
                     self._logger.warning(line[9:])
                 elif len(line) > 6 and line[:6].upper() == 'STAT: ':
                     self._logger.debug(line[6:])
+
+    def settings(self):
+        _ = self.gettext
+        return OrderedDict(
+            [
+                (
+                    ('julius', 'hmmdefs'), {
+                        'title': _('Julius HMMDEFS file'),
+                        'description': "".join([
+                            _('The hidden markov model file for Julius')
+                        ]),
+                        'default': '/usr/share/voxforge/julius/acoustic_model_files/hmmdefs'
+                    }
+                ),
+                (
+                    ('julius', 'tiedlist'), {
+                        'title': _('Julius tiedlist file'),
+                        'description': "".join([
+                            _('The tied list file for Julius')
+                        ]),
+                        'default': '/usr/share/voxforge/julius/acoustic_model_files/tiedlist'
+                    }
+                )
+            ]
+        )
 
     def transcribe(self, fp, mode=None):
         cmd = ['julius',

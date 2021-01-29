@@ -1,8 +1,8 @@
 import logging
 import urllib
-import urlparse
 import requests
 from naomi import plugin
+from naomi import profile
 
 
 class MaryTTSPlugin(plugin.TTSPlugin):
@@ -15,55 +15,59 @@ class MaryTTSPlugin(plugin.TTSPlugin):
     """
 
     def __init__(self, *args, **kwargs):
+        self._logger = logging.getLogger(__name__)
+
         plugin.TTSPlugin.__init__(self, *args, **kwargs)
 
-        self._logger = logging.getLogger(__name__)
-        try:
-            server = self.profile['mary-tts']['server']
-        except KeyError:
-            server = 'marytts.phonetik.uni-muenchen.de'
-        self.server = server
+        self.server = profile.get(
+            ['mary-tts', 'server'],
+            'marytts.phonetik.uni-muenchen.de'
+        )
 
         try:
-            port = self.profile['mary-tts']['port']
-        except KeyError:
+            port = int(profile.get(['mary-tts', 'port']))
+        except(TypeError, ValueError):
             port = 59125
         self.port = port
 
-        self.netloc = '{server}:{port}'.format(server=self.server,
-                                               port=self.port)
+        self.netloc = '{server}:{port}'.format(
+            server=self.server,
+            port=self.port
+        )
         self.session = requests.Session()
 
         available_voices = self.get_voices()
 
-        try:
-            orig_language = self.profile['language']
-        except KeyError:
-            orig_language = 'en_US'
+        orig_language = profile.get(['language'], 'en-US')
 
         language = orig_language.replace('-', '_')
         if language not in available_voices:
             language = language.split('_')[0]
         if language not in available_voices:
-            raise ValueError("Language '%s' ('%s') not supported" %
-                             (language, orig_language))
+            raise ValueError(
+                "Language '{}' ('{}') not supported".format(
+                    language,
+                    orig_language
+                )
+            )
         self.language = language
 
         self._logger.info('Available voices: %s', ', '.join(
             available_voices[language]))
 
-        try:
-            voice = self.profile['mary-tts']['voice']
-        except KeyError:
-            voice = None
+        voice = profile.get(['mary-tts', 'voice'])
 
         if voice is not None and voice in available_voices[language]:
             self.voice = voice
         else:
             self.voice = available_voices[language][0]
             if voice is not None:
-                self._logger.info("Voice '%s' not found, using '%s' instead.",
-                                  voice, self.voice)
+                self._logger.info(
+                    "Voice '{}' not found, using '{}' instead.".format(
+                        voice,
+                        self.voice
+                    )
+                )
 
     def get_voices(self):
         voices = {}
@@ -71,8 +75,11 @@ class MaryTTSPlugin(plugin.TTSPlugin):
             r = self.session.get(self._makeurl('/voices'))
             r.raise_for_status()
         except requests.exceptions.RequestException:
-            self._logger.critical("Communication with MaryTTS server at %s "
-                                  + "failed.", self.netloc)
+            self._logger.critical(
+                "Communication with MaryTTS server at {} failed.".format(
+                    self.netloc
+                )
+            )
             raise
         for line in r.text.splitlines():
             parts = line.strip().split()
@@ -85,9 +92,9 @@ class MaryTTSPlugin(plugin.TTSPlugin):
         return voices
 
     def _makeurl(self, path, query={}):
-        query_s = urllib.urlencode(query)
+        query_s = urllib.parse.urlencode(query)
         urlparts = ('http', self.netloc, path, query_s, '')
-        return urlparse.urlunsplit(urlparts)
+        return urllib.parse.urlunsplit(urlparts)
 
     def say(self, phrase):
         query = {'OUTPUT_TYPE': 'AUDIO',

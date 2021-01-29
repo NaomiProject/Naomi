@@ -1,0 +1,10 @@
+[Plugin]
+Name = Padatious TTI
+Version = 1.0.0
+License = MIT
+URL = https://projectnaomi.com
+Description = Allows the Padatious Text to Intent module to be used with Naomi
+
+[Author]
+Name = Naomi Project
+URL = https://projectnaomi.com
