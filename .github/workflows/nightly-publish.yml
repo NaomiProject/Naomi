@@ -12,6 +12,8 @@ jobs:
       uses: actions/checkout@v1
 
     - name: Nightly Publish
+      env:
+        BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
       run: |
         git clone https://github.com/NaomiProject/Naomi.git
         cd Naomi
