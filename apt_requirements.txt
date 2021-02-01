@@ -37,7 +37,6 @@ libpulse-dev
 gcc
 g++
 make
-python-pip
 autoconf
 libtool
 git
