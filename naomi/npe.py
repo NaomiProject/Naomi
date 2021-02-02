@@ -245,8 +245,24 @@ class npe:
                             # run that
                             run_command(install_file)
                         else:
+                            # Check for an apt_requirements.txt file
                             required_file = os.path.join(
-                                install_dir,
+                                install_to,
+                                'apt_requirements.txt'
+                            )
+                            if os.path.isfile(required_file):
+                                packages = []
+                                with open(required_file, 'r') as f_input:
+                                    for line in f_input:
+                                        if not line.lstrip().startswith("#"):
+                                            packages.append(line.strip())
+                                if(len(packages) > 0):
+                                    cmd = ['sudo', 'apt', 'install']
+                                    cmd.extend(packages)
+                                    print(' '.join(cmd))
+                                    run_command(cmd)
+                            required_file = os.path.join(
+                                install_to,
                                 "python_requirements.txt"
                             )
                             if os.path.isfile(required_file):
@@ -254,7 +270,6 @@ class npe:
                                 cmd = [
                                     'pip3',
                                     'install',
-                                    '--user',
                                     '--requirement',
                                     required_file
                                 ]
