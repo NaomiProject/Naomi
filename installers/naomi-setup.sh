@@ -349,20 +349,20 @@ echo
 os_detect
 curl_check
 
-if [ "$1" == "uninstall" ]; then
+if [ "$1" == "--uninstall" ]; then
 	printf "${B_W}=========================================================================${NL}"
   printf "${B_R}Notice:${B_W} You are about to uninstall Naomi, is that what you want?${NL}"
   printf "${B_Blue}Choice [${B_M}Y${B_Blue}/${B_M}N${B_Blue}]: ${B_W}"
     while true; do
         read -N1 -s key
         case $key in
-         [Y])
+         [Yy])
             printf "${B_M}$key ${B_W}- Uninstalling Naomi${NL}"
-            sudo rm -Rf ~/Naomi
-            sudo rm -Rf ~/.config/naomi
+            SUDO_COMMAND "sudo rm -Rf ~/Naomi"
+            SUDO_COMMAND "sudo rm -Rf ~/.config/naomi"
             break
             ;;
-         [N])
+         [Nn])
             printf "${B_M}$key ${B_W}- Cancelling Uninstall${NL}"
             break
             ;;
@@ -414,5 +414,6 @@ elif [ -d ~/.config/naomi ]; then
   echo
   printf "${B_W}Note: If you are getting this message but have not ran the${NL}"
   printf "${B_W}setup before or if you have installed Naomi in the past, please${NL}"
-  printf "${B_W}run ${B_G}naomi-setup.sh -uninstall${B_W} and rerun the installer.${NL}"
+  printf "${B_W}run ${B_G}naomi-setup.sh --uninstall${B_W} and rerun the installer.${NL}"
 fi
+
