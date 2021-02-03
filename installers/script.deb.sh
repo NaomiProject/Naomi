@@ -427,6 +427,8 @@ setup_wizard() {
     echo "" >> ~/Naomi/Naomi.sh
     echo "B_W='\033[1;97m' #Bright White  For standard text output" >> ~/Naomi/Naomi.sh
     echo "B_R='\033[1;91m' #Bright Red    For alerts/errors" >> ~/Naomi/Naomi.sh
+    echo "B_Blue='\033[1;94m' #Bright Blue For prompt question" >> ~/Naomi/Naomi.sh
+    echo "B_M='\033[1;95m' #Bright Magenta For prompt choices" >> ~/Naomi/Naomi.sh
     echo 'NL="' >> ~/Naomi/Naomi.sh
     echo '"' >> ~/Naomi/Naomi.sh
     echo "" >> ~/Naomi/Naomi.sh
@@ -447,6 +449,29 @@ setup_wizard() {
     echo "    fi" >> ~/Naomi/Naomi.sh
     echo "  else" >> ~/Naomi/Naomi.sh
     echo '    printf "${B_R}Notice: ${B_W}Naomi Auto Update Failed!${NL}"' >> ~/Naomi/Naomi.sh
+    echo '    printf "${B_R}Notice: ${B_W}Would you like to force update Naomi?${NL}"' >> ~/Naomi/Naomi.sh
+    echo '    printf "${B_Blue}Choice [${B_M}Y${B_Blue}/${B_M}N${B_Blue}]: ${B_W}"' >> ~/Naomi/Naomi.sh
+    echo '    while true; do' >> ~/Naomi/Naomi.sh
+    echo '      read -N1 -s key' >> ~/Naomi/Naomi.sh
+    echo '      case $key in' >> ~/Naomi/Naomi.sh
+    echo '        Y)' >> ~/Naomi/Naomi.sh
+    echo '          printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/Naomi/Naomi.sh
+    echo '          mv ~/Naomi ~/Naomi-Temp' >> ~/Naomi/Naomi.sh
+    echo '          cd ~' >> ~/Naomi/Naomi.sh
+    echo '          curl -L "https://installers.projectnaomi.com/Naomi-Nightly.zip" -o Naomi-Nightly.zip' >> ~/Naomi/Naomi.sh
+    echo '          unzip Naomi-Nightly.zip' >> ~/Naomi/Naomi.sh
+    echo '          mv Naomi-Nightly Naomi' >> ~/Naomi/Naomi.sh
+    echo '          cd ~' >> ~/Naomi/Naomi.sh
+    echo '          sudo rm -Rf ~/Naomi-Nightly.zip' >> ~/Naomi/Naomi.sh
+    echo '          sudo rm -Rf ~/Naomi-Nightly' >> ~/Naomi/Naomi.sh
+    echo '          break' >> ~/Naomi/Naomi.sh
+    echo '          ;;' >> ~/Naomi/Naomi.sh
+    echo '         N)' >> ~/Naomi/Naomi.sh
+    echo '          printf "${B_M}$key ${B_W}- Launching Naomi!${NL}"' >> ~/Naomi/Naomi.sh
+    echo '          break' >> ~/Naomi/Naomi.sh
+    echo '          ;;' >> ~/Naomi/Naomi.sh
+    echo '       esac' >> ~/Naomi/Naomi.sh
+    echo '   done' >> ~/Naomi/Naomi.sh
     echo "  fi" >> ~/Naomi/Naomi.sh
     echo "  export WORKON_HOME=$HOME/.virtualenvs" >> ~/Naomi/Naomi.sh
     echo "  export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/Naomi/Naomi.sh

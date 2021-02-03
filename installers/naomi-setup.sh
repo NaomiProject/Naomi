@@ -349,7 +349,26 @@ echo
 os_detect
 curl_check
 
-if [ ! -f ~/.config/naomi/configs/profile.yml ]; then
+if [ "$1" == "--uninstall" ]; then
+	printf "${B_W}=========================================================================${NL}"
+  printf "${B_R}Notice:${B_W} You are about to uninstall Naomi, is that what you want?${NL}"
+  printf "${B_Blue}Choice [${B_M}Y${B_Blue}/${B_M}N${B_Blue}]: ${B_W}"
+    while true; do
+        read -N1 -s key
+        case $key in
+         [Yy])
+            printf "${B_M}$key ${B_W}- Uninstalling Naomi${NL}"
+            SUDO_COMMAND "sudo rm -Rf ~/Naomi"
+            SUDO_COMMAND "sudo rm -Rf ~/.config/naomi"
+            break
+            ;;
+         [Nn])
+            printf "${B_M}$key ${B_W}- Cancelling Uninstall${NL}"
+            break
+            ;;
+        esac
+    done
+elif [ ! -d ~/.config/naomi ]; then
   echo
   echo
   echo
@@ -388,12 +407,13 @@ if [ ! -f ~/.config/naomi/configs/profile.yml ]; then
         ;;
     esac
   done
-else
+elif [ -d ~/.config/naomi ]; then
   printf "${B_W}=========================================================================${NL}"
   printf "${B_W}It looks like you already have Naomi installed.${NL}"
-  printf "${B_W}To start name just type '${B_G}Naomi${B_W}' in any terminal.${NL}"
+  printf "${B_W}To start Naomi just type '${B_G}Naomi${B_W}' in any terminal.${NL}"
   echo
   printf "${B_W}Note: If you are getting this message but have not ran the${NL}"
   printf "${B_W}setup before or if you have installed Naomi in the past, please${NL}"
-  printf "${B_W}check and remove the ${B_G}profile.yml${B_W} from the ${B_G}.config/naomi/configs/${B_W} directory.${NL}"
+  printf "${B_W}run ${B_G}naomi-setup.sh --uninstall${B_W} and rerun the installer.${NL}"
 fi
+
