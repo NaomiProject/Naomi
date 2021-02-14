@@ -240,7 +240,7 @@ setup_wizard() {
             ;;
          S)
             printf "${B_M}$key ${B_W}- Skipping Section${NL}"
-            echo '{"use_release":"testing", "version":"Naomi-Development", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
+            echo '{"use_release":"testing", "version":"Naomi-Development", "version":"Development", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
             break
             ;;
         esac
