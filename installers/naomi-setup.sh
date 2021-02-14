@@ -768,8 +768,8 @@ while true; do
         naomi_autoupdate
         break
     elif [ "$installerChoice" = "quit" ] || [ "$installerChoice" = "QUIT" ] || [ "$installerChoice" = "Quit" ]; then
-        quit
-        break
+        echo "EXITING"
+        exit 1
     else
         printf "${B_R}Notice:${B_W} Did not recognize input, try again...${NL}"
         echo
