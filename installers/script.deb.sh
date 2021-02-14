@@ -255,6 +255,7 @@ setup_wizard() {
     NAOMI_DIR="$(cd ~/Naomi && pwd)"
 
     cd ~/Naomi
+    APT=1
     if [ $APT -eq 1 ]; then
       if [ $REQUIRE_AUTH -eq 1 ]; then
         SUDO_COMMAND "sudo apt-get update"
