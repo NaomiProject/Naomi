@@ -183,14 +183,14 @@ setup_wizard() {
             if [ ! -f ~/Naomi/README.md ]; then
               printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
               cd ~
-              sudo git clone $gitURL.git -b master Naomi
+              git clone $gitURL.git -b master Naomi
               cd Naomi
               echo '{"use_release":"stable", "branch":"master", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
             else
               mv ~/Naomi ~/Naomi-Temp
               cd ~
-              sudo git clone $gitURL.git -b master Naomi
+              git clone $gitURL.git -b master Naomi
               cd Naomi
               echo '{"use_release":"stable", "branch":"master", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
@@ -204,14 +204,14 @@ setup_wizard() {
             if [ ! -f ~/Naomi/README.md ]; then
               printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
               cd ~
-              sudo git clone $gitURL.git -b naomi-dev Naomi
+              git clone $gitURL.git -b naomi-dev Naomi
               cd Naomi
               echo '{"use_release":"milestone", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
             else
               mv ~/Naomi ~/Naomi-Temp
               cd ~
-              sudo git clone $gitURL.git -b naomi-dev Naomi
+              git clone $gitURL.git -b naomi-dev Naomi
               cd Naomi
               echo '{"use_release":"milestone", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
@@ -224,14 +224,14 @@ setup_wizard() {
             if [ ! -f ~/Naomi/README.md ]; then
               printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
               cd ~
-              sudo git clone $gitURL.git -b naomi-dev Naomi
+              git clone $gitURL.git -b naomi-dev Naomi
               cd Naomi
               echo '{"use_release":"nightly", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"true"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
             else
               mv ~/Naomi ~/Naomi-Temp
               cd ~
-              sudo git clone $gitURL.git -b naomi-dev Naomi
+              git clone $gitURL.git -b naomi-dev Naomi
               cd Naomi
               echo '{"use_release":"nightly", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"true"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
