@@ -480,7 +480,7 @@ naomi_update() {
                 printf "${B_M}$key ${B_W}- Forcing Update${NL}"
                 mv ~/Naomi ~/Naomi-Temp
                 cd ~
-                sudo git clone $gitURL.git -b naomi-dev Naomi
+                git clone $gitURL.git -b naomi-dev Naomi
                 cd Naomi
                 cat <<< $(jq '.version = "Naomi-'$version'.'$gitVersionNumber'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
                 cat <<< $(jq '.date = "'$theDateRightNow'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
@@ -491,7 +491,7 @@ naomi_update() {
                 printf "${B_M}$key ${B_W}- Forcing Update${NL}"
                 mv ~/Naomi ~/Naomi-Temp
                 cd ~
-                sudo git clone $gitURL.git -b naomi-dev Naomi
+                git clone $gitURL.git -b naomi-dev Naomi
                 cd Naomi
                 cat <<< $(jq '.version = "Naomi-'$version'.'$gitVersionNumber'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
                 cat <<< $(jq '.date = "'$theDateRightNow'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
@@ -502,7 +502,7 @@ naomi_update() {
                 printf "${B_M}$key ${B_W}- Forcing Update${NL}"
                 mv ~/Naomi ~/Naomi-Temp
                 cd ~
-                sudo git clone $gitURL.git -b master Naomi
+                git clone $gitURL.git -b master Naomi
                 cd Naomi
                 cat <<< $(jq '.version = "Naomi-'$version'.'$gitVersionNumber'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
                 cat <<< $(jq '.date = "'$theDateRightNow'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
@@ -539,7 +539,7 @@ naomi_version() {
             if [ "$versionChoice" = "Milestone" ] || [ "$versionChoice" = "MILESTONE" ] || [ "$versionChoice" = "milestone" ]; then
                 mv ~/Naomi ~/Naomi-Temp
                 cd ~
-                sudo git clone $gitURL.git -b naomi-dev Naomi
+                git clone $gitURL.git -b naomi-dev Naomi
                 cd Naomi
                 cat <<< $(jq '.use_release = "milestone"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
                 cat <<< $(jq '.version = "Naomi-'$version'.'$gitVersionNumber'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
@@ -550,7 +550,7 @@ naomi_version() {
             elif [ "$versionChoice" = "Nightly" ] || [ "$versionChoice" = "NIGHTLY" ] || [ "$versionChoice" = "nightly" ]; then
                 mv ~/Naomi ~/Naomi-Temp
                 cd ~
-                sudo git clone $gitURL.git -b naomi-dev Naomi
+                git clone $gitURL.git -b naomi-dev Naomi
                 cd Naomi
                 cat <<< $(jq '.use_release = "nightly"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
                 cat <<< $(jq '.version = "Naomi-'$version'.'$gitVersionNumber'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
@@ -578,7 +578,7 @@ naomi_version() {
             if [ "$versionChoice" = "Stable" ] || [ "$versionChoice" = "STABLE" ] || [ "$versionChoice" = "stable" ]; then
                 mv ~/Naomi ~/Naomi-Temp
                 cd ~
-                sudo git clone $gitURL.git -b master Naomi
+                git clone $gitURL.git -b master Naomi
                 cd Naomi
                 cat <<< $(jq '.use_release = "stable"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
                 cat <<< $(jq '.version = "Naomi-'$version'.'$gitVersionNumber'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
@@ -589,7 +589,7 @@ naomi_version() {
             elif [ "$versionChoice" = "Nightly" ] || [ "$versionChoice" = "NIGHTLY" ] || [ "$versionChoice" = "nightly" ]; then
                 mv ~/Naomi ~/Naomi-Temp
                 cd ~
-                sudo git clone $gitURL.git -b naomi-dev Naomi
+                git clone $gitURL.git -b naomi-dev Naomi
                 cd Naomi
                 cat <<< $(jq '.use_release = "nightly"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
                 cat <<< $(jq '.version = "Naomi-'$version'.'$gitVersionNumber'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
@@ -617,7 +617,7 @@ naomi_version() {
             if [ "$versionChoice" = "Stable" ] || [ "$versionChoice" = "STABLE" ] || [ "$versionChoice" = "stable" ]; then
                 mv ~/Naomi ~/Naomi-Temp
                 cd ~
-                sudo git clone $gitURL.git -b master Naomi
+                git clone $gitURL.git -b master Naomi
                 cd Naomi
                 cat <<< $(jq '.use_release = "stable"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
                 cat <<< $(jq '.version = "Naomi-'$version'.'$gitVersionNumber'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
@@ -628,7 +628,7 @@ naomi_version() {
             elif [ "$versionChoice" = "Milestone" ] || [ "$versionChoice" = "MILESTONE" ] || [ "$versionChoice" = "milestone" ]; then
                 mv ~/Naomi ~/Naomi-Temp
                 cd ~
-                sudo git clone $gitURL.git -b naomi-dev Naomi
+                git clone $gitURL.git -b naomi-dev Naomi
                 cd Naomi
                 cat <<< $(jq '.use_release = "milestone"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json
                 cat <<< $(jq '.version = "Naomi-'$version'.'$gitVersionNumber'"' ~/.config/naomi/configs/.naomi_options.json) > ~/.config/naomi/configs/.naomi_options.json

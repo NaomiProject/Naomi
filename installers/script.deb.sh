@@ -444,7 +444,7 @@ setup_wizard() {
     echo '            printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/Naomi/Naomi.sh
     echo '            mv ~/Naomi ~/Naomi-Temp' >> ~/Naomi/Naomi.sh
     echo '            cd ~' >> ~/Naomi/Naomi.sh
-    echo "            sudo git clone '$gitURL'.git -b naomi-dev Naomi" >> ~/Naomi/Naomi.sh
+    echo "            git clone '$gitURL'.git -b naomi-dev Naomi" >> ~/Naomi/Naomi.sh
     echo '            cd Naomi' >> ~/Naomi/Naomi.sh
     echo "            echo '{\"use_release\":\"nightly\", \"branch\":\"naomi-dev\", \"version\":\"Naomi-'$version'.'$gitVersionNumber'\", \"date\":\"'$theDateRightNow'\", \"auto_update\":\"true\"}' > ~/.config/naomi/configs/.naomi_options.json" >> ~/Naomi/Naomi.sh
     echo '            cd ~' >> ~/Naomi/Naomi.sh
@@ -453,7 +453,7 @@ setup_wizard() {
     echo '            printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/Naomi/Naomi.sh
     echo '            mv ~/Naomi ~/Naomi-Temp' >> ~/Naomi/Naomi.sh
     echo '            cd ~' >> ~/Naomi/Naomi.sh
-    echo "            sudo git clone '$gitURL'.git -b naomi-dev Naomi" >> ~/Naomi/Naomi.sh
+    echo "            git clone '$gitURL'.git -b naomi-dev Naomi" >> ~/Naomi/Naomi.sh
     echo '            cd Naomi' >> ~/Naomi/Naomi.sh
     echo "            echo '{\"use_release\":\"milestone\", \"branch\":\"naomi-dev\", \"version\":\"Naomi-'$version'.'$gitVersionNumber'\", \"date\":\"'$theDateRightNow'\", \"auto_update\":\"true\"}' > ~/.config/naomi/configs/.naomi_options.json" >> ~/Naomi/Naomi.sh
     echo '            cd ~' >> ~/Naomi/Naomi.sh
@@ -462,7 +462,7 @@ setup_wizard() {
     echo '            printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/Naomi/Naomi.sh
     echo '            mv ~/Naomi ~/Naomi-Temp' >> ~/Naomi/Naomi.sh
     echo '            cd ~' >> ~/Naomi/Naomi.sh
-    echo "            sudo git clone '$gitURL'.git -b master Naomi" >> ~/Naomi/Naomi.sh
+    echo "            git clone '$gitURL'.git -b master Naomi" >> ~/Naomi/Naomi.sh
     echo '            cd Naomi' >> ~/Naomi/Naomi.sh
     echo "            echo '{\"use_release\":\"stable\", \"branch\":\"master\", \"version\":\"Naomi-'$version'.'$gitVersionNumber'\", \"date\":\"'$theDateRightNow'\", \"auto_update\":\"false\"}' > ~/.config/naomi/configs/.naomi_options.json" >> ~/Naomi/Naomi.sh
     echo '            cd ~' >> ~/Naomi/Naomi.sh
