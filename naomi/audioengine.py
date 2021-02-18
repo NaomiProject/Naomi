@@ -5,7 +5,6 @@ import slugify
 import time
 import wave
 from naomi import profile
-from pprint import pprint
 
 
 STANDARD_SAMPLE_RATES = (
@@ -49,6 +48,22 @@ class AudioDevice(object):
     def __init__(self, name):
         self._name = name
         self._slug = slugify.slugify(name)
+        self._input_rate = profile.get_profile_var(
+            ['audio', 'input_samplerate'],
+            16000
+        )
+        self._input_bits = profile.get_profile_var(
+            ['audio', 'input_samplewidth'],
+            16
+        )
+        self._input_channels = profile.get_profile_var(
+            ['audio', 'input_channels'],
+            1
+        )
+        self._input_chunksize = profile.get_profile_var(
+            ['audio', 'input_chunksize'],
+            1024
+        )
 
     @property
     def name(self):
@@ -104,12 +119,12 @@ class AudioDevice(object):
         if('chunksize' in kwargs):
             chunksize = kwargs['chunksize']
         else:
-            chunksize = profile.get(['audio','output_chunksize'], 1024)
+            chunksize = int(profile.get(['audio', 'output_chunksize'], 1024))
         if('add_padding' in kwargs):
             add_padding = kwargs['add_padding']
         else:
-            add_padding = profile.get(['audio','output_padding'], False)
-        pause = profile.get(['audio', 'output_pause'], 0)
+            add_padding = profile.get(['audio', 'output_padding'], False)
+        pause = float(profile.get(['audio', 'output_pause'], 0))
         w = wave.open(fp, 'rb')
         channels = w.getnchannels()
         samplewidth = w.getsampwidth()

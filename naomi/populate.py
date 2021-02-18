@@ -97,22 +97,27 @@ def verify_location(place):
 # populate.py to continue.
 def precheck():
     global _, affirmative, negative
-    if not profile.check_profile_var_exists(["active_stt", "engine"]):
-        if(not interface.simple_yes_no(
-            _("Have you set up at least one stt (speech to text) engine?")
-        )):
-            print(interface.instruction_text(" ".join([
-                _("You will need to choose and configure at least"),
-                _("one stt engine. Instructions are available at")
-            ])))
-            print(interface.url_text(
-                "https://projectnaomi.com/docs/configuration/stt.html")
-            )
-            print(interface.instruction_text(" ".join([_(
-                "Please re-run Naomi after you have configured an STT engine."
-            )])))
-            quit()
-    if not profile.check_profile_var_exists(["tts_engine"]):
+    plugins = pluginstore.PluginStore()
+    # Check to see if the there are any loaded audio engine plugins
+    detected_stt_plugins = plugins.detect_plugins(category="stt")
+    if(len(detected_stt_plugins) == 0):
+        if not profile.check_profile_var_exists(["active_stt", "engine"]):
+            if(not interface.simple_yes_no(
+                _("Have you set up at least one stt (speech to text) engine?")
+            )):
+                print(interface.instruction_text(" ".join([
+                    _("You will need to choose and configure at least"),
+                    _("one stt engine. Instructions are available at")
+                ])))
+                print(interface.url_text(
+                    "https://projectnaomi.com/docs/configuration/stt.html")
+                )
+                print(interface.instruction_text(" ".join([_(
+                    "Please re-run Naomi after you have configured an STT engine."
+                )])))
+                quit()
+    detected_tts_plugins = plugins.detect_plugins(category="stt")
+    if(len(detected_tts_plugins) == 0):
         if(not interface.simple_yes_no(
             _("Have you set up at least one tts (text to speech) engine?")
         )):
@@ -185,6 +190,45 @@ def get_wakeword():
             keyword, True
         )
     )
+
+
+def get_audiolog_level():
+    # Get the current level
+    temp_level = _('None')
+    if(profile.get_profile_flag(['audiolog', 'save_audio'], False)):
+        temp_level = _('Noise')
+    if(profile.get_profile_flag(['audiolog', 'save_active_audio'], False)):
+        temp_level = _('Active')
+    if(profile.get_profile_flag(['audiolog', 'save_passive_audio'], False)):
+        temp_level = _('Passive')
+    if(profile.get_profile_flag(['audiolog', 'save_noise'], False)):
+        temp_level = _('Noise')
+    print(interface.status_text(_("Audiolog level")))
+    print("")
+    print("    " + interface.instruction_text(_("Audiolog allows you to store recordings of yourself (and others) speaking with Naomi")))
+    print("        " + interface.status_text(_("Active")) + interface.instruction_text(_(" - only what Naomi hears after hearing the wake word (recommended)")))
+    print("        " + interface.status_text(_("Passive")) + interface.instruction_text(_(" - whatever Naomi hears while listening for the wake word (almost everything)")))
+    print("        " + interface.status_text(_("Noise")) + interface.instruction_text(_(" - anything Naomi hears even if no words are recognized")))
+    print("        " + interface.status_text(_("None")) + interface.instruction_text(_(" - don't record anything (best choice for privacy)")))
+    print("    " + interface.instruction_text(_("These recordings can be used to help train your Naomi's speech recognition, intent parsing, speaker identification and more.")))
+    print("")
+    level = ""
+    while level not in [_("Active").lower(), _("Passive").lower(), _("Noise").lower(), _("None").lower()]:
+        level = interface.simple_input(
+            _("What audiolog level would you like?"),
+            temp_level
+        ).lower()
+    profile.set_profile_var(['audiolog', 'save_audio'], False)
+    profile.set_profile_var(['audiolog', 'save_active_audio'], False)
+    profile.set_profile_var(['audiolog', 'save_passive_audio'], False)
+    profile.set_profile_var(['audiolog', 'save_noise_audio'], False)
+    if(level == _("active").lower()):
+        profile.set_profile_var(['audiolog', 'save_active_audio'], True)
+    if(level == _("passive").lower()):
+        profile.set_profile_var(['audiolog', 'save_passive_audio'], True)
+        profile.set_profile_var(['audiolog', 'save_active_audio'], True)
+    if(level == _("noise").lower()):
+        profile.set_profile_var(['audiolog', 'save_audio'], True)
 
 
 def get_user_name():
@@ -425,7 +469,7 @@ def get_notification_info():
         while not response or (
             (
                 response[:1] != email_choice
-            )and(
+            ) and (
                 response[:1] != text_choice
             )
         ):
@@ -1307,10 +1351,10 @@ def get_beep_or_voice():
     while(
         (
             not response
-        )or(
+        ) or (
             (
                 response.lower()[:1] != beep_choice
-            )and(
+            ) and (
                 response.lower()[:1] != voice_choice
             )
         )
@@ -1678,7 +1722,7 @@ def get_input_device():
                         )
                         if((
                             last_snr <= threshold
-                        )or(
+                        ) or (
                             len(recording_frames) > 60
                         )):
                             # stop recording
@@ -1780,6 +1824,9 @@ def run():
 
     # get_tts_engine()
     # interface.separator()
+
+    get_audiolog_level()
+    interface.separator()
 
     get_beep_or_voice()
     interface.separator()
