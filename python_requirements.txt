@@ -17,10 +17,6 @@ mad
 # Pocketsphinx STT engine
 cmuclmtk
 
-# Mozilla DeepSpeech STT engine
-deepspeech
-progressbar2
-
 # HN module
 semantic
 

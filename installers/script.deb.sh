@@ -28,6 +28,10 @@ NL="
 OPTION="0"
 SUDO_APPROVE=""
 REQUIRE_AUTH=""
+version="3.0"
+theDateRightNow=$(date +%m-%d-%Y-%H:%M:%S)
+gitVersionNumber=$(git rev-parse --short HEAD)
+gitURL="https://github.com/naomiproject/naomi"
 
 CONTINUE() {
     printf "${B_W}If you want to allow the process to run uninterrupted type '${B_G}S${B_W}'${NL}"
@@ -135,6 +139,17 @@ setup_wizard() {
     mkdir -p ~/.config/naomi/scripts/
     mkdir -p ~/.config/naomi/sources/
 
+    # Download and setup Naomi Dev repo as default
+    echo
+    printf "${B_G}Installing 'git'...${B_W}${NL}"
+    if [ $REQUIRE_AUTH -eq 1 ]; then
+      SUDO_COMMAND "sudo apt-get install git $SUDO_APPROVE"
+    else
+      printf "${B_W}${NL}"
+      sudo apt-get install git $SUDO_APPROVE
+    fi
+    echo
+
     echo
     printf "${B_W}=========================================================================${NL}"
     printf "${B_W}NAOMI SETUP:${NL}"
@@ -164,111 +179,73 @@ setup_wizard() {
         case $key in
          1)
             printf "${B_M}$key ${B_W}- Easy Peasy!${NL}"
-            version="3.0"
-            echo '{"use_release":"stable", "version":"Naomi-'$version'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
             cd ~
             if [ ! -f ~/Naomi/README.md ]; then
               printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
               cd ~
-              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/stable/Naomi-$version.zip" -o Naomi-$version.zip
-              unzip Naomi-$version.zip
-              mv Naomi-$version Naomi
+              git clone $gitURL.git -b master Naomi
+              cd Naomi
+              echo '{"use_release":"stable", "branch":"master", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
-              sudo rm -Rf ~/Naomi-$version.zip
-              sudo rm -Rf ~/Naomi-$version
             else
               mv ~/Naomi ~/Naomi-Temp
               cd ~
-              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/stable/Naomi-$version.zip" -o Naomi-$version.zip
-              unzip Naomi-$version.zip
-              mv Naomi-$version Naomi
+              git clone $gitURL.git -b master Naomi
+              cd Naomi
+              echo '{"use_release":"stable", "branch":"master", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
-              sudo rm -Rf ~/Naomi-$version.zip
-              sudo rm -Rf ~/Naomi-$version
             fi
             break
             ;;
          2)
             printf "${B_M}$key ${B_W}- Good Choice!${NL}"
-            version="3.1"
-            month=$(date +%-m)
-            offset=1
-            milestone=$((month-offset))
-            echo '{"use_release":"milestone", "version":"Naomi-'$version'.M'$milestone'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
+            echo '{"use_release":"milestone", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
             cd ~
             if [ ! -f ~/Naomi/README.md ]; then
               printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
               cd ~
-              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/dev/Naomi-$version.M$milestone.zip" -o Naomi-$version.M$milestone.zip
-              unzip Naomi-$version.M$milestone.zip
-              mv Naomi-$version.M$milestone Naomi
+              git clone $gitURL.git -b naomi-dev Naomi
+              cd Naomi
+              echo '{"use_release":"milestone", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
-              sudo rm -Rf ~/Naomi-$version.M$milestone.zip
-              sudo rm -Rf ~/Naomi-$version.M$milestone
             else
               mv ~/Naomi ~/Naomi-Temp
               cd ~
-              curl -L "https://dl.bintray.com/naomiproject/rpi-repo2/dev/Naomi-$version.M$milestone.zip" -o Naomi-$version.M$milestone.zip
-              unzip Naomi-$version.M$milestone.zip
-              mv Naomi-$version.M$milestone Naomi
+              git clone $gitURL.git -b naomi-dev Naomi
+              cd Naomi
+              echo '{"use_release":"milestone", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
-              sudo rm -Rf ~/Naomi-$version.M$milestone.zip
-              sudo rm -Rf ~/Naomi-$version.M$milestone
             fi
             break
             ;;
          3)
             printf "${B_M}$key ${B_W}- You know what you are doing!${NL}"
-            echo '{"use_release":"nightly", "version":"Naomi-Nightly", "auto_update":"true"}' > ~/.config/naomi/configs/.naomi_options.json
             cd ~
             if [ ! -f ~/Naomi/README.md ]; then
               printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
               cd ~
-              curl -L "https://installers.projectnaomi.com/Naomi-Nightly.zip" -o Naomi-Nightly.zip
-              unzip Naomi-Nightly.zip
-              mv Naomi-Nightly Naomi
+              git clone $gitURL.git -b naomi-dev Naomi
+              cd Naomi
+              echo '{"use_release":"nightly", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"true"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
-              sudo rm -Rf ~/Naomi-Nightly.zip
-              sudo rm -Rf ~/Naomi-Nightly
             else
               mv ~/Naomi ~/Naomi-Temp
               cd ~
-              curl -L "https://installers.projectnaomi.com/Naomi-Nightly.zip" -o Naomi-Nightly.zip
-              unzip Naomi-Nightly.zip
-              mv Naomi-Nightly Naomi
+              git clone $gitURL.git -b naomi-dev Naomi
+              cd Naomi
+              echo '{"use_release":"nightly", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"true"}' > ~/.config/naomi/configs/.naomi_options.json
               cd ~
-              sudo rm -Rf ~/Naomi-Nightly.zip
-              sudo rm -Rf ~/Naomi-Nightly
             fi
             break
             ;;
          S)
             printf "${B_M}$key ${B_W}- Skipping Section${NL}"
-            echo '{"use_release":"testing", "version":"Naomi-Development", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
+            echo '{"use_release":"testing", "version":"Naomi-Development", "version":"Development", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
             break
             ;;
         esac
     done
     echo
-    echo
-
-    # Double check if apt-get is installed
-    echo
-    printf "${B_G}Double checking For 'apt-get'...${B_W}${NL}"
-    APT=0
-    if command -v apt-get > /dev/null 2>&1 ; then
-        APT=1
-    fi
-
-    # Download and setup Naomi Dev repo as default
-    echo
-    printf "${B_G}Installing 'git'...${B_W}${NL}"
-    if [ $REQUIRE_AUTH -eq 1 ]; then
-      SUDO_COMMAND "sudo apt-get install git $SUDO_APPROVE"
-    else
-      printf "${B_W}${NL}"
-      sudo apt-get install git $SUDO_APPROVE
-    fi
     echo
 
     find ~/Naomi -maxdepth 1 -iname '*.py' -type f -exec chmod a+x {} \;
@@ -278,6 +255,7 @@ setup_wizard() {
     NAOMI_DIR="$(cd ~/Naomi && pwd)"
 
     cd ~/Naomi
+    APT=1
     if [ $APT -eq 1 ]; then
       if [ $REQUIRE_AUTH -eq 1 ]; then
         SUDO_COMMAND "sudo apt-get update"
@@ -427,11 +405,17 @@ setup_wizard() {
     echo "" >> ~/Naomi/Naomi.sh
     echo "B_W='\033[1;97m' #Bright White  For standard text output" >> ~/Naomi/Naomi.sh
     echo "B_R='\033[1;91m' #Bright Red    For alerts/errors" >> ~/Naomi/Naomi.sh
+    echo "B_Blue='\033[1;94m' #Bright Blue For prompt question" >> ~/Naomi/Naomi.sh
+    echo "B_M='\033[1;95m' #Bright Magenta For prompt choices" >> ~/Naomi/Naomi.sh
     echo 'NL="' >> ~/Naomi/Naomi.sh
     echo '"' >> ~/Naomi/Naomi.sh
+    echo 'version="3.0"' >> ~/Naomi/Naomi.sh
+    echo 'theDateRightNow=$(date +%m-%d-%Y-%H:%M:%S)' >> ~/Naomi/Naomi.sh
+    echo 'gitVersionNumber=$(git rev-parse --short HEAD)' >> ~/Naomi/Naomi.sh
+    echo 'gitURL="https://github.com/naomiproject/naomi"' >> ~/Naomi/Naomi.sh
     echo "" >> ~/Naomi/Naomi.sh
     echo "function Naomi() {" >> ~/Naomi/Naomi.sh
-    echo "  if [ \"\$(jq '.auto_update' ~/.config/naomi/configs/.naomi_options.json)\" = '\"true\"' ] && [ \"\$(jq '.version' ~/.config/naomi/configs/.naomi_options.json)\" = '\"Naomi-Nightly\"' ]; then" >> ~/Naomi/Naomi.sh
+    echo "  if [ \"\$(jq '.auto_update' ~/.config/naomi/configs/.naomi_options.json)\" = '\"true\"' ]; then" >> ~/Naomi/Naomi.sh
     echo '    printf "${B_W}=========================================================================${NL}"' >> ~/Naomi/Naomi.sh
     echo '    printf "${B_W}Checking for Naomi Updates...${NL}"' >> ~/Naomi/Naomi.sh
     echo "    cd ~/Naomi" >> ~/Naomi/Naomi.sh
@@ -447,6 +431,50 @@ setup_wizard() {
     echo "    fi" >> ~/Naomi/Naomi.sh
     echo "  else" >> ~/Naomi/Naomi.sh
     echo '    printf "${B_R}Notice: ${B_W}Naomi Auto Update Failed!${NL}"' >> ~/Naomi/Naomi.sh
+    echo '    printf "${B_R}Notice: ${B_W}Would you like to force update Naomi?${NL}"' >> ~/Naomi/Naomi.sh
+    echo '    printf "${B_Blue}Choice [${B_M}Y${B_Blue}/${B_M}N${B_Blue}]: ${B_W}"' >> ~/Naomi/Naomi.sh
+    echo '    while true; do' >> ~/Naomi/Naomi.sh
+    echo '      read -N1 -s key' >> ~/Naomi/Naomi.sh
+    echo '      case $key in' >> ~/Naomi/Naomi.sh
+    echo '        Y)' >> ~/Naomi/Naomi.sh
+    echo '          printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/Naomi/Naomi.sh
+    echo '          mv ~/Naomi ~/Naomi-Temp' >> ~/Naomi/Naomi.sh
+    echo '          cd ~' >> ~/Naomi/Naomi.sh
+    echo "          if [ \"$(jq '.use_release' ~/.config/naomi/configs/.naomi_options.json)\" = '\"nightly\"' ]; then" >> ~/Naomi/Naomi.sh
+    echo '            printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/Naomi/Naomi.sh
+    echo '            mv ~/Naomi ~/Naomi-Temp' >> ~/Naomi/Naomi.sh
+    echo '            cd ~' >> ~/Naomi/Naomi.sh
+    echo "            git clone '$gitURL'.git -b naomi-dev Naomi" >> ~/Naomi/Naomi.sh
+    echo '            cd Naomi' >> ~/Naomi/Naomi.sh
+    echo "            echo '{\"use_release\":\"nightly\", \"branch\":\"naomi-dev\", \"version\":\"Naomi-'$version'.'$gitVersionNumber'\", \"date\":\"'$theDateRightNow'\", \"auto_update\":\"true\"}' > ~/.config/naomi/configs/.naomi_options.json" >> ~/Naomi/Naomi.sh
+    echo '            cd ~' >> ~/Naomi/Naomi.sh
+    echo '            break' >> ~/Naomi/Naomi.sh
+    echo "          elif [ \"$(jq '.use_release' ~/.config/naomi/configs/.naomi_options.json)\" = '\"milestone\"' ]; then" >> ~/Naomi/Naomi.sh
+    echo '            printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/Naomi/Naomi.sh
+    echo '            mv ~/Naomi ~/Naomi-Temp' >> ~/Naomi/Naomi.sh
+    echo '            cd ~' >> ~/Naomi/Naomi.sh
+    echo "            git clone '$gitURL'.git -b naomi-dev Naomi" >> ~/Naomi/Naomi.sh
+    echo '            cd Naomi' >> ~/Naomi/Naomi.sh
+    echo "            echo '{\"use_release\":\"milestone\", \"branch\":\"naomi-dev\", \"version\":\"Naomi-'$version'.'$gitVersionNumber'\", \"date\":\"'$theDateRightNow'\", \"auto_update\":\"true\"}' > ~/.config/naomi/configs/.naomi_options.json" >> ~/Naomi/Naomi.sh
+    echo '            cd ~' >> ~/Naomi/Naomi.sh
+    echo '            break' >> ~/Naomi/Naomi.sh
+    echo "          elif [ \"$(jq '.use_release' ~/.config/naomi/configs/.naomi_options.json)\" = '\"stable\"' ]; then" >> ~/Naomi/Naomi.sh
+    echo '            printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/Naomi/Naomi.sh
+    echo '            mv ~/Naomi ~/Naomi-Temp' >> ~/Naomi/Naomi.sh
+    echo '            cd ~' >> ~/Naomi/Naomi.sh
+    echo "            git clone '$gitURL'.git -b master Naomi" >> ~/Naomi/Naomi.sh
+    echo '            cd Naomi' >> ~/Naomi/Naomi.sh
+    echo "            echo '{\"use_release\":\"stable\", \"branch\":\"master\", \"version\":\"Naomi-'$version'.'$gitVersionNumber'\", \"date\":\"'$theDateRightNow'\", \"auto_update\":\"false\"}' > ~/.config/naomi/configs/.naomi_options.json" >> ~/Naomi/Naomi.sh
+    echo '            cd ~' >> ~/Naomi/Naomi.sh
+    echo '          fi' >> ~/Naomi/Naomi.sh
+    echo '          break' >> ~/Naomi/Naomi.sh
+    echo '          ;;' >> ~/Naomi/Naomi.sh
+    echo '         N)' >> ~/Naomi/Naomi.sh
+    echo '          printf "${B_M}$key ${B_W}- Launching Naomi!${NL}"' >> ~/Naomi/Naomi.sh
+    echo '          break' >> ~/Naomi/Naomi.sh
+    echo '          ;;' >> ~/Naomi/Naomi.sh
+    echo '       esac' >> ~/Naomi/Naomi.sh
+    echo '   done' >> ~/Naomi/Naomi.sh
     echo "  fi" >> ~/Naomi/Naomi.sh
     echo "  export WORKON_HOME=$HOME/.virtualenvs" >> ~/Naomi/Naomi.sh
     echo "  export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/Naomi/Naomi.sh

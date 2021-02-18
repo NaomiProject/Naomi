@@ -24,20 +24,10 @@ swig
 bison
 libpulse-dev
 
-### Mozilla Deepspeech
-#### Commenting out due to deepspeech being moved to NPE, will clean up later!
-#build-essential
-#libboost-all-dev
-#cmake
-#zlib1g-dev
-#libbz2-dev
-#liblzma-dev
-
 #### Phonetisaurus is used to build dictionaries
 gcc
 g++
 make
-python-pip
 autoconf
 libtool
 git
