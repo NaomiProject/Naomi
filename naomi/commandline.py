@@ -77,7 +77,7 @@ class commandline(object):
         while not (
             (
                 once
-            )and(
+            ) and (
                 self.check_for_value(
                     selected_language.strip().lower(),
                     [
@@ -142,91 +142,76 @@ class commandline(object):
     # properties
     @staticmethod
     def normal_text(text=""):
-        #return cf.naomidefaults.sto + text
         return t.normal + text
 
     # this is for emphasis
     @staticmethod
     def strong_text(text=""):
-        #return cf.naomidefaults.ip + text
         return t.bold_cyan + text
 
     # this is for instructions
     @staticmethod
     def instruction_text(text=""):
-        #return cf.naomidefaults.sto + text
         return t.bold_blue + text
 
     # This is for the brackets surrounding the icon
     @staticmethod
     def icon_text(text=""):
-        #return cf.naomidefaults.sto + text
         return t.bold_cyan + text
 
     # This is for question text
     @staticmethod
     def question_text(text=""):
-        #return cf.naomidefaults.pq + text
         return t.bold_blue + text
 
     # This is for the question icon
     @staticmethod
     def question_icon(text=""):
-        #return cf.naomidefaults.pq + text
         return t.bold_yellow + text
 
     # This is for alert text
     @staticmethod
     def alert_text(text=""):
-        #return cf.naomidefaults.ae + text
         return t.bold_red + text
 
     # This is for the alert icon
     @staticmethod
     def alert_icon(text=""):
-        #return cf.naomidefaults.ae + text
         return t.bold_cyan + text
 
     # This is for listing choices available to choose from
     @staticmethod
     def choices_text(text=""):
-        #return cf.naomidefaults.pc + text
         return t.bold_cyan + text
 
     # This is for displaying the default choice when there is a default
     @staticmethod
     def default_text(text=""):
-        #return cf.naomidefaults.sto + text
         return t.normal + text
 
     # This is for the prompt after the default text
     @staticmethod
     def default_prompt(text="// "):
-        #return cf.naomidefaults.pc + text
         return t.bold_blue + text
 
     # This is the color for the text as the user is entering a choice
     @staticmethod
     def input_text(text=""):
-        #return cf.naomidefaults.pc + text
         return t.normal + text
 
     # This is text for a url
     @staticmethod
     def url_text(text=""):
-        #return cf.naomidefaults.ue + text + cf.naomidefaults.sto
         return t.bold_cyan + t.underline + text + t.normal
 
     # This is for a status message
     @staticmethod
     def status_text(text=""):
-        #return cf.naomidefaults.ip + text
         return t.bold_magenta + text
 
     # This is a positive alert
     @staticmethod
     def success_text(text=""):
-        #return cf.naomidefaults.ip + text
         return t.bold_green + text
 
     def format_prompt(self, icon, prompt):
@@ -257,7 +242,7 @@ class commandline(object):
     def simple_input(self, prompt, default=None, return_list=False):
         prompt += ": "
         if(default):
-            if isinstance(default, (int, bool)):
+            if isinstance(default, (int, float, bool)):
                 default = str(default)
             if isinstance(default, str):
                 prompt += self.default_text(default) + self.default_prompt()
@@ -275,7 +260,10 @@ class commandline(object):
         # if the user pressed enter without entering anything,
         # set the response to default
         if(default and not response):
-            response = default
+            if(isinstance(response, int) or isinstance(response, float)):
+                response = str(default)
+            else:
+                response = default
         if "," in response:
             return [x.strip() for x in response.split(",")]
         elif not isinstance(response, str) and return_list:
@@ -328,16 +316,18 @@ class commandline(object):
             instruction = '"?" for help'
         choice_affirmative = affirmative[:1].lower()
         choice_negative = negative[:1].lower()
-        if(not isinstance(default, str)):
-            default = str(default)
-        default_temp = None
-        if default:
-            if app_utils.is_positive(default):
-                choice_affirmative = affirmative[:1].upper()
-                default_temp = choice_affirmative
-            if app_utils.is_negative(default):
-                choice_negative = negative[:1].upper()
-                default_temp = choice_negative
+        if(default is not None):
+            if(not isinstance(default, bool)):
+                if(not isinstance(default, str)):
+                    default = str(default)
+                default = app_utils.is_positive(default)
+            if(isinstance(default, bool)):
+                if(default):
+                    choice_affirmative = affirmative[:1].upper()
+                    default = choice_affirmative
+                else:
+                    choice_negative = negative[:1].upper()
+                    default = choice_negative
         while(response[:1] not in (affirmative.lower()[:1], negative.lower()[:1])):
             temp_response = self.simple_input(
                 self.format_prompt(
@@ -348,7 +338,7 @@ class commandline(object):
                         choice_negative
                     ) + self.instruction_text(")") + instruction
                 ),
-                default_temp
+                default
             ).strip().lower()
             if description and temp_response[:1] == "?":
                 print(self.instruction_text(description))
@@ -359,7 +349,7 @@ class commandline(object):
                     affirmative.upper()[:1],
                     negative.upper()[:1]
                 ))
-        if response == affirmative.lower()[:1]:
+        if response.lower() == affirmative.lower()[:1]:
             return True
         else:
             return False
@@ -384,7 +374,10 @@ class commandline(object):
             default = ""
             # if default is defined, then use that value as default
             if("default" in definition):
-                default = definition["default"]
+                try:
+                    default = definition["default"]()
+                except TypeError:
+                    default = definition["default"]
             # Check if there is a current value
             value = profile.get(setting, default)
             # Set a default for the type of control
@@ -424,16 +417,22 @@ class commandline(object):
                         continue
                     response = tmp_response
                     print("")
-                    try:
+                    if(len(response.strip()) > 0):
+                        try:
+                            profile.set_profile_var(
+                                setting,
+                                options[response]
+                            )
+                        except KeyError:
+                            print(
+                                self.alert_text(
+                                    _("Unrecognized option.")
+                                )
+                            )
+                    else:
                         profile.set_profile_var(
                             setting,
-                            options[response]
-                        )
-                    except KeyError:
-                        print(
-                            self.alert_text(
-                                _("Unrecognized option.")
-                            )
+                            ""
                         )
                 print("")
             elif(controltype == "password"):
@@ -510,6 +509,31 @@ class commandline(object):
                     setting,
                     response
                 )
+            elif(controltype == "number"):
+                # this is the default (textbox)
+                print("")
+                response = value
+                once = False
+                while not ((once) and (profile.validate(definition, response))):
+                    once = True
+                    tmp_response = self.simple_input(
+                        "    " + self.instruction_text(_('{} ("?" for help)').format(definition["title"])),
+                        response
+                    )
+                    if(tmp_response.strip() == "?"):
+                        # Print the description plus any help text for the control
+                        print("")
+                        print(self.instruction_text(definition["description"]))
+                        once = False
+                        continue
+                    response = float(tmp_response)
+                    if((response % 1) == 0):
+                        response = int(tmp_response)
+                    print("")
+                    profile.set_profile_var(
+                        setting,
+                        response
+                    )
             else:
                 # this is the default (textbox)
                 print("")

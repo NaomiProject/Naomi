@@ -288,13 +288,16 @@ def get_profile_flag(path, default=None):
     if (isinstance(path, str)):
         path = [path]
     # Get the variable value
-    temp = str(_walk_profile(path, True))
-    if (temp is None):
+    temp = _walk_profile(path, True)
+    if(temp is None):
         # the variable is not defined
         temp = default
-    response = False
-    if str(temp).strip().lower() in ('true', 'yes', 'on', 'enabled'):
-        response = True
+    if(temp is None):
+        response = None
+    else:
+        response = False
+        if str(temp).strip().lower() in ('true', 'yes', 'on', 'enabled'):
+            response = True
     return response
 
 
@@ -427,7 +430,7 @@ def set_profile_password(path, value):
 # any value chosen has to be a member of the options.key() list.
 def validate(definition, response):
     valid = False
-    if(len(response.strip()) == 0):
+    if(isinstance(response, str) and len(response.strip()) == 0):
         # Always accept an empty response as valid
         valid = True
     else:

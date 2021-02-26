@@ -1,40 +1,28 @@
 # -*- coding: utf-8 -*-
-import audioop
 import collections
 import logging
-import math
 import os
-import tempfile
-import wave
 from . import audioengine
+from . import batch_mic
 from . import brain
 from . import commandline as interface
+from . import conversation
 from . import i18n
+from . import local_mic
+from . import mic
 from . import npe
 from . import paths
 from . import pluginstore
 from . import populate
-from . import conversation
-from . import mic
 from . import profile
-from . import local_mic
-from . import batch_mic
 from . import visualizations
+from .run_command import run_command
 
 
 USE_STANDARD_MIC = 0
 USE_TEXT_MIC = 1
 USE_BATCH_MIC = 2
 audioengine_plugins = None
-
-
-# AaronC = for detecting audio. Switch to using VAD engine.
-def _snr(input_bits, threshold, frames):
-    rms = audioop.rms(b''.join(frames), int(input_bits / 8))
-    if ((threshold > 0) and (rms > threshold)):
-        return 20.0 * math.log(rms / threshold, 10)
-    else:
-        return 0
 
 
 class Naomi(object):
@@ -89,21 +77,6 @@ class Naomi(object):
                     )
                     # Go ahead and pull the setting
                     settings_complete = False
-        # Disabling populate until I figure out what can't be
-        # handled through settings.
-        # if(profile.get_arg("Profile_missing", False)):
-        #     print("Your config file does not exist.")
-        #     text_input = input(
-        #         " ".join([
-        #             "Would you like to answer a few ",
-        #             "questions to create a new one? (y/N): "
-        #         ])
-        #     )
-        #     if(text_input.strip()[:1].upper() == "Y"):
-        #         populate.run()
-        #     else:
-        #         print("Cannot continue. Exiting.")
-        #         quit()
         if(profile.get_arg("repopulate") or profile.get_arg("profile_missing") or not settings_complete):
             populate.run()
             keyword = profile.get_profile_var(['keyword'], ['Naomi'])
@@ -582,7 +555,7 @@ class Naomi(object):
                         "title": _("please select an output device"),
                         "options": self.get_output_devices,
                         "validation": self.validate_output_device,
-                        "default": "pulse"
+                        "default": lambda: "pulse" if("pulse" in self.get_output_devices())else self.get_default_output_audio_device()
                     }
                 ),
                 (
@@ -591,7 +564,7 @@ class Naomi(object):
                         "title": _("Please select an input device"),
                         "options": self.get_input_devices,
                         "validation": self.validate_input_device,
-                        "default": "pulse"
+                        "default": lambda: "pulse" if("pulse" in self.get_input_devices())else self.get_default_input_audio_device()
                     }
                 ),
                 (
@@ -781,14 +754,6 @@ class Naomi(object):
         # AaronC 2018-09-14 Get a list of available output devices
         audio_engine = ae_info.plugin_class(ae_info, profile.get_profile())
         output_device = audio_engine.get_device_by_slug(output_device_slug)
-        output_chunksize = profile.get(
-            ['audio', 'output_chunksize'],
-            1024
-        )
-        output_add_padding = profile.get(
-            ['audio', 'output_padding'],
-            False
-        )
         filename = os.path.join(
             os.path.dirname(
                 os.path.abspath(__file__)
@@ -808,23 +773,55 @@ class Naomi(object):
         )
         try:
             if not (heard):
-                print(
-                    self._interface.instruction_text(" ".join([
-                        _("The volume on your device may be too low."),
-                        _("You should be able to use 'alsamixer'"),
-                        _("to set the volume level.")
-                    ]))
-                )
-                heard = self._interface.simple_yes_no(
+                troubleshoot = self._interface.simple_yes_no(
                     self._interface.instruction_text(
                         " ".join([
-                            _("Do you want to continue now"),
-                            _("and fix the volume later?")
+                            _("Would you like to troubleshoot"),
+                            _("the issue now?")
                         ])
                     )
                 )
-                if not (heard):
+                if(troubleshoot):
                     response = False
+                    print(
+                        self._interface.instruction_text(" ".join([
+                            _("The volume on your device may be too low."),
+                            _("You should be able to use 'alsamixer'"),
+                            _("to set the volume level.")
+                        ]))
+                    )
+                    launch_alsamixer = self._interface.simple_yes_no(
+                        _("Would you like to launch alsamixer?")
+                    )
+                    if(launch_alsamixer):
+                        run_command("alsamixer")
+                    self._interface.get_setting(
+                        ('audio', 'output_chunksize'), {
+                            "type": "number",
+                            "title": _("Output chunk size?"),
+                            "description": _("If you are getting buffer underrun errors (ALSA lib pcm.c:8424:(snd_pcm_recover) underrun occurred), you should probably increase this setting. Try doubling the number of K (2048, 4096, 8192) until the underrun errors stop."),
+                            "default": 2048
+                        }
+                    )
+                    self._interface.get_setting(
+                        ('audio', 'output_padding'), {
+                            "type": "boolean",
+                            "title": _("Pad output"),
+                            "description": _("This pads the output of the last chunk sent to the output device so it only recieves complete chunks. Sometimes this can help prevent output clipping"),
+                            "default": True
+                        }
+                    )
+                    self._interface.get_setting(
+                        ('audio', 'output_pause'), {
+                            "type": "number",
+                            "title": _("Pause length: "),
+                            "description": _("This adds a small pause after naomi speaks to prevent the end of a phrase from being cut off. This can help if Naomi sounds 'clipped' when speaking."),
+                            "default": 0.5
+                        }
+                    )
+                else:
+                    heard = True
+
         except audioengine.UnsupportedFormat as e:
             print(self._interface.alert_text(str(e)))
             print(
@@ -839,6 +836,8 @@ class Naomi(object):
             )
             print("")
             response = False
+        except Exception as e:
+            print(str(e))
         return response
 
     def validate_input_device(self, input_device_slug):
@@ -861,45 +860,20 @@ class Naomi(object):
         ]))
         while test:
             test = False
-            # FIXME AaronC Sept 16 2018
-            # The following are defaults. They should be read
-            # from the proper locations in the profile file if
-            # they have been set.
-            threshold = 10  # 10 dB
-            input_chunks = profile.get_profile_var(
-                ['audio', 'input_chunksize'],
-                1024
-            )
-            input_bits = profile.get_profile_var(
-                ['audio', 'input_samplewidth'],
-                16
-            )
-            input_channels = profile.get_profile_var(
-                ['audio', 'input_channels'],
-                1
-            )
-            input_rate = profile.get_profile_var(
-                ['audio', 'input_samplerate'],
-                16000
-            )
 
-            output_chunksize = profile.get_profile_var(
-                ['audio', 'output_chunksize'],
-                1024
-            )
-            output_add_padding = profile.get_profile_var(
-                ['audio', 'output_padding'],
-                False
-            )
             input_device = audio_engine.get_device_by_slug(
                 profile.get_profile_var(['audio', 'input_device'])
             )
             output_device = audio_engine.get_device_by_slug(
                 profile.get_profile_var(["audio", "output_device"])
             )
-            frames = collections.deque([], 30)
-            recording = False
-            recording_frames = []
+            vad_slug = profile.get_profile_var(['vad_engine'], 'snr_vad')
+            vad_info = self.plugins.get_plugin(
+                vad_slug,
+                category='vad'
+            )
+            vad_plugin = vad_info.plugin_class(input_device)
+
             filename = os.path.join(
                 os.path.dirname(
                     os.path.abspath(__file__)
@@ -912,88 +886,42 @@ class Naomi(object):
                 output_device.play_file(
                     filename
                 )
-            started = False
-            for frame in input_device.record(
-                input_chunks,
-                input_bits,
-                input_channels,
-                input_rate
-            ):
-                frames.append(frame)
-                # Moved this down here because sometimes it takes a second
-                # for the sound card to actually start recording
-                if not started:
-                    started = True
-                    print(
-                        self._interface.instruction_text(
-                            _("Please speak into the mic now")
-                        )
-                    )
+            visualizations.load_visualizations(self)
+            testMic = mic.Mic(
+                input_device,
+                output_device,
+                profile.get(['active_stt', 'reply']),
+                profile.get(['active_stt', 'response']),
+                None,
+                None,
+                None,
+                None,
+                None,
+                vad_plugin
+            )
 
-                if not recording:
-                    snr = _snr(input_bits, threshold, [frame])
-                    if snr >= threshold:
-                        print(
-                            self._interface.alert_text(
-                                _("Sound detected - recording")
-                            )
-                        )
-                        recording = True
-                        if len(frames) > 30:
-                            recording_frames = list(frames)[-30:]
-                        else:
-                            recording_frames = list(frames)
-                    elif len(frames) >= frames.maxlen:
-                        # Threshold not reached. Update.
-                        soundlevel = float(audioop.rms(b"".join(frames), 2))
-                        if (soundlevel < threshold):
-                            print(self._interface.alert_text(" ".join([
-                                _("No sound detected."),
-                                _("Setting threshold from {t} to {s}").format(
-                                    t=threshold,
-                                    s=soundlevel
-                                )
-                            ])))
-                            threshold = soundlevel
+            print(
+                self._interface.instruction_text(
+                    _("Please speak into the mic now")
+                )
+            )
+            # Go ahead and use mic to record
+            with testMic._write_frames_to_file(
+                testMic._vad_plugin.get_audio(),
+                input_device._input_rate,
+                None
+            ) as f:
+                if testMic._active_stt_response:
+                    testMic.say(self._active_stt_response)
                 else:
-                    recording_frames.append(frame)
-                    if len(recording_frames) > 20:
-                        # Check if we are below threshold again
-                        last_snr = _snr(
-                            input_bits,
-                            threshold,
-                            recording_frames[-10:]
-                        )
-                        if((
-                            last_snr <= threshold
-                        ) or (
-                            len(recording_frames) > 60
-                        )):
-                            # stop recording
-                            recording = False
-                            print(
-                                self._interface.success_text(
-                                    _("Recorded %d frames")
-                                    % len(recording_frames)
-                                )
-                            )
-                            break
-            if len(recording_frames) > 20:
+                    testMic.play_file(paths.data('audio', 'beep_lo.wav'))
+                f.seek(0)
                 response = False
                 replay = True
                 while (replay):
                     response = True
-                    with tempfile.NamedTemporaryFile(mode='w+b') as f:
-                        wav_fp = wave.open(f, 'wb')
-                        wav_fp.setnchannels(input_channels)
-                        wav_fp.setsampwidth(int(input_bits / 8))
-                        wav_fp.setframerate(input_rate)
-                        fragment = b"".join(frames)
-                        wav_fp.writeframes(fragment)
-                        wav_fp.close()
-                        output_device.play_file(
-                            f.name
-                        )
+                    output_device.play_fp(f)
+                    print("")
                     heard = self._interface.simple_yes_no(
                         _("Did you hear yourself?")
                     )
@@ -1033,6 +961,21 @@ class Naomi(object):
             device_type=device_type
         )]
         return input_devices
+
+    def get_default_output_audio_device(self):
+        return self.get_default_audio_device(audioengine.DEVICE_TYPE_OUTPUT).slug
+
+    def get_default_input_audio_device(self):
+        return self.get_default_audio_device(audioengine.DEVICE_TYPE_INPUT).slug
+
+    @staticmethod
+    def get_default_audio_device(device_type):
+        ae_info = audioengine_plugins.get_plugin(
+            profile.get_profile_var(['audio_engine']),
+            category='audioengine'
+        )
+        audio_engine = ae_info.plugin_class(ae_info, profile.get_profile())
+        return audio_engine.get_default_device(device_type)
 
     def list_audio_devices(self):
         for device in self.audio.get_devices():

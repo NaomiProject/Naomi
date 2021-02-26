@@ -219,6 +219,7 @@ class PluginStore(object):
         # detected any new plugins this launch,
         # so we can save the changes to the profile.
         save_profile = False
+        plugins = []
         for plugin_dir in self._plugin_dirs:
             for root, dirs, files in os.walk(plugin_dir, topdown=True):
                 for name in files:
@@ -252,6 +253,7 @@ class PluginStore(object):
                         )):
                             try:
                                 plugin_info = self.parse_plugin(root)
+                                plugins.append(plugin_info)
                             except Exception as e:
                                 reason = ''
                                 if hasattr(e, 'strerror') and e.strerror:
@@ -295,6 +297,7 @@ class PluginStore(object):
                             )
         if(save_profile):
             profile.save_profile()
+        return plugins
 
     def parse_plugin(self, plugin_directory):
         infofile_path = os.path.join(plugin_directory, self._info_fname)
