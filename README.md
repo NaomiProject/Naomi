@@ -13,8 +13,8 @@
 	<a href="">
     	<img src="https://img.shields.io/badge/python-v3.5-blue.svg">
     </a>
-    <a href="https://www.codacy.com/app/Longshotpro2/Naomi?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=NaomiProject/Naomi&amp;utm_campaign=Badge_Grade">
-      <img src="https://api.codacy.com/project/badge/Grade/1adb77e862b840c5a23bc0381ef25635"/>
+    <a href="https://lgtm.com/projects/g/NaomiProject/Naomi/context:python">
+      <img alt="Language grade: Python" src="https://img.shields.io/lgtm/grade/python/g/NaomiProject/Naomi.svg?logo=lgtm&logoWidth=18"/>
     </a>
     <a href="https://requires.io/github/NaomiProject/Naomi/requirements/?branch=naomi-dev">
     	<img src="https://requires.io/github/NaomiProject/Naomi/requirements.svg?branch=naomi-dev">
