@@ -77,8 +77,10 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
         self.audiolog_db = os.path.join(self.audiolog_dir, "audiolog.db")
         super(PocketsphinxAdaptPlugin, self).__init__(*args, **kwargs)
 
-    def HandleCommand(self, command, description):
+    def HandleCommand(self, **kwargs):
         try:
+            command=kwargs['command']
+            description=kwargs['description']
             conn = sqlite3.connect(self.audiolog_db)
             c = conn.cursor()
             response = []
@@ -208,6 +210,8 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                 )
                 if(completedprocess.returncode != 0):
                     continue_next = False
+                    if not os.path.isfile(bw):
+                        response.append("Please install sphinxtrain<br />")
                 nextcommand = "mllr"
             if(command == "mllr"):
                 # MLLR is a cheap adaptation method that is suitable when the amount of data is limited. It's good for online adaptation.
@@ -470,10 +474,14 @@ class PocketsphinxAdaptPlugin(plugin.STTTrainerPlugin):
                 else:
                     continue_next = False
         except Exception as e:
+            print("e = '{}'".format(e))
+            print(dir(e))
             continue_next = False
             message = "Unknown"
             if hasattr(e, "message"):
                 message = e.message
+            elif hasattr(e, "strerror"):
+                message = e.strerror
             self._logger.error(
                 "Error: {}".format(
                     message
