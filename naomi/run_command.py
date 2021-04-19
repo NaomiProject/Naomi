@@ -64,7 +64,7 @@ def process_completedprocess(completedprocess, output='text'):
     command = " ".join(completedprocess.args)
     response = ""
     if(output == 'html'):
-        response = "<br />Check log for details<br />"
+        response = "<h3>Check log for details</h3>\n"
     if(completedprocess.stdout):
         response = " - {}".format(
             completedprocess.stdout.decode("utf-8").strip()
@@ -73,7 +73,7 @@ def process_completedprocess(completedprocess, output='text'):
         result = "success"
         response = ""
     if(output == 'html'):
-        return '{}...<span class="{}">{}</span>{}'.format(
+        return '<pre>{}</pre>...<span class="{}">{}</span>{}'.format(
             command,
             result,
             result.upper(),

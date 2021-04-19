@@ -24,6 +24,7 @@ pulseaudio-utils
 bison
 libpulse-dev
 swig
+sphinxtrain
 
 #### Phonetisaurus is used to build dictionaries
 autoconf

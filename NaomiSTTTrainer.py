@@ -8,6 +8,8 @@
 
 # -*- coding: utf-8 -*-
 import argparse
+import cgi
+import cgitb
 import json
 import logging
 import os
@@ -25,7 +27,7 @@ from naomi import pluginstore
 from socketserver import ThreadingMixIn
 from threading import Thread
 from urllib.parse import unquote
-
+import pdb
 
 # Set Debug to True to see debugging information
 # or use the --debug flag on the command line
@@ -33,8 +35,8 @@ Debug = False
 _logger = logging.getLogger(__name__)
 
 
-def Get_row(c, rowID):
-    c.execute(
+def Get_row(conn, rowID):
+    c = conn.execute(
         " ".join([
             "select",
             " datetime,",
@@ -84,17 +86,17 @@ def Get_row(c, rowID):
     return Record
 
 
-def verify_row_id(c, rowID):
+def verify_row_id(conn, rowID):
     Ret = True
-    c.execute("select RowID from audiolog where RowID=:RowID", {"RowID": rowID})
+    c = conn.execute("select RowID from audiolog where RowID=:RowID", {"RowID": rowID})
     row = c.fetchone()
     if(row is None):
         Ret = False
     return Ret
 
 
-def fetch_first_rowID(c):
-    c.execute("select RowID from audiolog order by RowID asc limit 1")
+def fetch_first_rowID(conn):
+    c = conn.execute("select RowID from audiolog order by RowID asc limit 1")
     row = c.fetchone()
     if(row is None):
         rowID = None
@@ -103,13 +105,13 @@ def fetch_first_rowID(c):
     return rowID
 
 
-def fetch_first_unreviewed_rowID(c):
-    return fetch_next_unreviewed_rowID(c, "0")
+def fetch_first_unreviewed_rowID(conn):
+    return fetch_next_unreviewed_rowID(conn, "0")
 
 
-def fetch_prev_rowID(c, rowID):
+def fetch_prev_rowID(conn, rowID):
     # get the previous rowid
-    c.execute(
+    c = conn.execute(
         " ".join([
             "select",
             " RowID",
@@ -128,9 +130,9 @@ def fetch_prev_rowID(c, rowID):
     return prev_rowID
 
 
-def fetch_current_rowID(c, rowID):
+def fetch_current_rowID(conn, rowID):
     if(rowID):
-        c.execute(
+        c = conn.execute(
             "select RowID from audiolog where RowID=:RowID",
             {"RowID": rowID}
         )
@@ -140,17 +142,17 @@ def fetch_current_rowID(c, rowID):
         else:
             rowID = str(row[0])
     else:
-        rowID = fetch_first_unreviewed_rowID(c)
+        rowID = fetch_first_unreviewed_rowID(conn)
     if(not rowID):
         # if there are no unreviewed row ID's, set to the last rowid
         rowID = fetch_last_rowID(c)
     return rowID
 
 
-def fetch_next_rowID(c, rowID):
+def fetch_next_rowID(conn, rowID):
     # get the previous rowid
     print("rowID={}".format(rowID))
-    c.execute(
+    c = conn.execute(
         " ".join([
             "select",
             " RowID",
@@ -171,11 +173,11 @@ def fetch_next_rowID(c, rowID):
     return next_rowID
 
 
-def fetch_next_unreviewed_rowID(c, rowID):
+def fetch_next_unreviewed_rowID(conn, rowID):
     # Here, if there is both a passive and active transcription
     # then I want to look at the active.
     # This is because only the active has the intent.
-    c.execute(
+    c = conn.execute(
         " ".join([
             "select",
             " filename",
@@ -191,7 +193,7 @@ def fetch_next_unreviewed_rowID(c, rowID):
         next_rowID = None
     else:
         filename = str(row[0])
-        c.execute(
+        c = conn.execute(
             " ".join([
                 "select",
                 " RowID",
@@ -210,8 +212,8 @@ def fetch_next_unreviewed_rowID(c, rowID):
     return next_rowID
 
 
-def fetch_last_rowID(c):
-    c.execute("select RowID from audiolog order by RowID desc limit 1")
+def fetch_last_rowID(conn):
+    c = conn.execute("select RowID from audiolog order by RowID desc limit 1")
     row = c.fetchone()
     if(row is None):
         rowID = None
@@ -220,8 +222,8 @@ def fetch_last_rowID(c):
     return rowID
 
 
-def fetch_total_rows(c):
-    c.execute("select max(RowID)MaxRow from audiolog")
+def fetch_total_rows(conn):
+    c = conn.execute("select max(RowID)MaxRow from audiolog")
     return str(c.fetchone()[0])
 
 
@@ -233,11 +235,11 @@ def clean_transcription(transcription):
     ).upper()
 
 
-def fetch_intents(c):
+def fetch_intents(conn):
     # Get a list of all intents
     # This will be a combination of all intents from detected
     # plugins, plus any intents in either intents or verified intents
-    c.execute(" ".join([
+    c = conn.execute(" ".join([
         "select intent from (",
         "   select ",
         "       intent",
@@ -303,40 +305,34 @@ def application(environ, start_response):
         reQS = re.compile("([^=]+)=([^&]*)&?")
 
         # gather parameters from GET
-        if(environ["QUERY_STRING"]):
-            for namevalue in reQS.findall(environ["QUERY_STRING"]):
-                if(namevalue[0].lower() == "wavfile"):
-                    wavfile = os.path.join(audiolog_dir, namevalue[1])
-                if(namevalue[0].lower() == "rowid"):
-                    rowID = namevalue[1]
-
-        # gather parameters from POST
-        content_length = 0
-        if(environ['CONTENT_LENGTH']):
-            content_length = int(environ['CONTENT_LENGTH'])
-            post_data = environ['wsgi.input'].read(
-                content_length
-            ).decode("UTF-8")
-            # Parse it out
-            for namevalue in reQS.findall(post_data):
-                if(namevalue[0].lower() == "rowid"):
-                    rowID = namevalue[1].lower()
-                if(namevalue[0].lower() == "result"):
-                    result = namevalue[1].lower()
-                if(namevalue[0].lower() == "verified_transcription"):
-                    verified_transcription = unquote(
-                        namevalue[1].replace('+', ' ')
-                    )
-                if(namevalue[0].lower() == "engine"):
-                    engine = unquote(namevalue[1])
-                if(namevalue[0].lower() == "command"):
-                    command = unquote(namevalue[1].lower())
-                if(namevalue[0].lower() == "description"):
-                    description.append(unquote(namevalue[1]))
-                if(namevalue[0].lower() == "speaker"):
-                    speaker = namevalue[1].replace('+', ' ')
-                if(namevalue[0].lower() == "verified_intent"):
-                    verified_intent = namevalue[1].replace('+', ' ')
+        fields = cgi.FieldStorage(
+            fp=environ['wsgi.input'],
+            environ=environ,
+            keep_blank_values=1
+        )
+        for field in fields:
+            # Don't try to process files here
+            if not fields[field].filename:
+                value = fields[field].value
+                print("{} = {}".format(field, value))
+                if(field.lower() == "wavfile"):
+                    wavfile = os.path.join(audiolog_dir, value)
+                if(field.lower() == "rowid"):
+                    rowID = value
+                if(field.lower() == "result"):
+                    result = value.lower()
+                if(field.lower() == "verified_transcription"):
+                    verified_transcription = value
+                if(field.lower() == "engine"):
+                    engine = value
+                if(field.lower() == "command"):
+                    command = value
+                if(field.lower() == "description"):
+                    description.append(value)
+                if(field.lower() == "speaker"):
+                    speaker = value
+                if(field.lower() == "verified_intent"):
+                    verified_intent = value
 
         # Handle the request
         # serve a .wav file
@@ -360,9 +356,8 @@ def application(environ, start_response):
             ret.append("<p>Try adding the following lines to your profile ({}) and then asking me a few questions:<br />".format(profile.profile_file))
             ret.append("<pre>\taudiolog:\n\t\tsave_audio\n</pre>")
             return [line.encode("UTF-8") for line in ret]
-        c = conn.cursor()
         # Check and make sure the speaker field exists
-        c.execute("select distinct speaker from audiolog order by 1")
+        c = conn.execute("select distinct speaker from audiolog order by 1")
         # fetchall returns all rows as tuples, take the first (and only)
         # element of each tuple
         speakers = [speaker[0] for speaker in c.fetchall()]
@@ -384,8 +379,8 @@ def application(environ, start_response):
                     found_plugin = True
                     try:
                         plugin = info.plugin_class(info, profile.get_profile())
-                        print("plugin.HandleCommand({}, {})".format(command, description))
-                        response, nextcommand, description = plugin.HandleCommand(command, description)
+                        print("plugin.HandleCommand(command='{}', description='{}', conn=conn, fields=fields, output_type='html')".format(command, description))
+                        response, nextcommand, description = plugin.HandleCommand(command=command, description=description, conn=conn, fields=fields, output_type='html')
                     except Exception as e:
                         _logger.warn(
                             "Plugin '{}' skipped! (Reason: {})".format(
@@ -397,7 +392,7 @@ def application(environ, start_response):
             if(not found_plugin):
                 response = ["Unknown STT Trainer: {}".format(engine)]
             # Prepare the json response
-            messagetext = "<br /><br />\n".join(response)
+            messagetext = "\n".join(response)
             if(not continue_next):
                 nextcommand = ""
             jsonstr = json.dumps({
@@ -427,7 +422,7 @@ def application(environ, start_response):
                     # if the rowid that was passed in does not exist,
                     # the following lines will have no effect
                     # FIXME: in this case, an error should be returned.
-                    Update_record = Get_row(c, rowID)
+                    Update_record = Get_row(conn, rowID)
                     now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                     if(Update_record):
                         # Since an audio file can be associated with more
@@ -457,7 +452,7 @@ def application(environ, start_response):
                             recording_type = "unclear"
                         verified_transcription = verified_transcription.strip()
                         filename = Update_record["Filename"]
-                        c.execute(
+                        c = conn.execute(
                             " ".join([
                                 "select",
                                 " RowID,",
@@ -490,7 +485,7 @@ def application(environ, start_response):
                                     transcription,
                                     verified_transcription
                                 )
-                            c.execute(
+                            c = conn.execute(
                                 " ".join([
                                     "update audiolog set ",
                                     " type=:type,",
@@ -513,24 +508,24 @@ def application(environ, start_response):
                             )
                             conn.commit()
                         # fetch the next unreviewed rowid
-                        rowID = fetch_next_unreviewed_rowID(c, rowID)
+                        rowID = fetch_next_unreviewed_rowID(conn, rowID)
                     else:
                         ErrorMessage = "Row ID {} does not exist".format(
                             str(rowID)
                         )
                 # get the first rowID
-                first_rowID = fetch_first_rowID(c)
+                first_rowID = fetch_first_rowID(conn)
                 # get the current rowID
                 try:
-                    rowID = fetch_current_rowID(c, rowID)
+                    rowID = fetch_current_rowID(conn, rowID)
                 except ValueError:
                     ErrorMessage = "Row {} not found".format(rowID)
-                    rowID = fetch_current_rowID(c, None)
+                    rowID = fetch_current_rowID(conn, None)
                 # get the previous rowid
-                prev_rowID = fetch_prev_rowID(c, rowID)
+                prev_rowID = fetch_prev_rowID(conn, rowID)
                 # get the next rowid
-                next_rowID = fetch_next_rowID(c, rowID)
-                totalRows = fetch_total_rows(c)
+                next_rowID = fetch_next_rowID(conn, rowID)
+                totalRows = fetch_total_rows(conn)
 
                 if(len(first_rowID)):
                     ret.append("""
@@ -689,7 +684,7 @@ def application(environ, start_response):
         return Ret;
     }
 
-    function Train(clear, engine, command, description){
+    function Train(clear, engine, command, description, additionaldata=""){
         stopSpinner();
         if(clear){
             document.getElementById("Result").innerHTML = "";
@@ -707,8 +702,6 @@ def application(environ, start_response):
                             description = response.description;
                         }
                         Train(false,response.engine,response.command,description);
-                    }else{
-                        document.getElementById("Result").innerHTML += "<h2>Training Complete</h2>";
                     }
                 }else{
                     document.getElementById("Result").innerHTML += "An error occurred. ReadyState: "+this.readyState+" Status: "+this.status+"<br />"+this.responseText;
@@ -721,6 +714,7 @@ def application(environ, start_response):
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xhttp.send("engine="+encodeURIComponent(engine)+"&command="+encodeURIComponent(command)+"&description="+encodeURIComponent(description));
         startSpinner();
+        return false;
     }
 </script>""")
                     ret.append('''
@@ -735,7 +729,7 @@ def application(environ, start_response):
 <div id="Verify" class="tabcontent active">
                     ''')
 
-                    Current_record = Get_row(c, rowID)
+                    Current_record = Get_row(conn, rowID)
 
                     # if this has been reviewed, figure out
                     # what option was selected
@@ -976,7 +970,7 @@ if __name__ == '__main__':
         )
     # Load the STT_Trainer plugins
     plugin_directories = [
-        paths.config('plugins', 'stt_trainer'),
+        paths.sub('plugins', 'stt_trainer'),
         pkg_resources.resource_filename(__name__, os.path.join('plugins', 'stt_trainer'))
     ]
     plugins = pluginstore.PluginStore(plugin_directories)
@@ -985,6 +979,7 @@ if __name__ == '__main__':
     url = "http://{}:{}".format(socket.getfqdn(), str(port))
     print("Listening on port {}".format(str(port)))
     print("Point your browser to {}".format(url))
+    cgitb.enable()
     server = wsgiref.simple_server.make_server(
         '',
         port,
