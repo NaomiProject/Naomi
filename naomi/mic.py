@@ -72,9 +72,9 @@ class Mic(object):
         if(
             (
                 self._save_active_audio
-            )or(
+            ) or (
                 self._save_passive_audio
-            )or(
+            ) or (
                 self._save_noise
             )
         ):
@@ -93,12 +93,16 @@ class Mic(object):
     # Copies a file pointed to by a file pointer to a permanent
     # file for training purposes
     def _log_audio(self, fp, transcription, sample_type="unknown"):
+        # Any empty transcriptions are noise regardless of how they are being
+        # collected
+        if(" ".join(transcription) == ""):
+            sample_type = 'noise'
         if(
             (
                 sample_type.lower() == "noise" and self._save_noise
-            )or(
+            ) or (
                 sample_type.lower() == "passive" and self._save_passive_audio
-            )or(
+            ) or (
                 sample_type.lower() == "active" and self._save_active_audio
             )
         ):
@@ -299,12 +303,12 @@ class Mic(object):
                     if(len(transcribed)):
                         if(self._print_transcript):
                             println("<  {}\n".format(transcribed))
-                            self._log_audio(f, transcribed, "passive")
                         if any([
                             word.lower() in t.lower()
                             for word in keyword
                             for t in transcribed if t
                         ]):
+                            self._log_audio(f, transcribed, "passive")
                             if(self.passive_listen):
                                 # Take the same block of audio and put it
                                 # through the active listener
@@ -315,13 +319,20 @@ class Mic(object):
                                     dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                                     self._logger.error("Active transcription failed!", exc_info=dbg)
                                 else:
-                                    if(self._print_transcript):
-                                        println("<< {}\n".format(transcribed))
-                                    if(self._save_active_audio):
+                                    print("'{}'".format(" ".join(transcribed)))
+                                    if(" ".join(transcribed) == ""):
+                                        if(self._print_transcript):
+                                            println("<< <noise>")
+                                        self._log_audio(f, transcribed, "noise")
+                                    else:
+                                        if(self._print_transcript):
+                                            println("<< {}\n".format(transcribed))
                                         self._log_audio(f, transcribed, "active")
                                 return transcribed
                             else:
                                 return False
+                        else:
+                            self._log_audio(f, transcribed, "noise")
                     else:
                         if(self._print_transcript):
                             println("<  <noise>\n")
@@ -355,15 +366,19 @@ class Mic(object):
                 dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                 self._logger.error("Active transcription failed!", exc_info=dbg)
             else:
-                if(self._print_transcript):
-                    println("<< {}\n".format(transcribed))
-                if(profile.get_arg("save_active_audio", False)):
+                print("'{}'".format(" ".join(transcribed)))
+                if(" ".join(transcribed) == ""):
+                    if(self._print_transcript):
+                        println("<< <noise>")
+                    self._log_audio(f, transcribed, "noise")
+                else:
+                    if(self._print_transcript):
+                        println("<< {}\n".format(transcribed))
                     self._log_audio(f, transcribed, "active")
         return transcribed
 
     def listen(self):
         if(self.passive_listen):
-            self._logger.info("[passive_listen]")
             return self.wait_for_keyword(self._keyword)
         else:
             self.wait_for_keyword(self._keyword)

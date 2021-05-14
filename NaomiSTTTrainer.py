@@ -14,7 +14,6 @@ import json
 import logging
 import os
 import pkg_resources
-import re
 import socket
 import sqlite3
 import webbrowser
@@ -26,8 +25,7 @@ from naomi import profile
 from naomi import pluginstore
 from socketserver import ThreadingMixIn
 from threading import Thread
-from urllib.parse import unquote
-import pdb
+
 
 # Set Debug to True to see debugging information
 # or use the --debug flag on the command line
@@ -253,7 +251,7 @@ def fetch_intents(conn):
     for row in c.fetchall():
         _intents[row[0]] = 1
     ps = pluginstore.PluginStore()
-    ps.detect_plugins("speechhandler")
+    ps.detect_plugins()
     for info in ps.get_plugins_by_category("speechhandler"):
         try:
             plugin = info.plugin_class(
@@ -302,7 +300,6 @@ def application(environ, start_response):
         engine = ""
         verified_intent = ""
         description = []
-        reQS = re.compile("([^=]+)=([^&]*)&?")
 
         # gather parameters from GET
         fields = cgi.FieldStorage(
@@ -312,9 +309,14 @@ def application(environ, start_response):
         )
         for field in fields:
             # Don't try to process files here
-            if not fields[field].filename:
-                value = fields[field].value
-                print("{} = {}".format(field, value))
+            f = fields[field]
+            # if a parameter has been passed in more than once (sometimes
+            # this happens when a parameter is passed in through a form and
+            # the querystring) just take the first value.
+            if isinstance(f, list):
+                f = f[0]
+            value = f.value
+            if not f.filename:
                 if(field.lower() == "wavfile"):
                     wavfile = os.path.join(audiolog_dir, value)
                 if(field.lower() == "rowid"):
@@ -823,13 +825,13 @@ def application(environ, start_response):
                             Result_nothing
                         ))
                         ret.append("""</ul>""")
-
-                    ret.append("""<h1>{} transcription {} of {} ({})</h1>""".format(
+                    ret.append("""<h1>{} transcription {} of {} ({} - {})</h1>""".format(
                         keyword,
                         rowID,
                         totalRows,
-                        Current_record["Type"])
-                    )
+                        Current_record["Type"],
+                        Current_record["Recorded"]
+                    ))
                     if(ErrorMessage):
                         ret.append("""<p class="Error">{}</p>""".format(
                             ErrorMessage
@@ -854,7 +856,7 @@ def application(environ, start_response):
                         ))
                     ret.append("What did you hear?<br />")
                     ret.append(' '.join([
-                        '<form method="POST"',
+                        '<form method="POST" action="/"',
                         'onsubmit="return ValidateForm()">'
                     ]))
                     ret.append(

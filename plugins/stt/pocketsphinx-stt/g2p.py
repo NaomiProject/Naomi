@@ -71,7 +71,6 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
             # It is important to raise this error so we can try lower() in sphinxvocab.py
             if(len(RE_ISYMNOTFOUND.findall(nextline)) > 0):
                 logger.error('%s - Input symbol not found' % nextline)
-                proc.kill()
                 raise ValueError('Input symbol not found')
         stdoutdata_byte, stderrdata_byte = proc.communicate()
         stdoutdata = stdoutdata_byte.decode("utf-8")

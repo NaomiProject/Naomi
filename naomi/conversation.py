@@ -19,14 +19,20 @@ class Conversation(i18n.GettextMixin):
 
     # Add way for the system to ask for name if is not found in the config
     def askName(self):
-        if profile.get(['keyword']):
-            salutation = self.gettext("My name is {}.").format(
-                ' or '.join(
-                    profile.get(['keyword'])
+        keywords = profile.get(['keyword'], ['NAOMI'])
+        if(isinstance(keywords, str)):
+            keywords = [keywords]
+        if(len(keywords) > 1):
+            salutation = self.gettext(
+                "My name is {} but you can also call me {}".format(
+                    keywords[0],
+                    "or ".join(keywords[1:])
                 )
             )
         else:
-            salutation = self.gettext("My name is Naomi")
+            salutation = self.gettext(
+                "My name is {}".format(keywords[0])
+            )
         self.mic.say(salutation)
 
     def greet(self):
@@ -51,7 +57,8 @@ class Conversation(i18n.GettextMixin):
 
             utterance = self.mic.listen()
 
-            if utterance:
+            # If the utterance is empty, don't respond
+            if(" ".join(utterance) != ""):
                 intent = self.brain.query(utterance)
                 if intent:
                     try:
@@ -84,7 +91,6 @@ class Conversation(i18n.GettextMixin):
                         self.gettext("I'm sorry, could you repeat that?"),
                         self.gettext("My apologies, could you try saying that again?"),
                         self.gettext("Say that again?"),
-                        self.gettext("I beg your pardon?")
+                        self.gettext("I beg your pardon?"),
+                        self.gettext("Pardon?")
                     ]))
-            else:
-                self.mic.say(self.gettext("Pardon?"))

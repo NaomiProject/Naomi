@@ -239,7 +239,7 @@ class commandline(object):
     # then that can be done here.
     # Part of the purpose is to provide a way of overriding
     # raw_input easily without hunting down every reference
-    def simple_input(self, prompt, default=None, return_list=False):
+    def simple_input(self, prompt, default=None):
         prompt += ": "
         if(default):
             if isinstance(default, (int, float, bool)):
@@ -260,24 +260,24 @@ class commandline(object):
         # if the user pressed enter without entering anything,
         # set the response to default
         if(default and not response):
-            if(isinstance(response, int) or isinstance(response, float)):
+            if(isinstance(default, int) or isinstance(default, float)):
                 response = str(default)
+            elif(isinstance(default, list)):
+                # if the default is a list, convert it to a string
+                response = ", ".join(default)
             else:
                 response = default
-        if "," in response:
-            return [x.strip() for x in response.split(",")]
-        elif not isinstance(response, str) and return_list:
-            return [x.strip() for x in response]
-        elif not isinstance(response, str) and not return_list:
-            return ', '.join(x.strip() for x in response)
-        else:
-            return response.strip()
+        if not isinstance(response, str):
+            response = str(response)
+        return response.strip()
 
     # AaronC - simple_password is a lot like simple_input, just uses
     # getpass instead of input. It does not encrypt the password. That
     # happens after the password has been validated.
     def simple_password(self, prompt, default=None):
         prompt += ": "
+        if(default):
+            prompt += self.default_text("********") + self.default_prompt()
         prompt += self.input_text()
         # don't use print here so no automatic carriage return
         # sys.stdout.write(prompt)
@@ -384,6 +384,9 @@ class commandline(object):
             controltype = "textbox"
             if("type" in definition):
                 controltype = definition["type"].lower()
+            return_list = False
+            if("allow_multiple" in definition):
+                return_list = definition["allow_multiple"]
             if(controltype == "listbox"):
                 try:
                     options = definition["options"]()
@@ -552,6 +555,8 @@ class commandline(object):
                         once = False
                         continue
                     response = tmp_response
+                    if(return_list):
+                        response = [x.strip() for x in response.split(",")]
                     print("")
                     profile.set_profile_var(
                         setting,

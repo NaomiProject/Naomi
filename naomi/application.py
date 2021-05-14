@@ -538,7 +538,8 @@ class Naomi(object):
                     ("keyword",), {
                         "title": _("By what name would you like to call me?"),
                         "description": _("A good choice for a name would have multiple syllables and not sound like any common words."),
-                        "default": "Naomi"
+                        "default": "Naomi",
+                        "return_type": "list"
                     }
                 ),
                 (
