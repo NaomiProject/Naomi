@@ -357,6 +357,10 @@ class commandline(object):
     # This is a higher level control that takes a "setting" as input
     def get_setting(self, setting, definition):
         active = True
+        if("return_type" in definition):
+            return_type = definition["return_type"].upper()
+        else:
+            return_type = "STR"
         if("active" in definition):
             try:
                 # check if definition["active"] is a function
@@ -385,8 +389,6 @@ class commandline(object):
             if("type" in definition):
                 controltype = definition["type"].lower()
             return_list = False
-            if("allow_multiple" in definition):
-                return_list = definition["allow_multiple"]
             if(controltype == "listbox"):
                 try:
                     options = definition["options"]()
@@ -513,7 +515,6 @@ class commandline(object):
                     response
                 )
             elif(controltype == "number"):
-                # this is the default (textbox)
                 print("")
                 response = value
                 once = False
@@ -529,9 +530,6 @@ class commandline(object):
                         print(self.instruction_text(definition["description"]))
                         once = False
                         continue
-                    response = float(tmp_response)
-                    if((response % 1) == 0):
-                        response = int(tmp_response)
                     print("")
                     profile.set_profile_var(
                         setting,
@@ -555,13 +553,20 @@ class commandline(object):
                         once = False
                         continue
                     response = tmp_response
-                    if(return_list):
+                    if(return_type == "LIST"):
                         response = [x.strip() for x in response.split(",")]
+                    elif(return_type == "NUMBER"):
+                        response = float(response)
+                        if((response % 1) == 0):
+                            response = int(tmp_response)
+                    elif(return_type == "BOOLEAN"):
+                        response = app_utils.is_positive(response)
                     print("")
                     profile.set_profile_var(
                         setting,
                         response
                     )
+                
         else:
             # Just set the value to an empty value so we know we don't need to
             # address this again.
