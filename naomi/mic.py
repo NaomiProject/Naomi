@@ -319,10 +319,9 @@ class Mic(object):
                                     dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                                     self._logger.error("Active transcription failed!", exc_info=dbg)
                                 else:
-                                    print("'{}'".format(" ".join(transcribed)))
-                                    if(" ".join(transcribed) == ""):
+                                    if(" ".join(transcribed).strip() == ""):
                                         if(self._print_transcript):
-                                            println("<< <noise>")
+                                            println("<< <noise>\n")
                                         self._log_audio(f, transcribed, "noise")
                                     else:
                                         if(self._print_transcript):
@@ -366,10 +365,9 @@ class Mic(object):
                 dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                 self._logger.error("Active transcription failed!", exc_info=dbg)
             else:
-                print("'{}'".format(" ".join(transcribed)))
-                if(" ".join(transcribed) == ""):
+                if(" ".join(transcribed).strip() == ""):
                     if(self._print_transcript):
-                        println("<< <noise>")
+                        println("<< <noise>\n")
                     self._log_audio(f, transcribed, "noise")
                 else:
                     if(self._print_transcript):
