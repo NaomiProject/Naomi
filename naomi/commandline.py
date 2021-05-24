@@ -388,7 +388,6 @@ class commandline(object):
             controltype = "textbox"
             if("type" in definition):
                 controltype = definition["type"].lower()
-            return_list = False
             if(controltype == "listbox"):
                 try:
                     options = definition["options"]()
