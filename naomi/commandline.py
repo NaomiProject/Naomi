@@ -357,10 +357,6 @@ class commandline(object):
     # This is a higher level control that takes a "setting" as input
     def get_setting(self, setting, definition):
         active = True
-        if("return_type" in definition):
-            return_type = definition["return_type"].upper()
-        else:
-            return_type = "STR"
         if("active" in definition):
             try:
                 # check if definition["active"] is a function
@@ -388,7 +384,17 @@ class commandline(object):
             controltype = "textbox"
             if("type" in definition):
                 controltype = definition["type"].lower()
+            return_list = False
+            if("return_list" in definition):
+                try:
+                    return_list = definition["return_list"]()
+                except TypeError:
+                    return_list = definition["return_list"]
             if(controltype == "listbox"):
+                # Listbox is used to present a list of options from which
+                # the user has to select. If the user enters something not
+                # on the list, it will be rejected and the listbox will
+                # ask again. An empty response is always acceptable.
                 try:
                     options = definition["options"]()
                 except TypeError:
@@ -422,22 +428,45 @@ class commandline(object):
                     response = tmp_response
                     print("")
                     if(len(response.strip()) > 0):
-                        try:
+                        if(return_list):
+                            options_list = []
+                            response = [item.strip() for item in response.split(",")]
+                            for item in response:
+                                try:
+                                    options_list.append(options[item])
+                                except KeyError:
+                                    print(
+                                        self.alert_text(
+                                            _("Unrecognized option: {}").format(item)
+                                        )
+                                    )
                             profile.set_profile_var(
                                 setting,
-                                options[response]
+                                options_list
                             )
-                        except KeyError:
-                            print(
-                                self.alert_text(
-                                    _("Unrecognized option.")
+                        else:
+                            try:
+                                profile.set_profile_var(
+                                    setting,
+                                    options[response]
                                 )
-                            )
+                            except KeyError:
+                                print(
+                                    self.alert_text(
+                                        _("Unrecognized option.")
+                                    )
+                                )
                     else:
-                        profile.set_profile_var(
-                            setting,
-                            ""
-                        )
+                        if(return_list):
+                            profile.set_profile_var(
+                                setting,
+                                []
+                            )
+                        else:
+                            profile.set_profile_var(
+                                setting,
+                                ""
+                            )
                 print("")
             elif(controltype == "password"):
                 print("")
@@ -552,14 +581,8 @@ class commandline(object):
                         once = False
                         continue
                     response = tmp_response
-                    if(return_type == "LIST"):
+                    if(return_list):
                         response = [x.strip() for x in response.split(",")]
-                    elif(return_type == "NUMBER"):
-                        response = float(response)
-                        if((response % 1) == 0):
-                            response = int(tmp_response)
-                    elif(return_type == "BOOLEAN"):
-                        response = app_utils.is_positive(response)
                     print("")
                     profile.set_profile_var(
                         setting,
