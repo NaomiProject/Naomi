@@ -1,12 +1,29 @@
 # -*- coding: utf-8 -*-
 import contextlib
 import random
+from collections import OrderedDict
 from naomi import app_utils
 from naomi import plugin
 from naomi import profile
 
 
 class RespondToEmailPlugin(plugin.NotificationClientPlugin):
+    def settings(self):
+        _ = self.gettext
+        return OrderedDict(
+            [
+                (
+                    ('Safe Addresses',), {
+                        'title': _('Safe email addresses for me to respond to'),
+                        'description': "".join([
+                            _('If you would like to be able to communicate with me over email or text messages, please enter a list of addresses that it is safe for me to respond to (otherwise, just leave this blank)'),
+                        ]),
+                        "return_type": "list"
+                    }
+                )
+            ]
+        )
+
     def __init__(self, *args, **kwargs):
         super(RespondToEmailPlugin, self).__init__(*args, **kwargs)
         # check to see if we can connect to an email account
@@ -42,15 +59,14 @@ class RespondToEmailPlugin(plugin.NotificationClientPlugin):
             if(isinstance(keywords, str)):
                 keywords = [keywords]
             handleEmail = False
-            respond_to_emails = profile.get(['respond_to_emails'], None)
-            if(respond_to_emails is not None):  # check respond_to_email exists
-                print("respond to emails is {}".format(respond_to_emails))
-                print("len: {}".format(len(respond_to_emails)))
-                print("From: {}".format(app_utils.get_sender_email(e)))
-                if((len(respond_to_emails) == 0)or(app_utils.get_sender_email(e) in respond_to_emails)):  # sender is okay
-                    print("sender okay")
+            respond_to_emails = profile.get(['Safe Addresses'], None)
+            if(isinstance(respond_to_emails, list)):  # check respond_to_email exists
+                # Lower case every member
+                respond_to_emails=[email.lower() for email in respond_to_emails]
+                if((len(respond_to_emails) == 0)or(app_utils.get_sender_email(e).lower() in respond_to_emails)):  # sender is okay
+                    self._logger.info("sender okay")
                     if(any(x.upper() in message for x in keywords)):  # wake word detected
-                        print("wake word detected")
+                        self._logger.info("wake word detected")
                         handleEmail = True
             if(handleEmail):
                 # This message should be marked as read
