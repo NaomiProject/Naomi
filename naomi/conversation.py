@@ -26,7 +26,7 @@ class Conversation(i18n.GettextMixin):
             salutation = self.gettext(
                 "My name is {} but you can also call me {}".format(
                     keywords[0],
-                    "or ".join(keywords[1:])
+                    " or ".join(keywords[1:])
                 )
             )
         else:
