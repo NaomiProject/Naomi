@@ -2,14 +2,21 @@
 # This allows you to use the webrtcvad plugin.
 # You should be able to install it with a simple
 # pip install webrtcvad
+import audioop
 import logging
+import math
 import unittest
 import webrtcvad
 from naomi import plugin
 from naomi import profile
+from naomi import visualizations
 
 
 class WebRTCPlugin(plugin.VADPlugin, unittest.TestCase):
+    _maxsnr = None
+    _minsnr = None
+    _visualizations = []
+
     # Timeout in seconds
     def __init__(self, *args):
         self._logger = logging.getLogger(__name__)
@@ -21,8 +28,17 @@ class WebRTCPlugin(plugin.VADPlugin, unittest.TestCase):
         )
         aggressiveness = profile.get_profile_var(
             ["webrtc_vad", "aggressiveness"],
-            1
+            3
         )
+
+        threshold = profile.get_profile_var(["webrtc_vad", "threshold"], 30)
+        super(WebRTCPlugin, self).__init__(input_device, timeout, minimum_capture)
+        # if the audio decibel is greater than threshold, then consider this
+        # having detected a voice.
+        self._threshold = threshold
+        # Keep track of the number of audio levels
+        self.distribution = {}
+
         self._logger.info("timeout: {}".format(timeout))
         self._logger.info("minimum_capture: {}".format(minimum_capture))
         self._logger.info("aggressiveness: {}".format(aggressiveness))
@@ -108,9 +124,83 @@ class WebRTCPlugin(plugin.VADPlugin, unittest.TestCase):
                         int(sample_rate * input_bytes * 0.01)
                     )
                 )
-        if(self._vad.is_speech(frame, self._input_device._input_rate)):
-            response = True
-            self._logger.info("Voice detected")
+        frame = args[0]
+        recording = False
+        if "recording" in kwargs:
+            recording = kwargs["recording"]
+        rms = audioop.rms(frame, int(self._input_device._input_bits / 8))
+        if rms > 0 and self._threshold > 0:
+            snr = round(20.0 * math.log(rms / self._threshold, 10))
         else:
+            snr = 0
+        if snr in self.distribution:
+            self.distribution[snr] += 1
+        else:
+            self.distribution[snr] = 1
+        # calculate the mean and standard deviation
+        sum1 = sum([
+            value * (key ** 2) for key, value in self.distribution.items()
+        ])
+        items = sum([value for value in self.distribution.values()])
+        if items > 1:
+            # mean = sum( value * freq )/items
+            mean = sum(
+                [key * value for key, value in self.distribution.items()]
+            ) / items
+            stddev = math.sqrt((sum1 - (items * (mean ** 2))) / (items - 1))
+            self._threshold = mean + (
+                stddev * profile.get(
+                    ['snr_vad', 'tolerance'],
+                    1
+                )
+            )
+            # We'll say that the max possible value for SNR is mean+3*stddev
+            if self._minsnr is None:
+                self._minsnr = snr
+            if self._maxsnr is None:
+                self._maxsnr = snr
+            maxsnr = mean + 3 * stddev
+            if snr > maxsnr:
+                maxsnr = snr
+            if maxsnr > self._maxsnr:
+                self._maxsnr = maxsnr
+            minsnr = mean - 3 * stddev
+            if snr < minsnr:
+                minsnr = snr
+            if minsnr < self._minsnr:
+                self._minsnr = minsnr
+            # Loop through visualization plugins
+            visualizations.run_visualization(
+                "mic_volume",
+                recording=recording,
+                snr=snr,
+                minsnr=self._minsnr,
+                maxsnr=self._maxsnr,
+                mean=mean,
+                threshold=self._threshold
+            )
+        if(items > 100):
+            # Every 50 samples (about 1-3 seconds), rescale,
+            # allowing changes in the environment to be
+            # recognized more quickly.
+            self.distribution = {
+                key: (
+                    (value + 1) / 2
+                ) for key, value in self.distribution.items() if value > 1
+            }
+        threshold = self._threshold
+        # If we are already recording, reduce the threshold so as
+        # the user's voice trails off, we continue to record.
+        # Here I am setting it to the halfway point between threshold
+        # and mean.
+        if(recording):
+            threshold = (mean + threshold) / 2
+        if(snr < threshold):
             response = False
+        else:
+            if(self._vad.is_speech(frame, self._input_device._input_rate)):
+                response = True
+                self._logger.info("Voice detected")
+            else:
+                response = False
         return response
