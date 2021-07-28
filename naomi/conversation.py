@@ -57,40 +57,41 @@ class Conversation(i18n.GettextMixin):
 
             utterance = self.mic.listen()
 
-            # If the utterance is empty, don't respond
-            if(" ".join(utterance) != ""):
-                intent = self.brain.query(utterance)
-                if intent:
-                    try:
-                        self._logger.info(intent)
-                        intent['action'](intent, self.mic)
-                    except Exception:
-                        self._logger.error(
-                            'Failed to execute module',
-                            exc_info=True
-                        )
-                        self.mic.say(
-                            " ".join([
-                                self.gettext("I'm sorry."),
-                                self.gettext("I had some trouble with that operation."),
-                                self.gettext("Please try again later.")
-                            ])
-                        )
-                    else:
-                        self._logger.debug(
-                            " ".join([
-                                "Handling of phrase '{}'",
-                                "by module '{}' completed"
-                            ]).format(
-                                utterance,
-                                intent
+            if(utterance):
+                # If the utterance is empty, don't respond
+                if(" ".join(utterance) != ""):
+                    intent = self.brain.query(utterance)
+                    if intent:
+                        try:
+                            self._logger.info(intent)
+                            intent['action'](intent, self.mic)
+                        except Exception as e:
+                            self._logger.error(
+                                'Failed to service intent {}: {}'.format(intent, str(e)),
+                                exc_info=True
                             )
-                        )
-                else:
-                    self.mic.say(random.choice([  # nosec
-                        self.gettext("I'm sorry, could you repeat that?"),
-                        self.gettext("My apologies, could you try saying that again?"),
-                        self.gettext("Say that again?"),
-                        self.gettext("I beg your pardon?"),
-                        self.gettext("Pardon?")
-                    ]))
+                            self.mic.say(
+                                " ".join([
+                                    self.gettext("I'm sorry."),
+                                    self.gettext("I had some trouble with that operation."),
+                                    self.gettext("Please try again later.")
+                                ])
+                            )
+                        else:
+                            self._logger.debug(
+                                " ".join([
+                                    "Handling of phrase '{}'",
+                                    "by module '{}' completed"
+                                ]).format(
+                                    utterance,
+                                    intent
+                                )
+                            )
+                    else:
+                        self.mic.say(random.choice([  # nosec
+                            self.gettext("I'm sorry, could you repeat that?"),
+                            self.gettext("My apologies, could you try saying that again?"),
+                            self.gettext("Say that again?"),
+                            self.gettext("I beg your pardon?"),
+                            self.gettext("Pardon?")
+                        ]))
