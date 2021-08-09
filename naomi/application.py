@@ -194,6 +194,9 @@ class Naomi(object):
         if(not passive_listen):
             passive_listen = profile.get_profile_flag(["passive_listen"])
 
+        # Verify wakeword
+        verify_wakeword = profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)
+
         # Audiolog settings
         if(use_mic == USE_STANDARD_MIC):
             if(save_audio):
@@ -400,7 +403,7 @@ class Naomi(object):
             active_stt_slug,
             category='stt'
         )
-        active_phrases = self.brain.get_plugin_phrases(passive_listen)
+        active_phrases = self.brain.get_plugin_phrases(passive_listen or verify_wakeword)
         active_stt_plugin = active_stt_plugin_info.plugin_class(
             'default',
             active_phrases,
@@ -468,7 +471,7 @@ class Naomi(object):
             special_stt_plugin_info = active_stt_plugin_info
 
         yesno_stt_plugin = special_stt_plugin_info.plugin_class(
-            'yes/no',
+            'yes_no',
             [
                 _("YES"),
                 _("NO")
@@ -605,10 +608,26 @@ class Naomi(object):
                     }
                 ),
                 (
+                    ("listen_while_talking"), {
+                        "type": "boolean",
+                        "title": _("Should I listen while I am talking?"),
+                        "description": _("Listen while talking allows you to interrupt me while I am speaking by telling me to 'STOP'. However, it should only be enabled if you have some sort of echo cancelling technology working, otherwise I may react to my own voice."),
+                        "default": False
+                    }
+                ),
+                (
                     ("passive_listen"), {
                         "type": "boolean",
                         "title": _("Would you like to turn on passive listening?"),
                         "description": _("In normal mode, when I hear my wake word I will beep and wait for a command. In passive listening mode, I will process whatever you say with the wake word. So in normal mode, you would say 'Naomi' and I would beep and you would say 'what time is it' and I would tell you, but in passive mode you could just say 'Naomi what time is it' and I would tell you."),
+                        "default": True
+                    }
+                ),
+                (
+                    ("passive_stt", "verify_wakeword"), {
+                        "type": "boolean",
+                        "title": _("Should I use the active stt engine to verify when I think I hear my wakeword?"),
+                        "description": _("Using two different stt engines to verify when I hear my wake word will greatly reduce the number of false positives I react to. However, it will also sometimes cause me to miss my wake word and will slow down my response time if you are not using passive listening mode. This setting should be turned on in noisy environments."),
                         "default": True
                     }
                 ),
