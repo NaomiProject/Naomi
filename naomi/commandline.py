@@ -557,12 +557,13 @@ class commandline(object):
                         print("")
                         print(self.instruction_text(definition["description"]))
                         once = False
-                        continue
-                    print("")
-                    profile.set_profile_var(
-                        setting,
-                        response
-                    )
+                    else:
+                        response = tmp_response
+                        profile.set_profile_var(
+                            setting,
+                            response
+                        )
+                        print("")
             else:
                 # this is the default (textbox)
                 print("")
