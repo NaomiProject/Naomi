@@ -303,11 +303,13 @@ class Mic(object):
                     if(len(transcribed)):
                         if(self._print_transcript):
                             println("<  {}\n".format(transcribed))
-                        if any([
-                            word.lower() in t.lower()
+                        wakewords = [
+                            word.upper()
                             for word in keyword
-                            for t in transcribed if t
-                        ]):
+                                for t in transcribed if t
+                            if word.upper() in t.upper()
+                        ]
+                        if any(wakewords):
                             self._log_audio(f, transcribed, "passive")
                             if(self.passive_listen):
                                 # Take the same block of audio and put it
@@ -327,9 +329,34 @@ class Mic(object):
                                         if(self._print_transcript):
                                             println("<< {}\n".format(transcribed))
                                         self._log_audio(f, transcribed, "active")
-                                return transcribed
+                                if(profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)):
+                                    # Check if any of the wakewords identified by
+                                    # the passive stt engine appear in the active
+                                    # transcript
+                                    if any([
+                                        wakeword.upper() in t.upper()
+                                        for wakeword in wakewords
+                                        for t in transcribed if t
+                                    ]):
+                                        return transcribed
+                                    else:
+                                        self._logger.info('Wakeword not matched in active transcription')
+                                else:
+                                    return transcribed
                             else:
-                                return False
+                                if(profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)):
+                                    transcribed = self.active_stt_engine.transcribe(f)
+                                    if(any([
+                                        word.upper()
+                                        for word in wakewords
+                                            for t in transcribed if t
+                                        if word.upper() in t.upper()
+                                    ])):
+                                        return True
+                                    else:
+                                        self._logger.info('Wakeword not matched in active transcription')
+                                else:
+                                    return True
                         else:
                             self._log_audio(f, transcribed, "noise")
                     else:

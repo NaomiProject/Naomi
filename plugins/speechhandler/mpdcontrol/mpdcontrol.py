@@ -24,7 +24,6 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
             )
 
         password = profile.get(['mpdclient', 'password'], '')
-        self._autoplay = profile.get(['mpdclient', 'autoplay'], False)
 
         # In reticent mode Naomi is quieter.
         self._reticient = profile.get_profile_flag(
@@ -72,7 +71,14 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
                         'templates': [
                             "PLAY SOMETHING",
                             "PLAY MUSIC",
-                            "PLAY {PlayList}"
+                            "PLAY {PlayList}",
+                            "PLAY NEXT",
+                            "PLAY PREVIOUS",
+                            "PAUSE",
+                            "RESUME",
+                            "STOP PLAYING",
+                            "INCREASE VOLUME",
+                            "DECREASE VOLUME"
                         ]
                     },
                     'fr-FR': {
@@ -109,33 +115,7 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
             mic -- used to interact with the user (for both input and output)
         """
         _ = self.gettext  # Alias for better readability
-
-        self.say(mic, _("Wait, I'm starting the music mode."))
-
-        phrases = [
-            _('PLAY'),
-            _('PAUSE'),
-            _('STOP'),
-            _('NEXT'),
-            _('PREVIOUS'),
-            _('LOUDER'),
-            _('SOFTER'),
-            _('PLAYLIST'),
-            _('CLOSE'),
-            _('EXIT')
-        ]
-        if(mic.passive_listen):
-            # If we are using passive listening mode,
-            # make sure naomi knows its keyword so it
-            # does not confuse it with one of the commands
-            if(mic._keyword not in phrases):
-                if(isinstance(mic._keyword, list)):
-                    phrases.extend(mic._keyword)
-                else:
-                    phrases.append(mic._keyword)
-
-        self._logger.debug('Loading playlists...')
-        phrases.extend([pl.upper() for pl in self._music.get_playlists()])
+        command = intent['input']
 
         if('PlayList' in intent['matches']):
             playlist = intent['matches']['PlayList'][0]
@@ -144,7 +124,6 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
             self.say(mic, _('Playlist %s loaded.') % playlist)
             self._music.play()
 
-        if self._autoplay:
             self._music.play()
             song = self._music.get_current_song()
             if song and not self._reticient:
@@ -155,71 +134,9 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
                     ).format(song=song)
                 )
 
-        self._logger.debug('Starting music mode...')
-        with mic.special_mode('music', phrases):
-            self._logger.debug('Music mode started.')
-            self.say(mic, _('Music mode started!'))
-            mode_not_stopped = True
-            while mode_not_stopped:
-                if(mic.passive_listen):
-                    texts = mic.wait_for_keyword()
-                else:
-                    mic.wait_for_keyword()
-
-                    # Pause if necessary
-                    playback_state = self._music.get_playback_state()
-                    if playback_state == mpdclient.PLAYBACK_STATE_PLAYING:
-                        self._music.pause()
-                        texts = mic.active_listen()
-                        self._music.play()
-                    else:
-                        texts = mic.active_listen()
-
-                text = ''
-                if texts:
-                    text = ', '.join(texts).upper()
-
-                if not text:
-                    self.say(mic, _('Pardon?'))
-                    continue
-
-                mode_not_stopped = self.handle_music_command(text, mic)
-
-        self.say(mic, _('Music Mode stopped!'))
-        self._logger.debug("Music mode stopped.")
-
-    def handle_music_command(self, command, mic):
-        _ = self.gettext  # Alias for better readability
-
-        if _('PLAYLIST').upper() in command:
-            # Find playlist name
-            texts = command.replace(_('PLAYLIST'), '').strip()
-            playlists = self._music.get_playlists()
-            playlists_upper = [pl.upper() for pl in playlists]
-            matches = []
-            for text in texts.split(', '):
-                matches.extend(difflib.get_close_matches(text,
-                                                         playlists_upper))
-            if len(matches) > 0:
-                playlist_index = playlists_upper.index(matches[0])
-                playlist = playlists[playlist_index]
-            else:
-                playlist = None
-
-            # Load playlist
-            if playlist:
-                self.load_playlist(playlist)
-                self.say(mic, _('Playlist %s loaded.') % playlist)
-                self._music.play()
-            else:
-                self.say(
-                    mic,
-                    _("Sorry, I can't find a playlist with that name.")
-                )
         elif _('STOP').upper() in command:
-            self._music.stop()
-            self.say(mic, _('Music stopped.'))
-        elif _('PLAY').upper() in command:
+            self.stop(intent, mic)
+        elif _('PLAY').upper() in command or _('RESUME').upper() in command:
             self._music.play()
             song = self._music.get_current_song()
             if song and not self._reticient:
@@ -236,10 +153,10 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
                 self.say(mic, _('Music paused.'))
             else:
                 self.say(mic, _('Music is not playing.'))
-        elif _('LOUDER').upper() in command:
+        elif _('LOUDER').upper() in command or (_('INCREASE').upper() in command and _('VOLUME').upper() in command):
             self.say(mic, _('Increasing volume.'))
             self._music.volume(10, relative=True)
-        elif _('SOFTER').upper() in command:
+        elif _('SOFTER').upper() in command or (_('DECREASE').upper() in command and _('VOLUME').upper() in command):
             mic.say(_('Decreasing volume.'))
             self._music.volume(-10, relative=True)
         elif any(cmd.upper() in command for cmd in (
@@ -260,13 +177,12 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
                         'Playing {song.title} by {song.artist}...'
                     ).format(song=song)
                 )
-        elif any(cmd.upper() in command for cmd in (_('CLOSE'), _('EXIT'))):
-            if _('EXIT').upper() in command:
-                self._music.stop()
-                self.say(mic, _('Music stopped.'))
-            return False
-
         return True
+
+    def stop(self, intent, mic):
+        _ = self.gettext  # Alias for better readability
+        self._music.stop()
+        self.say(mic, _('Music stopped.'))
 
     def load_playlist(self, playlist):
         playlists = self._music.get_playlists()

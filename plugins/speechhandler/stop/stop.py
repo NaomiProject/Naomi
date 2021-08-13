@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from naomi import plugin
+from naomi import pluginstore
 
 
 class StopPlugin(plugin.SpeechHandlerPlugin):
+    _plugins = []
+
     def intents(self):
         return {
             'StopIntent': {
@@ -30,8 +33,19 @@ class StopPlugin(plugin.SpeechHandlerPlugin):
             }
         }
 
-    def handle(self, text, mic):
-        intent = text
+    # Create a list of speechhandler plugins that have a "stop" method
+    def __init__(self, *args, **kwargs):
+        super(StopPlugin, self).__init__(*args, **kwargs)
+        ps = pluginstore.PluginStore()
+        ps.detect_plugins()
+        for info in ps.get_plugins_by_category("speechhandler"):
+            if info.name != 'stop':
+                plugin = info.plugin_class(info)
+                if 'stop' in dir(plugin):
+                    self._plugins.append(plugin.stop)
+                    self._logger.info("{} stop command added".format(info.name))
+
+    def handle(self, intent, mic):
         text = intent['input']
         """
         Interrupt Naomi.
@@ -47,5 +61,9 @@ class StopPlugin(plugin.SpeechHandlerPlugin):
             mic -- used to interact with the user (for both input and output)
         """
         mic.stop()
+        # Run "stop" methods from other speechhandlers
+        for method in self._plugins:
+            method(intent, mic)
+
         if self.gettext("SHUT UP").lower() in text.lower():
-            mic.say(self.gettext("Okay, if that's what you want then I'll shut up, but you don't have to be rude about it."))
+            mic.say(self.gettext("Okay, if that's what you want then I'll be quiet, but you don't have to be rude about it."))
