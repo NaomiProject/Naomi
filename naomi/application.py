@@ -331,24 +331,6 @@ class Naomi(object):
                 'Valid output devices: {:s}'.format(', '.join(devices))
             )
             raise
-        output_device._output_chunksize = profile.get_profile_var(
-            ['audio', 'output_chunksize'],
-            1024
-        )
-        output_device._output_padding = profile.get_profile_flag(
-            ['audio', 'output_padding'],
-            False
-        )
-        self._logger.debug(
-            'Output chunksize: {:d} frames'.format(
-                output_device._output_chunksize
-            )
-        )
-        self._logger.debug(
-            'Output padding: {:s}'.format(
-                'yes' if output_device._output_padding else 'no'
-            )
-        )
 
         # Initialize Voice activity detection
         vad_slug = profile.get_profile_var(['vad_engine'], 'snr_vad')
@@ -569,6 +551,15 @@ class Naomi(object):
                         "options": self.get_input_devices,
                         "validation": self.validate_input_device,
                         "default": lambda: "pulse" if("pulse" in self.get_input_devices())else self.get_default_input_audio_device()
+                    }
+                ),
+                (
+                    ("vad_engine"), {
+                        "type": "listbox",
+                        "title": _("Please select a voice activity detector engine"),
+                        "description": _("The voice activity detector detects speech near me and lets me know when to start paying attention"),
+                        "options": [info.name for info in self.plugins.get_plugins_by_category("vad")],
+                        "default": "snr_vad"
                     }
                 ),
                 (

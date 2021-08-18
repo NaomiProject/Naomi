@@ -48,21 +48,29 @@ class AudioDevice(object):
     def __init__(self, name):
         self._name = name
         self._slug = slugify.slugify(name)
-        self._input_rate = profile.get_profile_var(
-            ['audio', 'input_samplerate'],
-            16000
+        self._input_rate = int(
+            profile.get_profile_var(
+                ['audio', 'input_samplerate'],
+                16000
+            )
         )
-        self._input_bits = profile.get_profile_var(
-            ['audio', 'input_samplewidth'],
-            16
+        self._input_bits = int(
+            profile.get_profile_var(
+                ['audio', 'input_samplewidth'],
+                16
+            )
         )
-        self._input_channels = profile.get_profile_var(
-            ['audio', 'input_channels'],
-            1
+        self._input_channels = int(
+            profile.get_profile_var(
+                ['audio', 'input_channels'],
+                1
+            )
         )
-        self._input_chunksize = profile.get_profile_var(
-            ['audio', 'input_chunksize'],
-            1024
+        self._input_chunksize = int(
+            profile.get_profile_var(
+                ['audio', 'input_chunksize'],
+                1024
+            )
         )
 
     @property
