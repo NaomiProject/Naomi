@@ -5,7 +5,7 @@ from naomi import app_utils
 from naomi import i18n
 from naomi import paths
 from naomi import profile
-from . import coloredformatting as cf
+# from . import coloredformatting as cf
 import re
 import sys
 
@@ -589,11 +589,10 @@ class commandline(object):
                         setting,
                         response
                     )
-                
         else:
-            # Just set the value to an empty value so we know we don't need to
-            # address this again.
-            profile.set_profile_var(setting, "")
+            # Just set the value to the default value so we know we don't need
+            # to address this again.
+            profile.set_profile_var(setting, profile.get(setting, default))
 
     @staticmethod
     def separator():

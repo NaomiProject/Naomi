@@ -21,6 +21,7 @@ from naomi.run_command import run_command
 from naomi import paths
 
 _profile = {}
+_settings = {}
 _profile_read = False
 _test_profile = False
 _args = {}

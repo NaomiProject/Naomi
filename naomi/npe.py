@@ -21,7 +21,7 @@ DEFAULT_PLUGIN_URL = "/".join([
     "master",
     "plugins.csv"
 ])
-_ = None  #  Fix Codacy complaint global variable undefined at module level
+_ = None  # Fix Codacy complaint global variable undefined at module level
 
 
 class npe:
@@ -73,7 +73,7 @@ class npe:
     # {'plugin1': <naomi.pluginstore.PluginInfo object>, 'plugin2': ...}
     # This does not include plugins that have been installed but disabled.
     def list_active_plugins(self):
-        plugins = self._application.plugins.get_plugins()
+        plugins = profile.get_arg('plugins').get_plugins()
         # Sort these alphabetically by name
         plugins_sorted = {}
         for info in plugins:
@@ -84,10 +84,10 @@ class npe:
     # installed.
     def list_available_plugins(self, categories):
         installed_plugins = {}
-        for category in self._application.plugins._categories_map:
+        for category in profile.get_arg('plugins')._categories_map:
             # Get a list of installed plugins in each category
-            superclass = self._application.plugins._categories_map[category]
-            for info in self._application.plugins._plugins.values():
+            superclass = profile.get_arg('plugins')._categories_map[category]
+            for info in profile.get_arg('plugins')._plugins.values():
                 if issubclass(info.plugin_class, superclass):
                     if(category not in installed_plugins):
                         installed_plugins[category] = {}
@@ -150,7 +150,7 @@ class npe:
                     completed_process = run_command(cmd, 1)
                     # # This is how you can get the URL from the info file
                     # # instead of git:
-                    # installed_url = self._application.plugins.parse_plugin(install_to)
+                    # installed_url = profile.get_arg('plugins').parse_plugin(install_to)
 
                     # This could easily fail, if this directory is not
                     # actually a git directory
@@ -277,7 +277,7 @@ class npe:
                         # Since the plugin will request its own settings each
                         # time it is run with settings missing, no need to set
                         # that up now.
-                        self._application.plugins.detect_plugins()
+                        profile.get_arg('plugins').detect_plugins()
                         self.enable_plugins([[row['Name']]])
                         print(_('Plugin "{}" installed to {}').format(
                             row['Name'],
@@ -292,7 +292,7 @@ class npe:
             if(row['Name'] in flat_plugins):
                 # Find the plugin
                 found_plugin = False
-                for info in self._application.plugins._plugins.values():
+                for info in profile.get_arg('plugins')._plugins.values():
                     if(info.name == row["Name"]):
                         found_plugin = True
                         plugin_dir = info._path
@@ -359,7 +359,7 @@ class npe:
                             # Since the plugin will request its own settings
                             # each time it is run with settings missing, no
                             # need to set that up now.
-                            self._application.plugins.detect_plugins()
+                            profile.get_arg('plugins').detect_plugins()
                             self.enable_plugins([[row['Name']]])
                             returnMessage += _('Plugin "{}" Updated\n').format(row['Name'])
                 if not found_plugin:
@@ -376,7 +376,7 @@ class npe:
         returnMessage = ""
         for plugin in flat_plugins:
             plugin_found = False
-            for info in self._application.plugins._plugins.values():
+            for info in profile.get_arg('plugins')._plugins.values():
                 if(info.name == plugin):
                     plugin_found = True
                     if(paths.sub() == info._path[:len(paths.sub())]):
@@ -413,7 +413,7 @@ class npe:
         plugins_enabled = 0
         for plugin in flat_plugins:
             plugin_enabled = False
-            # Being disabled, the plugin won't be in self._application.plugins
+            # Being disabled, the plugin won't be in profile.get_arg('plugins')
             # We need to search every plugin category in profile.plugins
             for category in profile.get_profile_var(['plugins']):
                 if(plugin in profile.get_profile_var(['plugins', category])):
@@ -449,16 +449,16 @@ class npe:
         # We don't know what category the plugin is in from just the name
         # so the first thing we have to do is figure out the category
         plugin_category = None
-        # Being enabled, the plugin should appear in self._application.plugins
+        # Being enabled, the plugin should appear in profile.get_arg('plugins')
         for plugin in flat_plugins:
             plugin_disabled = False
-            for info in self._application.plugins._plugins.values():
+            for info in profile.get_arg('plugins')._plugins.values():
                 if(info.name == plugin):
                     plugin_category = info._path.split(os.path.sep)[
                         len(info._path.split(os.path.sep)) - 2
                     ]
             if(not plugin_category):
-                # If we were not able to find the plugin in self._application.plugins
+                # If we were not able to find the plugin in profile.get_arg('plugins')
                 # check the profile directly. The plugin may have been skipped
                 # due to a syntax error or missing depenency.
                 for category in profile.get_profile_var(['plugins']):

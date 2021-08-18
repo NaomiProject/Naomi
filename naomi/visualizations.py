@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging
+from . import profile
 _visualizations = []
 
 
 def load_visualizations(self):
     # Inititalize Visualizations
     global _visualizations
-    for info in self.plugins.get_plugins_by_category('visualizations'):
+    for info in profile.get_arg('plugins').get_plugins_by_category(
+        'visualizations'
+    ):
         try:
             _visualizations.append(info.plugin_class(info))
         except Exception as e:

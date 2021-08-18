@@ -34,13 +34,17 @@ class GenericPlugin(object):
             # any missing settings
             settings = self.settings()
             for setting in settings:
-                if not profile.check_profile_var_exists(setting):
-                    self._logger.info(
-                        "{} setting does not exist".format(setting)
-                    )
-                    # Go ahead and pull the setting
-                    settings_complete = False
-            if(profile.get_arg("repopulate") or not settings_complete):
+                if profile.get_arg("repopulate") or not profile.check_profile_var_exists(setting):
+                    # Check if this setting has already been addressed
+                    if(setting not in profile._settings):
+                        # Go ahead and pull the setting
+                        self._logger.info(
+                            "{} setting does not exist".format(setting)
+                        )
+                        settings_complete = False
+                # Add the setting to the settings_cache
+                profile._settings[setting] = settings[setting]
+            if(not settings_complete):
                 print(interface.status_text(self.gettext(
                     "Configuring {}"
                 ).format(
