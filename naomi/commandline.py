@@ -356,6 +356,14 @@ class commandline(object):
 
     # This is a higher level control that takes a "setting" as input
     def get_setting(self, setting, definition):
+        # set a default default value
+        default = ""
+        # if default is defined, then use that value as default
+        if("default" in definition):
+            try:
+                default = definition["default"]()
+            except TypeError:
+                default = definition["default"]
         active = True
         if("active" in definition):
             try:
@@ -370,14 +378,6 @@ class commandline(object):
             # read the description (a value)
             if("description" in definition):
                 description = definition["description"]
-            # set a default default value
-            default = ""
-            # if default is defined, then use that value as default
-            if("default" in definition):
-                try:
-                    default = definition["default"]()
-                except TypeError:
-                    default = definition["default"]
             # Check if there is a current value
             value = profile.get(setting, default)
             # Set a default for the type of control
