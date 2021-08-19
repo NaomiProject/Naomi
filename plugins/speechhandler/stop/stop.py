@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from naomi import plugin
-from naomi import pluginstore
+from naomi import profile
 
 
 class StopPlugin(plugin.SpeechHandlerPlugin):
@@ -36,9 +36,7 @@ class StopPlugin(plugin.SpeechHandlerPlugin):
     # Create a list of speechhandler plugins that have a "stop" method
     def __init__(self, *args, **kwargs):
         super(StopPlugin, self).__init__(*args, **kwargs)
-        ps = pluginstore.PluginStore()
-        ps.detect_plugins()
-        for info in ps.get_plugins_by_category("speechhandler"):
+        for info in profile.get_arg('plugins').get_plugins_by_category("speechhandler"):
             if info.name != 'stop':
                 plugin = info.plugin_class(info)
                 if 'stop' in dir(plugin):

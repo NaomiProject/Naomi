@@ -22,7 +22,6 @@ from .run_command import run_command
 USE_STANDARD_MIC = 0
 USE_TEXT_MIC = 1
 USE_BATCH_MIC = 2
-audioengine_plugins = None
 
 
 class Naomi(object):
@@ -57,8 +56,8 @@ class Naomi(object):
         self.gettext = translator.gettext
         _ = translator.gettext
         # Load plugins
-        self.plugins = pluginstore.PluginStore()
-        self.plugins.detect_plugins()
+        profile.set_arg('plugins', pluginstore.PluginStore())
+        profile.get_arg('plugins').detect_plugins()
         # Load NPE
         self.npe = npe.npe(self)
         self._logger.info("Using Language '{}'".format(language))
@@ -233,7 +232,7 @@ class Naomi(object):
         visualizations.load_visualizations(self)
 
         # Initialize AudioEngine
-        ae_info = self.plugins.get_plugin(
+        ae_info = profile.get_arg('plugins').get_plugin(
             audio_engine_slug,
             category='audioengine'
         )
@@ -267,21 +266,29 @@ class Naomi(object):
             self._logger.warning('Valid input devices: %s',
                                  ', '.join(devices))
             raise
-        input_device._input_rate = profile.get_profile_var(
-            ['audio', 'input_samplerate'],
-            16000
+        input_device._input_rate = int(
+            profile.get_profile_var(
+                ['audio', 'input_samplerate'],
+                16000
+            )
         )
-        input_device._input_bits = profile.get_profile_var(
-            ['audio', 'input_samplewidth'],
-            16
+        input_device._input_bits = int(
+            profile.get_profile_var(
+                ['audio', 'input_samplewidth'],
+                16
+            )
         )
-        input_device._input_channels = profile.get_profile_var(
-            ['audio', 'input_channels'],
-            1
+        input_device._input_channels = int(
+            profile.get_profile_var(
+                ['audio', 'input_channels'],
+                1
+            )
         )
-        input_device._input_chunksize = profile.get_profile_var(
-            ['audio', 'input_chunksize'],
-            1024
+        input_device._input_chunksize = int(
+            profile.get_profile_var(
+                ['audio', 'input_chunksize'],
+                1024
+            )
         )
         self._logger.debug(
             'Input sample rate: {:d} Hz'.format(
@@ -334,7 +341,7 @@ class Naomi(object):
 
         # Initialize Voice activity detection
         vad_slug = profile.get_profile_var(['vad_engine'], 'snr_vad')
-        vad_info = self.plugins.get_plugin(
+        vad_info = profile.get_arg('plugins').get_plugin(
             vad_slug,
             category='vad'
         )
@@ -342,14 +349,14 @@ class Naomi(object):
 
         # Initialize Brain
         tti_slug = profile.get_profile_var(['tti_engine'], 'Naomi TTI')
-        tti_info = self.plugins.get_plugin(
+        tti_info = profile.get_arg('plugins').get_plugin(
             tti_slug,
             category='tti'
         )
         intent_parser = tti_info.plugin_class(tti_info)
 
         self.brain = brain.Brain(intent_parser)
-        for info in self.plugins.get_plugins_by_category('speechhandler'):
+        for info in profile.get_arg('plugins').get_plugins_by_category('speechhandler'):
             try:
                 plugin = info.plugin_class(info)
                 self.brain.add_plugin(plugin)
@@ -381,7 +388,7 @@ class Naomi(object):
             self._logger.error(msg)
             raise RuntimeError(msg)
 
-        active_stt_plugin_info = self.plugins.get_plugin(
+        active_stt_plugin_info = profile.get_arg('plugins').get_plugin(
             active_stt_slug,
             category='stt'
         )
@@ -419,7 +426,7 @@ class Naomi(object):
         # confusing why these other settings are being
         # overridden as well.
         if passive_stt_slug != active_stt_slug:
-            passive_stt_plugin_info = self.plugins.get_plugin(
+            passive_stt_plugin_info = profile.get_arg('plugins').get_plugin(
                 passive_stt_slug, category='stt'
             )
         else:
@@ -446,7 +453,7 @@ class Naomi(object):
         # in "populate" mode, it will ask for information the first time it
         # is initialized. Luckily, we need a YES/NO special mode anyway.
         if special_stt_slug != active_stt_slug:
-            special_stt_plugin_info = self.plugins.get_plugin(
+            special_stt_plugin_info = profile.get_arg('plugins').get_plugin(
                 special_stt_slug, category='stt'
             )
         else:
@@ -473,7 +480,7 @@ class Naomi(object):
             )
 
         # Initialize Text to speech engine
-        tts_plugin_info = self.plugins.get_plugin(tts_slug, category='tts')
+        tts_plugin_info = profile.get_arg('plugins').get_plugin(tts_slug, category='tts')
         tts_plugin = tts_plugin_info.plugin_class(tts_plugin_info)
 
         # Initialize Mic
@@ -485,7 +492,7 @@ class Naomi(object):
                 passive_stt_plugin,
                 active_stt_plugin,
                 special_stt_slug,
-                self.plugins,
+                profile.get_arg('plugins'),
                 batch_file,
                 keyword=keyword
             )
@@ -499,7 +506,7 @@ class Naomi(object):
                 passive_stt_plugin,
                 active_stt_plugin,
                 special_stt_slug,
-                self.plugins,
+                profile.get_arg('plugins'),
                 tts_plugin,
                 vad_plugin,
                 keyword=keyword,
@@ -558,8 +565,24 @@ class Naomi(object):
                         "type": "listbox",
                         "title": _("Please select a voice activity detector engine"),
                         "description": _("The voice activity detector detects speech near me and lets me know when to start paying attention"),
-                        "options": [info.name for info in self.plugins.get_plugins_by_category("vad")],
+                        "options": [info.name for info in profile.get_arg('plugins').get_plugins_by_category("vad")],
                         "default": "snr_vad"
+                    }
+                ),
+                (
+                    ("audio", "input_rate"), {
+                        "type": "number",
+                        "title": _("Input device rate (in Hertz)"),
+                        "description": _("The input audio rate in Hz. Most speech to text engines expect audio to be 16000Hz, so it is usually best to leave this value at the default"),
+                        "default": 16000
+                    }
+                ),
+                (
+                    ("audio", "input_chunksize"), {
+                        "type": "number",
+                        "title": _("Input device chunk size"),
+                        "description": _("The size (in bytes) of each input chunk"),
+                        "default": int(int(profile.get(['audio', 'input_rate'], 16000)) * 0.03) if(profile.get(['vad_engine'], 'snr_vad') == 'webrtc_vad') else 1024
                     }
                 ),
                 (
@@ -567,7 +590,7 @@ class Naomi(object):
                         "type": "listbox",
                         "title": _("Please select a passive speech to text engine"),
                         "description": _("The passive STT engine processes everything you say near me. It is highly recommended to use an offline engine like sphinx."),
-                        "options": [info.name for info in self.plugins.get_plugins_by_category("stt")],
+                        "options": [info.name for info in profile.get_arg('plugins').get_plugins_by_category("stt")],
                         "default": "sphinx"
                     }
                 ),
@@ -576,7 +599,7 @@ class Naomi(object):
                         "type": "listbox",
                         "title": _("Please select an active speech to text engine"),
                         "description": _("After I hear my wake word, this engine processes everything you say. I recommend an offline option, but you could also use an online option like Google Voice."),
-                        "options": [info.name for info in self.plugins.get_plugins_by_category("stt")],
+                        "options": [info.name for info in profile.get_arg('plugins').get_plugins_by_category("stt")],
                         "default": "sphinx"
                     }
                 ),
@@ -585,7 +608,7 @@ class Naomi(object):
                         "type": "listbox",
                         "title": _("Please select a special speech to text engine"),
                         "description": _("Special mode is used when I am listening for a specific set of requests while in a specific plugin. An offline option should work fine here, but an online option should also work."),
-                        "options": [info.name for info in self.plugins.get_plugins_by_category("stt")],
+                        "options": [info.name for info in profile.get_arg('plugins').get_plugins_by_category("stt")],
                         "default": "sphinx"
                     }
                 ),
@@ -594,7 +617,7 @@ class Naomi(object):
                         "type": "listbox",
                         "title": _("Please select a text to speech engine"),
                         "description": _("This provides my voice."),
-                        "options": [info.name for info in self.plugins.get_plugins_by_category("tts")],
+                        "options": [info.name for info in profile.get_arg('plugins').get_plugins_by_category("tts")],
                         "default": "flite-tts"
                     }
                 ),
@@ -619,7 +642,7 @@ class Naomi(object):
                         "type": "boolean",
                         "title": _("Should I use the active stt engine to verify when I think I hear my wakeword?"),
                         "description": _("Using two different stt engines to verify when I hear my wake word will greatly reduce the number of false positives I react to. However, it will also sometimes cause me to miss my wake word and will slow down my response time if you are not using passive listening mode. This setting should be turned on in noisy environments."),
-                        "default": True
+                        "default": False
                     }
                 ),
                 (
@@ -735,13 +758,10 @@ class Naomi(object):
     # Return a list of currently installed audio engines.
     @staticmethod
     def get_audio_engines():
-        global audioengine_plugins
-        audioengine_plugins = pluginstore.PluginStore()
-        audioengine_plugins.detect_plugins("audioengine")
         audioengines = [
             ae_info.name
             for ae_info
-            in audioengine_plugins.get_plugins_by_category(
+            in profile.get_arg('plugins').get_plugins_by_category(
                 category='audioengine'
             )
         ]
@@ -758,7 +778,7 @@ class Naomi(object):
         print(self._interface.instruction_text(
             _("Testing device by playing a sound")
         ))
-        ae_info = audioengine_plugins.get_plugin(
+        ae_info = profile.get_arg('plugins').get_plugin(
             profile.get_profile_var(['audio_engine']),
             category='audioengine'
         )
@@ -853,7 +873,7 @@ class Naomi(object):
 
     def validate_input_device(self, input_device_slug):
         # AaronC 2018-09-14 Initialize AudioEngine
-        ae_info = audioengine_plugins.get_plugin(
+        ae_info = profile.get_arg('plugins').get_plugin(
             profile.get_profile_var(['audio_engine']),
             category='audioengine'
         )
@@ -879,7 +899,7 @@ class Naomi(object):
                 profile.get_profile_var(["audio", "output_device"])
             )
             vad_slug = profile.get_profile_var(['vad_engine'], 'snr_vad')
-            vad_info = self.plugins.get_plugin(
+            vad_info = profile.get_arg('plugins').get_plugin(
                 vad_slug,
                 category='vad'
             )
@@ -961,7 +981,7 @@ class Naomi(object):
 
     @staticmethod
     def get_audio_devices(device_type):
-        ae_info = audioengine_plugins.get_plugin(
+        ae_info = profile.get_arg('plugins').get_plugin(
             profile.get_profile_var(['audio_engine']),
             category='audioengine'
         )
@@ -981,7 +1001,7 @@ class Naomi(object):
 
     @staticmethod
     def get_default_audio_device(device_type):
-        ae_info = audioengine_plugins.get_plugin(
+        ae_info = profile.get_arg('plugins').get_plugin(
             profile.get_profile_var(['audio_engine']),
             category='audioengine'
         )

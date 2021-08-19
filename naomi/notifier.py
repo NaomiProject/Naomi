@@ -2,7 +2,7 @@
 import atexit
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
-from naomi import pluginstore
+from naomi import profile
 
 
 class Notifier(object):
@@ -12,9 +12,9 @@ class Notifier(object):
         self.notifiers = []
 
         # add all notifier plugins
-        notification_clients = pluginstore.PluginStore()
-        notification_clients.detect_plugins("notificationclient")
-        for info in notification_clients.get_plugins():
+        for info in profile.get_arg('plugins').get_plugins_by_category(
+            category="notificationclient"
+        ):
             notifier = info.plugin_class(
                 info,
                 mic=mic,
