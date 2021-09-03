@@ -245,17 +245,20 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         region = profile.get_profile_var(['wwis_weather', 'region'], "")
         city = profile.get_profile_var(['wwis_weather', 'city'], "")
         # check if we have a city or region
-        if(isinstance((self.locations[country][region]), dict)):
-            try:
-                cityId = self.locations[country][region][city]
-            except KeyError:
-                city = None
-        else:
-            try:
-                cityId = self.locations[country][region]
-                city = region
-            except KeyError:
-                city = None
+        try:
+            if(isinstance((self.locations[country][region]), dict)):
+                try:
+                    cityId = self.locations[country][region][city]
+                except KeyError:
+                    city = None
+            else:
+                try:
+                    cityId = self.locations[country][region]
+                    city = region
+                except KeyError:
+                    city = None
+        except KeyError:
+            city = None
         return city, cityId
 
     def handle(self, intent, mic):
@@ -366,5 +369,8 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                         )
                     mic.say(response)
                     snark = False
+        else:
+            mic.say("I have no location on record. Please run Naomi --repopulate and select a city.")
+            snark = False
         if snark:
             mic.say(_("I don't know. Why don't you look out the window?"))
