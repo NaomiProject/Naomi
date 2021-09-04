@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
+import configparser
 import os
 import logging
 import importlib
 import inspect
 import sys
-import configparser
 from naomi import i18n
 from naomi import paths
 from naomi import plugin
 from naomi import profile
+
 
 MANDATORY_OPTIONS = (
     ('Plugin', 'Name'),
@@ -265,7 +266,13 @@ class PluginStore(object):
                                 elif hasattr(e, 'msg'):
                                     reason = e.msg
                                 if not reason:
-                                    reason = 'Unknown'
+                                    reason = str(e)
+                                print(
+                                    "Plugin at '{}' skipped! (Reason: {})".format(
+                                        root,
+                                        reason
+                                    )
+                                )
                                 self._logger.warning(
                                     "Plugin at '{}' skipped! (Reason: {})".format(
                                         root,
