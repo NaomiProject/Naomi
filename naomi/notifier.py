@@ -25,6 +25,7 @@ class Notifier(object):
                 self.notifiers.append(
                     notifier
                 )
+                print("Added notifier notification client {}".format(info.name))
 
         sched = BackgroundScheduler(timezone="UTC", daemon=True)
         sched.start()
