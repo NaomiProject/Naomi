@@ -26,6 +26,10 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                 'locale': {
                     'en-US': {
                         'keywords': {
+                            'ForecastKeyword':[
+                                'WEATHER',
+                                'FORECAST'
+                            ],
                             'WeatherTypePresentKeyword': [
                                 'SNOWING',
                                 'RAINING',
@@ -64,17 +68,18 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                             ]
                         },
                         'templates': [
-                            "WHAT IS THE WEATHER IN {LocationKeyword}",
-                            "WHAT IS THE FORECAST FOR {DayKeyword}",
-                            "WHAT IS THE FORECAST FOR {LocationKeyword}",
-                            "WHAT IS THE FORECAST FOR {LocationKeyword} ON {DayKeyword}",
-                            "WHAT IS THE FORECAST FOR {LocationKeyword} ON {DayKeyword} {TimeKeyword}",
+                            "WHAT IS THE {ForecastKeyword} IN {LocationKeyword}",
+                            "WHAT IS THE {ForecastKeyword} FOR {DayKeyword}",
+                            "WHAT IS THE {ForecastKeyword} FOR {LocationKeyword}",
+                            "WHAT IS THE {ForecastKeyword} FOR {LocationKeyword} ON {DayKeyword}",
+                            "WHAT IS THE {ForecastKeyword} FOR {LocationKeyword} ON {DayKeyword} {TimeKeyword}",
                             "IS IT {WeatherTypePresentKeyword} IN {LocationKeyword}",
                             "WILL IT {WeatherTypeFutureKeyword} THIS {TimeKeyword}",
                             "WILL IT {WeatherTypeFutureKeyword} {DayKeyword}",
                             "WILL IT {WeatherTypeFutureKeyword} {DayKeyword} {TimeKeyword}",
                             "WHEN WILL IT {WeatherTypeFutureKeyword}",
-                            "WHEN WILL IT {WeatherTypeFutureKeyword} IN {LocationKeyword}"
+                            "WHEN WILL IT {WeatherTypeFutureKeyword} IN {LocationKeyword}",
+                            "CAN YOU TELL ME THE {ForecastKeyword}"
                         ]
                     },
                     'fr-FR': {
