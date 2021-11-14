@@ -15,7 +15,10 @@ def replacenth(search_for, replace_with, string, n):
     try:
         # print("Searching for: '{}' in '{}'".format(search_for, string))
         # pprint([m.start() for m in re.finditer(search_for, string)])
-        where = [m.start() for m in re.finditer(search_for, string)][n - 1]
+        if(is_keyword(search_for)):
+            where = [m.start() for m in re.finditer(r"{}".format(search_for), string)][n - 1]
+        else:
+            where = [m.start() for m in re.finditer(r"\b{}\b".format(search_for), string)][n - 1]
         before = string[:where]
         # print("Before: {}".format(before))
         after = string[where:]
@@ -90,7 +93,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             for phrase in intents[intent_base]['locale'][locale]['templates']:
                 # Save the phrase so we can search for undefined keywords
                 # Convert the template to upper case
-                phrase = convert_template_to_upper(phrase)
+                phrase = self.cleantext(convert_template_to_upper(phrase))
                 self.intent_map['intents'][intent]['templates'].append(phrase)
                 for word in phrase.split():
                     if not is_keyword(word):
@@ -188,7 +191,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
         return sorted(phrases)
 
     def determine_intent(self, phrase):
-        phrase = phrase.upper()
+        phrase = self.cleantext(phrase.upper())
         score = {}
         allvariants = {phrase: {}}
         for intent in self.keywords:
@@ -252,6 +255,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         intents_count = len(self.intent_map['intents'])
                         word_appears_in = len(self.words[word])
                         score += self.intent_map['intents'][intent]['words'][word] * (intents_count - word_appears_in) / intents_count
+                        # print(f"Score: {score}")
                 # penalize the variant if it does not contain important words
                 # highscore would be if the variant contains at least each of
                 # the keywords

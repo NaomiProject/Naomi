@@ -9,14 +9,23 @@ import contextlib
 import logging
 import os
 import sqlite3
+import sys
 import tempfile
 import threading
 import time
 import wave
 
 
-# global queue
+# global action queue
 queue = []
+
+
+class Unexpected(Exception):
+    def __init__(
+        self,
+        utterance
+    ):
+        self.utterance = utterance
 
 
 class Mic(object):
@@ -282,18 +291,33 @@ class Mic(object):
             f.seek(0)
             yield f
 
+    def check_for_keyword(self, phrase, keyword=None):
+        if not keyword:
+            keyword = self._keyword
+        wakewords = [
+            word.upper()
+            for word in keyword
+            for w in phrase if w
+            if word.upper() in w.upper()
+        ]
+        if any(wakewords):
+            return True
+        return False
+
     def wait_for_keyword(self, keyword=None):
         if not keyword:
             keyword = self._keyword
-        while True:
+        while not profile.get_arg("resetmic"):
+            transcribed = []
             with self._write_frames_to_file(
                 self._vad_plugin.get_audio(),
                 self.passive_stt_engine._samplerate,
                 self.passive_stt_engine._volume_normalization
             ) as f:
                 try:
-                    transcribed = self.passive_stt_engine.transcribe(f)
+                    transcribed = self.passive_stt_engine.transcribe(f).upper()
                 except Exception:
+                    transcribed = []
                     dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                     self._logger.error(
                         "Passive transcription failed!",
@@ -303,21 +327,16 @@ class Mic(object):
                     if(len(transcribed)):
                         if(self._print_transcript):
                             println("<  {}\n".format(transcribed))
-                        wakewords = [
-                            word.upper()
-                            for word in keyword
-                                for t in transcribed if t
-                            if word.upper() in t.upper()
-                        ]
-                        if any(wakewords):
+                        if self.check_for_keyword(transcribed, keyword):
                             self._log_audio(f, transcribed, "passive")
                             if(self.passive_listen):
                                 # Take the same block of audio and put it
                                 # through the active listener
                                 f.seek(0)
                                 try:
-                                    transcribed = self.active_stt_engine.transcribe(f)
+                                    transcribed = self.active_stt_engine.transcribe(f).upper()
                                 except Exception:
+                                    transcribed = []
                                     dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                                     self._logger.error("Active transcription failed!", exc_info=dbg)
                                 else:
@@ -333,11 +352,7 @@ class Mic(object):
                                     # Check if any of the wakewords identified by
                                     # the passive stt engine appear in the active
                                     # transcript
-                                    if any([
-                                        wakeword.upper() in t.upper()
-                                        for wakeword in wakewords
-                                        for t in transcribed if t
-                                    ]):
+                                    if self.check_for_keyword(transcribed, keyword):
                                         return transcribed
                                     else:
                                         self._logger.info('Wakeword not matched in active transcription')
@@ -345,50 +360,49 @@ class Mic(object):
                                     return transcribed
                             else:
                                 if(profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)):
-                                    transcribed = self.active_stt_engine.transcribe(f)
-                                    if(any([
-                                        word.upper()
-                                        for word in wakewords
-                                            for t in transcribed if t
-                                        if word.upper() in t.upper()
-                                    ])):
-                                        return True
+                                    transcribed = self.active_stt_engine.transcribe(f).upper()
+                                    if self.check_for_keyword(transcribed, keyword):
+                                        return transcribed
                                     else:
                                         self._logger.info('Wakeword not matched in active transcription')
                                 else:
-                                    return True
+                                    return transcribed
                         else:
                             self._log_audio(f, transcribed, "noise")
                     else:
                         if(self._print_transcript):
                             println("<  <noise>\n")
                             self._log_audio(f, "", "noise")
+        return False
 
-    def active_listen(self, timeout=3):
+    def active_listen(self, play_prompts=True):
         transcribed = []
-        # let the user know we are listening
-        if self._active_stt_reply:
-            self.say(self._active_stt_reply)
-        else:
-            self._logger.debug("No text to respond with using beep")
-            if(self._print_transcript):
-                println(">> <beep>\n")
-            self.play_file(paths.data('audio', 'beep_hi.wav'))
+        if(play_prompts):
+            # let the user know we are listening
+            if self._active_stt_reply:
+                self.say(self._active_stt_reply)
+            else:
+                self._logger.debug("No text to respond with using beep")
+                if(self._print_transcript):
+                    println(">> <beep>\n")
+                self.play_file(paths.data('audio', 'beep_hi.wav'))
         with self._write_frames_to_file(
             self._vad_plugin.get_audio(),
             self.active_stt_engine._samplerate,
             self.active_stt_engine._volume_normalization
         ) as f:
-            if self._active_stt_response:
-                self.say(self._active_stt_response)
-            else:
-                self._logger.debug("No text to respond with using beep")
-                if(self._print_transcript):
-                    println(">> <boop>\n")
-                self.play_file(paths.data('audio', 'beep_lo.wav'))
+            if(play_prompts):
+                if self._active_stt_response:
+                    self.say(self._active_stt_response)
+                else:
+                    self._logger.debug("No text to respond with using beep")
+                    if(self._print_transcript):
+                        println(">> <boop>\n")
+                    self.play_file(paths.data('audio', 'beep_lo.wav'))
             try:
-                transcribed = self.active_stt_engine.transcribe(f)
+                transcribed = self.active_stt_engine.transcribe(f).upper()
             except Exception:
+                transcribed = []
                 dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                 self._logger.error("Active transcription failed!", exc_info=dbg)
             else:
@@ -406,89 +420,194 @@ class Mic(object):
         if(self.passive_listen):
             return self.wait_for_keyword(self._keyword)
         else:
-            self.wait_for_keyword(self._keyword)
+            kw = self.wait_for_keyword(self._keyword)
+            # wait_for_keyword normally returns either a list of key
+            if isinstance(kw, bool):
+                if(not kw):
+                    return []
+            # if not in passive_listen mode, then the user has tried to
+            # interrupt, go ahead and stop talking
+            self.stop(wait=True)
             return self.active_listen()
+
+    # If we are using the asynchronous say, so we can hear the "stop"
+    # command, what we want to do is put the prompt on the queue, then
+    # yield control back to the main conversation loop. When the prompt
+    # is spoken in the thread, then we want to return to this point in
+    # the main thread and use the blocking listen to listen until we get
+    # an actual transcription. That should then be used to determine
+    # whether the user responded with one of the expected phrases or not.
+    def expect(self, prompt, phrases, name='expect', instructions=None):
+        expected_phrases = phrases.copy()
+        phrases.extend(
+            profile.get_arg("application").brain.get_plugin_phrases(True)
+        )
+        # set up the special mode so it is pre-generated later
+        with self.special_mode(name, phrases):
+            pass
+        # If "listen_while_talking" is set to true, then we want to create the
+        # special mode after saying the prompt. If not, then we want to create
+        # the special mode first, so we are ready to listen. Also, there is no
+        # need to add anything to the queue if we are not listening while
+        # talking.
+        if(profile.get_arg('listen_while_talking', False)):
+            self.say(prompt)
+            self.add_queue(lambda: profile.set_arg('resetmic', True))
+            # Now wait for any sounds in the queue to be processed
+            while not profile.get_arg('resetmic'):
+                transcribed = self.listen()
+                handled = False
+                if isinstance(transcribed, bool):
+                    handled = True
+                else:
+                    while(" ".join(transcribed) != "" and not handled):
+                        transcribed, handled = profile.get_arg('application').conversation.handleRequest(transcribed)
+            # Now that we are past the mic reset
+            profile.set_arg('resetmic', False)
+        else:
+            self.say(prompt)
+        # Now start listening for a response
+        with self.special_mode(name, phrases):
+            while True:
+                transcribed = self.active_listen()
+                if(len(' '.join(transcribed))):
+                    # Now that we have a transcription, check if it matches one of the phrases
+                    phrase, score = profile.get_arg("application").brain._intentparser.match_phrase(transcribed, expected_phrases)
+                    # If it does, then return the phrase
+                    self._logger.info("Expecting: {} Got: {}".format(expected_phrases, transcribed))
+                    self._logger.info("Score: {}".format(score))
+                    if(score > .5):
+                        return phrase
+                    # Otherwise, raise an exception with the active transcription.
+                    # This will break us back into the main conversation loop
+                    else:
+                        # If the user is not responding to the prompt, then assume that
+                        # they are starting a new command. This should mean that the wake
+                        # word would be included.
+                        if(self.check_for_keyword(transcribed)):
+                            raise Unexpected(transcribed)
+                        else:
+                            # The user just said something unexpected. Remind them of their choices
+                            if instructions is None:
+                                profile.get_arg("application").conversation.list_choices(expected_phrases)
+                            else:
+                                self.say(instructions)
+
+    # confirm is a special case of expect which expects "yes" or "no"
+    def confirm(self, prompt):
+        # default to english
+        language = profile.get(['language'], 'en-US')[:2]
+        POSITIVE = ['YES', 'SURE', 'YES PLEASE']
+        NEGATIVE = ['NO', 'NOPE', 'NO THANK YOU']
+        if(language == "fr"):
+            POSITIVE = ['OUI']
+            NEGATIVE = ['NON']
+        elif(language == "de"):
+            POSITIVE = ['JA']
+            NEGATIVE = ['NEIN']
+        phrase = self.expect(
+            prompt,
+            POSITIVE + NEGATIVE,
+            name='confirm',
+            instructions=profile.get_arg("application").conversation.gettext(
+                "Please respond with Yes or No"
+            )
+        )
+        if phrase in POSITIVE:
+            return True
+        else:
+            return False
 
     # Output methods
     def play_file(self, filename):
-        global queue
         if(profile.get_arg('listen_while_talking', False)):
-            with open(filename, 'rb') as f:
-                queue.append(f.read())
-            if(hasattr(self.current_thread, "is_alive")):
-                if self.current_thread.is_alive():
-                    # if Naomi is currently talking, then we are done
-                    return
-            # otherwise, start talking
-            self.current_thread = threading.Thread(
-                target=self.say_thread
-            )
-            self.current_thread.start()
+            self.play_file_async(filename)
         else:
-            # If Naomi is not supposed to listen while talking,
-            # then use the synchronous play here.
-            # Otherwise, you might have problems where Naomi
-            # reacts to the beep before you have a chance to
-            # say anything if you are not using passive listening
-            with open(filename, 'rb') as f:
-                self._output_device.play_fp(f)
+            self.play_file_sync(filename)
 
-    # Stop talking and delete the queue
-    def stop(self):
+    def play_file_async(self, filename):
         global queue
-        print("stopping...")
-        if(hasattr(self, "current_thread")):
-            try:
-                queue = []
-                # Threads can't be terminated
-                # but we can set a "stop" attribute on self._output_device
-                self._output_device.stop = 1
-            except AttributeError:
-                # current_thread can't be terminated
-                self._logger.info("Can't terminate thread")
-        self._logger.info("Stopped")
-
-    def say(self, phrase):
-        if(self._print_transcript):
-            println(">> {}\n".format(phrase))
-        if(profile.get_arg('listen_while_talking', False)):
-            self.say_async(phrase)
-        else:
-            self.say_sync(phrase)
-
-    def say_async(self, phrase):
-        global queue
-        altered_phrase = alteration.clean(phrase)
-        queue.append(self.tts_engine.say(altered_phrase))
+        queue.append(lambda: self.play_file_sync(filename))
         if(hasattr(self.current_thread, "is_alive")):
             if self.current_thread.is_alive():
                 # if Naomi is currently talking, then we are done
                 return
         # otherwise, start talking
         self.current_thread = threading.Thread(
-            target=self.say_thread
+            target=self.process_queue
+        )
+        self.current_thread.start()
+
+    def play_file_sync(self, filename):
+        with open(filename, 'rb') as f:
+            self._output_device.play_fp(f)
+
+    # Stop talking and delete the queue
+    def stop(self, wait=False):
+        global queue
+        println("Stopping...")
+        if(hasattr(self, "current_thread")):
+            try:
+                queue = []
+                if(hasattr(self.current_thread, "is_alive")):
+                    # Threads can't be terminated
+                    # but we can set a "stop" attribute on self._output_device
+                    self._output_device._stop = True
+                    if(wait):
+                        while not self._output_device._stop:
+                            time.sleep(.1)
+            except AttributeError:
+                # current_thread can't be terminated
+                self._logger.info("Can't terminate thread")
+        self._logger.info("Stopped")
+
+    def process_queue(self, *args, **kwargs):
+        while(True):
+            try:
+                queue.pop(0)()
+            except IndexError:
+                sys.exit()
+
+    def add_queue(self, action):
+        global queue
+        queue.append(action)
+        if(hasattr(self.current_thread, "is_alive")):
+            if self.current_thread.is_alive():
+                # if Naomi is currently talking, then we are done
+                return
+        # otherwise, start talking
+        self.current_thread = threading.Thread(
+            target=self.process_queue
+        )
+        self.current_thread.start()
+
+    def say(self, phrase):
+        altered_phrase = alteration.clean(phrase)
+        if(profile.get_arg('listen_while_talking', False)):
+            self.say_async(altered_phrase)
+        else:
+            self.say_sync(altered_phrase)
+
+    def say_async(self, phrase):
+        self.add_queue(lambda: self.say_sync(phrase))
+        if(hasattr(self.current_thread, "is_alive")):
+            if self.current_thread.is_alive():
+                # if Naomi is currently talking, then we are done
+                return
+        # otherwise, start talking
+        self.current_thread = threading.Thread(
+            target=self.process_queue
         )
         self.current_thread.start()
 
     def say_sync(self, phrase):
-        altered_phrase = alteration.clean(phrase)
+        if(profile.get_arg('print_transcript')):
+            println(">> {}\n".format(phrase))
         with tempfile.SpooledTemporaryFile() as f:
-            f.write(self.tts_engine.say(altered_phrase))
+            f.write(self.tts_engine.say(phrase))
             f.seek(0)
             self._output_device.play_fp(f)
-
-    def say_thread(self, *args, **kwargs):
-        while(True):
-            try:
-                audio = queue.pop(0)
-            except IndexError:
-                return
-            with tempfile.SpooledTemporaryFile() as f:
-                f.write(audio)
-                f.seek(0)
-                self._output_device.play_fp(f)
-                # Pause for 2/10 second before continuing
-                time.sleep(.2)
+            time.sleep(.2)
 
 
 if __name__ == "__main__":

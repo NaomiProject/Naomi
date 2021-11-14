@@ -7,6 +7,7 @@ implementation, Naomi is always active listening with local_mic.
 import contextlib
 import unicodedata
 from naomi import profile
+from naomi.mic import Unexpected
 
 
 class Mic(object):
@@ -32,14 +33,50 @@ class Mic(object):
         else:
             return
 
-    def active_listen(self, timeout=3):
-        input_text = input("YOU: ")
+    def active_listen(self):
+        input_text = input("YOU: ").upper()
         unicodedata.normalize('NFD', input_text).encode('ascii', 'ignore')
         self.prev = input_text
         return [input_text]
 
     def listen(self):
-        return self.active_listen(timeout=3)
+        return self.active_listen()
+
+    def expect(self, prompt, phrases, name='expect', instructions=None):
+        self.say(prompt)
+        transcribed = self.listen()
+        phrase, score = profile.get_arg("application").brain._intentparser.match_phrase(transcribed, phrases)
+        if(score > 0.5):
+            response = phrase
+        else:
+            raise Unexpected(transcribed)
+        return response
+
+    # This is a very simple recognition of a positive or negative response.
+    # We need to move the string literals into an external file.
+    def confirm(self, prompt, name='confirm'):
+        # default to english
+        language = profile.get(['language'], 'en-US')[:2]
+        POSITIVE = ['YES', 'SURE']
+        NEGATIVE = ['NO', 'NOPE']
+        if(language == "fr"):
+            POSITIVE = ['OUI']
+            NEGATIVE = ['NON']
+        elif(language == "de"):
+            POSITIVE = ['JA']
+            NEGATIVE = ['NEIN']
+        phrase = self.expect(
+            prompt,
+            POSITIVE + NEGATIVE,
+            name,
+            instructions=profile.get_arg("application").conversation.gettext(
+                "Please respond with Yes or No"
+            )
+        )
+        if phrase in POSITIVE:
+            return True
+        else:
+            return False
 
     def say(self, phrase, OPTIONS=None):
         print("{}: {}".format(self._keyword, phrase))

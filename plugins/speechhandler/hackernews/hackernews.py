@@ -33,12 +33,20 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
             'HackerNewsIntent': {
                 'locale': {
                     'en-US': {
+                        'keywords': {
+                            'NewsKeyword': [
+                                'news',
+                                'headlines'
+                            ]
+                        },
                         'templates': [
-                            "READ HACKER NEWS",
-                            "WHAT IS IN HACKER NEWS",
-                            "WHAT ARE THE HACKER NEWS HEADLINES",
-                            "WHAT IS HAPPENING IN HACKER NEWS"
-                        ]
+                            "read hacker {NewsKeyword}",
+                            "read me hacker {NewsKeyword}",
+                            "tell me the hacker {NewsKeyword}",
+                            "what is in the hacker {NewsKeyword}",
+                            "what is happening in hacker {NewsKeyword}",
+                            "what are today's hacker {NewsKeyword}"
+                        ],
                     },
                     'fr-FR': {
                         'templates': [
@@ -101,14 +109,7 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
         mic.say(text)
 
         if profile.get_profile_flag(['allows_email']):
-            mic.say(_('Would you like me to send you these articles?'))
-
-            answers = mic.active_listen()
-            if any(
-                _('YES').upper(
-                ) in answer.upper(
-                ) for answer in answers
-            ):
+            if(mic.confirm(_('Would you like me to send you these articles?'))):
                 mic.say(_("Sure, just give me a moment."))
                 email_text = self.make_email_text(articles)
                 email_sent = app_utils.email_user(

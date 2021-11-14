@@ -11,6 +11,7 @@ from . import i18n
 from . import paths
 from . import profile
 from . import vocabcompiler
+from jiwer import wer
 
 
 class GenericPlugin(object):
@@ -104,7 +105,8 @@ class STTPlugin(GenericPlugin, metaclass=abc.ABCMeta):
         language = profile.get(['language'], 'en-US')
 
         vocabulary = vocabcompiler.VocabularyCompiler(
-            self.info.name, self._vocabulary_name,
+            self.info.name,
+            self._vocabulary_name,
             path=paths.sub('vocabularies', language)
         )
 
@@ -190,47 +192,50 @@ class VADPlugin(GenericPlugin):
             self._input_device._input_rate
         ):
             frames.append(frame)
-            voice_detected = self._voice_detected(frame, recording=recording)
-            if not recording:
-                if(voice_detected):
-                    # Voice activity detected, start recording and use
-                    # the last 10 frames to start
-                    self._logger.debug(
-                        "Started recording on device '{:s}'".format(
-                            self._input_device.slug
-                        )
-                    )
-                    recording = True
-                    # Include the previous 10 frames in the recording.
-                    recording_frames = list(frames)[-self._timeout:]
-                    last_voice_frame = len(recording_frames)
+            if(profile.get_arg('resetmic', False)):
+                return recording_frames
             else:
-                # We're recording
-                recording_frames.append(frame)
-                if(voice_detected):
-                    last_voice_frame = len(recording_frames)
-                if(last_voice_frame < len(recording_frames) - self._timeout):
-                    # We have waited past the timeout number of frames
-                    # so we believe the speaker has finished speaking.
-                    recording = False
-                    if(len(recording_frames) < self._minimum_capture):
+                voice_detected = self._voice_detected(frame, recording=recording)
+                if not recording:
+                    if(voice_detected):
+                        # Voice activity detected, start recording and use
+                        # the last 10 frames to start
                         self._logger.debug(
-                            " ".join([
-                                "Recorded {:d} frames, less than threshold",
-                                "of {:d} frames ({:.2f} seconds). Discarding"
-                            ]).format(
-                                len(recording_frames),
-                                self._minimum_capture,
-                                len(recording_frames) * self._chunktime
+                            "Started recording on device '{:s}'".format(
+                                self._input_device.slug
                             )
                         )
-                    else:
-                        self._logger.debug(
-                            "Recorded {:d} frames".format(
-                                len(recording_frames)
+                        recording = True
+                        # Include the previous 10 frames in the recording.
+                        recording_frames = list(frames)[-self._timeout:]
+                        last_voice_frame = len(recording_frames)
+                else:
+                    # We're recording
+                    recording_frames.append(frame)
+                    if(voice_detected):
+                        last_voice_frame = len(recording_frames)
+                    if(last_voice_frame < len(recording_frames) - self._timeout):
+                        # We have waited past the timeout number of frames
+                        # so we believe the speaker has finished speaking.
+                        recording = False
+                        if(len(recording_frames) < self._minimum_capture):
+                            self._logger.debug(
+                                " ".join([
+                                    "Recorded {:d} frames, less than threshold",
+                                    "of {:d} frames ({:.2f} seconds). Discarding"
+                                ]).format(
+                                    len(recording_frames),
+                                    self._minimum_capture,
+                                    len(recording_frames) * self._chunktime
+                                )
                             )
-                        )
-                        return recording_frames
+                        else:
+                            self._logger.debug(
+                                "Recorded {:d} frames".format(
+                                    len(recording_frames)
+                                )
+                            )
+                            return recording_frames
 
 
 class STTTrainerPlugin(GenericPlugin):
@@ -390,9 +395,12 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
                 "YOU'VE": "YOU HAVE"
             }
             for i, word in enumerate(words):
+                word = word.upper()
                 # expand contractions
                 if word in contractions:
                     words[i] = contractions[word]
+                else:
+                    words[i] = word
                 # remove punctuation from beginning and end of words
                 while len(words[i]) > 0 and words[i][:1] not in [chr(i) for i in range(65, 91)]:
                     words[i] = words[i][1:]
@@ -401,6 +409,30 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
             # put it all back together
             text = " ".join(words)
         return text
+
+    @staticmethod
+    def match_phrase(phrase, choices):
+        # If phrase is a list, convert to a string
+        # (otherwise the "split" below throws an error)
+        if(isinstance(phrase, list)):
+            phrase = " ".join(phrase)
+        if phrase == "":
+            return ("", 0.0)
+        else:
+            # Just implement a quick edit distance
+            # FIXME replace this with a call to a real intent parser
+            phrase = phrase.upper()
+            choices = [choice.upper() for choice in choices]
+            templates = {}
+            for template in choices:
+                phrase_len = len(phrase.split())
+                template_len = len(template.split())
+                if(phrase_len > template_len):
+                    templates[template] = 1 - wer(phrase, template)
+                else:
+                    templates[template] = 1 - wer(template, phrase)
+            besttemplate = max(templates, key=lambda key: templates[key])
+            return(besttemplate, templates[besttemplate])
 
 
 class VisualizationsPlugin(GenericPlugin):

@@ -64,7 +64,7 @@ class TestBrain(unittest.TestCase):
     # Every element of expected_phrases must exist in extracted_phrases,
     # but they do not have to be equal.
     def testPluginPhraseExtraction(self):
-        expected_phrases = ['MOCK1', 'MOCK2']
+        expected_phrases = ['MOCK ONE', 'MOCK TWO']
 
         self.plugins = pluginstore.PluginStore()
         self.plugins.detect_plugins()
@@ -77,8 +77,8 @@ class TestBrain(unittest.TestCase):
         profile.set_profile(testutils.test_profile())
         my_brain = brain.Brain(intent_parser)
 
-        my_brain.add_plugin(ExampleSpeechHandlerPlugin(['MOCK2']))
-        my_brain.add_plugin(ExampleSpeechHandlerPlugin(['MOCK1']))
+        my_brain.add_plugin(ExampleSpeechHandlerPlugin(['MOCK TWO']))
+        my_brain.add_plugin(ExampleSpeechHandlerPlugin(['MOCK ONE']))
 
         extracted_phrases = my_brain.get_plugin_phrases()
 
