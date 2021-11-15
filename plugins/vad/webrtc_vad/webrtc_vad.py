@@ -32,7 +32,11 @@ class WebRTCPlugin(plugin.VADPlugin, unittest.TestCase):
         )
 
         threshold = profile.get_profile_var(["webrtc_vad", "threshold"], 30)
-        super(WebRTCPlugin, self).__init__(input_device, timeout, minimum_capture)
+        super(WebRTCPlugin, self).__init__(
+            input_device,
+            timeout,
+            minimum_capture
+        )
         # if the audio decibel is greater than threshold, then consider this
         # having detected a voice.
         self._threshold = threshold
@@ -78,7 +82,7 @@ class WebRTCPlugin(plugin.VADPlugin, unittest.TestCase):
 
     def _voice_detected(self, *args, **kwargs):
         frame = args[0]
-        self._logger.info("Frame length: {} bytes".format(len(frame)))
+        # self._logger.info("Frame length: {} bytes".format(len(frame)))
         # The frame length must be either .01, .02 or .02 ms.
         # Sometimes the audio card will refuse to obey the chunksize
         # directive. In this case, we have to cut down the sample to
@@ -88,9 +92,9 @@ class WebRTCPlugin(plugin.VADPlugin, unittest.TestCase):
         sample_length = len(frame) / input_bytes / sample_rate
         if not((
             sample_length == 0.01
-        )or(
+        ) or (
             sample_length == 0.02
-        )or(
+        ) or (
             sample_length == 0.03
         )):
             if(sample_length > 0.03):

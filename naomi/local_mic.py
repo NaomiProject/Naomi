@@ -46,7 +46,7 @@ class Mic(object):
         self.say(prompt)
         transcribed = self.listen()
         phrase, score = profile.get_arg("application").brain._intentparser.match_phrase(transcribed, phrases)
-        if(score > 0.5):
+        if(score > 0.1):
             response = phrase
         else:
             raise Unexpected(transcribed)

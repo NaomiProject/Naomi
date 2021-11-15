@@ -315,7 +315,7 @@ class Mic(object):
                 self.passive_stt_engine._volume_normalization
             ) as f:
                 try:
-                    transcribed = self.passive_stt_engine.transcribe(f).upper()
+                    transcribed = [word.upper() for word in self.passive_stt_engine.transcribe(f)]
                 except Exception:
                     transcribed = []
                     dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
@@ -334,7 +334,7 @@ class Mic(object):
                                 # through the active listener
                                 f.seek(0)
                                 try:
-                                    transcribed = self.active_stt_engine.transcribe(f).upper()
+                                    transcribed = [word.upper() for word in self.active_stt_engine.transcribe(f)]
                                 except Exception:
                                     transcribed = []
                                     dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
@@ -360,7 +360,7 @@ class Mic(object):
                                     return transcribed
                             else:
                                 if(profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)):
-                                    transcribed = self.active_stt_engine.transcribe(f).upper()
+                                    transcribed = [word.upper() for word in self.active_stt_engine.transcribe(f)]
                                     if self.check_for_keyword(transcribed, keyword):
                                         return transcribed
                                     else:
@@ -400,7 +400,7 @@ class Mic(object):
                         println(">> <boop>\n")
                     self.play_file(paths.data('audio', 'beep_lo.wav'))
             try:
-                transcribed = self.active_stt_engine.transcribe(f).upper()
+                transcribed = [word.upper() for word in self.active_stt_engine.transcribe(f)]
             except Exception:
                 transcribed = []
                 dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
@@ -476,7 +476,7 @@ class Mic(object):
                     # If it does, then return the phrase
                     self._logger.info("Expecting: {} Got: {}".format(expected_phrases, transcribed))
                     self._logger.info("Score: {}".format(score))
-                    if(score > .5):
+                    if(score > .1):
                         return phrase
                     # Otherwise, raise an exception with the active transcription.
                     # This will break us back into the main conversation loop
