@@ -32,16 +32,6 @@ def makeindex(num):
     return "".join(char)
 
 
-# is_keyword just checks to see if the word is a normal word or a keyword
-# (surrounded by curly brackets)
-def is_keyword(word):
-    word = word.strip()
-    response = False
-    if("{}{}".format(word[:1], word[-1:]) == "{}"):
-        response = True
-    return response
-
-
 # Convert a word ("word") to a keyword ("{word}")
 def to_keyword(word):
     return "{}{}{}".format("{", word, "}")
@@ -56,7 +46,7 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
 
     def add_word(self, intent, word):
         # Check if this is a collection
-        if is_keyword(word):
+        if self.is_keyword(word):
             keyword_name = "{}_{}".format(intent, word[1:][:-1])
             # print("Registering words for '{}'".format(keyword_name))
             # This doesn't have to exist:
@@ -117,6 +107,8 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
                 'words': {}
             }
             for phrase in intents[intent_base]['locale'][locale]['templates']:
+                # Convert the template to upper case
+                phrase = self.cleantext(phrase)
                 # Save the phrase so we can search for undefined keywords
                 self.intent_map['intents'][intent]['templates'].append(phrase)
                 # Make a count of word frequency. The fact that small connector
@@ -125,8 +117,6 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
                 # giving too much weight to those connector words.
                 words = list(set(phrase.split()))
                 for word in words:
-                    if not is_keyword(word):
-                        word = word.upper()
                     # Count the number of times the word appears in this intent
                     try:
                         self.intent_map['intents'][intent]['words'][word]['count'] += 1
@@ -230,10 +220,9 @@ class AdaptTTIPlugin(plugin.TTIPlugin):
                 for keyword in keywords_list:
                     # This will not replace keywords that do not have a list associated with them, like regex and open keywords
                     # print("Replacing {} with words from {} in templates".format(keyword,keywords[keyword]))
-                    if(keyword[:len(intent)+1] == "{}_".format(intent)):
+                    if(keyword[:len(intent) + 1] == "{}_".format(intent)):
                         short_keyword = self.keywords[keyword]['name']
                         for template in templates:
-                            # print("Checking template: {} for keyword {}".format(template,short_keyword))
                             if(to_keyword(short_keyword) in template):
                                 templates.extend([template.replace(to_keyword(short_keyword), word.upper()) for word in self.keywords[keyword]['words']])
                             # Now that we have expanded every instance of keyword in templates, delete any template that still contains keyword

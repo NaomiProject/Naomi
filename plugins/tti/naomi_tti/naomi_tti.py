@@ -8,50 +8,9 @@ from naomi import plugin
 from naomi import profile
 
 
-# Replace the nth occurrance of sub
-# based on an answer by aleskva at
-# https://stackoverflow.com/questions/35091557/replace-nth-occurrence-of-substring-in-string
-def replacenth(search_for, replace_with, string, n):
-    try:
-        # print("Searching for: '{}' in '{}'".format(search_for, string))
-        # pprint([m.start() for m in re.finditer(search_for, string)])
-        if(is_keyword(search_for)):
-            where = [m.start() for m in re.finditer(r"{}".format(search_for), string)][n - 1]
-        else:
-            where = [m.start() for m in re.finditer(r"\b{}\b".format(search_for), string)][n - 1]
-        before = string[:where]
-        # print("Before: {}".format(before))
-        after = string[where:]
-        # print("After: {}".format(after))
-        after = after.replace(search_for, replace_with, 1)
-        # print("After: {}".format(after))
-        string = before + after
-        # print("String: {}".format(string))
-    except IndexError:
-        # print("IndexError {}".format(n))
-        pass
-    return string
-
-
-# is_keyword just checks to see if the word is a normal word or a keyword
-# (surrounded by curly brackets)
-def is_keyword(word):
-    word = word.strip()
-    response = False
-    if("{}{}".format(word[:1], word[-1:]) == "{}"):
-        response = True
-    return response
-
-
 # Convert a word ("word") to a keyword ("{word}")
 def to_keyword(word):
     return "{}{}{}".format("{", word, "}")
-
-
-# converts all non-keyword words to upper case in a template. This allows
-# case insensitive matching.
-def convert_template_to_upper(template):
-    return " ".join([word if is_keyword(word) else word.upper() for word in template.split()])
 
 
 class NaomiTTIPlugin(plugin.TTIPlugin):
@@ -93,10 +52,10 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             for phrase in intents[intent_base]['locale'][locale]['templates']:
                 # Save the phrase so we can search for undefined keywords
                 # Convert the template to upper case
-                phrase = self.cleantext(convert_template_to_upper(phrase))
+                phrase = self.cleantext(phrase)
                 self.intent_map['intents'][intent]['templates'].append(phrase)
                 for word in phrase.split():
-                    if not is_keyword(word):
+                    if not self.is_keyword(word):
                         word = word.upper()
                     # Make a list of words to ignore when building intents
                     # This should get better over time, but at the moment
@@ -212,7 +171,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                             # check and see if we can make a substitution and
                             # generate a new variant.
                             # print("replacenth('{}', '{}', '{}', {})".format(word, '{'+keyword+'}', variant, count))
-                            new = replacenth(word, "{}{}{}".format('{', keyword, '}'), variant, count)
+                            new = self.replacenth(word, "{}{}{}".format('{', keyword, '}'), variant, count)
                             # print(new)
                             # print()
                             # print(new)
@@ -351,7 +310,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         #     currenttemplate,
                         #     i + 1
                         # ))
-                        currenttemplate = replacenth(
+                        currenttemplate = self.replacenth(
                             '{}{}{}'.format('{', matchlist, '}'),
                             word,
                             currenttemplate,

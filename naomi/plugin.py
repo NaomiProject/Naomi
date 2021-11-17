@@ -3,6 +3,7 @@ import abc
 import collections
 import logging
 import mad
+import re
 import tempfile
 import wave
 from . import audioengine
@@ -268,13 +269,52 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def determine_intent(self, phrase):
         pass
 
-    # FIXME this does not belong here. It should be in a special language object
+    # is_keyword just checks to see if the word is a normal word or a keyword
+    # (surrounded by curly brackets)
     @staticmethod
-    def cleantext(text):
+    def is_keyword(word):
+        word = word.strip()
+        response = False
+        if("{}{}".format(word[:1], word[-1:]) == "{}"):
+            response = True
+        return response
+
+    # Replace the nth occurrance of sub
+    # based on an answer by aleskva at
+    # https://stackoverflow.com/questions/35091557/replace-nth-occurrence-of-substring-in-string
+    def replacenth(self, search_for, replace_with, string, n):
+        try:
+            # print("Searching for: '{}' in '{}'".format(search_for, string))
+            # pprint([m.start() for m in re.finditer(search_for, string)])
+            if(self.is_keyword(search_for)):
+                where = [m.start() for m in re.finditer(r"{}".format(search_for), string)][n - 1]
+            else:
+                where = [m.start() for m in re.finditer(r"\b{}\b".format(search_for), string)][n - 1]
+            before = string[:where]
+            # print("Before: {}".format(before))
+            after = string[where:]
+            # print("After: {}".format(after))
+            after = after.replace(search_for, replace_with, 1)
+            # print("After: {}".format(after))
+            string = before + after
+            # print("String: {}".format(string))
+        except IndexError:
+            # print("IndexError {}".format(n))
+            pass
+        return string
+
+    # converts all non-keyword words to upper case in a template. This allows
+    # case insensitive matching.
+    def convert_template_to_upper(self, template):
+        return " ".join([word if self.is_keyword(word) else word.upper() for word in template.split()])
+
+    # This is used to prepare text by converting non-keyword text to
+    # upper case and expanding all contractions. We might also want to do
+    # stemming or lemmatization here. This function should be moved to the
+    # locale directory and overridden on a per locale basis.
+    def cleantext(self, text):
         language = profile.get(["language"], "en-US")[:2]
         if language == "en":
-            # upper case
-            text = text.upper()
             words = text.split(" ")
             # Adapted from a list at https://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
             contractions = {
@@ -395,17 +435,18 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
                 "YOU'VE": "YOU HAVE"
             }
             for i, word in enumerate(words):
-                word = word.upper()
-                # expand contractions
-                if word in contractions:
-                    words[i] = contractions[word]
-                else:
-                    words[i] = word
-                # remove punctuation from beginning and end of words
-                while len(words[i]) > 0 and words[i][:1] not in [chr(i) for i in range(65, 91)]:
-                    words[i] = words[i][1:]
-                while len(words[i]) > 0 and words[i][-1:] not in [chr(i) for i in range(65, 91)]:
-                    words[i] = words[i][:-1]
+                if not self.is_keyword(word):
+                    word = word.upper()
+                    # expand contractions
+                    if word in contractions:
+                        words[i] = contractions[word]
+                    else:
+                        words[i] = word
+                    # remove punctuation from beginning and end of words
+                    while len(words[i]) > 0 and words[i][:1] not in [chr(i) for i in range(65, 91)]:
+                        words[i] = words[i][1:]
+                    while len(words[i]) > 0 and words[i][-1:] not in [chr(i) for i in range(65, 91)]:
+                        words[i] = words[i][:-1]
             # put it all back together
             text = " ".join(words)
         return text
