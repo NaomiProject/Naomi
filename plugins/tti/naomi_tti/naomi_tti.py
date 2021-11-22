@@ -150,7 +150,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
         return sorted(phrases)
 
     def determine_intent(self, phrase):
-        phrase = self.cleantext(phrase.upper())
+        phrase = self.cleantext(phrase)
         score = {}
         allvariants = {phrase: {}}
         for intent in self.keywords:
