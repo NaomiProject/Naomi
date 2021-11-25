@@ -82,9 +82,6 @@ class JokePlugin(plugin.SpeechHandlerPlugin):
         mic -- used to interact with the user (for both input and output)
         """
         joke = random.choice(self._jokes)
-
-        mic.say(self.gettext("Knock knock"))
-        mic.active_listen()
-        mic.say(joke[0])
-        mic.active_listen()
+        mic.expect(self.gettext("Knock knock"), ["WHO'S THERE"])
+        mic.expect(joke[0], ["{} WHO".format(joke[0])])
         mic.say(joke[1])

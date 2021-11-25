@@ -55,6 +55,8 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
                         },
                         'templates': [
                             "READ THE {NewsKeyword}",
+                            "READ ME THE {NewsKeyword}",
+                            "TELL ME THE {NewsKeyword}",
                             "WHAT IS IN THE {NewsKeyword}",
                             "WHAT IS HAPPENING IN THE {NewsKeyword}",
                             "WHAT ARE TODAY'S {NewsKeyword}"
@@ -75,7 +77,7 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
                         ]
                     },
                     'de-DE': {
-                        'keywords':{
+                        'keywords': {
                             'NewsKeyword': [
                                 "NACHRICHTEN",
                                 "SCHLAGZEILEN"
@@ -129,14 +131,7 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
 
         if profile.get_profile_flag(['allows_email'], False):
 
-            mic.say(_('Would you like me to send you these articles?'))
-
-            answers = mic.active_listen()
-            if any(
-                self.gettext('YES').upper(
-                ) in answer.upper(
-                ) for answer in answers
-            ):
+            if(mic.confirm(_('Would you like me to send you these articles?'))):
                 mic.say(self.gettext("Sure, just give me a moment."))
                 SUBJECT = self.gettext("Your Top Headlines")
                 email_text = self.make_email_text(articles)

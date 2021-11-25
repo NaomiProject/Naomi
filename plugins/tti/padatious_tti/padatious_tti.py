@@ -10,16 +10,6 @@ except ModuleNotFoundError:
     raise unittest.SkipTest("padatious module not found")
 
 
-# is_keyword just checks to see if the word is a normal word or a keyword
-# (surrounded by curly brackets)
-def is_keyword(word):
-    word = word.strip()
-    response = False
-    if("{}{}".format(word[:1], word[-1:]) == "{}"):
-        response = True
-    return response
-
-
 # Convert a word ("word") to a keyword ("{word}")
 def to_keyword(word):
     return "{}{}{}".format("{", word, "}")
@@ -53,7 +43,7 @@ class PadatiousTTIPlugin(plugin.TTIPlugin):
                 'name': intent_base,
                 'templates': []
             }
-            templates = intents[intent_base]['locale'][locale]['templates']
+            templates = [self.cleantext(template) for template in intents[intent_base]['locale'][locale]['templates']]
             if('keywords' in intents[intent_base]['locale'][locale]):
                 for keyword in intents[intent_base]['locale'][locale]['keywords']:
                     keyword_token = "{}_{}".format(intent, keyword)

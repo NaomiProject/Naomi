@@ -72,6 +72,7 @@ class AudioDevice(object):
                 1024
             )
         )
+        self._stop = False
 
     @property
     def name(self):
@@ -80,6 +81,14 @@ class AudioDevice(object):
     @property
     def slug(self):
         return self._slug
+
+    @property
+    def stop(self):
+        return self._stop
+
+    @stop.setter
+    def stop(self, value):
+        self._stop = value
 
     @abc.abstractproperty
     def types(self):
@@ -124,6 +133,7 @@ class AudioDevice(object):
                     yield frame
 
     def play_fp(self, fp, *args, **kwargs):
+        self._stop = False
         if('chunksize' in kwargs):
             chunksize = kwargs['chunksize']
         else:
@@ -133,37 +143,45 @@ class AudioDevice(object):
         else:
             add_padding = profile.get(['audio', 'output_padding'], False)
         pause = float(profile.get(['audio', 'output_pause'], 0))
-        w = wave.open(fp, 'rb')
-        channels = w.getnchannels()
-        samplewidth = w.getsampwidth()
-        bits = w.getsampwidth() * 8
-        rate = w.getframerate()
-        with self.open_stream(
-            bits,
-            channels,
-            rate,
-            chunksize=chunksize
-        ) as stream:
-            data = w.readframes(chunksize)
-            datalen = len(data)
-            if add_padding and datalen > 0 and datalen < (chunksize * samplewidth):
-                data += b'\00' * (chunksize * samplewidth - datalen)
-                datalen = len(data)
-            while data:
-                # Check to see if we need to stop
-                if(hasattr(self, "stop")):
-                    del self.stop
-                    break
-                stream.write(data)
+        with wave.open(fp, 'rb') as w:
+            channels = w.getnchannels()
+            samplewidth = w.getsampwidth()
+            bits = w.getsampwidth() * 8
+            rate = w.getframerate()
+            with self.open_stream(
+                bits,
+                channels,
+                rate,
+                chunksize=chunksize
+            ) as stream:
                 data = w.readframes(chunksize)
                 datalen = len(data)
-                if add_padding and datalen > 0 and datalen < (chunksize * samplewidth):
+                if(
+                    (add_padding)
+                    and (datalen > 0)
+                    and (datalen < (chunksize * samplewidth))
+                ):
                     data += b'\00' * (chunksize * samplewidth - datalen)
                     datalen = len(data)
-            # pause before closing the stream (reduce clipping)
-            if(pause > 0):
-                time.sleep(pause)
-        w.close()
+                while data:
+                    # Check to see if we need to stop
+                    if(self._stop):
+                        self._stop = False
+                        break
+                    stream.write(data)
+                    data = w.readframes(chunksize)
+                    datalen = len(data)
+                    if(
+                        (add_padding)
+                        and (datalen > 0)
+                        and (datalen < (chunksize * samplewidth))
+                    ):
+                        data += b'\00' * (chunksize * samplewidth - datalen)
+                        datalen = len(data)
+                # pause before closing the stream (reduce clipping)
+                if(pause > 0):
+                    time.sleep(pause)
+            self._stop = False
 
     def play_file(self, filename, *args, **kwargs):
         with open(filename, 'rb') as f:

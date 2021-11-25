@@ -38,6 +38,7 @@ class Naomi(object):
         save_noise=False
     ):
         global _
+        profile.set_arg("application", self)
         self._logger = logging.getLogger(__name__)
         self._interface = interface.commandline()
         # check that the values we need in order to run Naomi
@@ -361,16 +362,27 @@ class Naomi(object):
                 plugin = info.plugin_class(info)
                 self.brain.add_plugin(plugin)
             except Exception as e:
+                reason = ''
+                if hasattr(e, 'strerror') and e.strerror:
+                    reason = e.strerror
+                    if hasattr(e, 'errno') and e.errno:
+                        reason += ' [Errno %d]' % e.errno
+                elif hasattr(e, 'message'):
+                    reason = e.message
+                elif hasattr(e, 'msg'):
+                    reason = e.msg
+                if not reason:
+                    reason = str(e)
                 if(self._logger.getEffectiveLevel() > logging.DEBUG):
                     print(
                         "Plugin {} skipped! (Reason: {})".format(
                             info.name,
-                            e.message if hasattr(e, 'message') else 'Unknown'
+                            reason
                         )
                     )
                 self._logger.warning(
                     "Plugin '%s' skipped! (Reason: %s)", info.name,
-                    e.message if hasattr(e, 'message') else 'Unknown',
+                    reason,
                     exc_info=(
                         self._logger.getEffectiveLevel() == logging.DEBUG
                     )

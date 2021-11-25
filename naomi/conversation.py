@@ -4,6 +4,7 @@ import random
 from . import i18n
 from . import paths
 from . import profile
+from .mic import Unexpected
 from .notifier import Notifier
 
 
@@ -50,48 +51,70 @@ class Conversation(i18n.GettextMixin):
         """
         self._logger.debug('Starting to handle conversation.')
         while True:
-            # Print notifications until empty
-            """notifications = self.notifier.get_all_notifications()
-            for notif in notifications:
-                self._logger.info("Received notification: '%s'", str(notif))"""
-
             utterance = self.mic.listen()
+            # if listen() returns False, just ignore it
+            if not isinstance(utterance, bool):
+                handled = False
+                while(" ".join(utterance) != "" and not handled):
+                    utterance, handled = self.handleRequest(utterance)
 
-            if(utterance):
-                # If the utterance is empty, don't respond
-                if(" ".join(utterance) != ""):
-                    intent = self.brain.query(utterance)
-                    if intent:
-                        try:
-                            self._logger.info(intent)
-                            intent['action'](intent, self.mic)
-                        except Exception as e:
-                            self._logger.error(
-                                'Failed to service intent {}: {}'.format(intent, str(e)),
-                                exc_info=True
-                            )
-                            self.mic.say(
-                                " ".join([
-                                    self.gettext("I'm sorry."),
-                                    self.gettext("I had some trouble with that operation."),
-                                    self.gettext("Please try again later.")
-                                ])
-                            )
-                        else:
-                            self._logger.debug(
-                                " ".join([
-                                    "Handling of phrase '{}'",
-                                    "by module '{}' completed"
-                                ]).format(
-                                    utterance,
-                                    intent
-                                )
-                            )
-                    else:
-                        self.mic.say(random.choice([  # nosec
-                            self.gettext("I'm sorry, could you repeat that?"),
-                            self.gettext("My apologies, could you try saying that again?"),
-                            self.gettext("Say that again?"),
-                            self.gettext("I beg your pardon?"),
-                            self.gettext("Pardon?")
-                        ]))
+    def handleRequest(self, utterance):
+        handled = False
+        intent = self.brain.query(utterance)
+        if intent:
+            try:
+                self._logger.info(intent)
+                intent['action'](intent, self.mic)
+                handled = True
+            except Unexpected as e:
+                utterance = e.utterance
+            except Exception as e:
+                self._logger.error(
+                    'Failed to service intent {}: {}'.format(intent, str(e)),
+                    exc_info=True
+                )
+                self.mic.say(
+                    " ".join([
+                        self.gettext("I'm sorry."),
+                        self.gettext("I had some trouble with that operation."),
+                        self.gettext("Please try again later.")
+                    ])
+                )
+                handled = True
+            else:
+                self._logger.debug(
+                    " ".join([
+                        "Handling of phrase '{}'",
+                        "by plugin '{}' completed"
+                    ]).format(
+                        utterance,
+                        intent
+                    )
+                )
+        else:
+            self.say_i_do_not_understand()
+            handled = True
+        return utterance, handled
+
+    def say_i_do_not_understand(self):
+        self.mic.say(
+            random.choice(
+                [  # nosec
+                    self.gettext("I'm sorry, could you repeat that?"),
+                    self.gettext("My apologies, could you try saying that again?"),
+                    self.gettext("Say that again?"),
+                    self.gettext("I beg your pardon?"),
+                    self.gettext("Pardon?")
+                ]
+            )
+        )
+
+    def list_choices(self, choices):
+        if len(choices) == 1:
+            self.mic.say(self.gettext("Please say {}").format(choices[0]))
+        elif len(choices) == 2:
+            self.mic.say(self.gettext("Please respond with {} or {}").format(choices[0], choices[1]))
+        else:
+            self.mic.say(
+                self.gettext("Please respond with one of the following: {}").format(choices)
+            )

@@ -3,6 +3,7 @@ import abc
 import collections
 import logging
 import mad
+import re
 import tempfile
 import wave
 from . import audioengine
@@ -11,6 +12,7 @@ from . import i18n
 from . import paths
 from . import profile
 from . import vocabcompiler
+from jiwer import wer
 
 
 class GenericPlugin(object):
@@ -104,7 +106,8 @@ class STTPlugin(GenericPlugin, metaclass=abc.ABCMeta):
         language = profile.get(['language'], 'en-US')
 
         vocabulary = vocabcompiler.VocabularyCompiler(
-            self.info.name, self._vocabulary_name,
+            self.info.name,
+            self._vocabulary_name,
             path=paths.sub('vocabularies', language)
         )
 
@@ -190,47 +193,50 @@ class VADPlugin(GenericPlugin):
             self._input_device._input_rate
         ):
             frames.append(frame)
-            voice_detected = self._voice_detected(frame, recording=recording)
-            if not recording:
-                if(voice_detected):
-                    # Voice activity detected, start recording and use
-                    # the last 10 frames to start
-                    self._logger.debug(
-                        "Started recording on device '{:s}'".format(
-                            self._input_device.slug
-                        )
-                    )
-                    recording = True
-                    # Include the previous 10 frames in the recording.
-                    recording_frames = list(frames)[-self._timeout:]
-                    last_voice_frame = len(recording_frames)
+            if(profile.get_arg('resetmic', False)):
+                return recording_frames
             else:
-                # We're recording
-                recording_frames.append(frame)
-                if(voice_detected):
-                    last_voice_frame = len(recording_frames)
-                if(last_voice_frame < len(recording_frames) - self._timeout):
-                    # We have waited past the timeout number of frames
-                    # so we believe the speaker has finished speaking.
-                    recording = False
-                    if(len(recording_frames) < self._minimum_capture):
+                voice_detected = self._voice_detected(frame, recording=recording)
+                if not recording:
+                    if(voice_detected):
+                        # Voice activity detected, start recording and use
+                        # the last 10 frames to start
                         self._logger.debug(
-                            " ".join([
-                                "Recorded {:d} frames, less than threshold",
-                                "of {:d} frames ({:.2f} seconds). Discarding"
-                            ]).format(
-                                len(recording_frames),
-                                self._minimum_capture,
-                                len(recording_frames) * self._chunktime
+                            "Started recording on device '{:s}'".format(
+                                self._input_device.slug
                             )
                         )
-                    else:
-                        self._logger.debug(
-                            "Recorded {:d} frames".format(
-                                len(recording_frames)
+                        recording = True
+                        # Include the previous 10 frames in the recording.
+                        recording_frames = list(frames)[-self._timeout:]
+                        last_voice_frame = len(recording_frames)
+                else:
+                    # We're recording
+                    recording_frames.append(frame)
+                    if(voice_detected):
+                        last_voice_frame = len(recording_frames)
+                    if(last_voice_frame < len(recording_frames) - self._timeout):
+                        # We have waited past the timeout number of frames
+                        # so we believe the speaker has finished speaking.
+                        recording = False
+                        if(len(recording_frames) < self._minimum_capture):
+                            self._logger.debug(
+                                " ".join([
+                                    "Recorded {:d} frames, less than threshold",
+                                    "of {:d} frames ({:.2f} seconds). Discarding"
+                                ]).format(
+                                    len(recording_frames),
+                                    self._minimum_capture,
+                                    len(recording_frames) * self._chunktime
+                                )
                             )
-                        )
-                        return recording_frames
+                        else:
+                            self._logger.debug(
+                                "Recorded {:d} frames".format(
+                                    len(recording_frames)
+                                )
+                            )
+                            return recording_frames
 
 
 class STTTrainerPlugin(GenericPlugin):
@@ -263,13 +269,52 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def determine_intent(self, phrase):
         pass
 
-    # FIXME this does not belong here. It should be in a special language object
+    # is_keyword just checks to see if the word is a normal word or a keyword
+    # (surrounded by curly brackets)
     @staticmethod
-    def cleantext(text):
+    def is_keyword(word):
+        word = word.strip()
+        response = False
+        if("{}{}".format(word[:1], word[-1:]) == "{}"):
+            response = True
+        return response
+
+    # Replace the nth occurrance of sub
+    # based on an answer by aleskva at
+    # https://stackoverflow.com/questions/35091557/replace-nth-occurrence-of-substring-in-string
+    def replacenth(self, search_for, replace_with, string, n):
+        try:
+            # print("Searching for: '{}' in '{}'".format(search_for, string))
+            # pprint([m.start() for m in re.finditer(search_for, string)])
+            if(self.is_keyword(search_for)):
+                where = [m.start() for m in re.finditer(r"{}".format(search_for), string)][n - 1]
+            else:
+                where = [m.start() for m in re.finditer(r"\b{}\b".format(search_for), string)][n - 1]
+            before = string[:where]
+            # print("Before: {}".format(before))
+            after = string[where:]
+            # print("After: {}".format(after))
+            after = after.replace(search_for, replace_with, 1)
+            # print("After: {}".format(after))
+            string = before + after
+            # print("String: {}".format(string))
+        except IndexError:
+            # print("IndexError {}".format(n))
+            pass
+        return string
+
+    # converts all non-keyword words to upper case in a template. This allows
+    # case insensitive matching.
+    def convert_template_to_upper(self, template):
+        return " ".join([word if self.is_keyword(word) else word.upper() for word in template.split()])
+
+    # This is used to prepare text by converting non-keyword text to
+    # upper case and expanding all contractions. We might also want to do
+    # stemming or lemmatization here. This function should be moved to the
+    # locale directory and overridden on a per locale basis.
+    def cleantext(self, text):
         language = profile.get(["language"], "en-US")[:2]
         if language == "en":
-            # upper case
-            text = text.upper()
             words = text.split(" ")
             # Adapted from a list at https://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
             contractions = {
@@ -390,17 +435,45 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
                 "YOU'VE": "YOU HAVE"
             }
             for i, word in enumerate(words):
-                # expand contractions
-                if word in contractions:
-                    words[i] = contractions[word]
-                # remove punctuation from beginning and end of words
-                while len(words[i]) > 0 and words[i][:1] not in [chr(i) for i in range(65, 91)]:
-                    words[i] = words[i][1:]
-                while len(words[i]) > 0 and words[i][-1:] not in [chr(i) for i in range(65, 91)]:
-                    words[i] = words[i][:-1]
+                if not self.is_keyword(word):
+                    word = word.upper()
+                    # expand contractions
+                    if word in contractions:
+                        words[i] = contractions[word]
+                    else:
+                        words[i] = word
+                    # remove punctuation from beginning and end of words
+                    while len(words[i]) > 0 and words[i][:1] not in [chr(i) for i in range(65, 91)]:
+                        words[i] = words[i][1:]
+                    while len(words[i]) > 0 and words[i][-1:] not in [chr(i) for i in range(65, 91)]:
+                        words[i] = words[i][:-1]
             # put it all back together
             text = " ".join(words)
         return text
+
+    @staticmethod
+    def match_phrase(phrase, choices):
+        # If phrase is a list, convert to a string
+        # (otherwise the "split" below throws an error)
+        if(isinstance(phrase, list)):
+            phrase = " ".join(phrase)
+        if phrase == "":
+            return ("", 0.0)
+        else:
+            # Just implement a quick edit distance
+            # FIXME replace this with a call to a real intent parser
+            phrase = phrase.upper()
+            choices = [choice.upper() for choice in choices]
+            templates = {}
+            for template in choices:
+                phrase_len = len(phrase.split())
+                template_len = len(template.split())
+                if(phrase_len > template_len):
+                    templates[template] = 1 - wer(phrase, template)
+                else:
+                    templates[template] = 1 - wer(template, phrase)
+            besttemplate = max(templates, key=lambda key: templates[key])
+            return(besttemplate, templates[besttemplate])
 
 
 class VisualizationsPlugin(GenericPlugin):
