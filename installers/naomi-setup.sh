@@ -245,7 +245,7 @@ apt_setup_wizard() {
       printf "${B_W}Please type '${B_G}Naomi --repopulate${B_W}' on the prompt below to populate your profile...${NL}"
       sudo rm -Rf ~/Naomi-Temp
       # Launch Naomi Population
-      cd ~/Naomi
+      cd ~/.config/naomi
       chmod a+x Naomi.sh
       cd ~
       exec bash
@@ -274,7 +274,7 @@ apt_setup_wizard() {
       printf "${B_W}Please type '${B_G}Naomi --repopulate${B_W}' on the prompt below to populate your profile...${NL}"
       sudo rm -Rf ~/Naomi-Temp
       # Launch Naomi Population
-      cd ~/Naomi
+      cd ~/.config/naomi
       chmod a+x Naomi.sh
       cd ~
       exec bash
@@ -318,7 +318,7 @@ yum_setup_wizard() {
       printf "${B_W}Please type '${B_G}Naomi --repopulate${B_W}' on the prompt below to populate your profile...${NL}"
       sudo rm -Rf ~/Naomi-Temp
       # Launch Naomi Population
-      cd ~/Naomi
+      cd ~/.config/naomi
       chmod a+x Naomi.sh
       cd ~
       exec bash
@@ -347,7 +347,7 @@ yum_setup_wizard() {
       printf "${B_W}Please type '${B_G}Naomi --repopulate${B_W}' on the prompt below to populate your profile...${NL}"
       sudo rm -Rf ~/Naomi-Temp
       # Launch Naomi Population
-      cd ~/Naomi
+      cd ~/.config/naomi
       chmod a+x Naomi.sh
       cd ~
       exec bash
