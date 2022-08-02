@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import random
-import time
 from naomi import plugin
 from naomi import profile
 
