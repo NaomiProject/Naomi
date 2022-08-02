@@ -73,13 +73,10 @@ class Conversation(i18n.GettextMixin):
                     'Failed to service intent {}: {}'.format(intent, str(e)),
                     exc_info=True
                 )
-                self.mic.say(
-                    " ".join([
-                        self.gettext("I'm sorry."),
-                        self.gettext("I had some trouble with that operation."),
-                        self.gettext("Please try again later.")
-                    ])
-                )
+                self.mic.say(self.gettext("I'm sorry."))
+                self.mic.say(self.gettext("I had some trouble with that operation."))
+                self.mic.say(str(e))
+                self.mic.say(self.gettext("Please try again later."))
                 handled = True
             else:
                 self._logger.debug(

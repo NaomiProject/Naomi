@@ -82,11 +82,14 @@ class Naomi(object):
             keyword = profile.get_profile_var(['keyword'], ['Naomi'])
             if(isinstance(keyword, list)):
                 keyword = keyword[0]
-            print(self._interface.status_text(_(
-                "Configuring {}"
-            ).format(
-                keyword
-            )))
+            visualizations.run_visualization(
+                "output",
+                self._interface.status_text(_(
+                    "Configuring {}"
+                ).format(
+                    keyword
+                ))
+            )
             for setting in self.settings():
                 self._interface.get_setting(
                     setting, self.settings()[setting]
@@ -361,6 +364,7 @@ class Naomi(object):
             try:
                 plugin = info.plugin_class(info)
                 self.brain.add_plugin(plugin)
+                self._logger.info('Loaded {} into brain'.format(plugin.info.name))
             except Exception as e:
                 reason = ''
                 if hasattr(e, 'strerror') and e.strerror:
@@ -373,15 +377,16 @@ class Naomi(object):
                     reason = e.msg
                 if not reason:
                     reason = str(e)
-                if(self._logger.getEffectiveLevel() > logging.DEBUG):
-                    print(
-                        "Plugin {} skipped! (Reason: {})".format(
-                            info.name,
-                            reason
-                        )
+                visualizations.run_visualization(
+                    "output",
+                    "Plugin {} skipped! (Reason: {})".format(
+                        info.name,
+                        reason
                     )
+                )
                 self._logger.warning(
-                    "Plugin '%s' skipped! (Reason: %s)", info.name,
+                    "Plugin '%s' skipped! (Reason: %s)",
+                    info.name,
                     reason,
                     exc_info=(
                         self._logger.getEffectiveLevel() == logging.DEBUG
@@ -787,9 +792,12 @@ class Naomi(object):
 
     def validate_output_device(self, output_device_slug):
         response = True
-        print(self._interface.instruction_text(
-            _("Testing device by playing a sound")
-        ))
+        visualizations.run_visualization(
+            "output",
+            self._interface.instruction_text(
+                _("Testing device by playing a sound")
+            )
+        )
         ae_info = profile.get_arg('plugins').get_plugin(
             profile.get_profile_var(['audio_engine']),
             category='audioengine'
@@ -810,7 +818,10 @@ class Naomi(object):
                 filename
             )
         except Exception as e:
-            print(e)
+            visualizations.run_visualization(
+                "output",
+                e
+            )
         heard = self._interface.simple_yes_no(
             _("Were you able to hear the beep?")
         )
@@ -826,7 +837,8 @@ class Naomi(object):
                 )
                 if(troubleshoot):
                     response = False
-                    print(
+                    visualizations.run_visualization(
+                        "output",
                         self._interface.instruction_text(" ".join([
                             _("The volume on your device may be too low."),
                             _("You should be able to use 'alsamixer'"),
@@ -866,21 +878,32 @@ class Naomi(object):
                     heard = True
 
         except audioengine.UnsupportedFormat as e:
-            print(self._interface.alert_text(str(e)))
-            print(
+            visualizations.run_visualization(
+                "output",
+                self._interface.alert_text(str(e))
+            )
+            visualizations.run_visualization(
+                "output",
                 self._interface.instruction_text(
                     _("Output format not supported on this device.")
                 )
             )
-            print(
+            visualizations.run_visualization(
+                "output",
                 self._interface.instruction_text(
                     _("Please choose a different device.")
                 )
             )
-            print("")
+            visualizations.run_visualization(
+                "output",
+                ""
+            )
             response = False
         except Exception as e:
-            print(str(e))
+            visualizations.run_visualization(
+                "output",
+                str(e)
+            )
         return response
 
     def validate_input_device(self, input_device_slug):
@@ -943,7 +966,8 @@ class Naomi(object):
                 vad_plugin
             )
 
-            print(
+            visualizations.run_visualization(
+                "output",
                 self._interface.instruction_text(
                     _("Please speak into the mic now")
                 )
@@ -964,7 +988,10 @@ class Naomi(object):
                 while (replay):
                     response = True
                     output_device.play_fp(f)
-                    print("")
+                    visualizations.run_visualization(
+                        "output",
+                        ""
+                    )
                     heard = self._interface.simple_yes_no(
                         _("Did you hear yourself?")
                     )

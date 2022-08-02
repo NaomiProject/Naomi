@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import os
 import sys
 import logging
+import logging.handlers
 import argparse
 from . import application
 from . import app_utils
@@ -18,19 +20,6 @@ USE_BATCH_MIC = application.USE_BATCH_MIC
 
 
 def main(args=None):
-    logger = logging.getLogger(__name__)
-    language = profile.get_profile_var(['language'])
-    if(not language):
-        language = 'en-US'
-        logger.warn(
-            ' '.join([
-                'language not specified in profile,',
-                'using default ({})'.format(language)
-            ])
-        )
-    translations = i18n.parse_translations(paths.data('locale'))
-    translator = i18n.GettextMixin(translations)
-    _ = translator.gettext
     parser = argparse.ArgumentParser(description='Naomi Voice Control Center')
     parser.add_argument(
         '--debug',
@@ -157,6 +146,40 @@ def main(args=None):
         help='Prints a transcription of things Naomi says and thinks it hears'
     )
     p_args = parser.parse_args(args)
+    loglevel = logging.ERROR
+    if(p_args.debug):
+        loglevel = logging.DEBUG
+    else:
+        if profile.get(['logging', 'level'], 'error') == "debug":
+            loglevel = logging.DEBUG
+    logfile = profile.get(['logging', 'logfile'], paths.sub('Naomi.log'))
+    handler = logging.handlers.TimedRotatingFileHandler(
+        logfile,
+        interval=24,
+        when="h",
+        backupCount=5
+    )
+    if(os.path.isfile(logfile)):
+        handler.doRollover()
+    logging.basicConfig(
+        level=loglevel,
+        filename=logfile
+    )
+    logger = logging.getLogger(__name__)
+    logger.addHandler(handler)
+    language = profile.get_profile_var(['language'])
+    if(not language):
+        language = 'en-US'
+        logger.warn(
+            ' '.join([
+                'language not specified in profile,',
+                'using default ({})'.format(language)
+            ])
+        )
+    translations = i18n.parse_translations(paths.data('locale'))
+    translator = i18n.GettextMixin(translations)
+    _ = translator.gettext
+    print(_("Logging to {}").format(logfile))
 
     print(logo)
     print("      ___           ___           ___           ___                  ")
@@ -171,11 +194,6 @@ def main(args=None):
     print("     /:/  /        /:/  /       \::/  /        /:/  /    \:\__\      ")
     print("     \/__/         \/__/         \/__/         \/__/      \/__/      ")
     print(sto)
-
-    # Set up logging
-    logging.basicConfig(
-        level=logging.DEBUG if p_args.debug else logging.ERROR
-    )
 
     # Select Mic
     used_mic = USE_STANDARD_MIC

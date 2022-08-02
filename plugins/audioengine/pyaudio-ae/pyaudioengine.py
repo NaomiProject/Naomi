@@ -29,17 +29,11 @@ class PyAudioEnginePlugin(plugin.AudioEnginePlugin):
                           "that pop up during this process are normal and " +
                           "can usually be safely ignored.")
 
-        # AaronC Sept 18 2018 Temporarily redirect errors
-        # while instantiating PyAudio object if we are not
-        # in DEBUG mode
-        if (self._logger.getEffectiveLevel() > logging.DEBUG):
-            dev_null = os.open('/dev/null', os.O_WRONLY)
-            std_err = os.dup(2)
-            os.dup2(dev_null, 2)
-            self._pyaudio = pyaudio.PyAudio()
-            os.dup2(std_err, 2)
-        else:
-            self._pyaudio = pyaudio.PyAudio()
+        dev_null = os.open('/dev/null', os.O_WRONLY)
+        std_err = os.dup(2)
+        os.dup2(dev_null, 2)
+        self._pyaudio = pyaudio.PyAudio()
+        os.dup2(std_err, 2)
 
         self._logger.info("Initialization of PyAudio engine finished")
 

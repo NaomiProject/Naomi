@@ -5,6 +5,7 @@ from naomi import profile
 
 class StopPlugin(plugin.SpeechHandlerPlugin):
     _plugins = []
+    _setup = False
 
     def intents(self):
         return {
@@ -34,14 +35,15 @@ class StopPlugin(plugin.SpeechHandlerPlugin):
         }
 
     # Create a list of speechhandler plugins that have a "stop" method
-    def __init__(self, *args, **kwargs):
-        super(StopPlugin, self).__init__(*args, **kwargs)
-        for info in profile.get_arg('plugins').get_plugins_by_category("speechhandler"):
-            if info.name != 'stop':
-                plugin = info.plugin_class(info)
-                if 'stop' in dir(plugin):
-                    self._plugins.append(plugin.stop)
-                    self._logger.info("{} stop command added".format(info.name))
+    # This needs to run after all speechhandler plugins have been loaded.
+    def setup(self, *args, **kwargs):
+        for plug_in in profile.get_arg('application').brain._plugins:
+            if 'stop' in dir(plug_in):
+                self._plugins.append(plug_in.stop)
+                self._logger.info("{} stop command added".format(plug_in.info.name))
+            else:
+                self._logger.info("{} stop command not found".format(plug_in.info.name))
+        self._setup = True
 
     def handle(self, intent, mic):
         text = intent['input']
@@ -58,6 +60,11 @@ class StopPlugin(plugin.SpeechHandlerPlugin):
                     correct intent.
             mic -- used to interact with the user (for both input and output)
         """
+        if not self._setup:
+            self._logger.info("searching for plugins with 'stop' methods")
+            self.setup()
+        else:
+            self._logger.info("'stop' methods already configured")
         mic.stop()
         # Run "stop" methods from other speechhandlers
         for method in self._plugins:

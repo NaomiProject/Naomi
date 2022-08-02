@@ -312,11 +312,18 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     # upper case and expanding all contractions. We might also want to do
     # stemming or lemmatization here. This function should be moved to the
     # locale directory and overridden on a per locale basis.
+
+    # 2022-04-07 When this is used to add a list of words to the dictionary,
+    # we want both the contraction and the expanded words.
     def cleantext(self, text):
         language = profile.get(["language"], "en-US")[:2]
         if language == "en":
             words = text.split(" ")
-            # Adapted from a list at https://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
+            # Adapted from a list at
+            # https://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
+            # It does not work for contractions with multiple possible
+            # expansions (eg: Don't do that: Do not do that
+            #                 She don't do that: She does not do that)
             contractions = {
                 "AIN'T": "ARE NOT",  # "am not / are not / is not / has not / have not"
                 "AREN'T": "ARE NOT",
@@ -451,8 +458,7 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
             text = " ".join(words)
         return text
 
-    @staticmethod
-    def match_phrase(phrase, choices):
+    def match_phrase(self, phrase, choices):
         # If phrase is a list, convert to a string
         # (otherwise the "split" below throws an error)
         if(isinstance(phrase, list)):
@@ -462,7 +468,7 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
         else:
             # Just implement a quick edit distance
             # FIXME replace this with a call to a real intent parser
-            phrase = phrase.upper()
+            phrase = self.cleantext(phrase)
             choices = [choice.upper() for choice in choices]
             templates = {}
             for template in choices:

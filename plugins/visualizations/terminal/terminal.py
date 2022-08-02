@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+import datetime
 from blessings import Terminal
 from naomi.commandline import println
+from naomi import app_utils
 from naomi import plugin
 
 
@@ -40,3 +42,8 @@ class TerminalVisualizationsPlugin(plugin.VisualizationsPlugin):
             feedback[int(displaywidth * ((threshold - minsnr) / snrrange))] = 't'
         println("".join(feedback))
 
+    @staticmethod
+    def output(message):
+        tz = app_utils.get_timezone()
+        now = datetime.datetime.now(tz=tz)
+        println(f"{now:%l}:{now:%M} {now:%p} - {message}\n")

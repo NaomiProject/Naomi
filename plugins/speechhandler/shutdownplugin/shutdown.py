@@ -54,12 +54,5 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         message = random.choice(messages)
 
         mic.say(message)
-        # specifically wait for Naomi to finish talking
-        # here, otherwise it will exit before getting to
-        # speak.
-        if(profile.get_arg('listen_while_talking', False)):
-            if hasattr(mic, "current_thread"):
-                while(mic.current_thread.is_alive()):
-                    time.sleep(1)
 
         quit()
