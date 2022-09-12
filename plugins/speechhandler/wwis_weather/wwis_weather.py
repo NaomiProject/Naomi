@@ -26,9 +26,11 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                 'locale': {
                     'en-US': {
                         'keywords': {
-                            'ForecastKeyword':[
+                            'ForecastKeyword': [
                                 'WEATHER',
-                                'FORECAST'
+                                'FORECAST',
+                                'WEATHER REPORT',
+                                'WEATHER FORECAST'
                             ],
                             'WeatherTypePresentKeyword': [
                                 'SNOWING',
@@ -78,8 +80,7 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
                             "WILL IT {WeatherTypeFutureKeyword} {DayKeyword}",
                             "WILL IT {WeatherTypeFutureKeyword} {DayKeyword} {TimeKeyword}",
                             "WHEN WILL IT {WeatherTypeFutureKeyword}",
-                            "WHEN WILL IT {WeatherTypeFutureKeyword} IN {LocationKeyword}",
-                            "CAN YOU TELL ME THE {ForecastKeyword}"
+                            "WHEN WILL IT {WeatherTypeFutureKeyword} IN {LocationKeyword}"
                         ]
                     },
                     'fr-FR': {
@@ -141,7 +142,6 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         }
 
     def settings(self):
-        self.get_location_data()
         _ = self.gettext
         return OrderedDict(
             [
@@ -197,38 +197,41 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         return response
 
     def get_location_data(self):
-        # Set the language used for the location data
-        language = profile.get_profile_var(["language"], "en")[:2]
-        url = "https://worldweather.wmo.int/en/json/Country_{}.xml".format(language)
-        response = requests.get(url, timeout=2)
-        jsondoc = str(response.content, 'utf-8')
-        self.locationdata = json.loads(jsondoc)
-        # Make a list of locations
-        self.locations = {}
-        # Country here is just an index
-        for country in self.locationdata["member"]:
-            if(isinstance((self.locationdata["member"][country]), dict)):
-                memName = self.locationdata["member"][country]["memName"]
-                self.locations[memName] = {}
-                for city in self.locationdata["member"][country]["city"]:
-                    if(", " in city["cityName"]):
-                        cityId = city["cityId"]
-                        cityName, regionName = city["cityName"].split(", ")
-                        if regionName not in self.locations[memName].keys():
-                            self.locations[memName][regionName] = {}
-                        self.locations[memName][regionName][cityName] = cityId
-                    else:
-                        cityName = city["cityName"]
-                        cityId = city["cityId"]
-                        self.locations[memName][cityName] = cityId
+        if 'locations' not in dir(self):
+            # Set the language used for the location data
+            language = profile.get_profile_var(["language"], "en")[:2]
+            url = "https://worldweather.wmo.int/en/json/Country_{}.xml".format(language)
+            response = requests.get(url, timeout=2)
+            jsondoc = str(response.content, 'utf-8')
+            self.locationdata = json.loads(jsondoc)
+            # Make a list of locations
+            self.locations = {}
+            # Country here is just an index
+            for country in self.locationdata["member"]:
+                if(isinstance((self.locationdata["member"][country]), dict)):
+                    memName = self.locationdata["member"][country]["memName"]
+                    self.locations[memName] = {}
+                    for city in self.locationdata["member"][country]["city"]:
+                        if(", " in city["cityName"]):
+                            cityId = city["cityId"]
+                            cityName, regionName = city["cityName"].split(", ")
+                            if regionName not in self.locations[memName].keys():
+                                self.locations[memName][regionName] = {}
+                            self.locations[memName][regionName][cityName] = cityId
+                        else:
+                            cityName = city["cityName"]
+                            cityId = city["cityId"]
+                            self.locations[memName][cityName] = cityId
 
     def get_countries(self):
+        self.get_location_data()
         countries = {}
         for country in self.locations:
             countries[country] = country
         return countries
 
     def get_regions(self):
+        self.get_location_data()
         regions = {}
         country = profile.get_profile_var(['wwis_weather', 'country'])
         for region in self.locations[country]:
@@ -239,12 +242,14 @@ class WWISWeatherPlugin(plugin.SpeechHandlerPlugin):
         return regions
 
     def get_cities(self):
+        self.get_location_data()
         cities = {}
         for city in self.locations[profile.get_profile_var(["wwis_weather", "country"])][profile.get_profile_var(["wwis_weather", "region"])]:
             cities[city] = city
         return cities
 
     def get_city_id(self):
+        self.get_location_data()
         cityId = None
         country = profile.get_profile_var(['wwis_weather', 'country'], "")
         region = profile.get_profile_var(['wwis_weather', 'region'], "")

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-from naomi.commandline import println
 from naomi import alteration
 from naomi import paths
 from naomi import profile
+from naomi import visualizations
 import audioop
 import contextlib
 import logging
@@ -326,7 +326,10 @@ class Mic(object):
                 else:
                     if(len(transcribed)):
                         if(self._print_transcript):
-                            println("<  {}\n".format(transcribed))
+                            visualizations.run_visualization(
+                                "output",
+                                f"<  {transcribed}"
+                            )
                         if self.check_for_keyword(transcribed, keyword):
                             self._log_audio(f, transcribed, "passive")
                             if(self.passive_listen):
@@ -342,11 +345,11 @@ class Mic(object):
                                 else:
                                     if(" ".join(transcribed).strip() == ""):
                                         if(self._print_transcript):
-                                            println("<< <noise>\n")
+                                            visualizations.run_visualization("output", "<< <noise>")
                                         self._log_audio(f, transcribed, "noise")
                                     else:
                                         if(self._print_transcript):
-                                            println("<< {}\n".format(transcribed))
+                                            visualizations.run_visualization("output", "<< {}".format(transcribed))
                                         self._log_audio(f, transcribed, "active")
                                 if(profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)):
                                     # Check if any of the wakewords identified by
@@ -371,7 +374,7 @@ class Mic(object):
                             self._log_audio(f, transcribed, "noise")
                     else:
                         if(self._print_transcript):
-                            println("<  <noise>\n")
+                            visualizations.run_visualization("output", "<  <noise>")
                             self._log_audio(f, "", "noise")
         return False
 
@@ -384,7 +387,7 @@ class Mic(object):
             else:
                 self._logger.debug("No text to respond with using beep")
                 if(self._print_transcript):
-                    println(">> <beep>\n")
+                    visualizations.run_visualization("output", ">> <beep>")
                 self.play_file(paths.data('audio', 'beep_hi.wav'))
         with self._write_frames_to_file(
             self._vad_plugin.get_audio(),
@@ -397,7 +400,7 @@ class Mic(object):
                 else:
                     self._logger.debug("No text to respond with using beep")
                     if(self._print_transcript):
-                        println(">> <boop>\n")
+                        visualizations.run_visualization("output", ">> <boop>")
                     self.play_file(paths.data('audio', 'beep_lo.wav'))
             try:
                 transcribed = [word.upper() for word in self.active_stt_engine.transcribe(f)]
@@ -408,11 +411,11 @@ class Mic(object):
             else:
                 if(" ".join(transcribed).strip() == ""):
                     if(self._print_transcript):
-                        println("<< <noise>\n")
+                        visualizations.run_visualization("output", "<< <noise>")
                     self._log_audio(f, transcribed, "noise")
                 else:
                     if(self._print_transcript):
-                        println("<< {}\n".format(transcribed))
+                        visualizations.run_visualization("output", "<< {}".format(transcribed))
                     self._log_audio(f, transcribed, "active")
         return transcribed
 
@@ -545,7 +548,7 @@ class Mic(object):
     # Stop talking and delete the queue
     def stop(self, wait=False):
         global queue
-        println("Stopping...")
+        visualizations.run_visualization("output", "Stopping...")
         if(hasattr(self, "current_thread")):
             try:
                 queue = []
@@ -598,11 +601,12 @@ class Mic(object):
         self.current_thread = threading.Thread(
             target=self.process_queue
         )
+        self.current_thread.daemon = True
         self.current_thread.start()
 
     def say_sync(self, phrase):
         if(profile.get_arg('print_transcript')):
-            println(">> {}\n".format(phrase))
+            visualizations.run_visualization("output", ">> {}\n".format(phrase))
         with tempfile.SpooledTemporaryFile() as f:
             f.write(self.tts_engine.say(phrase))
             f.seek(0)

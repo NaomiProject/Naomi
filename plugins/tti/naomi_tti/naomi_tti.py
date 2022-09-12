@@ -71,6 +71,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                             self.intent_map['intents'][intent]['words'][word] += 1
                         except KeyError:
                             self.intent_map['intents'][intent]['words'][word] = 1
+                            self._logger.info(f"Adding '{word}' to '{intent}'")
                         # keep a list of the intents a word appears in
                         try:
                             self.words[word].update({intent: True})
@@ -83,7 +84,14 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             phrase_count = len(intents[intent_base]['locale'][locale]['templates'])
             for word in self.intent_map['intents'][intent]['words']:
                 self.intent_map['intents'][intent]['words'][word] /= phrase_count
-                self._logger.info("word {} appears {} times in {}: {}".format(word, phrase_count, intent, self.intent_map['intents'][intent]['words'][word]))
+                self._logger.info(
+                    "word {} appears {} times in {}: {}".format(
+                        word,
+                        phrase_count,
+                        intent,
+                        self.intent_map['intents'][intent]['words'][word]
+                    )
+                )
 
     def train(self):
         # Here we want to go through a list of all the words in all the intents
@@ -201,20 +209,24 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
         # Now calculate a total score for each variant
         variantscores = {}
         for variant in allvariants:
-            # print("************VARIANT**************")
-            # print(variant)
+            self._logger.info("************VARIANT**************")
+            self._logger.info(variant)
             variantscores[variant] = {}
             words = variant.split()
             intentscores = {}
             for intent in self.intent_map['intents']:
+                self._logger.info(f"Intent: {intent}")
+                # pprint(self.intent_map['intents'][intent]['words'])
                 score = 0
                 # build up a score based on the words that match.
                 for word in words:
+                    self._logger.info(f"Scoring word: {word}")
                     if word in self.intent_map['intents'][intent]['words']:
                         intents_count = len(self.intent_map['intents'])
                         word_appears_in = len(self.words[word])
                         score += self.intent_map['intents'][intent]['words'][word] * (intents_count - word_appears_in) / intents_count
-                        # print(f"Score: {score}")
+                        self._logger.info(f"Score: {score} after checking word '{word}'")
+
                 # penalize the variant if it does not contain important words
                 # highscore would be if the variant contains at least each of
                 # the keywords
@@ -223,11 +235,12 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 for word in self.intent_map['intents'][intent]['words']:
                     if word not in words:
                         penalty += self.intent_map['intents'][intent]['words'][word]
+                        self._logger.info(f"Penalty: {penalty} after checking word {word}")
                 intentscores[intent] = score * (highscore - penalty) / highscore
+                self._logger.info(f"Final score = {score} * ({highscore} - {penalty} / {highscore} = {intentscores[intent]}")
             # list intents and scores
             for intent in intentscores.keys():
                 self._logger.info("\t{}: {}".format(intent, intentscores[intent]))
-                # print("\t{}: {}".format(intent, intentscores[intent]))
             # Take the intent with the highest score
             # print("==========intentscores============")
             # pprint(intentscores)

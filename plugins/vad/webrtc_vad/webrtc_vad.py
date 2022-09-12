@@ -152,6 +152,8 @@ class WebRTCPlugin(plugin.VADPlugin, unittest.TestCase):
                 [key * value for key, value in self.distribution.items()]
             ) / items
             stddev = math.sqrt((sum1 - (items * (mean ** 2))) / (items - 1))
+            if stddev < 1:
+                stddev = 1
             self._threshold = mean + (
                 stddev * profile.get(
                     ['snr_vad', 'tolerance'],
