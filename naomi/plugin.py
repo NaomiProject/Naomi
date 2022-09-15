@@ -88,6 +88,11 @@ class SpeechHandlerPlugin(
     def handle(self, intent, mic):
         pass
 
+class SRPlugin(GenericPlugin, metaclass=abc.ABCMeta):
+    def recognize_speaker(self, filename):
+        speaker = None
+        utterance = profile.get_arg('active_stt_engine').transcribe(filename)
+        return {'speaker': speaker, 'utterance': utterance}
 
 class STTPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def __init__(self, name, phrases, *args, **kwargs):
@@ -458,6 +463,10 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
             text = " ".join(words)
         return text
 
+    @staticmethod
+    def getcontractions(phrase):
+        return [phrase]
+        
     def match_phrase(self, phrase, choices):
         # If phrase is a list, convert to a string
         # (otherwise the "split" below throws an error)

@@ -500,40 +500,39 @@ class Naomi(object):
         tts_plugin_info = profile.get_arg('plugins').get_plugin(tts_slug, category='tts')
         tts_plugin = tts_plugin_info.plugin_class(tts_plugin_info)
 
+        # audiolog for training
+        if(save_audio):
+            save_passive_audio = True
+            save_active_audio = True
+            save_noise = True
+
+        # Instead of passing the following values to 
+        profile.set_arg('input_device', input_device)
+        profile.set_arg('output_device', output_device)
+        profile.set_arg('sr_plugin', sr_plugin)
+        profile.set_arg('active_stt_reply', active_stt_reply)
+        profile.set_arg('active_stt_response', active_stt_response)
+        profile.set_arg('passive_stt_plugin', passive_stt_plugin)
+        profile.set_arg('active_stt_plugin', active_stt_plugin)
+        profile.set_arg('special_stt_slug', special_stt_slug)
+        profile.set_arg('tts_plugin', tts_plugin)
+        profile.set_arg('vad_plugin', vad_plugin)
+        profile.set_arg('keyword', keyword)
+        profile.set_arg('print_transcript', print_transcript)
+        profile.set_arg('passive_listen', passive_listen)
+        profile.set_arg('save_passive_audio', save_passive_audio)
+        profile.set_arg('save_active_audio', save_active_audio)
+        profile.set_arg('save_noise', save_noise)
+
         # Initialize Mic
         if use_mic == USE_TEXT_MIC:
             self.mic = local_mic.Mic()
             self._logger.info('Using local text input and output')
         elif use_mic == USE_BATCH_MIC:
-            self.mic = batch_mic.Mic(
-                passive_stt_plugin,
-                active_stt_plugin,
-                special_stt_slug,
-                profile.get_arg('plugins'),
-                batch_file,
-                keyword=keyword
-            )
+            self.mic = batch_mic.Mic()
             self._logger.info('Using batched mode')
         else:
-            self.mic = mic.Mic(
-                input_device,
-                output_device,
-                active_stt_reply,
-                active_stt_response,
-                passive_stt_plugin,
-                active_stt_plugin,
-                special_stt_slug,
-                profile.get_arg('plugins'),
-                tts_plugin,
-                vad_plugin,
-                keyword=keyword,
-                print_transcript=print_transcript,
-                passive_listen=passive_listen,
-                save_audio=save_audio,
-                save_passive_audio=save_passive_audio,
-                save_active_audio=save_active_audio,
-                save_noise=save_noise
-            )
+            self.mic = mic.Mic()
 
         self.conversation = conversation.Conversation(
             self.mic, self.brain
