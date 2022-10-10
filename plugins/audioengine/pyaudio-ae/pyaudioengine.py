@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+import contextlib
 import logging
 import os
-import contextlib
+import pyaudio
 import re
 import slugify
-import pyaudio
+import time
+import wave
 from naomi import plugin
+from naomi import profile
 
 
 PYAUDIO_BIT_MAPPING = {8: pyaudio.paInt8,
@@ -83,6 +86,10 @@ class PyAudioEnginePlugin(plugin.AudioEnginePlugin):
 
 class PyAudioDevice(plugin.audioengine.AudioDevice):
     RE_PRESLUG = re.compile(r'\(hw:\d,\d\)')
+    _output_stream = None
+    _output_format = pyaudio.paInt16
+    _output_rate = 16000
+    _output_channels = 2
 
     def __init__(self, engine, info):
         super(PyAudioDevice, self).__init__(info['name'])
@@ -211,3 +218,103 @@ class PyAudioDevice(plugin.audioengine.AudioDevice):
                         break
                     else:
                         yield frame
+
+    def play_fp(self, fp, *args, **kwargs):
+        self._stop = False
+        if('chunksize' in kwargs):
+            chunksize = kwargs['chunksize']
+        else:
+            chunksize = int(profile.get(['audio', 'output_chunksize'], 1024))
+        if('add_padding' in kwargs):
+            add_padding = kwargs['add_padding']
+        else:
+            add_padding = profile.get(['audio', 'output_padding'], False)
+        pause = float(profile.get(['audio', 'output_pause'], 0))
+        with wave.open(fp, 'rb') as w:
+            channels = w.getnchannels()
+            samplewidth = w.getsampwidth()
+            bits = w.getsampwidth() * 8
+            rate = w.getframerate()
+            data = w.readframes(chunksize)
+            datalen = len(data)
+            fmt = bits_to_samplefmt(bits)
+            if(self._output_stream is None):
+                self._output_stream = self._engine._pyaudio.open(
+                    format=fmt,
+                    channels=channels,
+                    rate=rate,
+                    output=True,
+                    input=False,
+                    output_device_index=self.index,
+                    frames_per_buffer=chunksize
+                )
+                # Set the initial values for self._output_format,
+                # self._output_rate and self._output_channels
+                self._output_format = fmt
+                self._output_rate = rate
+                self._output_channels = channels
+            # Check to make sure that format, rate and channels match
+            # the current stream. If not, close and reopen.
+            if(
+                (fmt != self._output_format)
+                or(rate != self._output_rate)
+                or(channels != self._output_channels)
+            ):
+                self._output_stream.close()
+                self._output_stream = self._engine._pyaudio.open(
+                    format=fmt,
+                    channels=channels,
+                    rate=rate,
+                    output=True,
+                    input=False,
+                    output_device_index=self.index,
+                    frames_per_buffer=chunksize
+                )
+                self._output_format = fmt
+                self._output_rate = rate
+                self._output_channels = channels
+            if(
+                (add_padding)
+                and (datalen > 0)
+                and (datalen < (chunksize * samplewidth))
+            ):
+                data += b'\00' * (chunksize * samplewidth - datalen)
+                datalen = len(data)
+            while(datalen > 0):
+                # Check to see if we need to stop
+                if(self._stop):
+                    self._stop = False
+                    break
+                # Redirect the "ALSA lib pcm.c:8545:(snd_pcm_recover) underrun
+                # occurred" errors to /dev/null
+                dev_null = os.open('/dev/null', os.O_WRONLY)
+                std_err = os.dup(2)
+                os.dup2(dev_null, 2)
+                try:
+                    self._output_stream.write(data)
+                except OSError:
+                    self._output_stream = self._engine._pyaudio.open(
+                        format=bits_to_samplefmt(bits),
+                        channels=channels,
+                        rate=rate,
+                        output=True,
+                        input=False,
+                        output_device_index=self.index,
+                        frames_per_buffer=chunksize
+                    )
+                    self._output_stream.write(data)
+                data = w.readframes(chunksize)
+                datalen = len(data)
+                if(
+                    (add_padding)
+                    and (datalen > 0)
+                    and (datalen < (chunksize * samplewidth))
+                ):
+                    data += b'\00' * (chunksize * samplewidth - datalen)
+                    datalen = len(data)
+            # Reset stderr
+            os.dup2(std_err, 2)
+            # pause before closing the stream (reduce clipping)
+            if(pause > 0):
+                time.sleep(pause)
+            self._stop = False
