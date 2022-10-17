@@ -104,7 +104,7 @@ class Brain(object):
         phrases.extend(self.get_plugin_phrases())
         return sorted(list(set(phrases)))
 
-    def query(self, texts):
+    def query(self, sr_response):
         """
         Passes user input to the appropriate module, testing it against
         each candidate module's isValid function.
@@ -119,7 +119,7 @@ class Brain(object):
         Returns:
             A tuple containing a text and the module that can handle it
         """
-        for text in texts:
+        for text in sr_response['utterance']:
             # convert text to upper case and remove any punctuation
             text = self._intentparser.cleantext(text)
             intents = self._intentparser.determine_intent(text)
@@ -127,6 +127,7 @@ class Brain(object):
                 # Add the intent to the response so the handler method
                 # can find out which intent activated it
                 intents[intent]['intent'] = intent
+                intents[intent]['user'] = sr_response['speaker']
                 if(profile.get_arg("print_transcript")):
                     print("{} {}".format(intent, intents[intent]['score']))
                 if(profile.get_arg('save_active_audio')):
@@ -164,7 +165,7 @@ class Brain(object):
                     return(intents[intent])
             self._logger.debug(
                 "No module was able to handle any of these phrases: {}".format(
-                    str(texts)
+                    str(sr_response('utterance'))
                 )
             )
             return (None)

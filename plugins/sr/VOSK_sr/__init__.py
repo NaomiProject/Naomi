@@ -69,8 +69,8 @@ class VOSK_sr(plugin.SRPlugin):
                 completed_process = run_command(cmd, 2)
                 if(completed_process.returncode != 0):
                     print(completed_process.stderr.decode("UTF-8"))
-        self._rec = KaldiRecognizer(model, wf.getframerate())
-        self._rec.SetSpkModel(spk_model)
+        self.rec = KaldiRecognizer(model, wf.getframerate())
+        self.rec.SetSpkModel(spk_model)
 
         with sqlite3.connect(self._audiolog_db) as conn:
             cur = conn.cursor()
@@ -242,17 +242,12 @@ class VOSK_sr(plugin.SRPlugin):
     # Returns the name of the speaker, the cosine distance, and the STT transcription
     # In my experience, a cosine distance of less than 30 is a match and over
     # 30 should be verified.
-    def recognize_speaker(self, filename):
-        with wave.open(os.path.join(audiolog_dir, filename), "rb") as wf:
-            if wf.getnchannels() != 1 or wf.getsampwidth() != 2 or wf.getcomptype() != "NONE":
-                print ("Audio file must be WAV format mono PCM.")
-                exit (1)
-            rec = KaldiRecognizer(model, wf.getframerate())
-            rec.SetSpkModel(spk_model)
-            data = wf.readframes(wf.getnframes())
-            if len(data) == 0:
-                print("len(data)=0")
-                break
+    def recognize_speaker(self, fp):
+        fp.seek(44)
+        data = fp.read()
+        if len(data) == 0:
+            print("len(data)=0")
+            break
         self.rec.AcceptWaveform(data)
         res = json.loads(self.rec.Result())
         print(f"Text: {res['text']}")

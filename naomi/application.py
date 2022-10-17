@@ -500,13 +500,20 @@ class Naomi(object):
         tts_plugin_info = profile.get_arg('plugins').get_plugin(tts_slug, category='tts')
         tts_plugin = tts_plugin_info.plugin_class(tts_plugin_info)
 
+        # Initialize Speaker Recognition Engine
+        sr_slug = profile.get_profile_var(['sr_engine'], 'default_sr')
+        sr_plugin_info = profile.get_arg('plugins').get_plugin(sr_slug, category='sr')
+        sr_plugin = sr_plugin_info.plugin_class(sr_plugin_info)
+        profile.set_arg('sr_plugin', sr_plugin)
+
         # audiolog for training
         if(save_audio):
             save_passive_audio = True
             save_active_audio = True
             save_noise = True
 
-        # Instead of passing the following values to 
+        # Instead of passing the following values to mic, store them here and
+        # pick them up when needed.
         profile.set_arg('input_device', input_device)
         profile.set_arg('output_device', output_device)
         profile.set_arg('sr_plugin', sr_plugin)

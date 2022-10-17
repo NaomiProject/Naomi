@@ -35,49 +35,36 @@ class Mic(object):
     current_thread = None
 
     def __init__(
-        self,
-        input_device,
-        output_device,
-        active_stt_reply,
-        active_stt_response,
-        passive_stt_engine,
-        active_stt_engine,
-        special_stt_slug,
-        plugins,
-        tts_engine,
-        vad_plugin,
-        keyword=['NAOMI'],
-        print_transcript=False,
-        passive_listen=False,
-        save_audio=False,
-        save_passive_audio=False,
-        save_active_audio=False,
-        save_noise=False
+        self
     ):
         self._logger = logging.getLogger(__name__)
+        keyword = profile.get_profile_var(['keyword'], ['NAOMI'])
+        if isinstance(keyword, str):
+            keyword = [keyword]
         self._keyword = keyword
-        self.tts_engine = tts_engine
-        self.passive_stt_engine = passive_stt_engine
-        self.active_stt_engine = active_stt_engine
-        self.special_stt_slug = special_stt_slug
-        self.plugins = plugins
-        self._input_device = input_device
-        self._output_device = output_device
-        self._vad_plugin = vad_plugin
-        self._active_stt_reply = active_stt_reply
-        self._active_stt_response = active_stt_response
-        self.passive_listen = passive_listen
+        self.tts_engine = profile.get_arg('tts_plugin')
+        self.sr_engine = profile.get_arg('sr_plugin')
+        self.passive_stt_engine = profile.get_arg('passive_stt_plugin')
+        self.active_stt_engine = profile.get_arg('active_stt_plugin')
+        self.special_stt_slug = profile.get_arg('special_stt_slug')
+        self.plugins = profile.get_arg('plugins')
+        self._input_device = profile.get_arg('input_device')
+        self._output_device = profile.get_arg('output_device')
+        self._vad_plugin = profile.get_arg('vad_plugin')
+        self._active_stt_reply = profile.get_arg('active_stt_reply')
+        self._active_stt_response = profile.get_arg('active_stt_response')
+        self.passive_listen = profile.get_arg('passive_listen')
         # transcript for monitoring
-        self._print_transcript = print_transcript
+        self._print_transcript = profile.get_arg('print_transcript')
         # audiolog for training
-        if(save_audio):
+        if(profile.get_arg('save_audio', False)):
             self._save_passive_audio = True
             self._save_active_audio = True
             self._save_noise = True
         else:
-            self._save_passive_audio = save_passive_audio
-            self._save_active_audio = save_active_audio
-            self._save_noise = save_noise
+            self._save_passive_audio = profile.get_arg('save_passive_audio', False)
+            self._save_active_audio = profile.get_arg('save_active_audio', False)
+            self._save_noise = profile.get_arg('save_noise', False)
         if(
             (
                 self._save_active_audio
@@ -315,61 +302,70 @@ class Mic(object):
                 self.passive_stt_engine._volume_normalization
             ) as f:
                 try:
-                    transcribed = [word.upper() for word in self.passive_stt_engine.transcribe(f)]
+                    sr_output = self.sr_engine.recognize_speaker(f, self.passive_stt_engine)
                 except Exception:
-                    transcribed = []
+                    sr_output = {
+                        'speaker': None,
+                        'confidence': 0,
+                        'utterance': []
+                    }
                     dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                     self._logger.error(
                         "Passive transcription failed!",
                         exc_info=dbg
                     )
                 else:
-                    if(len(transcribed)):
+                    if(len(sr_output['utterance'])):
                         if(self._print_transcript):
                             visualizations.run_visualization(
                                 "output",
-                                f"<  {transcribed}"
+                                f"<  {sr_output['utterance']}"
                             )
-                        if self.check_for_keyword(transcribed, keyword):
-                            self._log_audio(f, transcribed, "passive")
+                        if self.check_for_keyword(sr_output['utterance'], keyword):
+                            self._log_audio(f, sr_output['utterance'], "passive")
                             if(self.passive_listen):
                                 # Take the same block of audio and put it
                                 # through the active listener
                                 f.seek(0)
                                 try:
-                                    transcribed = [word.upper() for word in self.active_stt_engine.transcribe(f)]
+                                    sr_output = self.sr_engine.recognize_speaker(f, self.active_stt_engine)
                                 except Exception:
-                                    transcribed = []
+                                    sr_output = {
+                                        'speaker': None,
+                                        'confidence': 0,
+                                        'utterance': []
+                                    }
                                     dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                                     self._logger.error("Active transcription failed!", exc_info=dbg)
                                 else:
-                                    if(" ".join(transcribed).strip() == ""):
+                                    if(" ".join(sr_output['utterance']).strip() == ""):
                                         if(self._print_transcript):
                                             visualizations.run_visualization("output", "<< <noise>")
-                                        self._log_audio(f, transcribed, "noise")
+                                        self._log_audio(f, sr_output, "noise")
                                     else:
                                         if(self._print_transcript):
-                                            visualizations.run_visualization("output", "<< {}".format(transcribed))
-                                        self._log_audio(f, transcribed, "active")
+                                            visualizations.run_visualization("output", "<< {}".format(sr_output['utterance']))
+                                        self._log_audio(f, sr_output, "active")
                                 if(profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)):
                                     # Check if any of the wakewords identified by
                                     # the passive stt engine appear in the active
                                     # transcript
-                                    if self.check_for_keyword(transcribed, keyword):
-                                        return transcribed
+                                    if self.check_for_keyword(sr_output['utterance'], keyword):
+                                        return sr_output
                                     else:
                                         self._logger.info('Wakeword not matched in active transcription')
                                 else:
-                                    return transcribed
+                                    return sr_output
                             else:
                                 if(profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)):
-                                    transcribed = [word.upper() for word in self.active_stt_engine.transcribe(f)]
-                                    if self.check_for_keyword(transcribed, keyword):
-                                        return transcribed
+                                    sr_output = self.sr_engine.recognize_speaker(f, self.active_stt_engine)
+                                    transcribed = [word.upper() for word in sr_output['utterance']]
+                                    if self.check_for_keyword(sr_output['utterance'], keyword):
+                                        return sr_output
                                     else:
                                         self._logger.info('Wakeword not matched in active transcription')
                                 else:
-                                    return transcribed
+                                    return sr_output
                         else:
                             self._log_audio(f, transcribed, "noise")
                     else:
@@ -379,7 +375,6 @@ class Mic(object):
         return False
 
     def active_listen(self, play_prompts=True):
-        transcribed = []
         if(play_prompts):
             # let the user know we are listening
             if self._active_stt_reply:
@@ -403,21 +398,25 @@ class Mic(object):
                         visualizations.run_visualization("output", ">> <boop>")
                     self.play_file(paths.data('audio', 'beep_lo.wav'))
             try:
-                transcribed = [word.upper() for word in self.active_stt_engine.transcribe(f)]
+                sr_output = self.sr_engine.recognize_speaker(f, self.active_stt_engine)
             except Exception:
-                transcribed = []
+                sr_output = {
+                    'speaker': None,
+                    'confidence': 0,
+                    'utterance': []
+                }
                 dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                 self._logger.error("Active transcription failed!", exc_info=dbg)
             else:
-                if(" ".join(transcribed).strip() == ""):
+                if(" ".join(sr_output['utterance']).strip() == ""):
                     if(self._print_transcript):
                         visualizations.run_visualization("output", "<< <noise>")
-                    self._log_audio(f, transcribed, "noise")
+                    self._log_audio(f, sr_output, "noise")
                 else:
                     if(self._print_transcript):
-                        visualizations.run_visualization("output", "<< {}".format(transcribed))
-                    self._log_audio(f, transcribed, "active")
-        return transcribed
+                        visualizations.run_visualization("output", "<< {}".format(sr_output['utterance']))
+                    self._log_audio(f, sr_output, "active")
+        return sr_output
 
     def listen(self):
         if(self.passive_listen):
@@ -427,7 +426,11 @@ class Mic(object):
             # wait_for_keyword normally returns either a list of key
             if isinstance(kw, bool):
                 if(not kw):
-                    return []
+                    return {
+                        'speaker': None,
+                        'confidence': 0,
+                        'utterance': []
+                    }
             # if not in passive_listen mode, then the user has tried to
             # interrupt, go ahead and stop talking
             self.stop(wait=True)
@@ -458,13 +461,13 @@ class Mic(object):
             self.add_queue(lambda: profile.set_arg('resetmic', True))
             # Now wait for any sounds in the queue to be processed
             while not profile.get_arg('resetmic'):
-                transcribed = self.listen()
+                sr_output = self.listen()
                 handled = False
-                if isinstance(transcribed, bool):
+                if isinstance(sr_output['utterance'], bool):
                     handled = True
                 else:
-                    while(" ".join(transcribed) != "" and not handled):
-                        transcribed, handled = profile.get_arg('application').conversation.handleRequest(transcribed)
+                    while(" ".join(sr_output['utterance']) != "" and not handled):
+                        sr_output, handled = profile.get_arg('application').conversation.handleRequest(sr_output)
             # Now that we are past the mic reset
             profile.set_arg('resetmic', False)
         else:
@@ -472,12 +475,12 @@ class Mic(object):
         # Now start listening for a response
         with self.special_mode(name, phrases):
             while True:
-                transcribed = self.active_listen()
-                if(len(' '.join(transcribed))):
+                sr_output = self.active_listen()
+                if(len(' '.join(sr_output['utterance']))):
                     # Now that we have a transcription, check if it matches one of the phrases
-                    phrase, score = profile.get_arg("application").brain._intentparser.match_phrase(transcribed, expected_phrases)
+                    phrase, score = profile.get_arg("application").brain._intentparser.match_phrase(sr_output['utterance'], expected_phrases)
                     # If it does, then return the phrase
-                    self._logger.info("Expecting: {} Got: {}".format(expected_phrases, transcribed))
+                    self._logger.info("Expecting: {} Got: {}".format(expected_phrases, sr_output['utterance']))
                     self._logger.info("Score: {}".format(score))
                     if(score > .1):
                         return phrase
@@ -487,8 +490,8 @@ class Mic(object):
                         # If the user is not responding to the prompt, then assume that
                         # they are starting a new command. This should mean that the wake
                         # word would be included.
-                        if(self.check_for_keyword(transcribed)):
-                            raise Unexpected(transcribed)
+                        if(self.check_for_keyword(sr_output['utterance'])):
+                            raise Unexpected(sr_output['utterance'])
                         else:
                             # The user just said something unexpected. Remind them of their choices
                             if instructions is None:
