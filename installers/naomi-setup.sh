@@ -108,6 +108,7 @@ os_detect () {
     elif [ -e /etc/os-release ]; then
       . /etc/os-release
       os=${ID}
+      os_like=${ID_LIKE}
       if [ "${os}" = "poky" ]; then
         dist=`echo ${VERSION_ID}`
       elif [ "${os}" = "sles" ]; then
@@ -116,6 +117,9 @@ os_detect () {
         dist=`echo ${VERSION_ID}`
       elif [ "${os}" = "opensuse-leap" ]; then
         os=opensuse
+        dist=`echo ${VERSION_ID}`
+      elif [ "${os_like}" = "arch" ]; then
+        os=arch
         dist=`echo ${VERSION_ID}`
       else
         dist=`echo ${VERSION_ID} | awk -F '.' '{ print $1 }'`
@@ -164,6 +168,7 @@ os_detect () {
 
   printf "${B_W}Detected operating system as $os/$dist.${NL}"
 }
+
 curl_check () {
   printf "${B_W}Checking for curl...${NL}"
   if command -v curl > /dev/null; then
@@ -186,14 +191,23 @@ curl_check () {
         printf "${B_R}Notice:${B_W} Curl installation aborted.${NL}"
         exit 1
       fi
+    elif [ -n "$(command -v pacman -Syu)" ]; then
+	  printf "${B_W}apt found${NL}"
+      SUDO_COMMAND "sudo paru -S curl"
+      if [ "$?" -ne "0" ]; then
+        printf "${B_R}Notice:${B_W} Unable to install curl! Your base system has a problem; please check your default OS's package repositories because curl should work.${NL}"
+        printf "${B_R}Notice:${B_W} Curl installation aborted.${NL}"
+        exit 1
+      fi
     else
-      printf "${B_R}Notice:${B_W} Neither yum nor apt-get found${NL}"
+      printf "${B_R}Notice:${B_W} Neither yum | apt-get | pacman found${NL}"
       printf "${B_R}Notice:${B_W} Unable to install curl! Your base system has a problem; please check your default OS's package repositories because curl should work.${NL}"
       printf "${B_R}Notice:${B_W} Curl installation aborted.${NL}"
       exit 1
     fi
   fi
 }
+
 jq_check () {
   printf "${B_W}Checking for jq...${NL}"
   if command -v jq > /dev/null; then
@@ -216,14 +230,102 @@ jq_check () {
         printf "${B_R}Notice:${B_W} jq installation aborted.${NL}"
         exit 1
       fi
+    elif [ -n "$(command -v pacman -Syu)" ]; then
+	  printf "${B_W}pacman found${NL}"
+      SUDO_COMMAND "sudo pacman -S jq"
+      if [ "$?" -ne "0" ]; then
+        printf "${B_R}Notice:${B_W} Unable to install jq! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
+        printf "${B_R}Notice:${B_W} jq installation aborted.${NL}"
+        exit 1
+      fi
     else
-      printf "${B_R}Notice:${B_W} Neither yum nor apt-get found${NL}"
+      printf "${B_R}Notice:${B_W} Neither yum | apt-get | pacman found${NL}"
       printf "${B_R}Notice:${B_W} Unable to install jq! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
       printf "${B_R}Notice:${B_W} jq installation aborted.${NL}"
       exit 1
     fi
   fi
 }
+
+python_check () {
+  printf "${B_W}Checking for python3...${NL}"
+  if command -v python3 > /dev/null; then
+    printf "${B_W}Detected python3...${NL}"
+  else
+    printf "${B_G}Installing python3...${NL}"
+    if [ -n "$(command -v yum)" ]; then
+	  printf "${B_W}yum found${NL}"
+      SUDO_COMMAND "yum install -d0 -e0 -y python3"
+      if [ "$?" -ne "0" ]; then
+        printf "${B_R}Notice:${B_W} Unable to install python3! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
+        printf "${B_R}Notice:${B_W} python3 installation aborted.${NL}"
+        exit 1
+      fi
+    elif [ -n "$(command -v apt-get)" ]; then
+	  printf "${B_W}apt found${NL}"
+      SUDO_COMMAND "sudo apt-get install -q -y python3"
+      if [ "$?" -ne "0" ]; then
+        printf "${B_R}Notice:${B_W} Unable to install python3! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
+        printf "${B_R}Notice:${B_W} python3 installation aborted.${NL}"
+        exit 1
+      fi
+    elif [ -n "$(command -v pacman -Syu)" ]; then
+	  printf "${B_W}pacman found${NL}"
+      SUDO_COMMAND "sudo pacman -S python3"
+      if [ "$?" -ne "0" ]; then
+        printf "${B_R}Notice:${B_W} Unable to install python3! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
+        printf "${B_R}Notice:${B_W} python3 installation aborted.${NL}"
+        exit 1
+      fi
+    else
+      printf "${B_R}Notice:${B_W} Neither yum | apt-get | pacman found${NL}"
+      printf "${B_R}Notice:${B_W} Unable to install python3! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
+      printf "${B_R}Notice:${B_W} python3 installation aborted.${NL}"
+      exit 1
+    fi
+  fi
+}
+
+git_check () {
+  printf "${B_W}Checking for git...${NL}"
+  if command -v python3 > /dev/null; then
+    printf "${B_W}Detected git...${NL}"
+  else
+    printf "${B_G}Installing git...${NL}"
+    if [ -n "$(command -v yum)" ]; then
+	  printf "${B_W}yum found${NL}"
+      SUDO_COMMAND "yum install -d0 -e0 -y git"
+      if [ "$?" -ne "0" ]; then
+        printf "${B_R}Notice:${B_W} Unable to install git! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
+        printf "${B_R}Notice:${B_W} git installation aborted.${NL}"
+        exit 1
+      fi
+    elif [ -n "$(command -v apt-get)" ]; then
+	  printf "${B_W}apt found${NL}"
+      SUDO_COMMAND "sudo apt-get install -q -y git"
+      if [ "$?" -ne "0" ]; then
+        printf "${B_R}Notice:${B_W} Unable to install git! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
+        printf "${B_R}Notice:${B_W} git installation aborted.${NL}"
+        exit 1
+      fi
+    elif [ -n "$(command -v pacman -Syu)" ]; then
+	  printf "${B_W}pacman found${NL}"
+      SUDO_COMMAND "sudo pacman -S git"
+      if [ "$?" -ne "0" ]; then
+        printf "${B_R}Notice:${B_W} Unable to install git! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
+        printf "${B_R}Notice:${B_W} git installation aborted.${NL}"
+        exit 1
+      fi
+    else
+      printf "${B_R}Notice:${B_W} Neither yum | apt-get | pacman found${NL}"
+      printf "${B_R}Notice:${B_W} Unable to install git! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
+      printf "${B_R}Notice:${B_W} git installation aborted.${NL}"
+      exit 1
+    fi
+  fi
+}
+
+
 apt_setup_wizard() {
   if [ ! -f ~/Naomi/README.md ]; then
     echo
@@ -294,6 +396,104 @@ apt_setup_wizard() {
     exit 1
   fi
 }
+
+arch_setup_wizard() {
+  if [ ! -f ~/Naomi/README.md ]; then
+    echo
+    printf "${B_G}Starting Naomi Arch Setup Wizard...${NL}${B_W}"
+    #. <( wget -O - "https://installers.projectnaomi.com/script.deb.sh" );
+    # . <( wget -O - "./arch.pacman.sh" );
+    #TODO: Check Why this is failing
+    bash installers/arch.pacman.sh;
+
+    # ./installers/arch.pacman.sh
+
+    if [ -n "$(command bash installers/arch.pacman.sh)" ]; then
+      echo
+      echo
+      echo
+      echo
+      printf "${B_W}=========================================================================${NL}"
+      echo
+      printf "${B_W}That's all, installation is complete! All that is left is the profile${NL}"
+      printf "${B_W}population process and after that Naomi will start.${NL}"
+      echo
+      printf "${B_W}In the future, to start Naomi type '${B_G}Naomi${B_W}' in a terminal${NL}"
+      echo
+      printf "${B_W}Please type '${B_G}Naomi --repopulate${B_W}' on the prompt below to populate your profile...${NL}"
+      sudo rm -Rf ~/Naomi-Temp
+      # Launch Naomi Population
+      cd ~/Naomi
+      chmod a+x Naomi.sh
+      cd ~
+      exec bash
+
+    wget_exit_code=$?
+    elif [ "$wget_exit_code" = "0" ]; then
+      echo
+      echo
+      echo
+      echo
+      printf "${B_W}=========================================================================${NL}"
+      echo
+      printf "${B_W}That's all, installation is complete! All that is left is the profile${NL}"
+      printf "${B_W}population process and after that Naomi will start.${NL}"
+      echo
+      printf "${B_W}In the future, to start Naomi type '${B_G}Naomi${B_W}' in a terminal${NL}"
+      echo
+      printf "${B_W}Please type '${B_G}Naomi --repopulate${B_W}' on the prompt below to populate your profile...${NL}"
+      sudo rm -Rf ~/Naomi-Temp
+      # Launch Naomi Population
+      cd ~/Naomi
+      chmod a+x Naomi.sh
+      cd ~
+      exec bash
+    else
+      echo
+      printf "${B_R}Notice: ${B_W}Naomi Arch Setup Wizard Failed.${NL}"
+      echo
+      exit 1
+    fi
+  elif [ -f ~/Naomi/README.md ] && [ -f ~/Naomi/installers/arch.pacman.sh ]; then
+    chmod a+x ~/Naomi/installers/arch.pacman.sh
+    bash ~/Naomi/installers/arch.pacman.sh
+    script_exit_code=$?
+    if [ "$script_exit_code" = "0" ]; then
+      echo
+      echo
+      echo
+      echo
+      printf "${B_W}=========================================================================${NL}"
+      echo
+      printf "${B_W}That's all, installation is complete! All that is left is the profile${NL}"
+      printf "${B_W}population process and after that Naomi will start.${NL}"
+      echo
+      printf "${B_W}In the future, to start Naomi type '${B_G}Naomi${B_W}' in a terminal${NL}"
+      echo
+      printf "${B_W}Please type '${B_G}Naomi --repopulate${B_W}' on the prompt below to populate your profile...${NL}"
+      sudo rm -Rf ~/Naomi-Temp
+      # Launch Naomi Population
+      cd ~/Naomi
+      chmod a+x Naomi.sh
+      cd ~
+      exec bash
+    else
+      echo
+      printf "${B_R}Notice: ${B_W}Naomi Arch Setup Wizard Failed.${NL}"
+      echo
+      exit 1
+    fi
+  else
+    printf "${B_W}=========================================================================${NL}"
+    printf "${B_W}It looks like you have Naomi source in the ${B_G}~/Naomi${B_W} directory,${NL}"
+    printf "${B_W}however it looks to be out of date. Please update or remove the Naomi${NL}"
+    printf "${B_W}source and try running the installer again.${NL}"
+    echo
+    printf "${B_W}Please join our Discord or email us at ${B_Y}contact@projectnaomi.com${B_W} and let us know if you run into any issues.${NL}"
+    exit 1
+  fi
+}
+
 yum_setup_wizard() {
   if [ ! -f ~/Naomi/README.md ]; then
     echo
@@ -396,6 +596,8 @@ naomi_install() {
                 printf "${B_M}Y ${B_W}- Installing Naomi${NL}"
                 if [ -n "$(command -v apt-get)" ]; then
                     apt_setup_wizard
+                elif [ -n "$(command -v pacman -Syu)" ]; then
+                    arch_setup_wizard
                 elif [ -n "$(command -v yum)" ]; then
                     unknown_os
                 else
@@ -425,6 +627,8 @@ naomi_install() {
                 printf "${B_M}Y ${B_W}- Installing Naomi${NL}"
                 if [ -n "$(command -v apt-get)" ]; then
                     apt_setup_wizard
+                elif [ -n"$(command -v pacman -Syu)" ]; then
+                    arch_setup_wizard
                 elif [ -n "$(command -v yum)" ]; then
                     unknown_os
                 else
@@ -705,6 +909,8 @@ tput reset
 os_detect
 curl_check
 jq_check
+python_check
+git_check
 sleep 5
 tput reset
 
