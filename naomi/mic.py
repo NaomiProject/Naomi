@@ -294,12 +294,12 @@ class Mic(object):
     def check_for_keyword(self, phrase, keyword=None):
         if not keyword:
             keyword = self._keyword
-        wakewords = [
-            word.upper()
-            for word in keyword
-            for w in phrase if w
-            if word.upper() in w.upper()
-        ]
+        # This allows multi-word keywords like 'Hey Naomi' or 'You there'
+        wakewords = []
+        for word in keyword:
+            for w in phrase:
+                if word.upper() in w.upper():
+                    wakewords.append(word.upper())
         if any(wakewords):
             return True
         return False
