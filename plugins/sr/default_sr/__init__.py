@@ -22,7 +22,7 @@ class default_sr(plugin.SRPlugin):
     def recognize_speaker(self, fp, stt_engine):
         utterance = [word.upper() for word in stt_engine.transcribe(fp)]
         return {
-            'speaker': profile.get(['first_name'], None),
+            'speaker': profile.get(['first_name'], ''),
             'confidence': 0,
             'utterance': utterance
         }

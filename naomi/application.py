@@ -349,7 +349,7 @@ class Naomi(object):
             vad_slug,
             category='vad'
         )
-        vad_plugin = vad_info.plugin_class(input_device)
+        vad_plugin = vad_info.plugin_class(input_device, vad_info)
 
         # Initialize Brain
         tti_slug = profile.get_profile_var(['tti_engine'], 'Naomi TTI')

@@ -302,27 +302,23 @@ class Mic(object):
                 self.passive_stt_engine._volume_normalization
             ) as f:
                 try:
-                    sr_output = self.sr_engine.recognize_speaker(f, self.passive_stt_engine)
+                    transcribed = [word.upper() for word in self.passive_stt_engine.transcribe(f)]
                 except Exception:
-                    sr_output = {
-                        'speaker': None,
-                        'confidence': 0,
-                        'utterance': []
-                    }
+                    transcribed = []
                     dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                     self._logger.error(
                         "Passive transcription failed!",
                         exc_info=dbg
                     )
                 else:
-                    if(len(sr_output['utterance'])):
+                    if(len(transcribed)):
                         if(self._print_transcript):
                             visualizations.run_visualization(
                                 "output",
-                                f"<  {sr_output['utterance']}"
+                                f"<  {transcribed}"
                             )
-                        if self.check_for_keyword(sr_output['utterance'], keyword):
-                            self._log_audio(f, sr_output['utterance'], "passive")
+                        if self.check_for_keyword(transcribed, keyword):
+                            self._log_audio(f, transcribed, "passive")
                             if(self.passive_listen):
                                 # Take the same block of audio and put it
                                 # through the active listener
@@ -344,8 +340,14 @@ class Mic(object):
                                         self._log_audio(f, sr_output, "noise")
                                     else:
                                         if(self._print_transcript):
-                                            visualizations.run_visualization("output", "<< {}".format(sr_output['utterance']))
-                                        self._log_audio(f, sr_output, "active")
+                                            visualizations.run_visualization(
+                                                "output",
+                                                "<< {} ({})".format(
+                                                    sr_output['utterance'],
+                                                    sr_output['speaker']
+                                                )
+                                            )
+                                        self._log_audio(f, sr_output['utterance'], "active")
                                 if(profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)):
                                     # Check if any of the wakewords identified by
                                     # the passive stt engine appear in the active
@@ -414,7 +416,13 @@ class Mic(object):
                     self._log_audio(f, sr_output, "noise")
                 else:
                     if(self._print_transcript):
-                        visualizations.run_visualization("output", "<< {}".format(sr_output['utterance']))
+                        visualizations.run_visualization(
+                            "output",
+                            "<< {} ({})".format(
+                                sr_output['utterance'],
+                                sr_output['speaker']
+                            )
+                        )
                     self._log_audio(f, sr_output, "active")
         return sr_output
 

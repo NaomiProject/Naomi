@@ -88,11 +88,13 @@ class SpeechHandlerPlugin(
     def handle(self, intent, mic):
         pass
 
+
 class SRPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def recognize_speaker(self, filename):
         speaker = None
         utterance = profile.get_arg('active_stt_engine').transcribe(filename)
         return {'speaker': speaker, 'utterance': utterance}
+
 
 class STTPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def __init__(self, name, phrases, *args, **kwargs):
@@ -165,13 +167,15 @@ class VADPlugin(GenericPlugin):
     # and after last voice detected
     # minimum capture is minimum audio to capture, minus the padding
     # at the front and end
-    def __init__(self, input_device, timeout=1, minimum_capture=0.5):
-        self._logger = logging.getLogger(__name__)
+    def __init__(self, input_device, *args, **kwargs):
+        GenericPlugin.__init__(self, *args, **kwargs)
         # input device
         self._input_device = input_device
         # Here is the number of frames that have to pass without
         # detecing a voice before we respond
         chunklength = input_device._input_chunksize / input_device._input_rate
+        timeout = kwargs.get('timeout', 1)
+        minimum_capture = kwargs.get('minimum_capture', 0.5)
         self._timeout = round(timeout / chunklength)
         # Mimimum capture frames is the smallest number of frames that will
         # be recognized as audio.
@@ -466,7 +470,7 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     @staticmethod
     def getcontractions(phrase):
         return [phrase]
-        
+
     def match_phrase(self, phrase, choices):
         # If phrase is a list, convert to a string
         # (otherwise the "split" below throws an error)
