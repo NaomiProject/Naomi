@@ -23,6 +23,6 @@ class default_sr(plugin.SRPlugin):
         utterance = [word.upper() for word in stt_engine.transcribe(fp)]
         return {
             'speaker': profile.get(['first_name'], ''),
-            'confidence': 0,
+            'distance': 0,
             'utterance': utterance
         }

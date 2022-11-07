@@ -409,6 +409,6 @@ class VOSK_sr(plugin.SRPlugin):
                 ])
         return {
             'speaker': result['speaker'],
-            'confidence': result['min_cos_dist'],
+            'distance': result['min_cos_dist'],
             'utterance': [res['text']]
         }

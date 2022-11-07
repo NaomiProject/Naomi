@@ -90,10 +90,14 @@ class SpeechHandlerPlugin(
 
 
 class SRPlugin(GenericPlugin, metaclass=abc.ABCMeta):
-    def recognize_speaker(self, filename):
-        speaker = None
-        utterance = profile.get_arg('active_stt_engine').transcribe(filename)
-        return {'speaker': speaker, 'utterance': utterance}
+    def recognize_speaker(self, fp, stt_engine):
+        speaker = profile.get(['first_name'], '')
+        utterance = stt_engine.transcribe(fp)
+        return {
+            'speaker': speaker,
+            'distance': 0,
+            'utterance': utterance
+        }
 
 
 class STTPlugin(GenericPlugin, metaclass=abc.ABCMeta):

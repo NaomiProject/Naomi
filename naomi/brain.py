@@ -165,7 +165,7 @@ class Brain(object):
                     return(intents[intent])
             self._logger.debug(
                 "No module was able to handle any of these phrases: {}".format(
-                    str(sr_response('utterance'))
+                    str(sr_response.get('utterance'))
                 )
             )
             return (None)

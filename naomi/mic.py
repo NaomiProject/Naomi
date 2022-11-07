@@ -342,9 +342,10 @@ class Mic(object):
                                         if(self._print_transcript):
                                             visualizations.run_visualization(
                                                 "output",
-                                                "<< {} ({})".format(
+                                                "<< {} ({} - {})".format(
                                                     sr_output['utterance'],
-                                                    sr_output['speaker']
+                                                    sr_output['speaker'],
+                                                    sr_output['distance']
                                                 )
                                             )
                                         self._log_audio(f, sr_output['utterance'], "active")
@@ -361,7 +362,6 @@ class Mic(object):
                             else:
                                 if(profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)):
                                     sr_output = self.sr_engine.recognize_speaker(f, self.active_stt_engine)
-                                    transcribed = [word.upper() for word in sr_output['utterance']]
                                     if self.check_for_keyword(sr_output['utterance'], keyword):
                                         return sr_output
                                     else:
@@ -418,9 +418,10 @@ class Mic(object):
                     if(self._print_transcript):
                         visualizations.run_visualization(
                             "output",
-                            "<< {} ({})".format(
+                            "<< {} ({} - {})".format(
                                 sr_output['utterance'],
-                                sr_output['speaker']
+                                sr_output['speaker'],
+                                sr_output['distance']
                             )
                         )
                     self._log_audio(f, sr_output, "active")

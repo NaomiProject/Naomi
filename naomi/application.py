@@ -936,15 +936,18 @@ class Naomi(object):
             input_device = audio_engine.get_device_by_slug(
                 profile.get_profile_var(['audio', 'input_device'])
             )
+            profile.set_arg('input_device', input_device)
             output_device = audio_engine.get_device_by_slug(
                 profile.get_profile_var(["audio", "output_device"])
             )
+            profile.set_arg('output_device', output_device)
             vad_slug = profile.get_profile_var(['vad_engine'], 'snr_vad')
             vad_info = profile.get_arg('plugins').get_plugin(
                 vad_slug,
                 category='vad'
             )
             vad_plugin = vad_info.plugin_class(input_device)
+            profile.set_arg('vad_plugin', vad_plugin)
 
             filename = os.path.join(
                 os.path.dirname(
@@ -959,18 +962,7 @@ class Naomi(object):
                     filename
                 )
             visualizations.load_visualizations(self)
-            testMic = mic.Mic(
-                input_device,
-                output_device,
-                profile.get(['active_stt', 'reply']),
-                profile.get(['active_stt', 'response']),
-                None,
-                None,
-                None,
-                None,
-                None,
-                vad_plugin
-            )
+            testMic = mic.Mic()
 
             visualizations.run_visualization(
                 "output",
