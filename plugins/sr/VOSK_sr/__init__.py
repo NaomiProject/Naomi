@@ -28,15 +28,21 @@ class VOSK_sr(plugin.SRPlugin):
         if not os.path.isdir(binarydir_path):
             os.makedirs(binarydir_path)
         # Download the lite ASR model
-        asr_model_path = os.path.join(binarydir_path,'vosk-model-small-en-us-0.15')
+        language = profile.get("language", "en-US")
+        model_file = 'vosk-model-small-en-us-0.15'
+        if language == "fr-FR":
+            model_file = "vosk-model-small-fr-pguyot-0.3"
+        elif language == "de-DE":
+            model_file = "vosk-model-small-de-0.15"
+        binary_url = f'https://alphacephei.com/vosk/models/{model_file}.zip'
+        asr_model_path = os.path.join(binarydir_path, model_file)
         if not os.path.isdir(asr_model_path):
-            binary_url = 'https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip'
             print("Downloading small model from {}".format(binary_url))
             cmd = [
                 'wget',
                 binary_url,
                 '--directory-prefix={}'.format(binarydir_path),
-                '--output-document={}'.format(os.path.join(binarydir_path, 'vosk-model-small-en-us-0.15.zip'))
+                '--output-document={}'.format(os.path.join(binarydir_path, f'{model_file}.zip'))
             ]
             print(" ".join(cmd))
             completed_process = run_command(cmd, 2)
@@ -45,7 +51,7 @@ class VOSK_sr(plugin.SRPlugin):
                 cmd = [
                     'unzip',
                     '-d', binarydir_path,
-                    os.path.join(binarydir_path, 'vosk-model-small-en-us-0.15.zip')
+                    os.path.join(binarydir_path, f'{model_file}.zip')
                 ]
                 completed_process = run_command(cmd, 2)
                 if(completed_process.returncode != 0):
