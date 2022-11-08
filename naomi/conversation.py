@@ -48,7 +48,7 @@ class Conversation(i18n.GettextMixin):
         while True:
             sr_response = self.mic.listen()
             # if listen() returns False, just ignore it
-            if not isinstance(sr_response['utterance'], bool):
+            if not isinstance(sr_response, bool):
                 handled = False
                 while(" ".join(sr_response['utterance']) != "" and not handled):
                     sr_respone, handled = self.handleRequest(sr_response)

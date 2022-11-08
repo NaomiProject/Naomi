@@ -432,7 +432,9 @@ class Mic(object):
             return self.wait_for_keyword(self._keyword)
         else:
             kw = self.wait_for_keyword(self._keyword)
-            # wait_for_keyword normally returns either a list of key
+            # wait_for_keyword normally returns either a list of keywords
+            # or a transcript or False if the result is to be ignored
+            # (something turned off the mic)
             if isinstance(kw, bool):
                 if(not kw):
                     return {
@@ -472,7 +474,7 @@ class Mic(object):
             while not profile.get_arg('resetmic'):
                 sr_output = self.listen()
                 handled = False
-                if isinstance(sr_output['utterance'], bool):
+                if isinstance(sr_output, bool):
                     handled = True
                 else:
                     while(" ".join(sr_output['utterance']) != "" and not handled):
