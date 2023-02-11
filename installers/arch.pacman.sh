@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source "scripts/misc.sh"
+source "scripts/pre_checks.sh"
 #########################################
 # Installs python and necessary packages
 # for arch based Naomi. This script will install python
@@ -7,101 +9,11 @@
 # install naomi & requirements in their
 # respective directories.
 #########################################
-BLACK='\033[1;30m'
-RED='\033[1;31m'
-GREEN='\033[1;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[1;34m'
-MAGENTA='\033[1;35m'
-CYAN='\033[1;36m'
-WHITE='\033[1;37m'
-B_C='\033[1;96m'     #Bright Cyan                           For logo
-B_R='\033[1;91m'     #Bright Red                            For alerts/errors
-B_G='\033[1;92m'     #Bright Green                          For initiating a process i.e. "Installing blah blah..." or calling attention to thing in outputs
-B_Y='\033[1;93m'     #Bright Yellow                         For urls & emails
-B_Black='\033[1;90m' #Bright Black                      For lower text
-B_Blue='\033[1;94m'  #Bright Blue                        For prompt question
-B_M='\033[1;95m'     #Bright Magenta                        For prompt choices
-B_W='\033[1;97m'     #Bright White                          For standard text output
-NL="
-"
-OPTION="0"
-SUDO_APPROVE=""
-REQUIRE_AUTH=""
-version="3.0"
-theDateRightNow=$(date +%m-%d-%Y-%H:%M:%S)
-gitVersionNumber=$(git rev-parse --short HEAD)
-gitURL="https://github.com/naomiproject/naomi"
 
-CONTINUE() {
-  printf "${B_W}If you want to allow the process to run uninterrupted type '${B_G}S${B_W}'${NL}"
-  printf "${B_W}or press '${B_G}Q${B_W}' to quit, any other key to continue:${NL}"
-  read -n1 -p "" CONTINUE
-  echo
-  if [ "$CONTINUE" = "q" ] || [ "$CONTINUE" = "Q" ]; then
-    echo
-    printf "${B_R}EXITING${B_W}${NL}"
-    exit 1
-  elif [ "$CONTINUE" = "S" ] || [ "$CONTINUE" = "s" ]; then
-    REQUIRE_AUTH="0"
-    SUDO_APPROVE="-y"
-  fi
-}
-SUDO_COMMAND() {
-  echo
-  printf "${B_R}Notice:${B_W} this program is about to use sudo to run the following command:${NL}"
-  printf "[$(pwd)]\$ ${B_G}${1}${B_W}${NL}"
-  echo
-  if [ "$SUDO_APPROVE" != "-y" ]; then
-    CONTINUE
-  fi
-  $1
-}
-CHECK_HEADER() {
-  echo "#include <$1>" | cpp $(pkg-config alsa --cflags) -H -o /dev/null >/dev/null 2>&1
-  echo $?
-}
-CHECK_PROGRAM() {
-  type -p "$1" >/dev/null 2>&1
-  echo $?
-}
 
 setup_wizard() {
-  echo
-  printf "${B_W}=========================================================================${NL}"
-  printf "${B_W}ARCH SETUP WIZARD${NL}"
-  printf "${B_W}This process will first walk you through setting up your device,${NL}"
-  printf "${B_W}installing Naomi, and default plugins.${NL}"
-  echo
-  sleep 3
-  echo
-  echo
+    wizardSetup
 
-  echo
-  printf "${B_W}=========================================================================${NL}"
-  printf "${B_W}LOCALIZATION SETUP:${NL}"
-  printf "${B_W}Let's examine your localization settings.${NL}"
-  echo
-  sleep 3
-  echo
-
-  echo
-  printf "${B_W}=========================================================================${NL}"
-  printf "${B_W}SECURITY SETUP:${NL}"
-  printf "${B_W}Let's examine a few security settings.${NL}"
-  echo
-  printf "${B_W}By default, Naomi is configured to require a password to perform actions as${NL}"
-  printf "${B_W}root (e.g. 'sudo ...') as well as confirm commands before continuing.${NL}"
-  printf "${B_W}This means you will have to watch the setup process to confirm everytime a new${NL}"
-  printf "${B_W}command needs to run.${NL}"
-  echo
-  printf "${B_W}However you can enable Naomi to continue the process uninterrupted for a hands off experience${NL}"
-  echo
-  printf "${B_W}Would you like the setup to run uninterrupted or would you like to look over the setup process?${NL}"
-  echo
-  printf "${B_M}  1${B_W}) Allow the process to run uninterrupted${NL}"
-  printf "${B_M}  2${B_W}) Require authentication to continue and run commands${NL}"
-  printf "${B_Blue}Choice [${B_M}1${B_Blue}-${B_M}2${B_Blue}]: ${B_W}"
   while true; do
     read -N1 -s key
     case $key in
@@ -119,81 +31,65 @@ setup_wizard() {
       ;;
     esac
   done
-  echo
-  echo
-  echo
 
-  echo
-  printf "${B_W}=========================================================================${NL}"
-  printf "${B_W}ENVIRONMENT SETUP:${NL}"
-  printf "${B_W}Now setting up the file stuctures & requirements${NL}"
-  echo
-  sleep 3
-  echo
+    env
 
-  # Create basic folder structures
-  echo
-  printf "${B_G}Creating File Structure...${B_W}${NL}"
-  mkdir -p ~/.config/naomi/
-  mkdir -p ~/.config/naomi/configs/
-  mkdir -p ~/.config/naomi/scripts/
-  mkdir -p ~/.config/naomi/sources/
+  createDirs
 
   # Download and setup Naomi Dev repo as default
-  echo
-  printf "${B_G}Installing 'git'...${B_W}${NL}"
-  if [ $REQUIRE_AUTH -eq 1 ]; then
-    SUDO_COMMAND "sudo pacman -S git $SUDO_APPROVE"
-  else
-    printf "${B_W}${NL}"
-    sudo pacman -S git $SUDO_APPROVE
-  fi
-  echo
+  #TODO: Remove Git since pre_check already handles it
+    naomiChannel
 
-  echo
-  printf "${B_W}=========================================================================${NL}"
-  printf "${B_W}NAOMI SETUP:${NL}"
-  printf "${B_W}Naomi is continuously updated. There are three options to choose from:${NL}"
-  echo
-  printf "${B_W}'${B_G}Stable${B_W}' versions are thoroughly tested official releases of Naomi. Use${NL}"
-  printf "${B_W}the stable version for your production environment if you don't need the${NL}"
-  printf "${B_W}latest enhancements and prefer a robust system${NL}"
-  echo
-  printf "${B_W}'${B_G}Milestone${B_W}' versions are intermediary releases of the next Naomi version,${NL}"
-  printf "${B_W}released about once a month, and they include the new recently added${NL}"
-  printf "${B_W}features and bugfixes. They are a good compromise between the current${NL}"
-  printf "${B_W}stable version and the bleeding-edge and potentially unstable nightly version.${NL}"
-  echo
-  printf "${B_W}'${B_G}Nightly${B_W}' versions are at most 1 or 2 days old and include the latest code.${NL}"
-  printf "${B_W}Use nightly for testing out very recent changes, but be aware some nightly${NL}"
-  printf "${B_W}versions might be unstable. Use in production at your own risk!${NL}"
-  echo
-  printf "${B_W}Note: '${B_G}Nightly${B_W}' comes with automatic updates by default!${NL}"
-  echo
-  printf "${B_M}  1${B_W}) Use the recommended ('${B_G}Stable${B_W}')${NL}"
-  printf "${B_M}  2${B_W}) Monthly releases sound good to me ('${B_G}Milestone${B_W}')${NL}"
-  printf "${B_M}  3${B_W}) I'm a developer or want the cutting edge, put me on '${B_G}Nightly${B_W}'${NL}"
-  printf "${B_Blue}Choice [${B_M}1${B_Blue}-${B_M}3${B_Blue}]: ${B_W}"
   while true; do
     read -N1 -s key
     case $key in
     1)
       printf "${B_M}$key ${B_W}- Easy Peasy!${NL}"
-      cd ~
+      #BUG: Does CWD to home
+      #cd ~
       if [ ! -f ~/Naomi/README.md ]; then
         printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
+        mkdir -p ~/Naomi/naomiInstaller
+        #git clone ~/Naomi/naomiInstaller
+        #pwd
+        cp -r ../../Naomi ~/Naomi/naomiInstaller
+        cd ~/Naomi/naomiInstaller/Naomi
+        #TODO: Copy local repo instead | Write a script that will install directly to ~
+        #TODO: Git pull upstream from particular branch | maybe just merge from Upstream
+<<comment
         cd ~
         git clone $gitURL.git -b master Naomi
         cd Naomi
-        echo '{"use_release":"stable", "branch":"master", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' >~/.config/naomi/configs/.naomi_options.json
+
         cd ~
+comment
+        #BUG: does not recognise folder as git
+        pwd
+
+        git checkout master
+        git fetch origin
+        git merge origin master
+        #cp -r ../Naomi ~
+        echo '{"use_release":"stable", "branch":"master", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' >~/.config/naomi/configs/.naomi_options.json
       else
+
         mv ~/Naomi ~/Naomi-Temp
+<<comment
         cd ~
         git clone $gitURL.git -b master Naomi
         cd Naomi
         echo '{"use_release":"stable", "branch":"master", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' >~/.config/naomi/configs/.naomi_options.json
         cd ~
+comment
+
+
+
+        git checkout master
+        git fetch origin
+        git merge origin master
+        cp -r ../Naomi ~
+        echo '{"use_release":"stable", "branch":"master", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' >~/.config/naomi/configs/.naomi_options.json
+
       fi
       break
       ;;
@@ -203,36 +99,71 @@ setup_wizard() {
       cd ~
       if [ ! -f ~/Naomi/README.md ]; then
         printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
-        cd ~
-        git clone $gitURL.git -b naomi-dev Naomi
-        cd Naomi
+        #TODO: Replace & use git origin
+        # cd ~
+
+
+        git checkout naomi-dev
+        git fetch origin
+        git merge origin naomi-dev
+        cp -r ../Naomi ~
+
+        #git clone $gitURL.git -b naomi-dev Naomi
+        cd ~/Naomi
         echo '{"use_release":"milestone", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' >~/.config/naomi/configs/.naomi_options.json
-        cd ~
+        # cd ~
       else
         mv ~/Naomi ~/Naomi-Temp
-        cd ~
-        git clone $gitURL.git -b naomi-dev Naomi
-        cd Naomi
+        #TODO: Replace & use git upstream
+
+
+        git checkout naomi-dev
+        git fetch origin
+        git merge origin naomi-dev
+        cp -r ../Naomi ~
+
+        cd ~/Naomi
+        #git clone $gitURL.git -b naomi-dev Naomi
+        #cd Naomi
         echo '{"use_release":"milestone", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"false"}' >~/.config/naomi/configs/.naomi_options.json
-        cd ~
+        # cd ~
       fi
       break
       ;;
     3)
       printf "${B_M}$key ${B_W}- You know what you are doing!${NL}"
-      cd ~
+      # cd ~
       if [ ! -f ~/Naomi/README.md ]; then
         printf "${B_G}Downloading 'Naomi'...${B_W}${NL}"
-        cd ~
-        git clone $gitURL.git -b naomi-dev Naomi
-        cd Naomi
+        #TODO: Replace with git upstream
+
+
+        git checkout naomi-dev
+        git fetch origin
+        git merge origin naomi-dev
+        cp -r ../Naomi ~
+
+        cd ~/Naomi
+
+        #git clone $gitURL.git -b naomi-dev Naomi
+        #cd Naomi
         echo '{"use_release":"nightly", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"true"}' >~/.config/naomi/configs/.naomi_options.json
-        cd ~
+        # cd ~
       else
         mv ~/Naomi ~/Naomi-Temp
-        cd ~
-        git clone $gitURL.git -b naomi-dev Naomi
-        cd Naomi
+        #TODO: Replace with git upstream
+
+
+        git checkout naomi-dev
+        git fetch origin
+        git merge origin naomi-dev
+        cp -r ../Naomi ~
+
+        cd ~/Naomi
+
+        #cd ~
+        #git clone $gitURL.git -b naomi-dev Naomi
+        #cd Naomi
         echo '{"use_release":"nightly", "branch":"naomi-dev", "version":"Naomi-'$version'.'$gitVersionNumber'", "date":"'$theDateRightNow'", "auto_update":"true"}' >~/.config/naomi/configs/.naomi_options.json
         cd ~
       fi
@@ -253,14 +184,16 @@ setup_wizard() {
   find ~/Naomi/installers -maxdepth 1 -iname '*.sh' -type f -exec chmod a+x {} \;
 
   NAOMI_DIR="$(cd ~/Naomi && pwd)"
-
+    #FIXME: Replace APT with ARCH
   cd ~/Naomi
   APT=1
   if [ $APT -eq 1 ]; then
     if [ $REQUIRE_AUTH -eq 1 ]; then
       SUDO_COMMAND "sudo pacman -Syu"
       SUDO_COMMAND "sudo pacman -Syu $SUDO_APPROVE"
-      SUDO_COMMAND "sudo bash ~/Documents/Github_Repos/Naomi/naomi_requirements.sh $SUDO_APPROVE"
+      #FIXME: Broke here & couldnt find file
+      pwd
+      SUDO_COMMAND "sudo bash naomi_requirements.sh $SUDO_APPROVE"
       if [ $? -ne 0 ]; then
         printf "${B_R}Notice:${B_W} Error installing pacman packages${NL}" >&2
         exit 1
@@ -269,7 +202,9 @@ setup_wizard() {
       printf "${B_W}${NL}"
       sudo pacman -Syu
       sudo pacman -Syu $SUDO_APPROVE
-      sudo bash ~/Documents/Github_Repos/Naomi/naomi_requirements.sh $SUDO_APPROVE
+      pwd
+      #FIXME: Still broke and couldnt find file
+      sudo bash naomi_requirements.sh $SUDO_APPROVE
       if [ $? -ne 0 ]; then
         printf "${B_R}Notice:${B_W} Error installing arch packages${NL}" >&2
         exit 1
@@ -297,13 +232,6 @@ setup_wizard() {
       CONTINUE
     fi
   fi
-
-  # make sure pulseaudio is running
-  # Check if pulseaudio or pipewire is installed
-  # pulseaudio --check
-  # if [ $? -ne 0 ]; then
-  #   pulseaudio -D
-  # fi
 
   #TODO: Write the backup script to install the servers
   if [ pulseaudio --version ]; then
@@ -423,6 +351,7 @@ setup_wizard() {
   echo 'NL="' >>~/.config/naomi/Naomi.sh
   echo '"' >>~/.config/naomi/Naomi.sh
   echo 'version="3.0"' >>~/.config/naomi/Naomi.sh
+  #TODO: Migrate and use current cloned DIR
   echo 'theDateRightNow=$(date +%m-%d-%Y-%H:%M:%S)' >>~/.config/naomi/Naomi.sh
   echo 'gitURL="https://github.com/naomiproject/naomi"' >>~/.config/naomi/Naomi.sh
   echo "" >>~/.config/naomi/Naomi.sh
@@ -435,9 +364,9 @@ setup_wizard() {
   echo '    if [ "$(git rev-parse HEAD)" != "$(git rev-parse @{u})" ] ; then' >>~/.config/naomi/Naomi.sh
   echo '      printf "${B_W}Downloading & Installing Updates...${NL}"' >>~/.config/naomi/Naomi.sh
   echo "      git pull" >>~/.config/naomi/Naomi.sh
-  echo "      sudo apt-get -o Acquire::ForceIPv4=true update -y" >>~/.config/naomi/Naomi.sh
-  echo "      sudo apt -o upgrade -y" >>~/.config/naomi/Naomi.sh
-  echo "      sudo ./naomi_apt_requirements.sh -y" >>~/.config/naomi/Naomi.sh
+  #echo "      sudo apt-get -o Acquire::ForceIPv4=true update -y" >>~/.config/naomi/Naomi.sh
+  #echo "      sudo apt -o upgrade -y" >>~/.config/naomi/Naomi.sh
+  echo "      sudo ./naomi_requirements.sh" >>~/.config/naomi/Naomi.sh
   echo "    else" >>~/.config/naomi/Naomi.sh
   echo '      printf "${B_W}No Updates Found.${NL}"' >>~/.config/naomi/Naomi.sh
   echo "    fi" >>~/.config/naomi/Naomi.sh
@@ -606,6 +535,8 @@ setup_wizard() {
   fi
 
   # Building and installing phonetisaurus
+  # Remove Phonetisaurus then installed
+<<comment
   echo
   printf "${B_G}Installing & Building phonetisaurus...${B_W}${NL}"
   cd ~/.config/naomi/sources
@@ -643,8 +574,12 @@ setup_wizard() {
     printf "${ERROR} ${B_R}Notice:${B_W} phonetisaurus-g2pfst does not exist${NL}" >&2
     exit 1
   fi
-
+comment
   # Installing & Building sphinxbase
+  #TODO: Use pip3 package instead #pip3 install pocketsphinx
+  #TODO: Chuck out block for pocketsphinx replace with pip3 (aaron said it didnt end well)
+  #TODO: There is PocketSphinx in the Linux Repos.
+<<comment
   echo
   printf "${B_G}Building and installing sphinxbase...${B_W}${NL}"
   cd ~/.config/naomi/sources
@@ -666,6 +601,7 @@ setup_wizard() {
   fi
 
   # Installing & Building pocketsphinx
+
   echo
   printf "${B_G}Building and installing pocketsphinx...${B_W}${NL}"
   cd ~/.config/naomi/sources/pocketsphinx-python/deps/pocketsphinx
@@ -683,7 +619,10 @@ setup_wizard() {
   printf "${B_G}Installing PocketSphinx module...${B_W}${NL}"
   cd ~/.config/naomi/sources/pocketsphinx-python
   python setup.py install
+comment
 
+    #TODO: Check if PocketSphinx works for Python3
+    #pip3 install pocketsphinx
   cd $NAOMI_DIR
   if [ -z "$(which text2wfreq)" ]; then
     printf "${ERROR} ${B_R}Notice:${B_W} text2wfreq does not exist${NL}" >&2

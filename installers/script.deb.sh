@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source "scripts/misc.sh"
+source "scripts/pre_checks.sh"
+
 #########################################
 # Installs python and necessary packages
 # for deb based Naomi. This script will install python
@@ -7,64 +10,6 @@
 # install naomi & requirements in their
 # respective directories.
 #########################################
-BLACK='\033[1;30m'
-RED='\033[1;31m'
-GREEN='\033[1;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[1;34m'
-MAGENTA='\033[1;35m'
-CYAN='\033[1;36m'
-WHITE='\033[1;37m'
-B_C='\033[1;96m' #Bright Cyan                           For logo
-B_R='\033[1;91m' #Bright Red                            For alerts/errors
-B_G='\033[1;92m' #Bright Green                          For initiating a process i.e. "Installing blah blah..." or calling attention to thing in outputs
-B_Y='\033[1;93m' #Bright Yellow                         For urls & emails
-B_Black='\033[1;90m' #Bright Black                      For lower text
-B_Blue='\033[1;94m' #Bright Blue                        For prompt question
-B_M='\033[1;95m' #Bright Magenta                        For prompt choices
-B_W='\033[1;97m' #Bright White                          For standard text output
-NL="
-"
-OPTION="0"
-SUDO_APPROVE=""
-REQUIRE_AUTH=""
-version="3.0"
-theDateRightNow=$(date +%m-%d-%Y-%H:%M:%S)
-gitVersionNumber=$(git rev-parse --short HEAD)
-gitURL="https://github.com/naomiproject/naomi"
-
-CONTINUE() {
-    printf "${B_W}If you want to allow the process to run uninterrupted type '${B_G}S${B_W}'${NL}"
-    printf "${B_W}or press '${B_G}Q${B_W}' to quit, any other key to continue:${NL}"
-    read -n1 -p "" CONTINUE
-    echo
-    if [ "$CONTINUE" = "q" ] || [ "$CONTINUE" = "Q" ]; then
-        echo
-        printf "${B_R}EXITING${B_W}${NL}"
-        exit 1
-    elif [ "$CONTINUE" = "S" ] || [ "$CONTINUE" = "s" ]; then
-        REQUIRE_AUTH="0"
-        SUDO_APPROVE="-y"
-    fi
-}
-SUDO_COMMAND() {
-    echo
-    printf "${B_R}Notice:${B_W} this program is about to use sudo to run the following command:${NL}"
-    printf "[$(pwd)]\$ ${B_G}${1}${B_W}${NL}"
-    echo
-    if [ "$SUDO_APPROVE" != "-y" ]; then
-        CONTINUE
-    fi
-    $1
-}
-CHECK_HEADER() {
-    echo "#include <$1>" | cpp $(pkg-config alsa --cflags) -H -o /dev/null > /dev/null 2>&1
-    echo $?
-}
-CHECK_PROGRAM() {
-    type -p "$1" > /dev/null 2>&1
-    echo $?
-}
 
 setup_wizard() {
     echo
@@ -274,7 +219,7 @@ setup_wizard() {
           printf "${B_R}Notice:${B_W} Error installing apt packages${NL}" >&2
           exit 1
         fi
-      fi      
+      fi
     else
       ERROR=""
       if [[ $(CHECK_PROGRAM msgfmt) -ne "0" ]]; then
@@ -335,7 +280,7 @@ setup_wizard() {
         echo
         printf "${B_W}All of this will be incorporated into the Naomi script, so to simply${NL}"
         printf "${B_W}launch Naomi, all you have to type is '${B_G}Naomi${B_W}' in a terminal regardless of your choice here.${NL}"
-        echo 
+        echo
         printf "${B_W}Would you like to start VirtualEnvWrapper automatically?${NL}"
         echo
         printf "${B_M}  Y${B_W})es, start virtualenvwrapper whenever I start a shell${NL}"

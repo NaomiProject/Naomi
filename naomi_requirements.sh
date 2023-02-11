@@ -16,18 +16,22 @@ ArchSetup() {
             SUDO_APPROVE="--noconfirm"
         fi
     done
+    #BUG: Cant be found why?
+#    cd ../ 
     xargs -a <(awk '! /^ *(#|$)/' arch_requirements.txt) -r -- pacman -Syu $SUDO_APPROVE
 }
 
 if [ -e /etc/os-release ]; then
-    /etc/os-release
+    . /etc/os-release
     os=${ID}
     os_like=${ID_LIKE}
-    if [ "${os_like}"="arch" ]; then
+    if [ "${os_like}" = "arch" ]; then
         ArchSetup
-    elif [ "${os}"="debian" ]; then
+    elif [ "${os}" = "debian" ]; then
         DebianSetup
-    elif [ "${os}"="arch" ]; then
+    elif [ "${os}" = "ubuntu" ]; then
+        DebianSetup
+    elif [ "${os}" = "arch" ]; then
         ArchSetup
     fi
 else

@@ -15,7 +15,9 @@ python-slugify
 mad
 
 # Pocketsphinx STT engine
+pocketsphinx
 cmuclmtk
+phonetisaurus
 
 # HN module
 semantic

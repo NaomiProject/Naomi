@@ -4,19 +4,19 @@ atlas
 openssl
 ncurses
 gnupg
-dirmngr
+# dirmngr does not exist
 gettext
-gfortran
+gcc-fortran
 util-linux
 jq
 
 # Plugins
 ## AudioEngine
 ### PyAudio
-portaudio19-dev
+#portaudio19-dev
 # libasound2-dev
 pulseaudio
-pulseaudio-utils
+#pulseaudio-utils
 pipewire
 
 ## STT
@@ -27,12 +27,12 @@ libpulse
 
 #### Phonetisaurus is used to build dictionaries
 gcc
-g++
+# g++ Does not exist
 make
 autoconf
 libtool
 git
-gfortran
+#gfortran
 autoconf-archive
 subversion
 swig
