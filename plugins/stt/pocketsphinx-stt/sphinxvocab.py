@@ -98,7 +98,7 @@ def compile_languagemodel(corpus, output_file):
     completedprocess = run_command(
         [
             os.path.join(
-                profile.get(['pocketsphinx','kenlm_dir']),
+                profile.get(['kenlm','source_dir']),
                 'build',
                 'bin',
                 'lmplz'

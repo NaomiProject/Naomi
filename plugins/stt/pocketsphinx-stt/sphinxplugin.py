@@ -340,7 +340,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                     }
                 ),
                 (
-                    ('pocketsphinx', 'kenlm_dir'), {
+                    ('kenlm', 'source_dir'), {
                         'title': _('KenLM source directory'),
                         'description': _('Location of the KenLM source'),
                         'default': kenlm_dir
