@@ -21,23 +21,20 @@ pulseaudio-utils
 
 ## STT
 ### PocketSphinx is default for wakeword spotting
-bison
-libpulse-dev
-swig
+pocketsphinx
 sphinxtrain
 
-#### Phonetisaurus is used to build dictionaries
-autoconf
-autoconf-archive
-bison
-g++
-gcc
-gfortran
-git
-libtool
-make
-subversion
-swig
+### KenLM for building ARPA models
+build-essential
+cmake
+libboost-system-dev
+libboost-thread-dev
+libboost-program-options-dev
+libboost-test-dev
+libeigen3-dev
+zlib1g-dev
+libbz2-dev
+liblzma-dev
 
 # TTS
 ## flite

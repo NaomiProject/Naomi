@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-import os
 import logging
+import os
+import re
 import tempfile
-try:
-    import cmuclmtk
-except ImportError:
-    pass
 from .g2p import PhonetisaurusG2P
 from naomi import profile
+from naomi.run_command import run_command
 
 
 def delete_temp_file(file_to_delete):
@@ -43,10 +41,6 @@ def compile_vocabulary(directory, phrases):
     languagemodel_path = get_languagemodel_path(directory)
     dictionary_path = get_dictionary_path(directory)
 
-    executable = profile.get(
-        ['pocketsphinx', 'phonetisaurus_executable'],
-        'phonetisaurus-g2p'
-    )
     nbest = profile.get(
         ['pocketsphinx', 'nbest'],
         3
@@ -64,7 +58,6 @@ def compile_vocabulary(directory, phrases):
         raise OSError('FST model {} does not exist!'.format(fst_model))
 
     g2pconverter = PhonetisaurusG2P(
-        executable,
         fst_model,
         fst_model_alphabet=fst_model_alphabet,
         nbest=nbest
@@ -72,101 +65,112 @@ def compile_vocabulary(directory, phrases):
 
     logger.debug('Languagemodel path: %s' % languagemodel_path)
     logger.debug('Dictionary path:    %s' % dictionary_path)
-    text = " ".join(
-        [("<s> %s </s>" % phrase.upper()) for phrase in phrases]
-    )
-    # There's some strange issue when text2idngram sometime can't find any
-    # input (although it's there). For a reason beyond me, this can be fixed
-    # by appending a space char to the string.
-    text += ' '
     logger.debug('Compiling languagemodel...')
-    vocabulary = compile_languagemodel(text, languagemodel_path)
+    compile_languagemodel(phrases, languagemodel_path)
     logger.debug('Starting dictionary...')
-    compile_dictionary(g2pconverter, vocabulary, dictionary_path)
+    compile_dictionary(g2pconverter, phrases, dictionary_path)
 
 
-def compile_languagemodel(text, output_file):
+def compile_languagemodel(corpus, output_file):
     """
     Compiles the languagemodel from a text.
 
     Arguments:
-        text -- the text the languagemodel will be generated from
+        corpus -- the text the languagemodel will be generated from
         output_file -- the path of the file this languagemodel will
-                       be written to
+            be written to
 
     Returns:
         A list of all unique words this vocabulary contains.
     """
+    print("started compile_languagemodel")
+    corpus = [line for line in map(lambda phrase: phrase.lower(), corpus)]
+    for line in corpus:
+        print(line)
+    text = "\n".join(corpus)
     if len(text.strip()) == 0:
         raise ValueError('No text to compile into languagemodel!')
 
     logger = logging.getLogger(__name__)
 
-    with tempfile.NamedTemporaryFile(suffix='.vocab', delete=False) as f:
-        vocab_file = f.name
-
-    # Create vocab file from text
-    logger.debug("Creating vocab file: '%s'" % vocab_file)
-    cmuclmtk.text2vocab(text, vocab_file)
-
-    # Get words from vocab file
-    logger.debug("Getting words from vocab file and removing it afterwards...")
-    words = []
-    with open(vocab_file, 'r') as f:
-        for line in f:
-            line = line.strip()
-            if not line.startswith('#') and line not in ('<s>', '</s>') and "{" not in line and "}" not in line:
-                words.append(line)
-
-    if len(words) == 0:
-        logger.warning('Vocab file seems to be empty!')
-
-    # Create language model from text
+    # Create language model from corpus
     logger.debug("Creating languagemodel file: '%s'" % output_file)
-    cmuclmtk.text2lm(text, output_file, vocab_file=vocab_file)
+    completedprocess = run_command(
+        [
+            os.path.join(
+                profile.get(['pocketsphinx','kenlm_dir']),
+                'build',
+                'bin',
+                'lmplz'
+            ),
+            '-o', '3',
+            '--discount_fallback'
+        ],
+        4,
+        stdin=text
+    )
+    if completedprocess.returncode == 0:
+        if completedprocess.stdout:
+            with open(output_file, 'w') as f:
+                f.write(completedprocess.stdout.decode("utf-8").strip())
+        else:
+            print("process completed but produced no output")
+    else:
+        if completedprocess.stderr:
+            print(completedprocess.stderr.decode("utf-8").strip())
+        else:
+            print("process completed with error but no output")
 
-    # Remote the vocab file
-    delete_temp_file(vocab_file)
 
-    return words
-
-
-def compile_dictionary(g2pconverter, words, output_file):
+def compile_dictionary(g2pconverter, corpus, output_file):
     """
     Compiles the dictionary from a list of words.
 
     Arguments:
-        words -- a list of all unique words this vocabulary contains
+        corpus -- the text the dictionary will be generated from
         output_file -- the path of the file this dictionary will
                        be written to
     """
-    # create the dictionary
-    logger = logging.getLogger(__name__)
-    logger.debug("Getting phonemes for %d words..." % len(words))
-    try:
-        phonemes = g2pconverter.translate([word.upper() for word in words])
-        logger.debug(phonemes)
-    except ValueError as e:
-        print(str(e))
-        if str(e) == 'Input symbol not found':
-            logger.debug("Upper failed trying lower()")
-            phonemes = g2pconverter.translate([word.lower() for word in words])
-        else:
-            raise e
+    # read the standard dictionary in
+    RE_WORDS = re.compile(
+        r"^(?P<word>[a-zA-Z0-9'\.\-]+)(\(\d\))?\s+(?P<pronunciation>[a-zA-Z]+.*[a-zA-Z0-9])\s*$"
+    )
+    lexicon = {}
+    print(os.path.join(profile.get(['pocketsphinx','hmm_dir']), 'cmudict.dict'))
+    with open(os.path.join(profile.get(['pocketsphinx','hmm_dir']), 'cmudict.dict'), 'r') as f:
+        line = f.readline().strip()
+        while line:
+            one = False
+            for match in RE_WORDS.finditer(line):
+                one = True
+                try:
+                    lexicon[match.group('word')].append(match.group('pronunciation').split())
+                except KeyError:
+                    lexicon[match.group('word')]=[match.group('pronunciation').split()]
+            if(not one):
+                print(line)
+            line = f.readline().strip()
 
-    logger.debug("Creating dict file: '%s'" % output_file)
+    # create a list of words from the corpus
+    corpus_lexicon = {}
+    words = set()
+    for line in corpus:
+        for word in line.split():
+            words.add(word.lower())
+
+    for word in words:
+        if word in lexicon:
+            corpus_lexicon[word] = lexicon[word]
+        else:
+            print(f"Creating pronunciation for {word}")
+            corpus_lexicon[word] = []
+            for w, p in g2pconverter.translate(word):
+                corpus_lexicon[word].append(p)
     with open(output_file, "w") as f:
-        for word, pronounciations in phonemes.items():
-            for i, pronounciation in enumerate(pronounciations, start=1):
-                if i == 1:
-                    line = "%s\t%s\n" % (
-                        word.upper(),
-                        pronounciation
-                    )
+        for word in sorted(corpus_lexicon):
+            for index, phones in enumerate(corpus_lexicon[word]):
+                if index == 0:
+                    f.write(f"{word} {' '.join(phones)}\n")
                 else:
-                    line = "%s(%d)\t%s\n" % (
-                        word.upper(),
-                        i,
-                        pronounciation
-                    )
-                f.write(line)
+                    f.write(f"{word}({index+1}) {' '.join(phones)}\n")
+

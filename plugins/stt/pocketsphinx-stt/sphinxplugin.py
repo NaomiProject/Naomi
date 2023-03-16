@@ -8,21 +8,8 @@ from naomi import profile
 from naomi.run_command import run_command
 from naomi.run_command import process_completedprocess
 from . import sphinxvocab
-try:
-    try:
-        from pocketsphinx import pocketsphinx
-    except ValueError:
-        # Fixes a quirky bug when first import doesn't work.
-        # See http://sourceforge.net/p/cmusphinx/bugs/284/ for details.
-        from pocketsphinx import pocketsphinx
-    pocketsphinx_available = True
-    # Why do we have to import sphinxbase.sphinxbase.*?
-    # otherwise, when we create pocketsphinx.Decoder.default_config()
-    # we get the wrong object for some reason.
-    from sphinxbase.sphinxbase import *
-except ImportError:
-    pocketsphinx = None
-    pocketsphinx_available = False
+from .g2p import PhonetisaurusG2P
+from pocketsphinx import pocketsphinx
 
 
 # AaronC - This searches some standard places (/bin, /usr/bin, /usr/local/bin)
@@ -43,24 +30,30 @@ def check_pocketsphinx_model(directory):
     # Start by assuming the files exist. If any file is found to not
     # exist, then set this to False
     FilesExist = True
-    if(not os.path.isfile(os.path.join(directory, "mdef.txt"))):
-        if(os.path.isfile(os.path.join(directory, "mdef"))):
+    mdef_file = os.path.join(directory, "mdef")
+    mdef_text_file = os.path.join(directory, "mdef.txt")
+    if(not os.path.isfile(mdef_text_file)):
+        print(f"{mdef_text_file} does not exist. Creating.")
+        if(os.path.isfile(mdef_file)):
             command = [
                 "pocketsphinx_mdef_convert",
                 "-text",
-                os.path.join(directory, "mdef"),
-                os.path.join(directory, "mdef.txt")
+                mdef_file,
+                mdef_text_file
             ]
             completedprocess = run_command(command)
             print("Command {} returned {}".format(
                 " ".join(completedprocess.args),
                 completedprocess.returncode
             ))
-        if(not os.path.isfile(os.path.join(directory, "mdef.txt"))):
+        if(not os.path.isfile(mdef_text_file)):
+            print(f"{mdef_text_file} still does not exist")
             FilesExist = False
     if(not os.path.isfile(os.path.join(directory, "means"))):
+        print(f"means does not exist")
         FilesExist = False
     if(not os.path.isfile(os.path.join(directory, "mixture_weights"))):
+        print(f"mixture_weights does not exist")
         FilesExist = False
     if(not os.path.isfile(os.path.join(directory, "sendump"))):
         FilesExist = False
@@ -87,9 +80,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
         """
         plugin.STTPlugin.__init__(self, *args, **kwargs)
 
-        if not pocketsphinx_available:
-            raise ImportError("Pocketsphinx not installed!")
-
+        print("initializing Pocketsphinx plugin")
         vocabulary_path = self.compile_vocabulary(
             sphinxvocab.compile_vocabulary
         )
@@ -133,28 +124,21 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                     "hmm_dir in your profile."
                 ]).format(hmm_dir, ', '.join(missing_hmm_files))
             )
-        self._pocketsphinx_v5 = hasattr(pocketsphinx.Decoder, 'default_config')
 
-        with tempfile.NamedTemporaryFile(prefix='psdecoder_',
-                                         suffix='.log', delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            prefix='psdecoder_',
+            suffix='.log',
+            delete=False
+        ) as f:
             self._logfile = f.name
 
-        if self._pocketsphinx_v5:
-            # Pocketsphinx v5
-            config = pocketsphinx.Decoder.default_config()
-            config.set_string('-hmm', hmm_dir)
-            config.set_string('-lm', lm_path)
-            config.set_string('-dict', dict_path)
-            config.set_string('-logfn', self._logfile)
-            self._decoder = pocketsphinx.Decoder(config)
-        else:
-            # Pocketsphinx v4 or sooner
-            self._decoder = pocketsphinx.Decoder(
-                hmm=hmm_dir,
-                logfn=self._logfile,
-                lm=lm_path,
-                dict=dict_path
-            )
+        # Pocketsphinx v5
+        config = pocketsphinx.Config()
+        config.set_string('-hmm', hmm_dir)
+        config.set_string('-lm', lm_path)
+        config.set_string('-dict', dict_path)
+        config.set_string('-logfn', self._logfile)
+        self._decoder = pocketsphinx.Decoder(config)
 
     def __del__(self):
         if self._logfile is not None:
@@ -162,6 +146,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
 
     def settings(self):
         language = profile.get(['language'])
+        _ = self.gettext
         # Get the defaults for settings
         # hmm_dir
         hmm_dir = profile.get(
@@ -273,9 +258,9 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 os.mkdir(standard_dir)
             hmm_dir = standard_dir
             fst_model = os.path.join(hmm_dir, "train", "model.fst")
-            formatteddict_path = os.path.join(
+            cmudict_path = os.path.join(
                 hmm_dir,
-                "cmudict.formatted.dict"
+                "cmudict.dict"
             )
             if(not check_pocketsphinx_model(hmm_dir)):
                 # Check and see if we already have a copy of the standard
@@ -291,41 +276,49 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 ]
                 completedprocess = run_command(cmd)
                 self._logger.info(process_completedprocess(completedprocess))
-            if(not os.path.isfile(formatteddict_path)):
-                print("Formatting the g2p dictionary")
-                with open(os.path.join(standard_dir, "cmudict.dict"), "r") as in_file:
-                    with open(formatteddict_path, "w+") as out_file:
-                        for line in in_file:
-                            # Remove whitespace at beginning and end
-                            line = line.strip()
-                            # remove the number in parentheses (if there is one)
-                            line = re.sub('([^\\(]+)\\(\\d+\\)', '\\1', line)
-                            # compress all multiple whitespaces into a single whitespace
-                            line = re.sub('\s+', ' ', line)
-                            # replace the first whitespace with a tab
-                            line = line.replace(' ', '\t', 1)
-                            print(line, file=out_file)
             if(not os.path.isfile(fst_model)):
                 # Use phonetisaurus to prepare an fst model
                 print("Training an FST model")
-                cmd = [
-                    "phonetisaurus-train",
-                    "--lexicon", formatteddict_path,
-                    "--seq2_del",
-                    "--dir_prefix", os.path.join(hmm_dir, "train")
-                ]
-                completedprocess = run_command(cmd)
-                self._logger.info(process_completedprocess(completedprocess))
-
-        phonetisaurus_executable = profile.get_profile_var(
-            ['pocketsphinx', 'phonetisaurus_executable']
+                PhonetisaurusG2P.train_fst(cmudict_path, os.path.join(hmm_dir, fst_model))
+        kenlm_dir = profile.get(
+            ['pocketsphinx', 'kenlm_dir'],
+            paths.sub('kenlm')
         )
-        if(not phonetisaurus_executable):
-            if(check_program_exists('phonetisaurus-g2pfst')):
-                phonetisaurus_executable = 'phonetisaurus-g2pfst'
-            else:
-                phonetisaurus_executable = 'phonetisaurus-g2p'
-        _ = self.gettext
+        if not os.path.isdir(kenlm_dir):
+            print("Downloading KenLM")
+            cmd = [
+                'git',
+                'clone',
+                'https://github.com/kpu/kenlm.git',
+                kenlm_dir
+            ]
+            completedprocess = run_command(cmd)
+            self._logger.info(process_completedprocess(completedprocess))
+        kenlm_build = os.path.join(
+            kenlm_dir,
+            'build'
+        )
+        kenlm_lmplz = os.path.join(
+            kenlm_build,
+            'bin',
+            'lmplz'
+        )
+        if not os.path.isfile(kenlm_lmplz):
+            if not os.path.isdir(kenlm_build):
+                os.mkdir(kenlm_build)
+        if not os.path.isfile(kenlm_lmplz):
+            print("Compiling kenlm")
+            cmd = [
+                'cmake',
+                '..'
+            ]
+            completedprocess = run_command(cmd, cwd=kenlm_build)
+            self._logger.info(process_completedprocess(completedprocess))
+            cmd = [
+                'make'
+            ]
+            completedprocess = run_command(cmd, cwd=kenlm_build)
+            self._logger.info(process_completedprocess(completedprocess))
         return OrderedDict(
             [
                 (
@@ -347,14 +340,12 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                     }
                 ),
                 (
-                    ('pocketsphinx', 'phonetisaurus_executable'), {
-                        'title': _('Phonetisaurus executable'),
-                        'description': "".join([
-                            _('Phonetisaurus is used to build custom dictionaries')
-                        ]),
-                        'default': phonetisaurus_executable
+                    ('pocketsphinx', 'kenlm_dir'), {
+                        'title': _('KenLM source directory'),
+                        'description': _('Location of the KenLM source'),
+                        'default': kenlm_dir
                     }
-                ),
+                )
             ]
         )
 
