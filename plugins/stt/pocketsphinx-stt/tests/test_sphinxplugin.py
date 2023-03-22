@@ -12,12 +12,15 @@ class TestPocketsphinxSTTPlugin(unittest.TestCase):
         self.time_clip = paths.data('audio', 'time.wav')
 
         try:
+            # KenLM does not include a </s> when generating an
+            # arpa model for single word vocabularies, so we
+            # have to have at least two words in our vocabularies
             self.passive_stt_engine = testutils.get_plugin_instance(
                 sphinxplugin.PocketsphinxSTTPlugin,
-                'unittest-passive', ['NAOMI'])
+                'unittest-passive', ['NAOMI', 'COMPUTER'])
             self.active_stt_engine = testutils.get_plugin_instance(
                 sphinxplugin.PocketsphinxSTTPlugin,
-                'unittest-active', ['TIME'])
+                'unittest-active', ['TIME', 'DATE'])
         except ImportError:
             self.skipTest("Pocketsphinx not installed!")
 
@@ -27,7 +30,7 @@ class TestPocketsphinxSTTPlugin(unittest.TestCase):
         """
         with open(self.naomi_clip, mode="rb") as f:
             transcription = self.passive_stt_engine.transcribe(f)
-        self.assertIn("NAOMI", transcription)
+        self.assertIn("NAOMI".lower(), transcription)
 
     def testTranscribe(self):
         """
@@ -35,4 +38,4 @@ class TestPocketsphinxSTTPlugin(unittest.TestCase):
         """
         with open(self.time_clip, mode="rb") as f:
             transcription = self.active_stt_engine.transcribe(f)
-        self.assertIn("TIME", transcription)
+        self.assertIn("TIME".lower(), transcription)

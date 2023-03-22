@@ -2,7 +2,6 @@
 import logging
 import os
 import re
-import tempfile
 from .g2p import PhonetisaurusG2P
 from naomi import profile
 from naomi.run_command import run_command
@@ -83,11 +82,7 @@ def compile_languagemodel(corpus, output_file):
     Returns:
         A list of all unique words this vocabulary contains.
     """
-    print("started compile_languagemodel")
-    corpus = [line for line in map(lambda phrase: phrase.lower(), corpus)]
-    for line in corpus:
-        print(line)
-    text = "\n".join(corpus)
+    text = "\n".join([line for line in map(lambda phrase: phrase.lower(), corpus)])
     if len(text.strip()) == 0:
         raise ValueError('No text to compile into languagemodel!')
 
@@ -98,7 +93,7 @@ def compile_languagemodel(corpus, output_file):
     completedprocess = run_command(
         [
             os.path.join(
-                profile.get(['kenlm','source_dir']),
+                profile.get(['kenlm', 'source_dir']),
                 'build',
                 'bin',
                 'lmplz'
@@ -136,19 +131,18 @@ def compile_dictionary(g2pconverter, corpus, output_file):
         r"^(?P<word>[a-zA-Z0-9'\.\-]+)(\(\d\))?\s+(?P<pronunciation>[a-zA-Z]+.*[a-zA-Z0-9])\s*$"
     )
     lexicon = {}
-    print(os.path.join(profile.get(['pocketsphinx','hmm_dir']), 'cmudict.dict'))
-    with open(os.path.join(profile.get(['pocketsphinx','hmm_dir']), 'cmudict.dict'), 'r') as f:
+    with open(os.path.join(profile.get(['pocketsphinx', 'hmm_dir']), 'cmudict.dict'), 'r') as f:
         line = f.readline().strip()
         while line:
-            one = False
             for match in RE_WORDS.finditer(line):
-                one = True
                 try:
-                    lexicon[match.group('word')].append(match.group('pronunciation').split())
+                    lexicon[match.group('word')].append(
+                        match.group('pronunciation').split()
+                    )
                 except KeyError:
-                    lexicon[match.group('word')]=[match.group('pronunciation').split()]
-            if(not one):
-                print(line)
+                    lexicon[match.group('word')] = [
+                        match.group('pronunciation').split()
+                    ]
             line = f.readline().strip()
 
     # create a list of words from the corpus
@@ -158,11 +152,11 @@ def compile_dictionary(g2pconverter, corpus, output_file):
         for word in line.split():
             words.add(word.lower())
 
+    # Fetch pronunciations for every word in corpus
     for word in words:
         if word in lexicon:
             corpus_lexicon[word] = lexicon[word]
         else:
-            print(f"Creating pronunciation for {word}")
             corpus_lexicon[word] = []
             for w, p in g2pconverter.translate(word):
                 corpus_lexicon[word].append(p)
@@ -173,4 +167,3 @@ def compile_dictionary(g2pconverter, corpus, output_file):
                     f.write(f"{word} {' '.join(phones)}\n")
                 else:
                     f.write(f"{word}({index+1}) {' '.join(phones)}\n")
-

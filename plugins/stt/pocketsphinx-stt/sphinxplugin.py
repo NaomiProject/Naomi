@@ -1,5 +1,4 @@
 import os.path
-import re
 import tempfile
 from collections import OrderedDict
 from naomi import paths
@@ -21,7 +20,7 @@ def check_program_exists(program):
     standardlocations = ['/usr/local/bin', '/usr/bin', '/bin']
     response = False
     for location in standardlocations:
-        if(os.path.isfile(os.path.join(location, program))):
+        if (os.path.isfile(os.path.join(location, program))):
             response = True
     return response
 
@@ -32,9 +31,9 @@ def check_pocketsphinx_model(directory):
     FilesExist = True
     mdef_file = os.path.join(directory, "mdef")
     mdef_text_file = os.path.join(directory, "mdef.txt")
-    if(not os.path.isfile(mdef_text_file)):
+    if (not os.path.isfile(mdef_text_file)):
         print(f"{mdef_text_file} does not exist. Creating.")
-        if(os.path.isfile(mdef_file)):
+        if (os.path.isfile(mdef_file)):
             command = [
                 "pocketsphinx_mdef_convert",
                 "-text",
@@ -46,20 +45,18 @@ def check_pocketsphinx_model(directory):
                 " ".join(completedprocess.args),
                 completedprocess.returncode
             ))
-        if(not os.path.isfile(mdef_text_file)):
+        if (not os.path.isfile(mdef_text_file)):
             print(f"{mdef_text_file} still does not exist")
             FilesExist = False
-    if(not os.path.isfile(os.path.join(directory, "means"))):
-        print(f"means does not exist")
+    if (not os.path.isfile(os.path.join(directory, "means"))):
         FilesExist = False
-    if(not os.path.isfile(os.path.join(directory, "mixture_weights"))):
-        print(f"mixture_weights does not exist")
+    if (not os.path.isfile(os.path.join(directory, "mixture_weights"))):
         FilesExist = False
-    if(not os.path.isfile(os.path.join(directory, "sendump"))):
+    if (not os.path.isfile(os.path.join(directory, "sendump"))):
         FilesExist = False
-    if(not os.path.isfile(os.path.join(directory, "variances"))):
+    if (not os.path.isfile(os.path.join(directory, "variances"))):
         FilesExist = False
-    if(not os.path.isfile(os.path.join(directory, "model", "train.fst"))):
+    if (not os.path.isfile(os.path.join(directory, "model", "train.fst"))):
         FilesExist = False
     return FilesExist
 
@@ -80,7 +77,6 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
         """
         plugin.STTPlugin.__init__(self, *args, **kwargs)
 
-        print("initializing Pocketsphinx plugin")
         vocabulary_path = self.compile_vocabulary(
             sphinxvocab.compile_vocabulary
         )
@@ -152,7 +148,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
         hmm_dir = profile.get(
             ['pocketsphinx', 'hmm_dir']
         )
-        if(not hmm_dir):
+        if (not hmm_dir):
             # Make a list of possible paths to check
             hmm_dir_paths = [
                 os.path.join(
@@ -242,7 +238,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                     fst_model = path
         # If either the hmm dir or fst model is missing, then
         # download the standard model
-        if not(hmm_dir and os.path.isdir(hmm_dir) and fst_model and os.path.isfile(fst_model)):
+        if not (hmm_dir and os.path.isdir(hmm_dir) and fst_model and os.path.isfile(fst_model)):
             # Start by checking to see if we have a copy of the standard
             # model for this user's chosen language and download it if not.
             # Check for the files we need
@@ -262,10 +258,12 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 hmm_dir,
                 "cmudict.dict"
             )
-            if(not check_pocketsphinx_model(hmm_dir)):
+            if (not check_pocketsphinx_model(hmm_dir)):
                 # Check and see if we already have a copy of the standard
                 # language model
-                print("Downloading and installing the {} pocketsphinx language model".format(language))
+                print(
+                    _("Downloading and installing the {} pocketsphinx language model").format(language)
+                )
                 cmd = [
                     'git',
                     'clone',
@@ -276,10 +274,13 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 ]
                 completedprocess = run_command(cmd)
                 self._logger.info(process_completedprocess(completedprocess))
-            if(not os.path.isfile(fst_model)):
+            if (not os.path.isfile(fst_model)):
                 # Use phonetisaurus to prepare an fst model
                 print("Training an FST model")
-                PhonetisaurusG2P.train_fst(cmudict_path, os.path.join(hmm_dir, fst_model))
+                PhonetisaurusG2P.train_fst(
+                    cmudict_path,
+                    os.path.join(hmm_dir, fst_model)
+                )
         kenlm_dir = profile.get(
             ['pocketsphinx', 'kenlm_dir'],
             paths.sub('kenlm')
@@ -366,11 +367,9 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
         self._decoder.process_raw(data, False, True)
         self._decoder.end_utt()
 
-        if self._pocketsphinx_v5:
-            hyp = self._decoder.hyp()
-            result = hyp.hypstr if hyp is not None else ''
-        else:
-            result = self._decoder.get_hyp()[0]
+        hyp = self._decoder.hyp()
+        result = hyp.hypstr if hyp is not None else ''
+
         if self._logfile is not None:
             with open(self._logfile, 'r+') as f:
                 for line in f:

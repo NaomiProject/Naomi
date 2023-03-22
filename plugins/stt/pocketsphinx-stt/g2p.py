@@ -2,11 +2,8 @@
 import os
 import phonetisaurus
 import re
-import subprocess
-import tempfile
 import logging
 from . import phonemeconversion
-import pdb
 
 
 class PhonetisaurusG2P(object):
@@ -27,11 +24,11 @@ class PhonetisaurusG2P(object):
         )
 
         self.nbest = nbest
-        if(self.nbest is not None):
+        if (self.nbest is not None):
             self._logger.debug("Will use the %d best results.", self.nbest)
 
     def _convert_phonemes(self, data):
-        if(self.fst_model_alphabet == 'xsampa'):
+        if (self.fst_model_alphabet == 'xsampa'):
             for word in data:
                 converted_phonemes = []
                 for phoneme in data[word]:
@@ -44,14 +41,13 @@ class PhonetisaurusG2P(object):
         raise ValueError('Invalid FST model alphabet!')
 
     def _translate_word(self, word):
-        self._logger.debug("enter _translate_word")
         return self._translate_words([word])
 
     def _translate_words(self, words):
-        self._logger.debug("enter _translate_words")
         return phonetisaurus.predict(
-            [words],
-            self.fst_model
+            words,
+            self.fst_model,
+            nbest=self.nbest
         )
 
     def translate(self, words):
@@ -95,14 +91,17 @@ class PhonetisaurusG2P(object):
                 for match in RE_WORDS.finditer(line):
                     one = True
                     try:
-                        lexicon[match.group('word')].append(match.group('pronunciation').split())
+                        lexicon[match.group('word')].append(
+                            match.group('pronunciation').split()
+                        )
                     except KeyError:
-                        lexicon[match.group('word')]=[match.group('pronunciation').split()]
-                if(not one):
+                        lexicon[match.group('word')] = [
+                            match.group('pronunciation').split()
+                        ]
+                if (not one):
                     print(line)
                 line = f.readline().strip()
         phonetisaurus.train(
             lexicon,
             model_path=fst_file
         )
-
