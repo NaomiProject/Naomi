@@ -171,7 +171,7 @@ curl_check () {
   else
     printf "${B_G}Installing curl...${NL}"
     if [ -n "$(command -v yum)" ]; then
-	  printf "${B_W}yum found${NL}"
+      printf "${B_W}yum found${NL}"
       SUDO_COMMAND "yum install -d0 -e0 -y curl"
       if [ "$?" -ne "0" ]; then
         printf "${B_R}Notice:${B_W} Unable to install curl! Your base system has a problem; please check your default OS's package repositories because curl should work.${NL}"
@@ -179,7 +179,7 @@ curl_check () {
         exit 1
       fi
     elif [ -n "$(command -v apt-get)" ]; then
-	  printf "${B_W}apt found${NL}"
+      printf "${B_W}apt found${NL}"
       SUDO_COMMAND "sudo apt-get install -q -y curl"
       if [ "$?" -ne "0" ]; then
         printf "${B_R}Notice:${B_W} Unable to install curl! Your base system has a problem; please check your default OS's package repositories because curl should work.${NL}"
@@ -201,7 +201,7 @@ jq_check () {
   else
     printf "${B_G}Installing jq...${NL}"
     if [ -n "$(command -v yum)" ]; then
-	  printf "${B_W}yum found${NL}"
+      printf "${B_W}yum found${NL}"
       SUDO_COMMAND "yum install -d0 -e0 -y jq"
       if [ "$?" -ne "0" ]; then
         printf "${B_R}Notice:${B_W} Unable to install jq! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
@@ -209,7 +209,7 @@ jq_check () {
         exit 1
       fi
     elif [ -n "$(command -v apt-get)" ]; then
-	  printf "${B_W}apt found${NL}"
+      printf "${B_W}apt found${NL}"
       SUDO_COMMAND "sudo apt-get install -q -y jq"
       if [ "$?" -ne "0" ]; then
         printf "${B_R}Notice:${B_W} Unable to install jq! Your base system has a problem; please check your default OS's package repositories because jq should work.${NL}"
@@ -726,7 +726,7 @@ sleep 5
 echo
 
 if [ "$1" == "--uninstall" ]; then
-	naomi_uninstall
+    naomi_uninstall
 fi
 
 printf "${B_W}=========================================================================${NL}"
