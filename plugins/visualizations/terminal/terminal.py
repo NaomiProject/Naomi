@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-import datetime
 from blessings import Terminal
+from datetime import datetime
 from naomi.commandline import println
-from naomi import app_utils
 from naomi import plugin
 
 
@@ -36,14 +35,16 @@ class TerminalVisualizationsPlugin(plugin.VisualizationsPlugin):
             ]))
         )
         # insert markers for mean and threshold
-        if(minsnr < mean < maxsnr):
+        if (minsnr < mean < maxsnr):
             feedback[int(displaywidth * ((mean - minsnr) / snrrange))] = 'm'
-        if(minsnr < threshold < maxsnr):
+        if (minsnr < threshold < maxsnr):
             feedback[int(displaywidth * ((threshold - minsnr) / snrrange))] = 't'
         println("".join(feedback))
 
     @staticmethod
-    def output(message):
-        tz = app_utils.get_timezone()
-        now = datetime.datetime.now(tz=tz)
-        println(f"{now:%l}:{now:%M} {now:%p} - {message}\n")
+    def output(message, timestamp=True):
+        if (timestamp):
+            now = datetime.now()
+            println(f"{now:%I}:{now:%M} {now:%p} - {message}\n")
+        else:
+            println(f"{message}\n")

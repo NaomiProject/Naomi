@@ -22,7 +22,7 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
     )
     # the newer version of phonetisaurus uses a different filename
     # and a different method
-    if(executable == 'phonetisaurus-g2pfst'):
+    if (executable == 'phonetisaurus-g2pfst'):
         cmd = [executable,
             '--model=%s' % fst_model,
             '--beam=1000',
@@ -66,10 +66,10 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
         while proc.poll() is None:
             nextline = proc.stderr.readline().decode("utf-8")
             logger.debug("NextLine: '%s'" % nextline)
-            if(nextline == ''):
+            if (nextline == ''):
                 continue
             # It is important to raise this error so we can try lower() in sphinxvocab.py
-            if(len(RE_ISYMNOTFOUND.findall(nextline)) > 0):
+            if (len(RE_ISYMNOTFOUND.findall(nextline)) > 0):
                 logger.error('%s - Input symbol not found' % nextline)
                 raise ValueError('Input symbol not found')
         stdoutdata_byte, stderrdata_byte = proc.communicate()
@@ -82,17 +82,17 @@ def execute(executable, fst_model, input, is_file=False, nbest=None):
         )
         raise
 
-    if(stderrdata):
+    if (stderrdata):
         for line in stderrdata.splitlines():
             message = line.strip()
-            if(message):
+            if (message):
                 logger.debug(message)
 
-    if(proc.returncode != 0):
+    if (proc.returncode != 0):
         logger.error(
             "Command '{command}' return with exit status {code}".format(
-                command = ' '.join(cmd),
-                code = proc.returncode
+                command=' '.join(cmd),
+                code=proc.returncode
             )
         )
         raise OSError("Command execution failed")
@@ -129,11 +129,11 @@ class PhonetisaurusG2P(object):
         )
 
         self.nbest = nbest
-        if(self.nbest is not None):
+        if (self.nbest is not None):
             self._logger.debug("Will use the %d best results.", self.nbest)
 
     def _convert_phonemes(self, data):
-        if(self.fst_model_alphabet == 'xsampa'):
+        if (self.fst_model_alphabet == 'xsampa'):
             for word in data:
                 converted_phonemes = []
                 for phoneme in data[word]:
