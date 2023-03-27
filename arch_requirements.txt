@@ -1,0 +1,49 @@
+
+# Core requirements
+python3-pip
+atlas
+openssl
+ncurses
+gnupg
+# dirmngr does not exist
+gettext
+gcc-fortran
+util-linux
+jq
+
+# Plugins
+## AudioEngine
+### PyAudio
+#portaudio19-dev
+# libasound2-dev
+pulseaudio
+#pulseaudio-utils
+pipewire
+
+## STT
+### PocketSphinx is default for wakeword spotting
+swig
+bison
+libpulse
+
+#### Phonetisaurus is used to build dictionaries
+gcc
+# g++ Does not exist
+make
+autoconf
+libtool
+git
+#gfortran
+autoconf-archive
+subversion
+swig
+bison
+
+# TTS
+## flite
+flite
+
+# SpeechHandler
+## MPDControl
+mpd
+

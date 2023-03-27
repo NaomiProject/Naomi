@@ -16,6 +16,8 @@ mad
 
 # Pocketsphinx STT engine
 cmuclmtk
+pocketsphinx
+phonetisaurus
 
 # HN module
 semantic
