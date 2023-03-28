@@ -228,7 +228,6 @@ pluginMsg() {
 }
 
 findScripts() {
- printf "Enter findScripts()"
  find ~/Naomi -maxdepth 1 -iname '*.py' -type f -exec chmod a+x {} \;
  find ~/Naomi -maxdepth 1 -iname '*.sh' -type f -exec chmod a+x {} \;
  find ~/.config/naomi -maxdepth 1 -iname '*.sh' -type f -exec chmod a+x {} \;

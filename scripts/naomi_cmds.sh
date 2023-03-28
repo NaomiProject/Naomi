@@ -62,18 +62,13 @@ naomi_install() {
            read installChoice
            if [ "$installChoice" = "y" ] || [ "$installChoice" = "Y" ]; then
                printf "${B_M}Y ${B_W}- Installing Naomi${NL}"
-               printf "Command: $(command)"
                if [ -n "$(command -v apt-get)" ]; then
-                   printf "apt_setup_wizard"
                    apt_setup_wizard
                elif [ -n "$(command -v pacman -Syu)" ]; then
-                   printf "arch_setup_wizard"
                    arch_setup_wizard
                elif [ -n "$(command -v yum)" ]; then
-                   printf "yum unknown"
                    unknown_os
                else
-                   printf "unknown os"
                    unknown_os
                fi
                return;
@@ -417,7 +412,6 @@ nightlyVersion(){
 skipFlavor(){
   printf "${B_M}$key ${B_W}- Skipping Section${NL}"
   echo '{"use_release":"testing", "version":"Naomi-Development", "version":"Development", "date":"'$theDateRightNow'", "auto_update":"false"}' > ~/.config/naomi/configs/.naomi_options.json
-  echo 'Returning from skipFlavor'
   return;
 
 }

@@ -16,7 +16,6 @@ git_check
 zip_check
 
 apt_setup_wizard() {
-  printf "starting apt_setup_wizard"
   if [ ! -f ~/Naomi/README.md ]; then
     echo
     printf "${B_G}Starting Naomi Apt Setup Wizard...${NL}${B_W}"
@@ -32,7 +31,6 @@ apt_setup_wizard() {
     fi
   elif [ -f ~/Naomi/README.md ] && [ -f ~/Naomi/installers/script.deb.sh ]; then
     chmod a+x ~/Naomi/installers/script.deb.sh
-    printf "loading script.deb.sh"
     bash ~/Naomi/installers/script.deb.sh
     script_exit_code=$?
     if [ "$script_exit_code" = "0" ]; then

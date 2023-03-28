@@ -81,14 +81,11 @@ setup_wizard() {
     echo
     echo
 
-    echo "entering findScripts"
     findScripts
 
     NAOMI_DIR="$(cd ~/Naomi && pwd)"
-    echo "Naomi_dir=$NAOMI_DIR"
     cd ~/Naomi
     APT=1
-    printf "APT = ${APT}${NL}"
     if [ $APT -eq 1 ]; then
       if [ $REQUIRE_AUTH -eq 1 ]; then
         SUDO_COMMAND "sudo apt-get update"
