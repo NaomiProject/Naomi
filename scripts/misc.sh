@@ -122,24 +122,6 @@ wizardSetup(){
   echo
   sleep 3
   echo
-
-  echo
-  printf "${B_W}=========================================================================${NL}"
-  printf "${B_W}SECURITY SETUP:${NL}"
-  printf "${B_W}Let's examine a few security settings.${NL}"
-  echo
-  printf "${B_W}By default, Naomi is configured to require a password to perform actions as${NL}"
-  printf "${B_W}root (e.g. 'sudo ...') as well as confirm commands before continuing.${NL}"
-  printf "${B_W}This means you will have to watch the setup process to confirm everytime a new${NL}"
-  printf "${B_W}command needs to run.${NL}"
-  echo
-  printf "${B_W}However you can enable Naomi to continue the process uninterrupted for a hands off experience${NL}"
-  echo
-  printf "${B_W}Would you like the setup to run uninterrupted or would you like to look over the setup process?${NL}"
-  echo
-  printf "${B_M}  1${B_W}) Allow the process to run uninterrupted${NL}"
-  printf "${B_M}  2${B_W}) Require authentication to continue and run commands${NL}"
-  printf "${B_Blue}Choice [${B_M}1${B_Blue}-${B_M}2${B_Blue}]: ${B_W}"
 }
 
 env(){
@@ -246,6 +228,7 @@ pluginMsg() {
 }
 
 findScripts() {
+ printf "Enter findScripts()"
  find ~/Naomi -maxdepth 1 -iname '*.py' -type f -exec chmod a+x {} \;
  find ~/Naomi -maxdepth 1 -iname '*.sh' -type f -exec chmod a+x {} \;
  find ~/.config/naomi -maxdepth 1 -iname '*.sh' -type f -exec chmod a+x {} \;

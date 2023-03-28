@@ -13,6 +13,24 @@ source "scripts/naomi_cmds.sh"
 #########################################
 
 setup_wizard() {
+    WizardSetup()
+    echo
+    printf "${B_W}=========================================================================${NL}"
+    printf "${B_W}SECURITY SETUP:${NL}"
+    printf "${B_W}Let's examine a few security settings.${NL}"
+    echo
+    printf "${B_W}By default, Naomi is configured to require a password to perform actions as${NL}"
+    printf "${B_W}root (e.g. 'sudo ...') as well as confirm commands before continuing.${NL}"
+    printf "${B_W}This means you will have to watch the setup process to confirm everytime a new${NL}"
+    printf "${B_W}command needs to run.${NL}"
+    echo
+    printf "${B_W}However you can enable Naomi to continue the process uninterrupted for a hands off experience${NL}"
+    echo
+    printf "${B_W}Would you like the setup to run uninterrupted or would you like to look over the setup process?${NL}"
+    echo
+    printf "${B_M}  1${B_W}) Allow the process to run uninterrupted${NL}"
+    printf "${B_M}  2${B_W}) Require authentication to continue and run commands${NL}"
+    printf "${B_Blue}Choice [${B_M}1${B_Blue}-${B_M}2${B_Blue}]: ${B_W}"
     while true; do
         read -N1 -s key
         case $key in
@@ -44,27 +62,33 @@ setup_wizard() {
         case $key in
          1)
             defaultFlavor
+            break
             ;;
          2)
            stableVersion
+           break
            ;;
          3)
            nightlyVersion
+           break
            ;;
          S)
            skipFlavor
+           break
            ;;
         esac
     done
     echo
     echo
 
+    echo "entering findScripts"
     findScripts
 
     NAOMI_DIR="$(cd ~/Naomi && pwd)"
-
+    echo "Naomi_dir=$NAOMI_DIR"
     cd ~/Naomi
     APT=1
+    printf "APT = ${APT}${NL}"
     if [ $APT -eq 1 ]; then
       if [ $REQUIRE_AUTH -eq 1 ]; then
         SUDO_COMMAND "sudo apt-get update"
