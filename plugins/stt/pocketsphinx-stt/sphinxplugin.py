@@ -1,4 +1,6 @@
+import importlib.util
 import os.path
+import platform
 import tempfile
 from collections import OrderedDict
 from naomi import paths
@@ -6,8 +8,55 @@ from naomi import plugin
 from naomi import profile
 from naomi.run_command import run_command
 from naomi.run_command import process_completedprocess
-from . import sphinxvocab
-from .g2p import PhonetisaurusG2P
+try:
+    from . import sphinxvocab
+    from .g2p import PhonetisaurusG2P
+except ModuleNotFoundError as e:
+    # Try to install phonetisaurus from pypi
+    cmd = [
+        'pip', 'install', 'phonetisaurus'
+    ]
+    completedprocess = run_command(cmd)
+    if completedprocess.returncode != 0:
+        # check what architecture we are on
+        architecture = platform.machine()
+        phonetisaurus_url = ""
+        if architecture == "x86_64":
+            wheel = "phonetisaurus-0.3.0-py3-none-manylinux1_x86_64.whl"
+        elif architecture == "arm6l":
+            wheel = "phonetisaurus-0.3.0-py3-none-linux_armv6l.whl"
+        elif architecture == "arm7l":
+            wheel = "phonetisaurus-0.3.0-py3-none-linux_armv7l.whl"
+        elif architecture == "aarch64":
+            wheel = "phonetisaurus-0.3.0-py3-none-linux_aarch64.whl"
+        else:
+            # Here we should probably build the package from source
+            raise(f"Architecture {architecture} is not supported at this time")
+        phonetisaurus_url = f"https://github.com/rhasspy/phonetisaurus-pypi/releases/download/v0.3.0/{wheel}"
+        phonetisaurus_path = paths.sub('sources', wheel)
+        cmd = [
+            'curl', '-L', '-o', phonetisaurus_path, phonetisaurus_url
+        ]
+        completedprocess = run_command(cmd)
+        if completedprocess.returncode != 0:
+            raise Exception("Unable to download file from {phonetisaurus_url}")
+        else:
+            # use pip to install the file
+            cmd = [
+                'pip',
+                'install',
+                phonetisaurus_path
+            ]
+            completedprocess = run_command(cmd)
+            if completedprocess.returncode == 0:
+                # Check if phonetisaurus is intalled
+                if importlib.util.find_spec("phonetisaurus"):
+                    from . import sphinxvocab
+                    from .g2p import PhonetisaurusG2P
+                else:
+                    raise Exception("Phonetisaurus install failed")
+            else:
+                raise Exception("Phonetisaurus install failed")
 from pocketsphinx import pocketsphinx
 
 
@@ -29,25 +78,8 @@ def check_pocketsphinx_model(directory):
     # Start by assuming the files exist. If any file is found to not
     # exist, then set this to False
     FilesExist = True
-    mdef_file = os.path.join(directory, "mdef")
-    mdef_text_file = os.path.join(directory, "mdef.txt")
-    if (not os.path.isfile(mdef_text_file)):
-        print(f"{mdef_text_file} does not exist. Creating.")
-        if (os.path.isfile(mdef_file)):
-            command = [
-                "pocketsphinx_mdef_convert",
-                "-text",
-                mdef_file,
-                mdef_text_file
-            ]
-            completedprocess = run_command(command)
-            print("Command {} returned {}".format(
-                " ".join(completedprocess.args),
-                completedprocess.returncode
-            ))
-        if (not os.path.isfile(mdef_text_file)):
-            print(f"{mdef_text_file} still does not exist")
-            FilesExist = False
+    if (not os.path.isfile(os.path.join(directory, "mdef"))):
+        FilesExist = False
     if (not os.path.isfile(os.path.join(directory, "means"))):
         FilesExist = False
     if (not os.path.isfile(os.path.join(directory, "mixture_weights"))):

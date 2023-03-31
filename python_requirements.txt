@@ -16,7 +16,6 @@ mad
 
 # Pocketsphinx STT engine
 pocketsphinx
-phonetisaurus
 
 # HN module
 semantic
