@@ -51,7 +51,7 @@ def check_program_exists(program):
     standardlocations = ['/usr/local/bin', '/usr/bin', '/bin']
     response = False
     for location in standardlocations:
-        if(os.path.isfile(os.path.join(location, program))):
+        if (os.path.isfile(os.path.join(location, program))):
             response = True
     return response
 
@@ -100,9 +100,9 @@ def precheck():
     plugins = pluginstore.PluginStore()
     # Check to see if the there are any loaded audio engine plugins
     detected_stt_plugins = plugins.detect_plugins(category="stt")
-    if(len(detected_stt_plugins) == 0):
+    if (len(detected_stt_plugins) == 0):
         if not profile.check_profile_var_exists(["active_stt", "engine"]):
-            if(not interface.simple_yes_no(
+            if (not interface.simple_yes_no(
                 _("Have you set up at least one stt (speech to text) engine?")
             )):
                 print(interface.instruction_text(" ".join([
@@ -117,8 +117,8 @@ def precheck():
                 )])))
                 quit()
     detected_tts_plugins = plugins.detect_plugins(category="stt")
-    if(len(detected_tts_plugins) == 0):
-        if(not interface.simple_yes_no(
+    if (len(detected_tts_plugins) == 0):
+        if (not interface.simple_yes_no(
             _("Have you set up at least one tts (text to speech) engine?")
         )):
             print(interface.instruction_text(" ".join([
@@ -133,7 +133,7 @@ def precheck():
             ])))
             quit()
     audioengines = get_audio_engines()
-    while(len(audioengines) < 1):
+    while (len(audioengines) < 1):
         print(
             interface.alert_text(
                 _("You do not appear to have any audio engines configured.")
@@ -195,13 +195,13 @@ def get_wakeword():
 def get_audiolog_level():
     # Get the current level
     temp_level = _('None')
-    if(profile.get_profile_flag(['audiolog', 'save_audio'], False)):
+    if (profile.get_profile_flag(['audiolog', 'save_audio'], False)):
         temp_level = _('Noise')
-    if(profile.get_profile_flag(['audiolog', 'save_active_audio'], False)):
+    if (profile.get_profile_flag(['audiolog', 'save_active_audio'], False)):
         temp_level = _('Active')
-    if(profile.get_profile_flag(['audiolog', 'save_passive_audio'], False)):
+    if (profile.get_profile_flag(['audiolog', 'save_passive_audio'], False)):
         temp_level = _('Passive')
-    if(profile.get_profile_flag(['audiolog', 'save_noise'], False)):
+    if (profile.get_profile_flag(['audiolog', 'save_noise'], False)):
         temp_level = _('Noise')
     print(interface.status_text(_("Audiolog level")))
     print("")
@@ -215,19 +215,19 @@ def get_audiolog_level():
     level = ""
     while level not in [_("Active").lower(), _("Passive").lower(), _("Noise").lower(), _("None").lower()]:
         level = interface.simple_input(
-            _("What audiolog level would you like?"),
+            "    " + _("What audiolog level would you like?"),
             temp_level
         ).lower()
     profile.set_profile_var(['audiolog', 'save_audio'], False)
     profile.set_profile_var(['audiolog', 'save_active_audio'], False)
     profile.set_profile_var(['audiolog', 'save_passive_audio'], False)
     profile.set_profile_var(['audiolog', 'save_noise_audio'], False)
-    if(level == _("active").lower()):
+    if (level == _("active").lower()):
         profile.set_profile_var(['audiolog', 'save_active_audio'], True)
-    if(level == _("passive").lower()):
+    if (level == _("passive").lower()):
         profile.set_profile_var(['audiolog', 'save_passive_audio'], True)
         profile.set_profile_var(['audiolog', 'save_active_audio'], True)
-    if(level == _("noise").lower()):
+    if (level == _("noise").lower()):
         profile.set_profile_var(['audiolog', 'save_audio'], True)
 
 
@@ -301,7 +301,7 @@ def get_email_info():
     # This should allow the encryption method to be improved
     # incrementally while not forcing people to re-enter credentials
     # every time a new encryption method is added.
-    if(profile.get_profile_password(["email", "address"])):
+    if (profile.get_profile_password(["email", "address"])):
         prompt = _("What is your email password?") + ": "
         if (profile.get_profile_password(["email", "password"])):
             prompt += interface.default_text(
@@ -313,7 +313,7 @@ def get_email_info():
                 prompt
             )
         )
-        if(temp):
+        if (temp):
             profile.set_profile_password(['email', 'password'], temp)
 
 
@@ -348,7 +348,7 @@ def get_phone_info():
     profile.set_profile_var(['phone_number'], phone_number)
 
     # carrier
-    if(profile.get_profile_var(['phone_number'])):
+    if (profile.get_profile_var(['phone_number'])):
         interface.separator()
         # If the phone number is blank, it makes no sense to ask
         # for the carrier.
@@ -422,7 +422,7 @@ def get_notification_info():
 
     # if the user has entered an email address but no phone number
     # go ahead and assume "prefers email"
-    if(
+    if (
         (
             profile.get_profile_password(
                 ['email', 'address']
@@ -436,7 +436,7 @@ def get_notification_info():
         profile.set_profile_var(["prefers_email"], True)
     # if both email address and phone number are configured, ask
     # which the user prefers
-    elif(
+    elif (
         profile.get_profile_var(
             ['phone_number']
         ) and profile.get_profile_password(
@@ -451,7 +451,7 @@ def get_notification_info():
             )
         )
         print("")
-        if(profile.get_profile_var(["prefers_email"])):
+        if (profile.get_profile_var(["prefers_email"])):
             temp = email_choice
         else:
             temp = text_choice
@@ -725,9 +725,9 @@ def get_stt_engine(prompt, default):
 
     print("")
     # Handle special cases here
-    if(response == 'google-stt'):
+    if (response == 'google-stt'):
         pass
-    elif(response == 'watson-stt'):
+    elif (response == 'watson-stt'):
         username = interface.simple_input(
             interface.format_prompt(
                 "!",
@@ -743,7 +743,7 @@ def get_stt_engine(prompt, default):
                 _("Please enter your watson password:")
             )
         )
-    elif(response == 'kaldigstserver-stt'):
+    elif (response == 'kaldigstserver-stt'):
         print(
             "    " + interface.instruction_text(
                 _("I need your Kaldi g-streamer server url to continue")
@@ -761,7 +761,7 @@ def get_stt_engine(prompt, default):
         )
         print("")
         temp = profile.get_profile_var(["kaldigstserver-stt", "url"])
-        if(not temp):
+        if (not temp):
             temp = default
         profile.set_profile_var(
             ['kaldigstserver-stt', 'url'],
@@ -773,7 +773,7 @@ def get_stt_engine(prompt, default):
                 temp
             )
         )
-    elif(response == 'julius-stt'):
+    elif (response == 'julius-stt'):
         # stt_engine: julius
         # julius:
         #     hmmdefs:  '/path/to/your/hmmdefs'
@@ -825,7 +825,7 @@ def get_stt_engine(prompt, default):
             ["julius", "lexicon_archive_member"],
             "VoxForge/VoxForgeDict"
         )
-    elif(response == 'witai-stt'):
+    elif (response == 'witai-stt'):
         witai_token = interface.simple_input(
             interface.format_prompt(
                 "!",
@@ -843,14 +843,14 @@ def get_stt_engine(prompt, default):
             ['pocketsphinx', 'phonetisaurus_executable']
         )
         once = False
-        while not((once) and (phonetisaurus_executable)):
+        while not ((once) and (phonetisaurus_executable)):
             once = True
             # Let's check some standard places (this is crunchier than actually
             # using "find" but should work in most cases):
-            if(not phonetisaurus_executable):
-                if(check_program_exists('phonetisaurus-g2pfst')):
+            if (not phonetisaurus_executable):
+                if (check_program_exists('phonetisaurus-g2pfst')):
                     phonetisaurus_executable = 'phonetisaurus-g2pfst'
-                elif(check_program_exists('phonetisaurus-g2p')):
+                elif (check_program_exists('phonetisaurus-g2p')):
                     phonetisaurus_executable = 'phonetisaurus-g2p'
             phonetisaurus_executable = interface.simple_input(
                 interface.format_prompt(
@@ -878,12 +878,12 @@ def get_stt_engine(prompt, default):
         #            "~/CMUDict/train/model.fst"
         hmm_dir = profile.get_profile_var(['pocketsphinx', 'hmm_dir'])
         once = False
-        while not(once and hmm_dir):
+        while not (once and hmm_dir):
             once = True
             # The hmm_dir should be under the user's home directory
             # in the "~/pocketsphinx/model/en-us/en-us" directory
-            if(not hmm_dir):
-                if(os.path.isdir(os.path.join(
+            if (not hmm_dir):
+                if (os.path.isdir(os.path.join(
                     os.path.expanduser("~"),
                     "pocketsphinx-python",
                     "pocketsphinx",
@@ -899,7 +899,7 @@ def get_stt_engine(prompt, default):
                         "en-us",
                         "en-us"
                     )
-                elif(os.path.isdir(os.path.join(
+                elif (os.path.isdir(os.path.join(
                     os.path.expanduser("~"),
                     "pocketsphinx",
                     "model",
@@ -913,7 +913,7 @@ def get_stt_engine(prompt, default):
                         "en-us",
                         "en-us"
                     )
-                elif(os.path.isdir(os.path.join(
+                elif (os.path.isdir(os.path.join(
                         "/",
                         "usr",
                         "share",
@@ -931,7 +931,7 @@ def get_stt_engine(prompt, default):
                         "en-us",
                         "en-us"
                     )
-                elif(
+                elif (
                     os.path.isdir(os.path.join(
                         "/",
                         "usr",
@@ -968,7 +968,7 @@ def get_stt_engine(prompt, default):
         once = False
         while not (once and fst_model):
             once = True
-            if(os.path.isfile(os.path.join(
+            if (os.path.isfile(os.path.join(
                 os.path.expanduser("~"),
                 "pocketsphinx-python",
                 "pocketsphinx",
@@ -986,7 +986,7 @@ def get_stt_engine(prompt, default):
                     "train",
                     "model.fst"
                 )
-            elif(os.path.isfile(os.path.join(
+            elif (os.path.isfile(os.path.join(
                 os.path.expanduser("~"),
                 "cmudict",
                 "train",
@@ -998,7 +998,7 @@ def get_stt_engine(prompt, default):
                     "train",
                     "model.fst"
                 )
-            elif(os.path.isfile(os.path.join(
+            elif (os.path.isfile(os.path.join(
                 os.path.expanduser("~"),
                 "CMUDict",
                 "train",
@@ -1010,7 +1010,7 @@ def get_stt_engine(prompt, default):
                     "train",
                     "model.fst"
                 )
-            elif(os.path.isfile(os.path.join(
+            elif (os.path.isfile(os.path.join(
                 os.path.expanduser("~"),
                 "phonetisaurus",
                 "g014b2b.fst"
@@ -1085,7 +1085,7 @@ def get_tts_engine():
                 print(interface.alert_text(_("Unrecognized option.")))
         print("")
         # Deal with special cases
-        if(profile.get_profile_var(["tts_engine"]) == "espeak-tts"):
+        if (profile.get_profile_var(["tts_engine"]) == "espeak-tts"):
             # tts_engine: espeak-tts
             voice_chosen = True
             print(
@@ -1103,7 +1103,7 @@ def get_tts_engine():
             print("        voice: 'default+m3'   # optional")
             print("        pitch_adjustment: 40  # optional")
             print("        words_per_minute: 160 # optional")
-        elif(profile.get_profile_var(["tts_engine"]) == "festival-tts"):
+        elif (profile.get_profile_var(["tts_engine"]) == "festival-tts"):
             # tts_engine: festival-tts
             voice_chosen = True
             print(
@@ -1111,7 +1111,7 @@ def get_tts_engine():
                     _("Use the festival command to set the default voice.")
                 )
             )
-        elif(profile.get_profile_var(["tts_engine"]) == "flite-tts"):
+        elif (profile.get_profile_var(["tts_engine"]) == "flite-tts"):
             try:
                 # pdb.set_trace()
                 flite_info = tts_plugins.get_plugin(
@@ -1188,11 +1188,11 @@ def get_tts_engine():
                     "  $ ",
                     interface.success_text("./Naomi.py --repopulate")
                 ]))
-        elif(profile.get_profile_var(["tts_engine"]) == "pico-tts"):
+        elif (profile.get_profile_var(["tts_engine"]) == "pico-tts"):
             voice_chosen = True
-        elif(profile.get_profile_var(["tts_engine"]) == "google-tts"):
+        elif (profile.get_profile_var(["tts_engine"]) == "google-tts"):
             voice_chosen = True
-        elif(profile.get_profile_var(["tts_engine"]) == "ivona-tts"):
+        elif (profile.get_profile_var(["tts_engine"]) == "ivona-tts"):
             voice_chosen = True
             print(
                 "    " + interface.instruction_text(" ".join([
@@ -1239,7 +1239,7 @@ def get_tts_engine():
             )
             # ivona-tts voice
             temp = profile.get_profile_var(["ivona-tts", "voice"])
-            if(not temp):
+            if (not temp):
                 temp = "Brian"
             profile.set_profile_var(
                 ["ivona-tts", "voice"],
@@ -1256,7 +1256,7 @@ def get_tts_engine():
                     temp
                 )
             )
-        elif(profile.get_profile_var(["tts_engine"]) == "mary-tts"):
+        elif (profile.get_profile_var(["tts_engine"]) == "mary-tts"):
             voice_chosen = True
             profile.set_profile_var(
                 ["mary-tts", "server"],
@@ -1311,7 +1311,7 @@ def get_beep_or_voice():
     # then use them otherwise use beeps
     voice_choice = _("voice").lower()[:1]
     beep_choice = _("beep").lower()[:1]
-    if(profile.get_profile_var(["active_stt", "reply"])):
+    if (profile.get_profile_var(["active_stt", "reply"])):
         temp = voice_choice
     else:
         temp = beep_choice
@@ -1348,7 +1348,7 @@ def get_beep_or_voice():
         ),
         temp
     )
-    while(
+    while (
         (
             not response
         ) or (
@@ -1367,7 +1367,7 @@ def get_beep_or_voice():
                 )
             )
         )
-    if(response.lower()[:1] == voice_choice):
+    if (response.lower()[:1] == voice_choice):
         print("")
         print("")
         print("")
@@ -1379,7 +1379,7 @@ def get_beep_or_voice():
         )
         print("")
         areplyRespon = None
-        while(not areplyRespon):
+        while (not areplyRespon):
             areply = interface.simple_input(
                 interface.format_prompt(
                     "?",
@@ -1388,7 +1388,7 @@ def get_beep_or_voice():
                 profile.get_profile_var(["active_stt", "reply"])
             )
             areplyRespon = None
-            while(areplyRespon is None):
+            while (areplyRespon is None):
                 print("")
                 areplyRespon = interface.simple_yes_no(
                     areply + " - " + _("Is this correct?")
@@ -1401,7 +1401,7 @@ def get_beep_or_voice():
             )
         )
         aresponseRespon = None
-        while(not aresponseRespon):
+        while (not aresponseRespon):
             aresponse = interface.simple_input(
                 interface.format_prompt(
                     "?",
@@ -1411,7 +1411,7 @@ def get_beep_or_voice():
             )
             print("")
             aresponseRespon = None
-            while(aresponseRespon is None):
+            while (aresponseRespon is None):
                 aresponseRespon = interface.simple_yes_no(
                     aresponse + " - " + _("Is this correct?")
                 )
@@ -1529,7 +1529,7 @@ def get_output_device():
             "audio",
             "beep_lo.wav"
         )
-        if(os.path.isfile(filename)):
+        if (os.path.isfile(filename)):
             print(interface.instruction_text(
                 _("Testing device by playing a sound")
             ))
@@ -1668,7 +1668,7 @@ def get_input_device():
                 "audio",
                 "beep_hi.wav"
             )
-            if(os.path.isfile(filename)):
+            if (os.path.isfile(filename)):
                 output_device.play_file(
                     filename,
                     chunksize=output_chunksize,
@@ -1720,7 +1720,7 @@ def get_input_device():
                             threshold,
                             recording_frames[-10:]
                         )
-                        if((
+                        if ((
                             last_snr <= threshold
                         ) or (
                             len(recording_frames) > 60
@@ -1854,7 +1854,6 @@ def run():
     # write to profile
     # profile.save_profile()
 
-    interface.separator()
     print(
         interface.normal_text()
     )

@@ -48,7 +48,7 @@ webrtcvad
 # NaomiSTTTrain
 cython
 pandas
-sklearn
+scikit-learn
 jiwer
 
 # Development

@@ -7,6 +7,8 @@ _visualizations = []
 def load_visualizations(self):
     # Inititalize Visualizations
     global _visualizations
+    # Clear visualizations so visualizations are not doubled if this function is called more than once
+    _visualizations = []
     for info in profile.get_arg('plugins').get_plugins_by_category(
         'visualizations'
     ):

@@ -24,7 +24,7 @@ def println(string):
     # check and see if string ends with a line feed
     addCR = False
     matchgroups = re.match('^(.*)\n$', string, re.MULTILINE)
-    if(matchgroups):
+    if (matchgroups):
         string = matchgroups.groups(0)[0]
         addCR = True
     # clear the current line
@@ -35,7 +35,7 @@ def println(string):
     sys.stdout.write("{}{}\r".format(
         string, " " * (columns - len(string)))
     )
-    if(addCR):
+    if (addCR):
         sys.stdout.write("\n")
     sys.stdout.flush()
 
@@ -52,10 +52,10 @@ class commandline(object):
 
         _ = translator.gettext
         language = self.get_language(once=True)
-        if(language == 'fr-FR'):
+        if (language == 'fr-FR'):
             affirmative = 'oui'
             negative = 'non'
-        elif(language == 'de-DE'):
+        elif (language == 'de-DE'):
             affirmative = "ja"
             negative = "nein"
         else:
@@ -101,8 +101,8 @@ class commandline(object):
                 ),
                 selected_language
             ).strip().lower()
-            if(len(selected_language) > 0):
-                if(self.check_for_value(
+            if (len(selected_language) > 0):
+                if (self.check_for_value(
                     selected_language,
                     [x[
                         :len(selected_language)
@@ -215,14 +215,14 @@ class commandline(object):
         return t.bold_green + text
 
     def format_prompt(self, icon, prompt):
-        if(icon == "!"):
+        if (icon == "!"):
             prompt = "".join([
                 self.icon_text('['),
                 self.alert_icon('!'),
                 self.icon_text('] '),
                 self.question_text(prompt)
             ])
-        elif(icon == "?"):
+        elif (icon == "?"):
             prompt = "".join([
                 self.icon_text('['),
                 self.question_icon('?'),
@@ -241,7 +241,7 @@ class commandline(object):
     # raw_input easily without hunting down every reference
     def simple_input(self, prompt, default=None):
         prompt += ": "
-        if(default):
+        if (default):
             if isinstance(default, (int, float, bool)):
                 default = str(default)
             if isinstance(default, str):
@@ -259,10 +259,10 @@ class commandline(object):
         response = input()
         # if the user pressed enter without entering anything,
         # set the response to default
-        if(default and not response):
-            if(isinstance(default, int) or isinstance(default, float)):
+        if (default and not response):
+            if (isinstance(default, int) or isinstance(default, float)):
                 response = str(default)
-            elif(isinstance(default, list)):
+            elif (isinstance(default, list)):
                 # if the default is a list, convert it to a string
                 response = ", ".join(default)
             else:
@@ -276,7 +276,7 @@ class commandline(object):
     # happens after the password has been validated.
     def simple_password(self, prompt, default=None):
         prompt += ": "
-        if(default):
+        if (default):
             prompt += self.default_text("********") + self.default_prompt()
         prompt += self.input_text()
         # don't use print here so no automatic carriage return
@@ -284,7 +284,7 @@ class commandline(object):
         response = getpass(prompt)
         # if the user pressed enter without entering anything,
         # set the response to default
-        if(default and not response):
+        if (default and not response):
             response = default
         return response.strip()
 
@@ -312,23 +312,23 @@ class commandline(object):
         # Make it so the default value is upper case and the non-default value
         # is lower case
         instruction = ""
-        if(description):
+        if (description):
             instruction = '"?" for help'
         choice_affirmative = affirmative[:1].lower()
         choice_negative = negative[:1].lower()
-        if(default is not None):
-            if(not isinstance(default, bool)):
-                if(not isinstance(default, str)):
+        if (default is not None):
+            if (not isinstance(default, bool)):
+                if (not isinstance(default, str)):
                     default = str(default)
                 default = app_utils.is_positive(default)
-            if(isinstance(default, bool)):
-                if(default):
+            if (isinstance(default, bool)):
+                if (default):
                     choice_affirmative = affirmative[:1].upper()
                     default = choice_affirmative
                 else:
                     choice_negative = negative[:1].upper()
                     default = choice_negative
-        while(response[:1] not in (affirmative.lower()[:1], negative.lower()[:1])):
+        while (response[:1] not in (affirmative.lower()[:1], negative.lower()[:1])):
             temp_response = self.simple_input(
                 self.format_prompt(
                     "?",
@@ -359,38 +359,38 @@ class commandline(object):
         # set a default default value
         default = ""
         # if default is defined, then use that value as default
-        if("default" in definition):
+        if ("default" in definition):
             try:
                 default = definition["default"]()
             except TypeError:
                 default = definition["default"]
         active = True
-        if("active" in definition):
+        if ("active" in definition):
             try:
                 # check if definition["active"] is a function
                 active = definition["active"]()
             except TypeError:
                 # if not, then take the value of definition["active"]
                 active = definition["active"]
-        if(active):
+        if (active):
             # Set a default description
             description = _("Sorry, no additional information is available about this setting")
             # read the description (a value)
-            if("description" in definition):
+            if ("description" in definition):
                 description = definition["description"]
             # Check if there is a current value
             value = profile.get(setting, default)
             # Set a default for the type of control
             controltype = "textbox"
-            if("type" in definition):
+            if ("type" in definition):
                 controltype = definition["type"].lower()
             return_list = False
-            if("return_list" in definition):
+            if ("return_list" in definition):
                 try:
                     return_list = definition["return_list"]()
                 except TypeError:
                     return_list = definition["return_list"]
-            if(controltype == "listbox"):
+            if (controltype == "listbox"):
                 # Listbox is used to present a list of options from which
                 # the user has to select. If the user enters something not
                 # on the list, it will be rejected and the listbox will
@@ -399,15 +399,18 @@ class commandline(object):
                     options = definition["options"]()
                 except TypeError:
                     options = definition["options"]
-                if(isinstance(options, list)):
+                if (isinstance(options, list)):
                     options = {item: item for item in options}
                 print(
                     "    " + self.instruction_text(
                         definition["title"]
                     )
                 )
-                print("")
-                response = value
+                # Make sure the default value is actually available in the list of options
+                if (value in options):
+                    response = value
+                else:
+                    response = ""
                 once = False
                 while not ((once) and (profile.validate(definition, response))):
                     once = True
@@ -419,7 +422,7 @@ class commandline(object):
                         ) + self.instruction_text('"?" for help'),
                         response
                     )
-                    if(tmp_response.strip() == "?"):
+                    if (tmp_response.strip() == "?"):
                         # Print the description plus any help text for the control
                         print("")
                         print(self.instruction_text(description))
@@ -427,8 +430,8 @@ class commandline(object):
                         continue
                     response = tmp_response
                     print("")
-                    if(len(response.strip()) > 0):
-                        if(return_list):
+                    if (len(response.strip()) > 0):
+                        if (return_list):
                             options_list = []
                             response = [item.strip() for item in response.split(",")]
                             for item in response:
@@ -457,7 +460,7 @@ class commandline(object):
                                     )
                                 )
                     else:
-                        if(return_list):
+                        if (return_list):
                             profile.set_profile_var(
                                 setting,
                                 []
@@ -468,7 +471,7 @@ class commandline(object):
                                 ""
                             )
                 print("")
-            elif(controltype == "password"):
+            elif (controltype == "password"):
                 print("")
                 value = profile.get_profile_password(setting, default)
                 response = value
@@ -481,7 +484,7 @@ class commandline(object):
                         ),
                         response
                     )
-                    if(tmp_response.strip() == "?"):
+                    if (tmp_response.strip() == "?"):
                         # Print the description plus any help text
                         # for the control
                         print("")
@@ -494,7 +497,7 @@ class commandline(object):
                         setting,
                         response
                     )
-            elif(controltype == "encrypted"):
+            elif (controltype == "encrypted"):
                 # Encrypted is like password, in that it encrypts the
                 # information in your profile, so it would be protected
                 # from someone who steals your profile.
@@ -511,7 +514,7 @@ class commandline(object):
                         ),
                         response
                     )
-                    if(tmp_response.strip() == "?"):
+                    if (tmp_response.strip() == "?"):
                         # Print the description plus any help text
                         # for the control
                         print("")
@@ -524,10 +527,10 @@ class commandline(object):
                         setting,
                         response
                     )
-            elif(controltype == "boolean"):
+            elif (controltype == "boolean"):
                 value = profile.get_profile_flag(setting, default)
                 description = None
-                if('description' in definition):
+                if ('description' in definition):
                     description = definition['description']
                 response = value
                 once = False
@@ -542,7 +545,7 @@ class commandline(object):
                     setting,
                     response
                 )
-            elif(controltype == "number"):
+            elif (controltype == "number"):
                 print("")
                 response = value
                 once = False
@@ -552,7 +555,7 @@ class commandline(object):
                         "    " + self.instruction_text(_('{} ("?" for help)').format(definition["title"])),
                         response
                     )
-                    if(tmp_response.strip() == "?"):
+                    if (tmp_response.strip() == "?"):
                         # Print the description plus any help text for the control
                         print("")
                         print(self.instruction_text(definition["description"]))
@@ -575,14 +578,14 @@ class commandline(object):
                         "    " + self.instruction_text(_('{} ("?" for help)').format(definition["title"])),
                         response
                     )
-                    if(tmp_response.strip() == "?"):
+                    if (tmp_response.strip() == "?"):
                         # Print the description plus any help text for the control
                         print("")
                         print(self.instruction_text(definition["description"]))
                         once = False
                         continue
                     response = tmp_response
-                    if(return_list):
+                    if (return_list):
                         response = [x.strip() for x in response.split(",")]
                     print("")
                     profile.set_profile_var(

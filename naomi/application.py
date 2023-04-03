@@ -44,7 +44,7 @@ class Naomi(object):
         # check that the values we need in order to run Naomi
         # exist
         language = profile.get_profile_var(['language'])
-        if(not language):
+        if (not language):
             language = 'en-US'
             self._logger.warn(
                 ' '.join([
@@ -59,6 +59,8 @@ class Naomi(object):
         # Load plugins
         profile.set_arg('plugins', pluginstore.PluginStore())
         profile.get_arg('plugins').detect_plugins()
+        # Load Visualizations
+        visualizations.load_visualizations(self)
         # Load NPE
         self.npe = npe.npe(self)
         self._logger.info("Using Language '{}'".format(language))
@@ -77,10 +79,10 @@ class Naomi(object):
                     )
                     # Go ahead and pull the setting
                     settings_complete = False
-        if(profile.get_arg("repopulate") or profile.get_arg("profile_missing") or not settings_complete):
+        if (profile.get_arg("repopulate") or profile.get_arg("profile_missing") or not settings_complete):
             populate.run()
             keyword = profile.get_profile_var(['keyword'], ['Naomi'])
-            if(isinstance(keyword, list)):
+            if (isinstance(keyword, list)):
                 keyword = keyword[0]
             visualizations.run_visualization(
                 "output",
@@ -88,7 +90,8 @@ class Naomi(object):
                     "Configuring {}"
                 ).format(
                     keyword
-                ))
+                )),
+                timestamp=False
             )
             for setting in self.settings():
                 self._interface.get_setting(
@@ -98,7 +101,7 @@ class Naomi(object):
             profile.save_profile()
 
         language = profile.get_profile_var(['language'])
-        if(not language):
+        if (not language):
             language = 'en-US'
             self._logger.warn(
                 ' '.join([
@@ -109,7 +112,7 @@ class Naomi(object):
         self._logger.info("Using Language '{}'".format(language))
 
         audio_engine_slug = profile.get_profile_var(['audio_engine'])
-        if(not audio_engine_slug):
+        if (not audio_engine_slug):
             audio_engine_slug = 'pyaudio'
             self._logger.warn(
                 ' '.join([
@@ -122,7 +125,7 @@ class Naomi(object):
         active_stt_slug = profile.get_profile_var(
             ['active_stt', 'engine']
         )
-        if(not active_stt_slug):
+        if (not active_stt_slug):
             active_stt_slug = 'sphinx'
             self._logger.warning(
                 " ".join([
@@ -137,7 +140,7 @@ class Naomi(object):
         active_stt_reply = profile.get_profile_var(
             ['active_stt', 'reply']
         )
-        if(active_stt_reply):
+        if (active_stt_reply):
             self._logger.info(
                 "Using active STT voice reply '{}'".format(active_stt_reply)
             )
@@ -145,7 +148,7 @@ class Naomi(object):
         active_stt_response = profile.get_profile_var(
             ['active_stt', 'response']
         )
-        if(active_stt_response):
+        if (active_stt_response):
             self._logger.info(
                 "Using active STT voice response '{}'".format(
                     active_stt_response
@@ -169,7 +172,7 @@ class Naomi(object):
         )
 
         tts_slug = profile.get_profile_var(['tts_engine'])
-        if(not tts_slug):
+        if (not tts_slug):
             tts_slug = 'espeak-tts'
             self._logger.warning(
                 " ".join([
@@ -186,7 +189,7 @@ class Naomi(object):
             profile.save_profile()
         self._logger.info("Using keywords '{}'".format(', '.join(keyword)))
 
-        if(not print_transcript):
+        if (not print_transcript):
             print_transcript = profile.get_profile_flag(
                 ['print_transcript'],
                 False
@@ -194,21 +197,21 @@ class Naomi(object):
         profile.set_arg('print_transcript', print_transcript)
 
         # passive_listen
-        if(not passive_listen):
+        if (not passive_listen):
             passive_listen = profile.get_profile_flag(["passive_listen"])
 
         # Verify wakeword
         verify_wakeword = profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)
 
         # Audiolog settings
-        if(use_mic == USE_STANDARD_MIC):
-            if(save_audio):
+        if (use_mic == USE_STANDARD_MIC):
+            if (save_audio):
                 save_passive_audio = True
                 save_active_audio = True
                 save_noise = True
-            elif(not(save_passive_audio or save_active_audio or save_noise)):
+            elif (not (save_passive_audio or save_active_audio or save_noise)):
                 # get the settings from the profile
-                if(profile.get_profile_flag(['audiolog', 'save_audio'], False)):
+                if (profile.get_profile_flag(['audiolog', 'save_audio'], False)):
                     save_passive_audio = True
                     save_active_audio = True
                     save_noise = True
@@ -231,9 +234,6 @@ class Naomi(object):
         profile.set_arg('save_passive_audio', save_passive_audio)
         profile.set_arg('save_active_audio', save_active_audio)
         profile.set_arg('save_noise', save_noise)
-
-        # load visualizations
-        visualizations.load_visualizations(self)
 
         # Initialize AudioEngine
         ae_info = profile.get_arg('plugins').get_plugin(
@@ -415,11 +415,11 @@ class Naomi(object):
             active_phrases,
             active_stt_plugin_info
         )
-        if(profile.check_profile_var_exists(['active_stt', 'samplerate'])):
+        if (profile.check_profile_var_exists(['active_stt', 'samplerate'])):
             active_stt_plugin._samplerate = int(
                 profile.get_profile_var(['active_stt', 'samplerate'])
             )
-        if(profile.check_profile_var_exists(
+        if (profile.check_profile_var_exists(
             ['active_stt', 'volume_normalization']
         )):
             active_stt_plugin._volume_normalization = float(
@@ -455,11 +455,11 @@ class Naomi(object):
             passive_stt_plugin_info
         )
 
-        if(profile.check_profile_var_exists(['passive_stt', 'samplerate'])):
+        if (profile.check_profile_var_exists(['passive_stt', 'samplerate'])):
             passive_stt_plugin._samplerate = int(
                 profile.get_profile_var(['passive_stt', 'samplerate'])
             )
-        if(profile.check_profile_var_exists(
+        if (profile.check_profile_var_exists(
             ['passive_stt', 'volume_normalization']
         )):
             passive_stt_plugin._volume_normalization = float(
@@ -485,11 +485,11 @@ class Naomi(object):
             special_stt_plugin_info
         )
 
-        if(profile.check_profile_var_exists(['special_stt', 'samplerate'])):
+        if (profile.check_profile_var_exists(['special_stt', 'samplerate'])):
             yesno_stt_plugin._samplerate = int(
                 profile.get_profile_var(['special_stt', 'samplerate'])
             )
-        if(profile.check_profile_var_exists(
+        if (profile.check_profile_var_exists(
             ['special_stt', 'volume_normalization']
         )):
             yesno_stt_plugin._volume_normalization = float(
@@ -565,7 +565,7 @@ class Naomi(object):
                         "title": _("please select an output device"),
                         "options": self.get_output_devices,
                         "validation": self.validate_output_device,
-                        "default": lambda: "pulse" if("pulse" in self.get_output_devices())else self.get_default_output_audio_device()
+                        "default": lambda: "pulse" if ("pulse" in self.get_output_devices())else self.get_default_output_audio_device()
                     }
                 ),
                 (
@@ -574,7 +574,7 @@ class Naomi(object):
                         "title": _("Please select an input device"),
                         "options": self.get_input_devices,
                         "validation": self.validate_input_device,
-                        "default": lambda: "pulse" if("pulse" in self.get_input_devices())else self.get_default_input_audio_device()
+                        "default": lambda: "pulse" if ("pulse" in self.get_input_devices())else self.get_default_input_audio_device()
                     }
                 ),
                 (
@@ -599,7 +599,7 @@ class Naomi(object):
                         "type": "number",
                         "title": _("Input device chunk size"),
                         "description": _("The size (in bytes) of each input chunk"),
-                        "default": int(int(profile.get(['audio', 'input_rate'], 16000)) * 0.03) if(profile.get(['vad_engine'], 'snr_vad') == 'webrtc_vad') else 1024
+                        "default": int(int(profile.get(['audio', 'input_rate'], 16000)) * 0.03) if (profile.get(['vad_engine'], 'snr_vad') == 'webrtc_vad') else 1024
                     }
                 ),
                 (
@@ -737,7 +737,7 @@ class Naomi(object):
                         "type": "password",
                         "title": _("Please enter your email password"),
                         "description": _("I need your email address in order to check your emails."),
-                        "active": lambda: True if(
+                        "active": lambda: True if (
                             len(profile.get_profile_password(["email", "address"]).strip()) > 0
                         ) and (
                             len(profile.get_profile_var(["email", "imap"])) > 0
@@ -763,7 +763,7 @@ class Naomi(object):
                         "type": "boolean",
                         "title": _("Would you like to let me send you emails?"),
                         "description": _("If you select 'Yes' I will send emails to you at your request, or to let you know when important things are happening."),
-                        "active": lambda: True if(
+                        "active": lambda: True if (
                             len(profile.get_profile_password(["email", "address"]).strip())
                         ) else False,
                         "default": True
@@ -795,8 +795,9 @@ class Naomi(object):
         visualizations.run_visualization(
             "output",
             self._interface.instruction_text(
-                _("Testing device by playing a sound")
-            )
+                "    " + _("Testing device by playing a sound")
+            ),
+            timestamp=False
         )
         ae_info = profile.get_arg('plugins').get_plugin(
             profile.get_profile_var(['audio_engine']),
@@ -835,7 +836,7 @@ class Naomi(object):
                         ])
                     )
                 )
-                if(troubleshoot):
+                if (troubleshoot):
                     response = False
                     visualizations.run_visualization(
                         "output",
@@ -848,7 +849,7 @@ class Naomi(object):
                     launch_alsamixer = self._interface.simple_yes_no(
                         _("Would you like to launch alsamixer?")
                     )
-                    if(launch_alsamixer):
+                    if (launch_alsamixer):
                         run_command("alsamixer")
                     self._interface.get_setting(
                         ('audio', 'output_chunksize'), {
@@ -948,7 +949,7 @@ class Naomi(object):
                 "audio",
                 "beep_hi.wav"
             )
-            if(os.path.isfile(filename)):
+            if (os.path.isfile(filename)):
                 output_device.play_file(
                     filename
                 )
@@ -969,8 +970,9 @@ class Naomi(object):
             visualizations.run_visualization(
                 "output",
                 self._interface.instruction_text(
-                    _("Please speak into the mic now")
-                )
+                    _('Please say "This is a test" into the mic now')
+                ),
+                timestamp=False
             )
             # Go ahead and use mic to record
             with testMic._write_frames_to_file(
@@ -981,16 +983,19 @@ class Naomi(object):
                 if testMic._active_stt_response:
                     testMic.say(self._active_stt_response)
                 else:
-                    testMic.play_file(paths.data('audio', 'beep_lo.wav'))
+                    # Have to use play_file_sync here to prevent playback of the sampled audio from interrupting chime playback.
+                    testMic.play_file_sync(paths.data('audio', 'beep_lo.wav'))
                 f.seek(0)
                 response = False
                 replay = True
                 while (replay):
                     response = True
                     output_device.play_fp(f)
+                    # This just clears the volume feedback line
                     visualizations.run_visualization(
                         "output",
-                        ""
+                        "",
+                        timestamp=False
                     )
                     heard = self._interface.simple_yes_no(
                         _("Did you hear yourself?")

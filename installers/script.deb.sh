@@ -437,32 +437,25 @@ setup_wizard() {
     echo '      case $key in' >> ~/.config/naomi/Naomi.sh
     echo '        Y)' >> ~/.config/naomi/Naomi.sh
     echo '          printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/.config/naomi/Naomi.sh
-    echo '          mv ~/Naomi ~/Naomi-Temp' >> ~/.config/naomi/Naomi.sh
-    echo '          cd ~' >> ~/.config/naomi/Naomi.sh
     echo "          if [ \"\$(jq '.use_release' ~/.config/naomi/configs/.naomi_options.json)\" = '\"nightly\"' ]; then" >> ~/.config/naomi/Naomi.sh
     echo '            printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/.config/naomi/Naomi.sh
+    echo '            cd ~' >> ~/.config/naomi/Naomi.sh
     echo '            mv ~/Naomi ~/Naomi-Temp' >> ~/.config/naomi/Naomi.sh
-    echo '            cd ~' >> ~/.config/naomi/Naomi.sh
     echo "            git clone \$gitURL.git -b naomi-dev Naomi" >> ~/.config/naomi/Naomi.sh
-    echo '            cd Naomi' >> ~/.config/naomi/Naomi.sh
     echo "            echo '{\"use_release\":\"nightly\", \"branch\":\"naomi-dev\", \"version\":\"Naomi-\$version.\$(git rev-parse --short HEAD)\", \"date\":\"\$theDateRightNow\", \"auto_update\":\"true\"}' > ~/.config/naomi/configs/.naomi_options.json" >> ~/.config/naomi/Naomi.sh
-    echo '            cd ~' >> ~/.config/naomi/Naomi.sh
     echo '            break' >> ~/.config/naomi/Naomi.sh
     echo "          elif [ \"\$(jq '.use_release' ~/.config/naomi/configs/.naomi_options.json)\" = '\"milestone\"' ]; then" >> ~/.config/naomi/Naomi.sh
     echo '            printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/.config/naomi/Naomi.sh
+    echo '            cd ~' >> ~/.config/naomi/Naomi.sh
     echo '            mv ~/Naomi ~/Naomi-Temp' >> ~/.config/naomi/Naomi.sh
-    echo '            cd ~' >> ~/.config/naomi/Naomi.sh
     echo "            git clone \$gitURL.git -b naomi-dev Naomi" >> ~/.config/naomi/Naomi.sh
-    echo '            cd Naomi' >> ~/.config/naomi/Naomi.sh
     echo "            echo '{\"use_release\":\"milestone\", \"branch\":\"naomi-dev\", \"version\":\"Naomi-\$version.\$(git rev-parse --short HEAD)\", \"date\":\"\$theDateRightNow\", \"auto_update\":\"true\"}' > ~/.config/naomi/configs/.naomi_options.json" >> ~/.config/naomi/Naomi.sh
-    echo '            cd ~' >> ~/.config/naomi/Naomi.sh
     echo '            break' >> ~/.config/naomi/Naomi.sh
     echo "          elif [ \"\$(jq '.use_release' ~/.config/naomi/configs/.naomi_options.json)\" = '\"stable\"' ]; then" >> ~/.config/naomi/Naomi.sh
     echo '            printf "${B_M}$key ${B_W}- Forcing Update${NL}"' >> ~/.config/naomi/Naomi.sh
-    echo '            mv ~/Naomi ~/Naomi-Temp' >> ~/.config/naomi/Naomi.sh
     echo '            cd ~' >> ~/.config/naomi/Naomi.sh
+    echo '            mv ~/Naomi ~/Naomi-Temp' >> ~/.config/naomi/Naomi.sh
     echo "            git clone \$gitURL.git -b master Naomi" >> ~/.config/naomi/Naomi.sh
-    echo '            cd Naomi' >> ~/.config/naomi/Naomi.sh
     echo "            echo '{\"use_release\":\"stable\", \"branch\":\"master\", \"version\":\"Naomi-\$version.\$(git rev-parse --short HEAD)\", \"date\":\"\$theDateRightNow\", \"auto_update\":\"false\"}' > ~/.config/naomi/configs/.naomi_options.json" >> ~/.config/naomi/Naomi.sh
     echo '            cd ~' >> ~/.config/naomi/Naomi.sh
     echo '          fi' >> ~/.config/naomi/Naomi.sh
