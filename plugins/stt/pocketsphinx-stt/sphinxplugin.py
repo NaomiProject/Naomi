@@ -1,5 +1,6 @@
 import importlib.util
-import os.path
+import logging
+import os
 import platform
 import tempfile
 from collections import OrderedDict
@@ -161,12 +162,20 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             self._logfile = f.name
 
         # Pocketsphinx v5
-        config = pocketsphinx.Config()
-        config.set_string('-hmm', hmm_dir)
-        config.set_string('-lm', lm_path)
-        config.set_string('-dict', dict_path)
-        config.set_string('-logfn', self._logfile)
-        self._decoder = pocketsphinx.Decoder(config)
+        self._config = pocketsphinx.Config(
+            hmm=hmm_dir,
+            lm=lm_path,
+            dict=dict_path,
+            logfn=self._logfile
+        )
+        self._decoder = pocketsphinx.Decoder(self._config)
+
+    def reinit(self):
+        self._logger.debug(
+            "Re-initializing PocketSphinx Decoder {self._vocabulary_name}"
+        )
+        # Pocketsphinx v5
+        self._decoder.reinit(self._config)
 
     def __del__(self):
         if self._logfile is not None:
@@ -390,14 +399,20 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             fp -- a file object containing audio data
         """
 
-        fp.seek(44)
+        fp.seek(44, os.SEEK_SET)
 
         # FIXME: Can't use the Decoder.decode_raw() here, because
         # pocketsphinx segfaults with tempfile.SpooledTemporaryFile()
         data = fp.read()
-        self._decoder.start_utt()
-        self._decoder.process_raw(data, False, True)
-        self._decoder.end_utt()
+
+        while True:
+            try:
+                self._decoder.start_utt()
+                self._decoder.process_raw(data, False, True)
+                self._decoder.end_utt()
+                break
+            except RuntimeError as e:
+                self.reinit()
 
         hyp = self._decoder.hyp()
         result = hyp.hypstr if hyp is not None else ''
@@ -406,6 +421,8 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             with open(self._logfile, 'r+') as f:
                 for line in f:
                     self._logger.debug(line.strip())
+                    if self._logger.getEffectiveLevel() == logging.DEBUG:
+                        print(line.strip())
                 f.truncate()
 
         transcribed = [result] if result != '' else []
