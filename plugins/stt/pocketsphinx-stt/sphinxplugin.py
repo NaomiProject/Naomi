@@ -231,55 +231,8 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             for path in hmm_dir_paths:
                 if os.path.isdir(path):
                     hmm_dir = path
-        # fst_model
-        fst_model = profile.get_profile_var(["pocketsphinx", "fst_model"])
-        if not fst_model:
-            # Make a list of possible paths to check
-            fst_model_paths = [
-                os.path.join(
-                    paths.sub(
-                        os.path.join(
-                            "pocketsphinx",
-                            "adapt",
-                            "en-US",
-                            "train",
-                            "model.fst"
-                        )
-                    )
-                ),
-                os.path.join(
-                    os.path.expanduser("~"),
-                    "pocketsphinx-python",
-                    "pocketsphinx",
-                    "model",
-                    "en-us",
-                    "train",
-                    "model.fst"
-                ),
-                os.path.join(
-                    os.path.expanduser("~"),
-                    "cmudict",
-                    "train",
-                    "model.fst"
-                ),
-                os.path.join(
-                    os.path.expanduser("~"),
-                    "CMUDict",
-                    "train",
-                    "model.fst"
-                ),
-                os.path.join(
-                    os.path.expanduser("~"),
-                    "phonetisaurus",
-                    "g014b2b.fst"
-                )
-            ]
-            for path in fst_model_paths:
-                if os.path.isfile(path):
-                    fst_model = path
-        # If either the hmm dir or fst model is missing, then
-        # download the standard model
-        if not (hmm_dir and os.path.isdir(hmm_dir) and fst_model and os.path.isfile(fst_model)):
+        # If the hmm dir is missing, then download the standard model
+        if not (hmm_dir and os.path.isdir(hmm_dir)):
             # Start by checking to see if we have a copy of the standard
             # model for this user's chosen language and download it if not.
             # Check for the files we need
@@ -294,7 +247,6 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             if not os.path.isdir(standard_dir):
                 os.mkdir(standard_dir)
             hmm_dir = standard_dir
-            fst_model = os.path.join(hmm_dir, "train", "model.fst")
             cmudict_path = os.path.join(
                 hmm_dir,
                 "cmudict.dict"
@@ -315,13 +267,17 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 ]
                 completedprocess = run_command(cmd)
                 self._logger.info(process_completedprocess(completedprocess))
-            if (not os.path.isfile(fst_model)):
-                # Use phonetisaurus to prepare an fst model
-                print("Training an FST model")
-                PhonetisaurusG2P.train_fst(
-                    cmudict_path,
-                    os.path.join(hmm_dir, fst_model)
-                )
+                if completedprocess.returncode != 0:
+                    raise Exception("Error downloading standard language model")
+        # fst_model
+        fst_model = os.path.join(hmm_dir, 'g2p_model.fst')
+        if (not os.path.isfile(fst_model)):
+            # Use phonetisaurus to prepare an fst model
+            print("Training an FST model")
+            PhonetisaurusG2P.train_fst(
+                cmudict_path,
+                fst_model
+            )
         kenlm_dir = profile.get(
             ['pocketsphinx', 'kenlm_dir'],
             paths.sub('kenlm')
@@ -370,15 +326,6 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                             _('PocketSphinx hidden markov model directory')
                         ]),
                         'default': hmm_dir
-                    }
-                ),
-                (
-                    ('pocketsphinx', 'fst_model'), {
-                        'title': _('PocketSphinx FST file'),
-                        'description': "".join([
-                            _('PocketSphinx finite state transducer file')
-                        ]),
-                        'default': fst_model
                     }
                 ),
                 (

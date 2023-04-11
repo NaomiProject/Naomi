@@ -44,7 +44,10 @@ def compile_vocabulary(directory, phrases):
         ['pocketsphinx', 'nbest'],
         3
     )
-    fst_model = profile.get(['pocketsphinx', 'fst_model'])
+    hmm_dir = profile.get(
+        ['pocketsphinx', 'hmm_dir']
+    )
+    fst_model = os.path.join(hmm_dir, 'g2p_model.fst')
     fst_model_alphabet = profile.get(
         ['pocketsphinx', 'fst_model_alphabet'],
         'arpabet'
