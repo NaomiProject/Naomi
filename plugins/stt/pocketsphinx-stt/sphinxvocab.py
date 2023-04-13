@@ -161,7 +161,7 @@ def compile_dictionary(g2pconverter, corpus, output_file):
             corpus_lexicon[word] = lexicon[word]
         else:
             corpus_lexicon[word] = []
-            for w, p in g2pconverter.translate(word):
+            for w, p in g2pconverter.translate([word]):
                 corpus_lexicon[word].append(p)
     with open(output_file, "w") as f:
         for word in sorted(corpus_lexicon):

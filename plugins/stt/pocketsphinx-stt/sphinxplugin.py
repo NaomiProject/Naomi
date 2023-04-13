@@ -12,7 +12,7 @@ from naomi.run_command import process_completedprocess
 try:
     from . import sphinxvocab
     from .g2p import PhonetisaurusG2P
-except ModuleNotFoundError as e:
+except ModuleNotFoundError:
     # Try to install phonetisaurus from pypi
     cmd = [
         'pip', 'install', 'phonetisaurus'
@@ -32,7 +32,7 @@ except ModuleNotFoundError as e:
             wheel = "phonetisaurus-0.3.0-py3-none-linux_aarch64.whl"
         else:
             # Here we should probably build the package from source
-            raise(f"Architecture {architecture} is not supported at this time")
+            raise (f"Architecture {architecture} is not supported at this time")
         phonetisaurus_url = f"https://github.com/rhasspy/phonetisaurus-pypi/releases/download/v0.3.0/{wheel}"
         phonetisaurus_path = paths.sub('sources', wheel)
         cmd = [
@@ -165,8 +165,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
         self._config = pocketsphinx.Config(
             hmm=hmm_dir,
             lm=lm_path,
-            dict=dict_path,
-            logfn=self._logfile
+            dict=dict_path
         )
         self._decoder = pocketsphinx.Decoder(self._config)
 
@@ -351,18 +350,19 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
         # FIXME: Can't use the Decoder.decode_raw() here, because
         # pocketsphinx segfaults with tempfile.SpooledTemporaryFile()
         data = fp.read()
-
+        transcribed = []
         while True:
             try:
                 self._decoder.start_utt()
                 self._decoder.process_raw(data, False, True)
                 self._decoder.end_utt()
+                hyp = self._decoder.hyp()
+                result = hyp.hypstr if hyp is not None else ''
+                transcribed = [result] if result != '' else []
+                self._logger.info('Transcribed: %r', transcribed)
                 break
-            except RuntimeError as e:
+            except RuntimeError:
                 self.reinit()
-
-        hyp = self._decoder.hyp()
-        result = hyp.hypstr if hyp is not None else ''
 
         if self._logfile is not None:
             with open(self._logfile, 'r+') as f:
@@ -372,6 +372,4 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                         print(line.strip())
                 f.truncate()
 
-        transcribed = [result] if result != '' else []
-        self._logger.info('Transcribed: %r', transcribed)
         return transcribed
