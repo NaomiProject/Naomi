@@ -318,7 +318,15 @@ def application(environ, start_response):
             value = f.value
             if not f.filename:
                 if (field.lower() == "wavfile"):
-                    wavfile = os.path.join(audiolog_dir, value)
+                    # Verify with normalised version of path
+                    wavfile = os.path.normpath(
+                        os.path.join(
+                            audiolog_dir,
+                            value
+                        )
+                    )
+                    if not wavfile.startswith(audiolog_dir):
+                        raise Exception("Bad filepath")
                 if (field.lower() == "rowid"):
                     rowID = value
                 if (field.lower() == "result"):
