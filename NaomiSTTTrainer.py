@@ -325,8 +325,6 @@ def application(environ, start_response):
                             value
                         )
                     )
-                    if not wavfile.startswith(audiolog_dir):
-                        raise Exception("Bad filepath")
                 if (field.lower() == "rowid"):
                     rowID = value
                 if (field.lower() == "result"):
@@ -347,11 +345,15 @@ def application(environ, start_response):
         # Handle the request
         # serve a .wav file
         ErrorMessage = None
-        if (len(wavfile) and os.path.isfile(wavfile)):
-            start_response('200 OK', [('content-type', 'audio/wav')])
-            with open(wavfile, "rb") as w:
-                ret = [w.read()]
-            return ret
+        if wavfile.startswith(audiolog_dir):
+            if (len(wavfile) and os.path.isfile(wavfile)):
+                start_response('200 OK', [('content-type', 'audio/wav')])
+                with open(wavfile, "rb") as w:
+                    ret = [w.read()]
+                return ret
+        else:
+            raise Exception("Bad filepath")
+
         # open a connection to the database
         try:
             conn = sqlite3.connect(audiolog_db)
