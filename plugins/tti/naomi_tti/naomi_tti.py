@@ -116,12 +116,6 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
 
     def get_plugin_phrases(self, passive_listen=False):
         phrases = []
-        # include the keyword, otherwise
-        if(passive_listen):
-            keywords = profile.get(["keyword"])
-            if not (isinstance(keywords, list)):
-                keywords = [keywords]
-            phrases.extend([word.upper() for word in keywords])
         # Include any custom phrases (things you say to Naomi
         # that don't match plugin phrases). Otherwise, there is
         # a high probability that something you say will be
@@ -154,7 +148,17 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                                 templates.extend([template.replace(to_keyword(keyword), word.upper()) for word in keywords[keyword]])
                             # Now that we have expanded every instance of keyword in templates, delete any template that still contains keyword
                             templates = [template for template in templates if not to_keyword(keyword) in template]
-                phrases.extend(templates)
+                for template in templates:
+                    # include the keyword, otherwise
+                    if(passive_listen):
+                        keywords = profile.get(["keyword"])
+                        if not (isinstance(keywords, list)):
+                            keywords = [keywords]
+                        for keyword in keywords:
+                            phrases.append(f"{keyword} {template}".upper())
+                            phrases.append(f"{template} {keyword}".upper())
+                    else:
+                        phrases.extend(templates)
         return sorted(phrases)
 
     def determine_intent(self, phrase):

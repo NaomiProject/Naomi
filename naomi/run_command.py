@@ -47,8 +47,9 @@ def run_command(command, capture=0, stdin=None, cwd=None):
     elif (capture == 4):
         completedprocess = subprocess.run(
             command,
-            stdout=subprocess.PIPE,
             input=stdin.encode() if hasattr(stdin, "encode") else stdin,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             cwd=cwd
         )
     else:

@@ -53,10 +53,10 @@ def Get_row(conn, rowID):
         ({"RowID": rowID})
     )
     row = c.fetchone()
-    if(row is None):
+    if (row is None):
         Record = None
     else:
-        if(Debug):
+        if (Debug):
             print("Recorded Type=%s" % type(row[0]))
             print("Filename Type=%s" % type(row[1]))
             print("Type Type=%s" % type(row[2]))
@@ -88,7 +88,7 @@ def verify_row_id(conn, rowID):
     Ret = True
     c = conn.execute("select RowID from audiolog where RowID=:RowID", {"RowID": rowID})
     row = c.fetchone()
-    if(row is None):
+    if (row is None):
         Ret = False
     return Ret
 
@@ -96,7 +96,7 @@ def verify_row_id(conn, rowID):
 def fetch_first_rowID(conn):
     c = conn.execute("select RowID from audiolog order by RowID asc limit 1")
     row = c.fetchone()
-    if(row is None):
+    if (row is None):
         rowID = None
     else:
         rowID = str(row[0])
@@ -121,7 +121,7 @@ def fetch_prev_rowID(conn, rowID):
         {"RowID": rowID}
     )
     row = c.fetchone()
-    if(row is None):
+    if (row is None):
         prev_rowID = None
     else:
         prev_rowID = str(row[0])
@@ -129,21 +129,21 @@ def fetch_prev_rowID(conn, rowID):
 
 
 def fetch_current_rowID(conn, rowID):
-    if(rowID):
+    if (rowID):
         c = conn.execute(
             "select RowID from audiolog where RowID=:RowID",
             {"RowID": rowID}
         )
         row = c.fetchone()
-        if(row is None):
+        if (row is None):
             raise ValueError("RowID %s not found" % rowID)
         else:
             rowID = str(row[0])
     else:
         rowID = fetch_first_unreviewed_rowID(conn)
-    if(not rowID):
+    if (not rowID):
         # if there are no unreviewed row ID's, set to the last rowid
-        rowID = fetch_last_rowID(c)
+        rowID = fetch_last_rowID(conn)
     return rowID
 
 
@@ -164,7 +164,7 @@ def fetch_next_rowID(conn, rowID):
         }
     )
     row = c.fetchone()
-    if(row is None):
+    if (row is None):
         next_rowID = None
     else:
         next_rowID = str(row[0])
@@ -187,7 +187,7 @@ def fetch_next_unreviewed_rowID(conn, rowID):
         {"RowID": rowID}
     )
     row = c.fetchone()
-    if(row is None):
+    if (row is None):
         next_rowID = None
     else:
         filename = str(row[0])
@@ -203,7 +203,7 @@ def fetch_next_unreviewed_rowID(conn, rowID):
             {"Filename": filename}
         )
         row = c.fetchone()
-        if(row is None):
+        if (row is None):
             next_rowID = None
         else:
             next_rowID = str(row[0])
@@ -213,7 +213,7 @@ def fetch_next_unreviewed_rowID(conn, rowID):
 def fetch_last_rowID(conn):
     c = conn.execute("select RowID from audiolog order by RowID desc limit 1")
     row = c.fetchone()
-    if(row is None):
+    if (row is None):
         rowID = None
     else:
         rowID = str(row[0])
@@ -258,7 +258,7 @@ def fetch_intents(conn):
                 info,
                 profile.get_profile()
             )
-            if(hasattr(plugin, "intents")):
+            if (hasattr(plugin, "intents")):
                 intents = [intent for intent in plugin.intents()]
                 for intent in intents:
                     _intents[intent] = 1
@@ -275,10 +275,10 @@ def fetch_intents(conn):
 
 def application(environ, start_response):
     keyword = profile.get_profile_var(["keyword"], ["Naomi"])
-    if(isinstance(keyword, list)):
+    if (isinstance(keyword, list)):
         keyword = keyword[0]
     print("PATH_INFO=%s" % environ["PATH_INFO"])
-    if(environ["PATH_INFO"] == "/favicon.ico"):
+    if (environ["PATH_INFO"] == "/favicon.ico"):
         start_response(
             '404 Not Found',
             [('content-type', 'text/plain;charset=utf-8')]
@@ -317,33 +317,43 @@ def application(environ, start_response):
                 f = f[0]
             value = f.value
             if not f.filename:
-                if(field.lower() == "wavfile"):
-                    wavfile = os.path.join(audiolog_dir, value)
-                if(field.lower() == "rowid"):
+                if (field.lower() == "wavfile"):
+                    # Verify with normalised version of path
+                    wavfile = os.path.normpath(
+                        os.path.join(
+                            audiolog_dir,
+                            value
+                        )
+                    )
+                if (field.lower() == "rowid"):
                     rowID = value
-                if(field.lower() == "result"):
+                if (field.lower() == "result"):
                     result = value.lower()
-                if(field.lower() == "verified_transcription"):
+                if (field.lower() == "verified_transcription"):
                     verified_transcription = value
-                if(field.lower() == "engine"):
+                if (field.lower() == "engine"):
                     engine = value
-                if(field.lower() == "command"):
+                if (field.lower() == "command"):
                     command = value
-                if(field.lower() == "description"):
+                if (field.lower() == "description"):
                     description.append(value)
-                if(field.lower() == "speaker"):
+                if (field.lower() == "speaker"):
                     speaker = value
-                if(field.lower() == "verified_intent"):
+                if (field.lower() == "verified_intent"):
                     verified_intent = value
 
         # Handle the request
         # serve a .wav file
         ErrorMessage = None
-        if(len(wavfile) and os.path.isfile(wavfile)):
-            start_response('200 OK', [('content-type', 'audio/wav')])
-            with open(wavfile, "rb") as w:
-                ret = [w.read()]
-            return ret
+        if wavfile.startswith(audiolog_dir):
+            if (len(wavfile) and os.path.isfile(wavfile)):
+                start_response('200 OK', [('content-type', 'audio/wav')])
+                with open(wavfile, "rb") as w:
+                    ret = [w.read()]
+                return ret
+        else:
+            raise Exception("Bad filepath")
+
         # open a connection to the database
         try:
             conn = sqlite3.connect(audiolog_db)
@@ -367,7 +377,7 @@ def application(environ, start_response):
         ret = []
         # serve a train response. We will put this in a div on the Train
         # tab, so we don't have to regenerate everything.
-        if(len(engine)):
+        if (len(engine)):
             start_response(
                 '200 OK',
                 [('content-type', 'text/json;charset=utf-8')]
@@ -377,7 +387,7 @@ def application(environ, start_response):
             response = []
             found_plugin = False
             for info in plugins.get_plugins_by_category('stt_trainer'):
-                if(info.name == engine):
+                if (info.name == engine):
                     found_plugin = True
                     try:
                         plugin = info.plugin_class(info, profile.get_profile())
@@ -391,11 +401,11 @@ def application(environ, start_response):
                             ),
                             exc_info=True
                         )
-            if(not found_plugin):
+            if (not found_plugin):
                 response = ["Unknown STT Trainer: {}".format(engine)]
             # Prepare the json response
             messagetext = "\n".join(response)
-            if(not continue_next):
+            if (not continue_next):
                 nextcommand = ""
             jsonstr = json.dumps({
                 'message': messagetext,
@@ -418,7 +428,7 @@ def application(environ, start_response):
             try:
                 # If we are performing an update,
                 # do so and fetch the next row id
-                if(result and rowID):
+                if (result and rowID):
                     print("Result: {}".format(result))
                     # rowid should have been passed in
                     # if the rowid that was passed in does not exist,
@@ -426,7 +436,7 @@ def application(environ, start_response):
                     # FIXME: in this case, an error should be returned.
                     Update_record = Get_row(conn, rowID)
                     now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                    if(Update_record):
+                    if (Update_record):
                         # Since an audio file can be associated with more
                         # than one transcription (since both a passive and
                         # active transcription can be run on the same audio
@@ -434,16 +444,16 @@ def application(environ, start_response):
                         # transcription with its own WER.
                         # Get a list of records that have the same filename
                         result = result.lower()
-                        if(result == "correct"):
+                        if (result == "correct"):
                             # if the current result matches the transcription,
                             # then verified transcription = transcription
                             # and the type should remain unchanged
                             verified_transcription = Update_record['Transcription']
-                        if(result == "noise"):
+                        if (result == "noise"):
                             # If the user selected "noise" then the verified
                             # transcription is blank
                             verified_transcription = ""
-                        if(result == "unclear"):
+                        if (result == "unclear"):
                             # Unclear means that there is no verified
                             # transcription and the sample is unusable
                             # for either training the speech recognition
@@ -474,15 +484,15 @@ def application(environ, start_response):
                             rowID = row[0]
                             transcription = row[1]
                             recording_type = row[2]
-                            if(len(verified_transcription) == 0):
+                            if (len(verified_transcription) == 0):
                                 recording_type = "noise"
                                 print("Setting recording_type to noise")
-                                if(result == "unclear"):
+                                if (result == "unclear"):
                                     recording_type = "unclear"
                                     print("Setting recording_type to unclear")
                             # calculate the word error rate
                             WER = 0
-                            if(len(transcription) > 0):
+                            if (len(transcription) > 0):
                                 WER = wer(
                                     transcription,
                                     verified_transcription
@@ -529,7 +539,7 @@ def application(environ, start_response):
                 next_rowID = fetch_next_rowID(conn, rowID)
                 totalRows = fetch_total_rows(conn)
 
-                if(len(first_rowID)):
+                if (len(first_rowID)):
                     ret.append("""
 <meta charset="utf-8"/>
 <style type="text/css">
@@ -599,7 +609,7 @@ def application(environ, start_response):
                 s.innerHTML="/";
                 break;
         }
-        if(spin){
+        if (spin){
             spintimer=window.setTimeout(function(){moveSpinner((position+1)%4)},250);
         }else{
             s.innerHTML="";
@@ -634,10 +644,10 @@ def application(environ, start_response):
         alert( "Transcription="+Transcription );
         var xhttp=new XMLHttpRequest();
         xhttp.onreadystatechange=function(){
-            if( this.readyState==4 && this.status==200 ){
+            if ( this.readyState==4 && this.status==200 ){
                 // Check this.responseText
                 var message=JSON.parse(this.responseText).message;
-                if( message=="SUCCESS;Updated "+RowID ){
+                if ( message=="SUCCESS;Updated "+RowID ){
                     // disable reset button
                     document.getElementById("reset_"+RowID).disabled=true;
                 }else{
@@ -657,10 +667,10 @@ def application(environ, start_response):
     function DeleteAudio(RowID){
         var xhttp=new XMLHttpRequest();
         xhttp.onreadystatechange=function(){
-            if( this.readyState==4 && this.status==200 ){
+            if ( this.readyState==4 && this.status==200 ){
                 // Check this.responseText to make sure it contains a success message
                 var message=JSON.parse(this.responseText).message;
-                if( message=="SUCCESS;Deleted "+RowID ){
+                if ( message=="SUCCESS;Deleted "+RowID ){
                     document.getElementById("r"+RowID).parentNode.removeChild(document.getElementById("r"+RowID));
                 }else{
                     //alert(message);
@@ -679,7 +689,7 @@ def application(environ, start_response):
     function ValidateForm(){
         var Checked=document.querySelector("input[name='result']:checked");
         var Ret=true;
-        if( !Checked ){
+        if ( !Checked ){
             Ret=false;
             alert("Please select an option");
         }
@@ -688,19 +698,19 @@ def application(environ, start_response):
 
     function Train(clear, engine, command, description, additionaldata=""){
         stopSpinner();
-        if(clear){
+        if (clear){
             document.getElementById("Result").innerHTML = "";
         }
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function(){
-            if(this.readyState==4){
+            if (this.readyState==4){
                 stopSpinner();
-                if(this.status==200){
+                if (this.status==200){
                     var response=JSON.parse(this.responseText);
                     document.getElementById("Result").innerHTML += response.message + '<br /><br />';
-                    if(response.command){
+                    if (response.command){
                         var description = "";
-                        if(response.description){
+                        if (response.description){
                             description = response.description;
                         }
                         Train(false,response.engine,response.command,description);
@@ -744,9 +754,9 @@ def application(environ, start_response):
                     Result_nothing = Unchecked
                     Result_unclear = Unchecked
                     Verified_transcription_state = Disabled
-                    if(len(Current_record["Reviewed"])):
-                        if(Current_record["Verified_transcription"]):
-                            if(Current_record[
+                    if (len(Current_record["Reviewed"])):
+                        if (Current_record["Verified_transcription"]):
+                            if (Current_record[
                                 "Transcription"
                             ] == Current_record[
                                 "Verified_transcription"
@@ -756,12 +766,12 @@ def application(environ, start_response):
                                 Result_update = Checked
                                 Verified_transcription_state = Enabled
                         else:
-                            if(Current_record["Type"] == "noise"):
+                            if (Current_record["Type"] == "noise"):
                                 Result_nothing = Checked
                             else:
                                 Result_unclear = Checked
 
-                    if(not Current_record["Verified_transcription"]):
+                    if (not Current_record["Verified_transcription"]):
                         Current_record[
                             "Verified_transcription"
                         ] = Current_record[
@@ -769,7 +779,7 @@ def application(environ, start_response):
                         ]
 
                     # Serve the body of the page
-                    if(Debug):
+                    if (Debug):
                         # Debug info
                         ret.append("""<ul>""")
                         ret.append("""<li>post_data: {}</li>""".format(
@@ -779,7 +789,7 @@ def application(environ, start_response):
                             result
                         ))
 
-                        if(result == "update"):
+                        if (result == "update"):
                             ret.append(
                                 "<li>Verified_transcription: {}</li>".format(
                                     verified_transcription
@@ -832,7 +842,7 @@ def application(environ, start_response):
                         Current_record["Type"],
                         Current_record["Recorded"]
                     ))
-                    if(ErrorMessage):
+                    if (ErrorMessage):
                         ret.append("""<p class="Error">{}</p>""".format(
                             ErrorMessage
                         ))
@@ -883,30 +893,30 @@ def application(environ, start_response):
                     for speaker in speakers:
                         ret.append("""<option value="{}">""".format(speaker))
                     ret.append("""</datalist><br /><br />""")
-                    if(Current_record["Type"] == 'active'):
+                    if (Current_record["Type"] == 'active'):
                         Verified_intent = Current_record["verified_intent"]
-                        if(Verified_intent == "None"):
+                        if (Verified_intent == "None"):
                             Verified_intent = Current_record["intent"]
                         ret.append("""Intent: {} ({})<br />""".format(Current_record["intent"], Current_record["score"]))
                         ret.append("""Correct intent: <select name="Verified_Intent">""")
                         ret.append("""<option value="unclear">unclear</option>""")
                         for intent in fetch_intents(c):
                             selected = ""
-                            if(intent == Verified_intent):
+                            if (intent == Verified_intent):
                                 selected = " selected"
                             ret.append("""<option{}>{}</option>""".format(selected, intent))
                         ret.append("""</select><br /><br />""")
                     ret.append(
                         '<input type="submit" value="Submit"/><br />'
                     )
-                    if(prev_rowID):
+                    if (prev_rowID):
                         ret.append(
                             ' '.join([
                                 '<input type="button" value="Prev"',
                                 'onclick="GoRowID({})"/>'
                             ]).format(prev_rowID)
                         )
-                    if(next_rowID):
+                    if (next_rowID):
                         ret.append(
                             ' '.join([
                                 '<input type="button" value="Next"',

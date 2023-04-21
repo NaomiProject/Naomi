@@ -31,7 +31,7 @@ class naomidefaults:
     lt='\033[1;90m'         #Bright Black          For lower text
     pq='\033[1;94m'         #Bright Blue           For prompt question
     pc='\033[1;95m'         #Bright Magenta        For prompt choices
-    sto='\033[1;97m'        #Bright White          For standard text output
+    sto='\033[0m'           #Default               For standard text output
 
 # How to use
 #    from coloredformatting import colors

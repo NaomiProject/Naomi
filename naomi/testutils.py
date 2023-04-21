@@ -26,21 +26,26 @@ def test_profile():
     }
     try:
         TEST_PROFILE['pocketsphinx'] = config['pocketsphinx']
-    except(KeyError, NameError):
+    except (KeyError, NameError):
         pass
     try:
         TEST_PROFILE['language'] = config['language']
-    except(KeyError, NameError):
+    except (KeyError, NameError):
         pass
     try:
-        TEST_PROFILE['google'] = {}
-        TEST_PROFILE['google']['credentials_json'] = config['google']['credentials_json']
-    except(KeyError, NameError):
+        TEST_PROFILE['google'] = {
+            'credentials_json': config['google']['credentials_json']
+        }
+    except (KeyError, NameError):
         pass
     try:
         TEST_PROFILE['key'] = config['key']
         TEST_PROFILE['email'] = config['email']
-    except(KeyError, NameError):
+    except (KeyError, NameError):
+        pass
+    try:
+        TEST_PROFILE['kenlm'] = {'source_dir': config['kenlm']['source_dir']}
+    except (KeyError, NameError):
         pass
     return TEST_PROFILE
 
@@ -69,8 +74,8 @@ class TestMic(object):
     # For now, assume the input is "YES" or "NO"
     def confirm(self, prompt):
         (matched, phrase) = self.expect("confirm", prompt, ['YES', 'NO'])
-        if(matched):
-            if(phrase in ['YES']):
+        if matched:
+            if phrase in ['YES']:
                 phrase = 'Y'
             else:
                 phrase = 'N'
