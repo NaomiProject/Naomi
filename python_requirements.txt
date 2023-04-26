@@ -16,8 +16,6 @@ mad
 
 # Pocketsphinx STT engine
 cmuclmtk
-pocketsphinx
-phonetisaurus
 
 # HN module
 semantic
@@ -50,7 +48,7 @@ webrtcvad
 # NaomiSTTTrain
 cython
 pandas
-sklearn
+scikit-learn
 jiwer
 
 # Development

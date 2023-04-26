@@ -86,7 +86,7 @@ sleep 5
 printNaomi
 
 if [ "$1" == "--uninstall" ]; then
-	naomi_uninstall
+    naomi_uninstall
 fi
 
 installOptions
