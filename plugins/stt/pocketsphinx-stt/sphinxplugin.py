@@ -191,40 +191,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
         if (not hmm_dir):
             # Make a list of possible paths to check
             hmm_dir_paths = [
-                os.path.join(
-                    os.path.expanduser("~"),
-                    "pocketsphinx-python",
-                    "pocketsphinx",
-                    "model",
-                    "en-us",
-                    "en-us"
-                ),
-                os.path.join(
-                    os.path.expanduser("~"),
-                    "pocketsphinx",
-                    "model",
-                    "en-us",
-                    "en-us"
-                ),
-                os.path.join(
-                    "/",
-                    "usr",
-                    "share",
-                    "pocketsphinx",
-                    "model",
-                    "en-us",
-                    "en-us"
-                ),
-                os.path.join(
-                    "/usr",
-                    "local",
-                    "share",
-                    "pocketsphinx",
-                    "model",
-                    "hmm",
-                    "en_US",
-                    "hub4wsj_sc_8k"
-                )
+                paths.sub("pocketsphinx", "standard")
             ]
             # see if any of these paths exist
             for path in hmm_dir_paths:
@@ -246,10 +213,6 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
             if not os.path.isdir(standard_dir):
                 os.mkdir(standard_dir)
             hmm_dir = standard_dir
-            cmudict_path = os.path.join(
-                hmm_dir,
-                "cmudict.dict"
-            )
             if (not check_pocketsphinx_model(hmm_dir)):
                 # Check and see if we already have a copy of the standard
                 # language model
@@ -268,6 +231,11 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
                 self._logger.info(process_completedprocess(completedprocess))
                 if completedprocess.returncode != 0:
                     raise Exception("Error downloading standard language model")
+        # path to CMU dictionary
+        cmudict_path = os.path.join(
+            hmm_dir,
+            "cmudict.dict"
+        )
         # fst_model
         fst_model = os.path.join(hmm_dir, 'g2p_model.fst')
         if (not os.path.isfile(fst_model)):
