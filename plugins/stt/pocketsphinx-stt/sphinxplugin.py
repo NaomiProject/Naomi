@@ -89,8 +89,6 @@ def check_pocketsphinx_model(directory):
         FilesExist = False
     if (not os.path.isfile(os.path.join(directory, "variances"))):
         FilesExist = False
-    if (not os.path.isfile(os.path.join(directory, "model", "train.fst"))):
-        FilesExist = False
     return FilesExist
 
 

@@ -304,18 +304,15 @@ setup_wizard() {
       pulseaudio -D
     fi
 
-    pip3 install --user virtualenv virtualenvwrapper=='4.8.4'
     printf "${B_G}sourcing virtualenvwrapper.sh${B_W}${NL}"
     export WORKON_HOME=$HOME/.virtualenvs
     export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
-    export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv
-    source ~/.local/bin/virtualenvwrapper.sh
-    export VIRTUALENVWRAPPER_ENV_BIN_DIR=bin
+    source /usr/share/virtualenvwrapper/virtualenvwrapper.sh
     printf "${B_G}checking if Naomi virtualenv exists${B_W}${NL}"
     workon Naomi > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         printf "${B_G}Naomi virtualenv does not exist. Creating.${B_W}${NL}"
-        PATH=$PATH:~/.local/bin mkvirtualenv -p python3 Naomi
+        PATH=$PATH:~/.local/bin mkvirtualenv -p $VIRTUALENVWRAPPER_PYTHON Naomi
     fi
     workon Naomi
     if [ "$(which pip)" = "$HOME/.virtualenvs/Naomi/bin/pip" ]; then
@@ -329,8 +326,7 @@ setup_wizard() {
         printf "${B_W}dependencies, all you have to type is '${B_G}workon Naomi${B_W}'${NL}"
         echo
         printf "${B_W}Otherwise, you will need to enter:${NL}"
-        printf "${B_W}'${B_G}VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv${B_W}'${NL}"
-        printf "${B_W}'${B_G}source ~/.local/bin/virtualenvwrapper.sh${B_W}'${NL}"
+        printf "${B_W}'${B_G}source /usr/share/virtualenvwrapper/virtualenvwrapper.sh${B_W}'${NL}"
         printf "${B_W}before you will be able activate the Naomi environment with '${B_G}workon Naomi${B_W}'${NL}"
         echo
         printf "${B_W}All of this will be incorporated into the Naomi script, so to simply${NL}"
@@ -365,8 +361,7 @@ setup_wizard() {
             echo '######################################################################' >> ~/.bashrc
             echo "export WORKON_HOME=$HOME/.virtualenvs" >> ~/.bashrc
             echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.bashrc
-            echo "export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv" >> ~/.bashrc
-            echo "source ~/.local/bin/virtualenvwrapper.sh" >> ~/.bashrc
+            echo "source /usr/share/virtualenvwrapper/virtualenvwrapper.sh" >> ~/.bashrc
         fi
         pip install -r python_requirements.txt
         if [ $? -ne 0 ]; then
@@ -470,8 +465,7 @@ setup_wizard() {
     echo "  fi" >> ~/.config/naomi/Naomi.sh
     echo "  export WORKON_HOME=$HOME/.virtualenvs" >> ~/.config/naomi/Naomi.sh
     echo "  export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.config/naomi/Naomi.sh
-    echo "  export VIRTUALENVWRAPPER_VIRTUALENV=~/.local/bin/virtualenv" >> ~/.config/naomi/Naomi.sh
-    echo "  source ~/.local/bin/virtualenvwrapper.sh" >> ~/.config/naomi/Naomi.sh
+    echo "  source /usr/share/virtualenvwrapper/virtualenvwrapper.sh" >> ~/.config/naomi/Naomi.sh
     echo "  workon Naomi" >> ~/.config/naomi/Naomi.sh
     echo "  python $NAOMI_DIR/Naomi.py \"\$@\"" >> ~/.config/naomi/Naomi.sh
     echo "}" >> ~/.config/naomi/Naomi.sh
