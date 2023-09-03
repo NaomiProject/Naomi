@@ -209,6 +209,7 @@ class PluginStore(object):
             'speechhandler': plugin.SpeechHandlerPlugin,
             'tti': plugin.TTIPlugin,
             'tts': plugin.TTSPlugin,
+            'sr': plugin.SRPlugin,
             'stt': plugin.STTPlugin,
             'stt_trainer': plugin.STTTrainerPlugin,
             'vad': plugin.VADPlugin,

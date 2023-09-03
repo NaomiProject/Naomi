@@ -16,7 +16,7 @@ class RespondToEmailPlugin(plugin.NotificationClientPlugin):
                     ('Safe Addresses',), {
                         'title': _('Safe email addresses for me to respond to'),
                         'description': "".join([
-                            _('If you would like to be able to communicate with me over email or text messages, please enter a list of addresses that it is safe for me to respond to (otherwise, just leave this blank)'),
+                            _('If you would like to be able to communicate with me over email or text messages, please enter a comma separated list of addresses that it is safe for me to respond to (otherwise, just leave this blank)'),
                         ]),
                         "return_type": "list"
                     }
@@ -62,8 +62,8 @@ class RespondToEmailPlugin(plugin.NotificationClientPlugin):
             respond_to_emails = profile.get(['Safe Addresses'], None)
             if(isinstance(respond_to_emails, list)):  # check respond_to_email exists
                 # Lower case every member
-                respond_to_emails=[email.lower() for email in respond_to_emails]
-                if((len(respond_to_emails) == 0)or(app_utils.get_sender_email(e).lower() in respond_to_emails)):  # sender is okay
+                respond_to_emails = [email.lower() for email in respond_to_emails]
+                if((len(respond_to_emails) == 0) or (app_utils.get_sender_email(e).lower() in respond_to_emails)):  # sender is okay
                     self._logger.info("sender okay")
                     if(any(x.upper() in message for x in keywords)):  # wake word detected
                         self._logger.info("wake word detected")

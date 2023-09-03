@@ -349,7 +349,7 @@ class Naomi(object):
             vad_slug,
             category='vad'
         )
-        vad_plugin = vad_info.plugin_class(input_device)
+        vad_plugin = vad_info.plugin_class(input_device, vad_info)
 
         # Initialize Brain
         tti_slug = profile.get_profile_var(['tti_engine'], 'Naomi TTI')
@@ -500,40 +500,46 @@ class Naomi(object):
         tts_plugin_info = profile.get_arg('plugins').get_plugin(tts_slug, category='tts')
         tts_plugin = tts_plugin_info.plugin_class(tts_plugin_info)
 
+        # Initialize Speaker Recognition Engine
+        sr_slug = profile.get_profile_var(['sr_engine'], 'default_sr')
+        sr_plugin_info = profile.get_arg('plugins').get_plugin(sr_slug, category='sr')
+        sr_plugin = sr_plugin_info.plugin_class(sr_plugin_info)
+        profile.set_arg('sr_plugin', sr_plugin)
+
+        # audiolog for training
+        if(save_audio):
+            save_passive_audio = True
+            save_active_audio = True
+            save_noise = True
+
+        # Instead of passing the following values to mic, store them here and
+        # pick them up when needed.
+        profile.set_arg('input_device', input_device)
+        profile.set_arg('output_device', output_device)
+        profile.set_arg('sr_plugin', sr_plugin)
+        profile.set_arg('active_stt_reply', active_stt_reply)
+        profile.set_arg('active_stt_response', active_stt_response)
+        profile.set_arg('passive_stt_plugin', passive_stt_plugin)
+        profile.set_arg('active_stt_plugin', active_stt_plugin)
+        profile.set_arg('special_stt_slug', special_stt_slug)
+        profile.set_arg('tts_plugin', tts_plugin)
+        profile.set_arg('vad_plugin', vad_plugin)
+        profile.set_arg('keyword', keyword)
+        profile.set_arg('print_transcript', print_transcript)
+        profile.set_arg('passive_listen', passive_listen)
+        profile.set_arg('save_passive_audio', save_passive_audio)
+        profile.set_arg('save_active_audio', save_active_audio)
+        profile.set_arg('save_noise', save_noise)
+
         # Initialize Mic
         if use_mic == USE_TEXT_MIC:
             self.mic = local_mic.Mic()
             self._logger.info('Using local text input and output')
         elif use_mic == USE_BATCH_MIC:
-            self.mic = batch_mic.Mic(
-                passive_stt_plugin,
-                active_stt_plugin,
-                special_stt_slug,
-                profile.get_arg('plugins'),
-                batch_file,
-                keyword=keyword
-            )
+            self.mic = batch_mic.Mic()
             self._logger.info('Using batched mode')
         else:
-            self.mic = mic.Mic(
-                input_device,
-                output_device,
-                active_stt_reply,
-                active_stt_response,
-                passive_stt_plugin,
-                active_stt_plugin,
-                special_stt_slug,
-                profile.get_arg('plugins'),
-                tts_plugin,
-                vad_plugin,
-                keyword=keyword,
-                print_transcript=print_transcript,
-                passive_listen=passive_listen,
-                save_audio=save_audio,
-                save_passive_audio=save_passive_audio,
-                save_active_audio=save_active_audio,
-                save_noise=save_noise
-            )
+            self.mic = mic.Mic()
 
         self.conversation = conversation.Conversation(
             self.mic, self.brain
@@ -931,15 +937,18 @@ class Naomi(object):
             input_device = audio_engine.get_device_by_slug(
                 profile.get_profile_var(['audio', 'input_device'])
             )
+            profile.set_arg('input_device', input_device)
             output_device = audio_engine.get_device_by_slug(
                 profile.get_profile_var(["audio", "output_device"])
             )
+            profile.set_arg('output_device', output_device)
             vad_slug = profile.get_profile_var(['vad_engine'], 'snr_vad')
             vad_info = profile.get_arg('plugins').get_plugin(
                 vad_slug,
                 category='vad'
             )
             vad_plugin = vad_info.plugin_class(input_device)
+            profile.set_arg('vad_plugin', vad_plugin)
 
             filename = os.path.join(
                 os.path.dirname(
@@ -954,18 +963,7 @@ class Naomi(object):
                     filename
                 )
             visualizations.load_visualizations(self)
-            testMic = mic.Mic(
-                input_device,
-                output_device,
-                profile.get(['active_stt', 'reply']),
-                profile.get(['active_stt', 'response']),
-                None,
-                None,
-                None,
-                None,
-                None,
-                vad_plugin
-            )
+            testMic = mic.Mic()
 
             visualizations.run_visualization(
                 "output",

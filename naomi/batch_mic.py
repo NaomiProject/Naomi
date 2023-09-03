@@ -20,13 +20,7 @@ def parse_batch_file(fp):
 
 class Mic(object):
     def __init__(
-        self,
-        passive_stt_engine,
-        active_stt_engine,
-        special_stt_slug,
-        plugins,
-        batch_file,
-        keyword='JASPER'
+        self
     ):
         self._logger = logging.getLogger(__name__)
         self._keyword = keyword

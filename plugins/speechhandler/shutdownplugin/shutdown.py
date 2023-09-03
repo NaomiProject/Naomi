@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
 from naomi import plugin
-from naomi import profile
 
 
 class ShutdownPlugin(plugin.SpeechHandlerPlugin):
@@ -12,6 +11,7 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
                     'en-US': {
                         'templates': [
                             "SHUTDOWN",
+                            "SHUT DOWN",
                             "TURN YOURSELF OFF"
                         ]
                     },
@@ -41,7 +41,7 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         text -- user-input, typically transcribed speech
         mic -- used to interact with the user (for both input and output)
         """
-        name = profile.get_profile_var(['first_name'], '')
+        name = intent.get('user', '')
 
         messages = [
             self.gettext("I'm shutting down."),

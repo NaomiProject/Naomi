@@ -37,12 +37,7 @@ class Conversation(i18n.GettextMixin):
         self.mic.say(salutation)
 
     def greet(self):
-        if profile.get(['first_name']):
-            salutation = self.gettext("How can I be of service, {}?").format(
-                profile.get(["first_name"])
-            )
-        else:
-            salutation = self.gettext("How can I be of service?")
+        salutation = self.gettext("How can I be of service?")
         self.mic.say(salutation)
 
     def handleForever(self):
@@ -51,23 +46,23 @@ class Conversation(i18n.GettextMixin):
         """
         self._logger.debug('Starting to handle conversation.')
         while True:
-            utterance = self.mic.listen()
+            sr_response = self.mic.listen()
             # if listen() returns False, just ignore it
-            if not isinstance(utterance, bool):
+            if not isinstance(sr_response, bool):
                 handled = False
-                while(" ".join(utterance) != "" and not handled):
-                    utterance, handled = self.handleRequest(utterance)
+                while(" ".join(sr_response['utterance']) != "" and not handled):
+                    sr_respone, handled = self.handleRequest(sr_response)
 
-    def handleRequest(self, utterance):
+    def handleRequest(self, sr_response):
         handled = False
-        intent = self.brain.query(utterance)
+        intent = self.brain.query(sr_response)
         if intent:
             try:
                 self._logger.info(intent)
                 intent['action'](intent, self.mic)
                 handled = True
             except Unexpected as e:
-                utterance = e.utterance
+                sr_response = e.sr_response
             except Exception as e:
                 self._logger.error(
                     'Failed to service intent {}: {}'.format(intent, str(e)),
@@ -84,14 +79,14 @@ class Conversation(i18n.GettextMixin):
                         "Handling of phrase '{}'",
                         "by plugin '{}' completed"
                     ]).format(
-                        utterance,
+                        sr_response['utterance'],
                         intent
                     )
                 )
         else:
             self.say_i_do_not_understand()
             handled = True
-        return utterance, handled
+        return sr_response, handled
 
     def say_i_do_not_understand(self):
         self.mic.say(
