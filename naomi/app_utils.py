@@ -277,6 +277,7 @@ def get_sender_email(msg):
 
 
 def get_message_text(msg):
+    body = ""
     if(msg.is_multipart()):
         for part in msg.walk():
             ctype = part.get_content_type()
@@ -409,7 +410,7 @@ def download_file(url, local_filename=None):
                 stream=True,
                 allow_redirects=True
             )
-            if r.status_code != 206: # Partial Content
+            if r.status_code != 206:  # Partial Content
                 r.raise_for_status()
                 raise RuntimeError(f"Request to {url} returned status code {r.status_code}")
             r.raw.read = functools.partial(r.raw.read, decode_content=True)
@@ -428,7 +429,7 @@ def download_file(url, local_filename=None):
             stream=True,
             allow_redirects=True
         )
-        if r.status_code != 200: # Okay
+        if r.status_code != 200:  # Okay
             r.raise_for_status()
             raise RuntimeError(f"Request to {url} returned status code {r.status_code}")
         r.raw.read = functools.partial(r.raw.read, decode_content=True)
