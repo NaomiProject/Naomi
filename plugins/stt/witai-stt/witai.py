@@ -4,21 +4,41 @@ import logging
 import requests
 from naomi import plugin
 from naomi import profile
+import json
 
-# There seems to be no way to get language setting of the defined app
-# Last updated: April 06, 2016
+# There's a list of supported languages, see Wit.ai FAQ : https://wit.ai/faq
+# Last updated: February 09, 2024
 SUPPORTED_LANG = (
-    'de',
-    'en',
-    'es',
-    'et',
-    'fr',
-    'it',
+    'ar',
+    'bn',
+    'my',
+    'zh',
     'nl',
+    'en',
+    'fi',
+    'fr',
+    'de',
+    'hi',
+    'id',
+    'it',
+    'ja',
+    'kn',
+    'ko',
+    'ms',
+    'ml',
+    'mr',
     'pl',
     'pt',
     'ru',
-    'sv'
+    'si',
+    'es',
+    'sv',
+    'tl',
+    'ta',
+    'th',
+    'tr',
+    'ur',
+    'vi'
 )
 
 
@@ -33,7 +53,7 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         ...
         stt_engine: witai-stt
         witai-stt:
-          access_token:    ERJKGE86SOMERANDOMTOKEN23471AB
+          access_token:    INSERT_YOUR_TOKEN_HERE
     """
 
     def __init__(self, *args, **kwargs):
@@ -41,6 +61,7 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         Create Plugin Instance
         """
         plugin.STTPlugin.__init__(self, *args, **kwargs)
+        self._language = None
         self._logger = logging.getLogger(__name__)
         self.token = profile.get(['witai-stt', 'access_token'])
 
@@ -91,12 +112,20 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         received text from json answer.
         """
         data = fp.read()
-        r = requests.post('https://api.wit.ai/speech?v=20170307',
-                          data=data,
-                          headers=self.headers)
+        #print('file path : ', fp)
+        r = requests.post(
+            'https://api.wit.ai/speech?v=20230215',
+            data=data,
+            headers=self.headers,
+            stream=True,
+        )
+
         try:
             r.raise_for_status()
-            text = r.json()['_text']
+
+            *_, data = r.iter_content(chunk_size=None) # get last chunk of data
+            text = json.loads(data.decode('utf-8'))["text"]
+
         except requests.exceptions.HTTPError:
             self._logger.critical('Request failed with response: %r',
                                   r.text,
