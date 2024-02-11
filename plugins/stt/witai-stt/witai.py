@@ -112,14 +112,12 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         received text from json answer.
         """
         data = fp.read()
-        #print('file path : ', fp)
         r = requests.post(
             'https://api.wit.ai/speech?v=20230215',
             data=data,
             headers=self.headers,
-            stream=True,
+            stream=True, # receive chunked http data
         )
-
         try:
             r.raise_for_status()
 
