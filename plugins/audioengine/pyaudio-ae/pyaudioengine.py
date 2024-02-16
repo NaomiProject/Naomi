@@ -301,31 +301,30 @@ class PyAudioDevice(plugin.audioengine.AudioDevice):
                 if (self._stop):
                     self._stop = False
                     break
-                # Redirect the "ALSA lib pcm.c:8545:(snd_pcm_recover) underrun
-                # occurred" errors to /dev/null
-                with hide_stderr():
-                    try:
-                        self._output_stream.write(data)
-                    except OSError:
-                        self._output_stream = self._engine._pyaudio.open(
-                            format=bits_to_samplefmt(bits),
-                            channels=channels,
-                            rate=rate,
-                            output=True,
-                            input=False,
-                            output_device_index=self.index,
-                            frames_per_buffer=chunksize
-                        )
-                        self._output_stream.write(data)
-                    data = w.readframes(chunksize)
+                # Generates "ALSA lib pcm.c:8545:(snd_pcm_recover) underrun
+                # occurred" errors
+                try:
+                    self._output_stream.write(data)
+                except OSError:
+                    self._output_stream = self._engine._pyaudio.open(
+                        format=bits_to_samplefmt(bits),
+                        channels=channels,
+                        rate=rate,
+                        output=True,
+                        input=False,
+                        output_device_index=self.index,
+                        frames_per_buffer=chunksize
+                    )
+                    self._output_stream.write(data)
+                data = w.readframes(chunksize)
+                datalen = len(data)
+                if (
+                    (add_padding)
+                    and (datalen > 0)
+                    and (datalen < (chunksize * samplewidth))
+                ):
+                    data += b'\00' * (chunksize * samplewidth - datalen)
                     datalen = len(data)
-                    if (
-                        (add_padding)
-                        and (datalen > 0)
-                        and (datalen < (chunksize * samplewidth))
-                    ):
-                        data += b'\00' * (chunksize * samplewidth - datalen)
-                        datalen = len(data)
             # pause before closing the stream (reduce clipping)
             if (pause > 0):
                 time.sleep(pause)
