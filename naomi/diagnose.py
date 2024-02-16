@@ -8,7 +8,7 @@ if sys.version_info < (3, 3):
     from distutils.spawn import find_executable
 else:
     from shutil import which as find_executable
-from . import testutils
+
 
 logger = logging.getLogger(__name__)
 
@@ -78,9 +78,18 @@ def check_python_import(package_or_module):
     loader = pkgutil.get_loader(package_or_module)
     found = loader is not None
     if found:
-        logger.debug("Python %s '%s' found: %r",
-                     "package" if loader.is_package(package_or_module)
-                     else "module", package_or_module, loader.get_filename())
+        # 2023-11-21 - AaronC - loader no longer has .get_filename(),
+        # use _resolve_filename() function instead
+        if hasattr(loader, "_resolve_filename"):
+            filename = loader._resolve_filename(package_or_module)
+        else:
+            filename = loader.get_filename()
+        logger.debug(
+            "Python %s '%s' found: %r",
+            "package" if loader.is_package(package_or_module) else "module",
+            package_or_module,
+            filename
+        )
     else:
         logger.debug("Python import '%s' not found", package_or_module)
     return found
