@@ -152,7 +152,7 @@ def main(args=None):
     else:
         if profile.get(['logging', 'level'], 'error') == "debug":
             loglevel = logging.DEBUG
-    logfile = profile.get(['logging', 'logfile'], paths.sub('Naomi.log'))
+    logfile = profile.get(['logging', 'logfile'])
     if logfile:
         handler = logging.handlers.TimedRotatingFileHandler(
             logfile,
