@@ -153,20 +153,31 @@ def main(args=None):
         if profile.get(['logging', 'level'], 'error') == "debug":
             loglevel = logging.DEBUG
     logfile = profile.get(['logging', 'logfile'], paths.sub('Naomi.log'))
-    handler = logging.handlers.TimedRotatingFileHandler(
-        logfile,
-        interval=24,
-        when="h",
-        backupCount=5
-    )
-    if(os.path.isfile(logfile)):
-        handler.doRollover()
-    logging.basicConfig(
-        level=loglevel,
-        filename=logfile
-    )
-    logger = logging.getLogger(__name__)
-    logger.addHandler(handler)
+    if logfile:
+        handler = logging.handlers.TimedRotatingFileHandler(
+            logfile,
+            interval=24,
+            when="h",
+            backupCount=5
+        )
+        if(os.path.isfile(logfile)):
+            handler.doRollover()
+        logging.basicConfig(
+            level=loglevel,
+            filename=logfile
+        )
+        # When using a logfile, only print ERROR or CRITICAL messages
+        # to the screen
+        screenhandler = logging.StreamHandler(sys.stderr)
+        screenhandler.setLevel(logging.ERROR)
+        logger = logging.getLogger(__name__)
+        logger.addHandler(handler)
+        logger.addHandler(screenhandler)
+    else:
+        logging.basicConfig(
+            level=loglevel
+        )
+        logger = logging.getLogger(__name__)
     language = profile.get_profile_var(['language'])
     if(not language):
         language = 'en-US'
@@ -179,7 +190,8 @@ def main(args=None):
     translations = i18n.parse_translations(paths.data('locale'))
     translator = i18n.GettextMixin(translations)
     _ = translator.gettext
-    print(_("Logging to {}").format(logfile))
+    if logfile:
+        print(_("Logging to {}").format(logfile))
 
     print(logo)
     print("      ___           ___           ___           ___                  ")
