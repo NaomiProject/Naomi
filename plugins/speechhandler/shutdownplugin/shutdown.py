@@ -12,6 +12,7 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
                     'en-US': {
                         'templates': [
                             "SHUTDOWN",
+                            "SHUT DOWN",
                             "TURN YOURSELF OFF"
                         ]
                     },
