@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from collections import OrderedDict
+
+import json
 import requests
 from naomi import plugin
 from naomi import profile
-import json
+
 
 # There's a list of supported languages, see Wit.ai FAQ : https://wit.ai/faq
 # Last updated: February 09, 2024
@@ -66,12 +69,25 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         self.token = profile.get(['witai-stt', 'access_token'])
 
         language = profile.get(['language'], 'en-US')
+        format_language = language.split('-')[0]
         if language.split('-')[0] not in SUPPORTED_LANG:
             raise ValueError(
-                'Language {} is not supported.'.format(
-                    language.split('-')[0]
-                )
+                f'Language {format_language} is not supported.'
             )
+
+    def settings(self):
+        """
+        Define required settings for this plugin
+        """
+        _ = self.gettext
+        return OrderedDict(
+            {
+                ("witai-stt", "access_token"): {
+                    "title": _("Wit.ai access token"),
+                    "description": _("Your access token from https://wit.ai/")
+                }
+            }
+        )
 
     @property
     def token(self):
@@ -94,7 +110,7 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         """
         self._token = value
         self._headers = {
-            'Authorization': 'Bearer %s' % self.token,
+            'Authorization': f'Bearer {self.token}',
             'accept': 'application/json',
             'Content-Type': 'audio/wav'
         }
@@ -116,12 +132,12 @@ class WitAiSTTPlugin(plugin.STTPlugin):
             'https://api.wit.ai/speech?v=20230215',
             data=data,
             headers=self.headers,
-            stream=True, # receive chunked http data
+            stream=True,  # receive chunked http data
         )
         try:
             r.raise_for_status()
 
-            *_, data = r.iter_content(chunk_size=None) # get last chunk of data
+            *_, data = r.iter_content(chunk_size=None)  # get last chunk of data
             text = json.loads(data.decode('utf-8'))["text"]
 
         except requests.exceptions.HTTPError:
@@ -140,7 +156,6 @@ class WitAiSTTPlugin(plugin.STTPlugin):
             self._logger.critical('Cannot parse response.',
                                   exc_info=True)
             return []
-        else:
-            transcribed = [text.upper()]
-            self._logger.info('Transcribed: %r', transcribed)
-            return transcribed
+        transcribed = [text.upper()]
+        self._logger.info('Transcribed: %r', transcribed)
+        return transcribed
