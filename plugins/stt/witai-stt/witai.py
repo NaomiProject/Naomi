@@ -1,24 +1,47 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from collections import OrderedDict
+
+import json
 import requests
 from naomi import plugin
 from naomi import profile
 
-# There seems to be no way to get language setting of the defined app
-# Last updated: April 06, 2016
+
+# There's a list of supported languages, see Wit.ai FAQ : https://wit.ai/faq
+# Last updated: February 09, 2024
 SUPPORTED_LANG = (
-    'de',
-    'en',
-    'es',
-    'et',
-    'fr',
-    'it',
+    'ar',
+    'bn',
+    'my',
+    'zh',
     'nl',
+    'en',
+    'fi',
+    'fr',
+    'de',
+    'hi',
+    'id',
+    'it',
+    'ja',
+    'kn',
+    'ko',
+    'ms',
+    'ml',
+    'mr',
     'pl',
     'pt',
     'ru',
-    'sv'
+    'si',
+    'es',
+    'sv',
+    'tl',
+    'ta',
+    'th',
+    'tr',
+    'ur',
+    'vi'
 )
 
 
@@ -33,7 +56,7 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         ...
         stt_engine: witai-stt
         witai-stt:
-          access_token:    ERJKGE86SOMERANDOMTOKEN23471AB
+          access_token:    INSERT_YOUR_TOKEN_HERE
     """
 
     def __init__(self, *args, **kwargs):
@@ -41,16 +64,30 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         Create Plugin Instance
         """
         plugin.STTPlugin.__init__(self, *args, **kwargs)
+        self._language = None
         self._logger = logging.getLogger(__name__)
         self.token = profile.get(['witai-stt', 'access_token'])
 
         language = profile.get(['language'], 'en-US')
+        format_language = language.split('-')[0]
         if language.split('-')[0] not in SUPPORTED_LANG:
             raise ValueError(
-                'Language {} is not supported.'.format(
-                    language.split('-')[0]
-                )
+                f'Language {format_language} is not supported.'
             )
+
+    def settings(self):
+        """
+        Define required settings for this plugin
+        """
+        _ = self.gettext
+        return OrderedDict(
+            {
+                ("witai-stt", "access_token"): {
+                    "title": _("Wit.ai access token"),
+                    "description": _("Your access token from https://wit.ai/")
+                }
+            }
+        )
 
     @property
     def token(self):
@@ -73,7 +110,7 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         """
         self._token = value
         self._headers = {
-            'Authorization': 'Bearer %s' % self.token,
+            'Authorization': f'Bearer {self.token}',
             'accept': 'application/json',
             'Content-Type': 'audio/wav'
         }
@@ -91,12 +128,18 @@ class WitAiSTTPlugin(plugin.STTPlugin):
         received text from json answer.
         """
         data = fp.read()
-        r = requests.post('https://api.wit.ai/speech?v=20170307',
-                          data=data,
-                          headers=self.headers)
+        r = requests.post(
+            'https://api.wit.ai/speech?v=20230215',
+            data=data,
+            headers=self.headers,
+            stream=True,  # receive chunked http data
+        )
         try:
             r.raise_for_status()
-            text = r.json()['_text']
+
+            *_, data = r.iter_content(chunk_size=None)  # get last chunk of data
+            text = json.loads(data.decode('utf-8'))["text"]
+
         except requests.exceptions.HTTPError:
             self._logger.critical('Request failed with response: %r',
                                   r.text,
@@ -113,7 +156,6 @@ class WitAiSTTPlugin(plugin.STTPlugin):
             self._logger.critical('Cannot parse response.',
                                   exc_info=True)
             return []
-        else:
-            transcribed = [text.upper()]
-            self._logger.info('Transcribed: %r', transcribed)
-            return transcribed
+        transcribed = [text.upper()]
+        self._logger.info('Transcribed: %r', transcribed)
+        return transcribed

@@ -1,10 +1,10 @@
 [Plugin]
 Name = witai-stt
-Version = 1.0.0
+Version = 1.0.1
 License = MIT
-URL = http://naomiproject.github.io/
+URL = https://projectnaomi.com/
 Description = Speech-To-Text implementation which relies on the Wit.ai Speech API.
 
 [Author]
 Name = Naomi Project
-URL = http://naomiproject.github.io/
+URL = https://projectnaomi.com/
