@@ -3,7 +3,9 @@ import abc
 import collections
 import logging
 import mad
+import os
 import re
+import sys
 import tempfile
 import wave
 from . import audioengine
@@ -15,16 +17,28 @@ from . import vocabcompiler
 from jiwer import wer
 
 
+def fake_gettext(string, name, path):
+    logger = logging.getLogger(__name__)
+    logger.warn(f"{name} module has no {path} locale folder, but is trying to use gettext()")
+    return string
+
+
 class GenericPlugin(object):
     def __init__(self, info, *args, **kwargs):
         self._plugin_info = info
-        if(not hasattr(self, '_logger')):
+        if not hasattr(self, '_logger'):
             self._logger = logging.getLogger(__name__)
         interface = commandline.commandline()
         interface.get_language(once=True)
-        translations = i18n.parse_translations(paths.data('locale'))
-        translator = i18n.GettextMixin(translations)
-        self.gettext = translator.gettext
+        module = sys.modules[self.__module__]
+        module_name = module.__name__
+        locale_path = os.path.join(os.path.dirname(module.__file__), 'locale')
+        if(os.path.isdir(locale_path)):
+            translations = i18n.parse_translations(locale_path)
+            translator = i18n.GettextMixin(translations)
+            self.gettext = translator.gettext
+        else:
+            self.gettext = lambda string: fake_gettext(string, module_name, locale_path)
         # Skip asking for missing settings if we are using a test profile
         if hasattr(self, 'settings') and not profile._test_profile:
             # set a variable here to tell us if all settings are

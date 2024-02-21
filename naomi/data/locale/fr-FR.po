@@ -25,9 +25,17 @@ msgstr ""
 msgid "My name is, %s."
 msgstr "Mon nom est %s."
 
-#: client/conversation.py:26
-msgid "My name is Naomi"
-msgstr "Je suis Naomi"
+#: client/conversation.py:35
+msgid "My name is {}"
+msgstr "Je suis {}"
+
+#: client/conversation.py:28
+msgid "My name is {} but you can also call me {}"
+msgstr "Je suis {} mais tu peux aussi m'appeler {}"
+
+#: naomi/conversation.py:21
+msgid " or "
+msgstr " ou "
 
 #: client/conversation.py:32
 #, python-format
