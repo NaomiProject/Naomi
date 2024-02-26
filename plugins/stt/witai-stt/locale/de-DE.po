@@ -1,0 +1,28 @@
+# Naomi 3.0 witai-stt
+# Copyright (C) 2024 Naomi Project
+# This file is distributed under the same MIT license as the Naomi package.
+# Naomi Project <naomi@projectnaomi.com>, 2024
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Naomi 3.0\n"
+"Report-Msgid-Bugs-To: naomi@projectnaomi.com\n"
+"POT-Creation-Date: 2024-02-20 13:59+0100\n"
+"PO-Revision-Date: 2024-02-20 13:59+100\n"
+"Last-Translator: Naomi Project <naomi@projectnaomi.com>\n"
+"Language-Team: de-DE <de-DE@projectnaomi.com>\n"
+"Language: de-DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: Naomi/plugins/stt/witai-stt/witai.py:86
+msgid "Wit.ai access token"
+msgstr "Wit.ai Zugangstoken"
+
+#: Naomi/plugins/stt/witai-stt/witai.py:87
+msgid "Your access token from https://wit.ai/"
+msgstr "Ihr Zugangstoken von https://wit.ai/"
+

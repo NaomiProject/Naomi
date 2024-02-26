@@ -70,7 +70,7 @@ class WitAiSTTPlugin(plugin.STTPlugin):
 
         language = profile.get(['language'], 'en-US')
         format_language = language.split('-')[0]
-        if language.split('-')[0] not in SUPPORTED_LANG:
+        if format_language not in SUPPORTED_LANG:
             raise ValueError(
                 f'Language {format_language} is not supported.'
             )
