@@ -3,9 +3,7 @@ import abc
 import collections
 import logging
 import mad
-import os
 import re
-import sys
 import tempfile
 import wave
 from . import audioengine
@@ -17,28 +15,16 @@ from . import vocabcompiler
 from jiwer import wer
 
 
-def fake_gettext(string, name, path):
-    logger = logging.getLogger(__name__)
-    logger.warn(f"{name} module has no {path} locale folder, but is trying to use gettext()")
-    return string
-
-
 class GenericPlugin(object):
     def __init__(self, info, *args, **kwargs):
         self._plugin_info = info
-        if not hasattr(self, '_logger'):
+        if(not hasattr(self, '_logger')):
             self._logger = logging.getLogger(__name__)
         interface = commandline.commandline()
         interface.get_language(once=True)
-        module = sys.modules[self.__module__]
-        module_name = module.__name__
-        locale_path = os.path.join(os.path.dirname(module.__file__), 'locale')
-        if(os.path.isdir(locale_path)):
-            translations = i18n.parse_translations(locale_path)
-            translator = i18n.GettextMixin(translations)
-            self.gettext = translator.gettext
-        else:
-            self.gettext = lambda string: fake_gettext(string, module_name, locale_path)
+        translations = i18n.parse_translations(paths.data('locale'))
+        translator = i18n.GettextMixin(translations)
+        self.gettext = translator.gettext
         # Skip asking for missing settings if we are using a test profile
         if hasattr(self, 'settings') and not profile._test_profile:
             # set a variable here to tell us if all settings are
@@ -61,11 +47,10 @@ class GenericPlugin(object):
                 # Add the setting to the settings_cache
                 profile._settings[setting] = settings[setting]
             if(not settings_complete):
-                print(interface.status_text(self.gettext(
-                    "Configuring {}"
-                ).format(
-                    self._plugin_info.name
-                )))
+                visualizations.run_visualization(
+                    "output",
+                    self.gettext("Configuring {}").format(self._plugin_info.name)
+                )
                 for setting in settings:
                     interface.get_setting(
                         setting, settings[setting]
@@ -194,18 +179,13 @@ class VADPlugin(GenericPlugin):
     def _voice_detected(self, *args, **kwargs):
         pass
 
-    def get_audio(self):
+    def get_audio(self, *args, **kwargs):
         frames = collections.deque([], 30)
         last_voice_frame = 0
         recording = False
         recording_frames = []
         self._logger.info("Waiting for voice data")
-        for frame in self._input_device.record(
-            self._input_device._input_chunksize,
-            self._input_device._input_bits,
-            self._input_device._input_channels,
-            self._input_device._input_rate
-        ):
+        for frame in self._input_device.record(*args, **kwargs):
             frames.append(frame)
             if(profile.get_arg('resetmic', False)):
                 return recording_frames
@@ -332,6 +312,8 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def cleantext(self, text):
         language = profile.get(["language"], "en-US")[:2]
         if language == "en":
+            if isinstance(text, list):
+                text = " ".join(text)
             words = text.split(" ")
             # Adapted from a list at
             # https://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python

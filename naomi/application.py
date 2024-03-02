@@ -9,7 +9,8 @@ from . import commandline as interface
 from . import conversation
 from . import i18n
 from . import local_mic
-from . import mic
+from . import mic_asynchronous
+from . import mic_synchronous
 from . import npe
 from . import paths
 from . import pluginstore
@@ -138,7 +139,11 @@ class Naomi(object):
         )
 
         active_stt_reply = profile.get_profile_var(
-            ['active_stt', 'reply']
+            ["active_stt", "reply"]
+        )
+        profile.set_arg(
+            "active_stt_reply",
+            active_stt_reply
         )
         if (active_stt_reply):
             self._logger.info(
@@ -146,7 +151,11 @@ class Naomi(object):
             )
 
         active_stt_response = profile.get_profile_var(
-            ['active_stt', 'response']
+            ["active_stt", "response"]
+        )
+        profile.set_arg(
+            "active_stt_response",
+            active_stt_response
         )
         if (active_stt_response):
             self._logger.info(
@@ -502,7 +511,9 @@ class Naomi(object):
 
         # Initialize Mic
         if use_mic == USE_TEXT_MIC:
-            self.mic = local_mic.Mic()
+            self.mic = local_mic.Mic(
+                brain=self.brain
+            )
             self._logger.info('Using local text input and output')
         elif use_mic == USE_BATCH_MIC:
             self.mic = batch_mic.Mic(
@@ -515,25 +526,31 @@ class Naomi(object):
             )
             self._logger.info('Using batched mode')
         else:
-            self.mic = mic.Mic(
-                input_device,
-                output_device,
-                active_stt_reply,
-                active_stt_response,
-                passive_stt_plugin,
-                active_stt_plugin,
-                special_stt_slug,
-                profile.get_arg('plugins'),
-                tts_plugin,
-                vad_plugin,
-                keyword=keyword,
-                print_transcript=print_transcript,
-                passive_listen=passive_listen,
-                save_audio=save_audio,
-                save_passive_audio=save_passive_audio,
-                save_active_audio=save_active_audio,
-                save_noise=save_noise
-            )
+            if(profile.get_arg('listen_while_talking', False)):
+                self.mic = mic_asynchronous.MicAsynchronous(
+                    keywords=keyword,
+                    input_device=input_device,
+                    output_device=output_device,
+                    passive_stt_plugin=passive_stt_plugin,
+                    active_stt_plugin=active_stt_plugin,
+                    special_stt_slug=special_stt_slug,
+                    vad_plugin=vad_plugin,
+                    tts_engine=tts_plugin,
+                    brain=self.brain
+                )
+            else:
+                self.mic = mic_synchronous.MicSynchronous(
+                    keywords=keyword,
+                    input_device=input_device,
+                    output_device=output_device,
+                    passive_stt_plugin=passive_stt_plugin,
+                    active_stt_plugin=active_stt_plugin,
+                    special_stt_slug=special_stt_slug,
+                    vad_plugin=vad_plugin,
+                    tts_engine=tts_plugin,
+                    brain=self.brain
+                )
+
 
         self.conversation = conversation.Conversation(
             self.mic, self.brain

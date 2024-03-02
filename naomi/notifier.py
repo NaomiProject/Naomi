@@ -7,6 +7,7 @@ from naomi import profile
 
 class Notifier(object):
     def __init__(self, mic, brain, *args, **kwargs):
+        self.mic = mic
         self._logger = logging.getLogger(__name__)
         self._logger.info("Setting up notifier")
         self.notifiers = []
@@ -27,11 +28,14 @@ class Notifier(object):
                 )
                 print("Added notifier notification client {}".format(info.name))
 
-        sched = BackgroundScheduler(timezone="UTC", daemon=True)
-        sched.start()
+        self.sched = BackgroundScheduler(timezone="UTC", daemon=True)
+        self.sched.start()
         # FIXME add an interval setting to profile so this can be overridden
-        sched.add_job(self.gather, 'interval', seconds=30)
-        atexit.register(lambda: sched.shutdown(wait=False))
+        self.sched.add_job(self.gather, 'interval', seconds=30)
 
     def gather(self):
         [client.run() for client in self.notifiers]
+        if self.mic.Continue == False:
+            print("Notifier shutting down")
+            self.sched.shutdown(wait=False)
+
