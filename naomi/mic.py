@@ -42,8 +42,7 @@ class Mic(i18n.GettextMixin):
 
     def __init__(self, *args, **kwargs):
         translations = i18n.parse_translations(paths.data('locale'))
-        translator = i18n.GettextMixin(translations)
-        self.gettext = translator.gettext
+        i18n.GettextMixin.__init__(self, translations, profile)
         self.keywords = kwargs['keywords']
         self._input_device = kwargs['input_device']
         self._output_device = kwargs['output_device']
@@ -292,7 +291,6 @@ class Mic(i18n.GettextMixin):
                 except Unexpected as e:
                     # The user responded to a prompt within the intent with a new
                     # request.
-                    utterance = e.utterance
                     audio = e.audio
                     # If passive_listen is true, then use the same audio
                     # for the utterance
