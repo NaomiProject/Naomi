@@ -6,6 +6,7 @@ implementation, Naomi is always active listening with local_mic.
 """
 import contextlib
 import logging
+import random
 import unicodedata
 from naomi import i18n
 from naomi import paths
@@ -36,7 +37,7 @@ class Mic(i18n.GettextMixin):
         yield
 
     def wait_for_keyword(self, keyword="NAOMI"):
-        if(self.passive_listen):
+        if self.passive_listen:
             return self.active_listen()
         else:
             return
@@ -54,7 +55,7 @@ class Mic(i18n.GettextMixin):
         self.say(prompt)
         transcribed = self.listen()
         phrase, score = profile.get_arg("application").brain._intentparser.match_phrase(transcribed, phrases)
-        if(score > 0.1):
+        if score > 0.1:
             response = phrase
         else:
             raise Unexpected(transcribed)
@@ -67,10 +68,10 @@ class Mic(i18n.GettextMixin):
         language = profile.get(['language'], 'en-US')[:2]
         POSITIVE = ['YES', 'SURE']
         NEGATIVE = ['NO', 'NOPE']
-        if(language == "fr"):
+        if language == "fr":
             POSITIVE = ['OUI']
             NEGATIVE = ['NON']
-        elif(language == "de"):
+        elif language == "de":
             POSITIVE = ['JA']
             NEGATIVE = ['NEIN']
         phrase = self.expect(
@@ -94,7 +95,7 @@ class Mic(i18n.GettextMixin):
             utterance = self.listen()
             if not isinstance(utterance, bool):
                 handled = False
-                while(" ".join(utterance) != "" and not handled):
+                while " ".join(utterance) != "" and not handled:
                     utterance, handled = self.handleRequest(utterance)
 
     def handleRequest(self, utterance):

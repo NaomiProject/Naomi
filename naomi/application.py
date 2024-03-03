@@ -526,7 +526,7 @@ class Naomi(object):
             )
             self._logger.info('Using batched mode')
         else:
-            if(profile.get_arg('listen_while_talking', False)):
+            if profile.get_arg('listen_while_talking', False):
                 self.mic = mic_asynchronous.MicAsynchronous(
                     keywords=keyword,
                     input_device=input_device,
@@ -550,10 +550,9 @@ class Naomi(object):
                     tts_engine=tts_plugin,
                     brain=self.brain
                 )
-
-
         self.conversation = conversation.Conversation(
-            self.mic, self.brain
+            self.mic,
+            self.brain
         )
 
     def settings(self):
@@ -971,7 +970,7 @@ class Naomi(object):
                     filename
                 )
             visualizations.load_visualizations(self)
-            testMic = mic.Mic(
+            testMic = local_mic.Mic(
                 input_device,
                 output_device,
                 profile.get(['active_stt', 'reply']),

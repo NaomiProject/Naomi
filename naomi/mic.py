@@ -1,8 +1,10 @@
 import abc
-import collections
+import audioop
 import contextlib
 import logging
+import os
 import random
+import sqlite3
 import tempfile
 import time
 import wave
@@ -75,10 +77,6 @@ class Mic(i18n.GettextMixin):
         """
         pass
 
-    @abc.abstractmethod
-    def main_loop(self):
-        pass
-
     def _log_audio(self, fp, transcription, sample_type="unknown"):
         """
         Copies a file pointed to by a file pointer to a permanent
@@ -88,9 +86,9 @@ class Mic(i18n.GettextMixin):
         # collected
         if isinstance(transcription, list):
             transcription = " ".join(transcription)
-        if(transcription == ""):
+        if transcription == "":
             sample_type = 'noise'
-        if(
+        if (
             (
                 sample_type.lower() == "noise" and self._save_noise
             ) or (
@@ -101,9 +99,9 @@ class Mic(i18n.GettextMixin):
         ):
             fp.seek(0)
             # Get the slug from the engine
-            if(sample_type.lower() == "active"):
+            if sample_type.lower() == "active":
                 engine = type(self.active_stt_plugin).__name__
-                if(self.active_stt_plugin._vocabulary_name != "default"):
+                if self.active_stt_plugin._vocabulary_name != "default":
                     # we are in a special mode. We don't want to put words
                     # from this sample into the default standard_phrases
                     sample_type = self.active_stt_plugin._vocabulary_name
@@ -233,37 +231,37 @@ class Mic(i18n.GettextMixin):
         # If the special_mode engine is not specifically set,
         # copy the settings from the active stt engine.
         try:
-            mode_stt_engine = plugin_info.plugin_class(
+            mode_stt_plugin = plugin_info.plugin_class(
                 name,
                 phrases,
                 plugin_info,
                 plugin_config
             )
-            if(profile.check_profile_var_exists(['special_stt'])):
-                if(profile.check_profile_var_exists([
+            if (profile.check_profile_var_exists(['special_stt'])):
+                if (profile.check_profile_var_exists([
                     'special_stt',
                     'samplerate'
                 ])):
-                    mode_stt_engine._samplerate = int(
+                    mode_stt_plugin._samplerate = int(
                         profile.get_profile_var([
                             'special_stt',
                             'samplerate'
                         ])
                     )
-                if(profile.check_profile_var_exists([
+                if (profile.check_profile_var_exists([
                     'special_stt',
                     'volume_normalization'
                 ])):
-                    mode_stt_engine._volume_normalization = float(
+                    mode_stt_plugin._volume_normalization = float(
                         profile.get_profile_var([
                             'special_stt',
                             'volume_normalization'
                         ])
                     )
             else:
-                mode_stt_engine._samplerate = original_stt_engine._samplerate
-                mode_stt_engine._volume_normalization = original_stt_engine._volume_normalization
-            self.active_stt_plugin = mode_stt_engine
+                mode_stt_plugin._samplerate = original_stt_plugin._samplerate
+                mode_stt_plugin._volume_normalization = original_stt_plugin._volume_normalization
+            self.active_stt_plugin = mode_stt_plugin
             yield
         finally:
             self.active_stt_plugin = original_stt_plugin
@@ -298,7 +296,7 @@ class Mic(i18n.GettextMixin):
                     audio = e.audio
                     # If passive_listen is true, then use the same audio
                     # for the utterance
-                    if(self.passive_listen):
+                    if (self.passive_listen):
                         # Because the user would have been using a special
                         # listener which may have only been trained to hear
                         # certain phrases, go back and run the same audio
@@ -383,13 +381,13 @@ class Mic(i18n.GettextMixin):
         with self.special_mode(name, phrases):
             while True:
                 transcribed, audio = self.active_listen()
-                if(len(' '.join(transcribed))):
+                if (len(' '.join(transcribed))):
                     # Now that we have a transcription, check if it matches one of the phrases
                     phrase, score = self.brain._intentparser.match_phrase(transcribed, expected_phrases)
                     # If it does, then return the phrase
                     self._logger.info("Expecting: {} Got: {}".format(expected_phrases, transcribed))
                     self._logger.info("Score: {}".format(score))
-                    if(score > .1):
+                    if (score > .1):
                         return phrase
                     # Otherwise, raise an exception with the active transcription.
                     # This will break us back into the main conversation loop
@@ -397,7 +395,7 @@ class Mic(i18n.GettextMixin):
                         # If the user is not responding to the prompt, then assume that
                         # they are starting a new command. This should mean that the wake
                         # word would be included.
-                        if(self.check_for_keyword(transcribed)):
+                        if (self.check_for_keyword(transcribed)):
                             raise Unexpected(transcribed, audio)
                         else:
                             # The user just said something unexpected. Remind them of their choices
@@ -405,7 +403,6 @@ class Mic(i18n.GettextMixin):
                                 self.list_choices(expected_phrases)
                             else:
                                 self.say(instructions)
-
 
     def confirm(self, prompt):
         """
@@ -415,10 +412,10 @@ class Mic(i18n.GettextMixin):
         language = profile.get(['language'], 'en-US')[:2]
         POSITIVE = ['YES', 'SURE', 'YES PLEASE']
         NEGATIVE = ['NO', 'NOPE', 'NO THANK YOU']
-        if(language == "fr"):
+        if (language == "fr"):
             POSITIVE = ['OUI']
             NEGATIVE = ['NON']
-        elif(language == "de"):
+        elif (language == "de"):
             POSITIVE = ['JA']
             NEGATIVE = ['NEIN']
         phrase = self.expect(
@@ -441,14 +438,14 @@ class Mic(i18n.GettextMixin):
         """
         global queue
         visualizations.run_visualization("output", "Stopping...")
-        if(hasattr(self, "current_thread")):
+        if (hasattr(self, "current_thread")):
             try:
                 queue = []
-                if(hasattr(self.current_thread, "is_alive")):
+                if (hasattr(self.current_thread, "is_alive")):
                     # Threads can't be terminated
                     # but we can set a "stop" attribute on self._output_device
                     self._output_device._stop = True
-                    if(wait):
+                    if (wait):
                         while not self._output_device._stop:
                             time.sleep(.1)
             except AttributeError:
@@ -471,7 +468,6 @@ class Mic(i18n.GettextMixin):
 
     def main_loop(self):
         """This is a synchronous main loop"""
-        stt_thread = None
         try:
             while self.Continue:
                 # put the audio in a queue and call the stt engine

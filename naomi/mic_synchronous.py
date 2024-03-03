@@ -1,20 +1,8 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
-from naomi import alteration
+import logging
 from naomi import paths
 from naomi import mic
-from naomi import profile
 from naomi import visualizations
-import audioop
-import contextlib
-import logging
-import os
-import sqlite3
-import sys
-import tempfile
-import threading
-import time
-import wave
 
 
 # global action queue
@@ -31,7 +19,7 @@ class MicSynchronous(mic.Mic):
     `   It should only be used in cases where Naomi has just asked a question.
         """
         transcribed = []
-        if(play_prompts):
+        if play_prompts:
             # let the user know we are listening
             if self._active_stt_reply:
                 self.say(self._active_stt_reply)
@@ -43,7 +31,7 @@ class MicSynchronous(mic.Mic):
         with self._write_frames_to_file(
             audio
         ) as f:
-            if(play_prompts):
+            if play_prompts:
                 if self._active_stt_response:
                     self.say(self._active_stt_response)
                 else:
@@ -99,25 +87,25 @@ class MicSynchronous(mic.Mic):
                                 "output",
                                 f"<< {transcription}"
                             )
-                            self._log_audio(f, transcribed, "active")
+                            self._log_audio(f, transcription, "active")
                         else:
                             visualizations.run_visualization(
                                 "output",
-                                f"<< <noise>"
+                                "<< <noise>"
                             )
-                            self._log_audio(f, transcribed, "noise")
+                            self._log_audio(f, transcription, "noise")
                     else:
                         transcription, audio = self.active_listen()
                 else:
                     visualizations.run_visualization(
                         "output",
-                        f"<< <noise>"
+                        "<< <noise>"
                     )
-                    self._log_audio(f, transcribed, "noise")
+                    self._log_audio(f, transcription, "noise")
             else:
                 visualizations.run_visualization(
                     "output",
-                    f"<  <noise>"
+                    "<  <noise>"
                 )
         return transcription, audio
 
@@ -125,7 +113,7 @@ class MicSynchronous(mic.Mic):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger("stt").setLevel(logging.WARNING)
-    audio = Mic.get_instance()
+    audio = MicSynchronous.get_instance()
     while True:
         text = audio.listen()[0]
         if text:

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-import random
 from . import i18n
 from . import paths
 from . import profile
-from .mic import Unexpected
 from .notifier import Notifier
 
 
@@ -21,9 +19,9 @@ class Conversation(i18n.GettextMixin):
     # Add way for the system to ask for name if is not found in the config
     def askName(self):
         keywords = profile.get(['keyword'], ['NAOMI'])
-        if(isinstance(keywords, str)):
+        if isinstance(keywords, str):
             keywords = [keywords]
-        if(len(keywords) > 1):
+        if len(keywords) > 1:
             salutation = self.gettext(
                 "My name is {} but you can also call me {}"
             ).format(

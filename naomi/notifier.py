@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import atexit
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from naomi import profile
@@ -22,7 +21,7 @@ class Notifier(object):
                 brain=brain,
                 timestamp=None
             )
-            if(hasattr(notifier, "gather")):
+            if hasattr(notifier, "gather"):
                 self.notifiers.append(
                     notifier
                 )
@@ -35,7 +34,6 @@ class Notifier(object):
 
     def gather(self):
         [client.run() for client in self.notifiers]
-        if self.mic.Continue == False:
+        if self.mic.Continue is False:
             print("Notifier shutting down")
             self.sched.shutdown(wait=False)
-

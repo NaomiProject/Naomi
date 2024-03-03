@@ -11,6 +11,7 @@ from . import commandline
 from . import i18n
 from . import paths
 from . import profile
+from . import visualizations
 from . import vocabcompiler
 from jiwer import wer
 
@@ -18,7 +19,7 @@ from jiwer import wer
 class GenericPlugin(object):
     def __init__(self, info, *args, **kwargs):
         self._plugin_info = info
-        if(not hasattr(self, '_logger')):
+        if not hasattr(self, '_logger'):
             self._logger = logging.getLogger(__name__)
         interface = commandline.commandline()
         interface.get_language(once=True)
@@ -38,7 +39,7 @@ class GenericPlugin(object):
             for setting in settings:
                 if profile.get_arg("repopulate") or not profile.check_profile_var_exists(setting):
                     # Check if this setting has already been addressed
-                    if(setting not in profile._settings):
+                    if (setting not in profile._settings):
                         # Go ahead and pull the setting
                         self._logger.info(
                             "{} setting does not exist".format(setting)
@@ -46,7 +47,7 @@ class GenericPlugin(object):
                         settings_complete = False
                 # Add the setting to the settings_cache
                 profile._settings[setting] = settings[setting]
-            if(not settings_complete):
+            if not settings_complete:
                 visualizations.run_visualization(
                     "output",
                     self.gettext("Configuring {}").format(self._plugin_info.name)
@@ -187,12 +188,12 @@ class VADPlugin(GenericPlugin):
         self._logger.info("Waiting for voice data")
         for frame in self._input_device.record(*args, **kwargs):
             frames.append(frame)
-            if(profile.get_arg('resetmic', False)):
+            if profile.get_arg('resetmic', False):
                 return recording_frames
             else:
                 voice_detected = self._voice_detected(frame, recording=recording)
                 if not recording:
-                    if(voice_detected):
+                    if voice_detected:
                         # Voice activity detected, start recording and use
                         # the last 10 frames to start
                         self._logger.debug(
@@ -207,13 +208,13 @@ class VADPlugin(GenericPlugin):
                 else:
                     # We're recording
                     recording_frames.append(frame)
-                    if(voice_detected):
+                    if voice_detected:
                         last_voice_frame = len(recording_frames)
-                    if(last_voice_frame < len(recording_frames) - self._timeout):
+                    if (last_voice_frame < len(recording_frames) - self._timeout):
                         # We have waited past the timeout number of frames
                         # so we believe the speaker has finished speaking.
                         recording = False
-                        if(len(recording_frames) < self._minimum_capture):
+                        if (len(recording_frames) < self._minimum_capture):
                             self._logger.debug(
                                 " ".join([
                                     "Recorded {:d} frames, less than threshold",
@@ -231,6 +232,7 @@ class VADPlugin(GenericPlugin):
                                 )
                             )
                             return recording_frames
+        return None
 
 
 class STTTrainerPlugin(GenericPlugin):
@@ -269,7 +271,7 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def is_keyword(word):
         word = word.strip()
         response = False
-        if("{}{}".format(word[:1], word[-1:]) == "{}"):
+        if ("{}{}".format(word[:1], word[-1:]) == "{}"):
             response = True
         return response
 
@@ -280,7 +282,7 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
         try:
             # print("Searching for: '{}' in '{}'".format(search_for, string))
             # pprint([m.start() for m in re.finditer(search_for, string)])
-            if(self.is_keyword(search_for)):
+            if self.is_keyword(search_for):
                 where = [m.start() for m in re.finditer(r"{}".format(search_for), string)][n - 1]
             else:
                 where = [m.start() for m in re.finditer(r"\b{}\b".format(search_for), string)][n - 1]
@@ -457,7 +459,7 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def match_phrase(self, phrase, choices):
         # If phrase is a list, convert to a string
         # (otherwise the "split" below throws an error)
-        if(isinstance(phrase, list)):
+        if isinstance(phrase, list):
             phrase = " ".join(phrase)
         if phrase == "":
             return ("", 0.0)
@@ -470,12 +472,12 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
             for template in choices:
                 phrase_len = len(phrase.split())
                 template_len = len(template.split())
-                if(phrase_len > template_len):
+                if (phrase_len > template_len):
                     templates[template] = 1 - wer(phrase, template)
                 else:
                     templates[template] = 1 - wer(template, phrase)
             besttemplate = max(templates, key=lambda key: templates[key])
-            return(besttemplate, templates[besttemplate])
+            return (besttemplate, templates[besttemplate])
 
 
 class VisualizationsPlugin(GenericPlugin):
