@@ -18,7 +18,7 @@ class MicSynchronous(mic.Mic):
         Active listen does not check for a wakeword.
     `   It should only be used in cases where Naomi has just asked a question.
         """
-        transcribed = []
+        transcription = []
         if play_prompts:
             # let the user know we are listening
             if self._active_stt_reply:
@@ -39,22 +39,22 @@ class MicSynchronous(mic.Mic):
                     visualizations.run_visualization("output", ">> <boop>")
                     self.play_file(paths.data('audio', 'beep_lo.wav'))
             try:
-                transcribed = [word.upper() for word in self.active_stt_plugin.transcribe(f)]
+                transcription = [word.upper() for word in self.active_stt_plugin.transcribe(f)]
             except Exception:
-                transcribed = []
+                transcription = []
                 dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
                 self._logger.error("Active transcription failed!", exc_info=dbg)
             else:
-                if transcribed:
+                if transcription:
                     visualizations.run_visualization(
                         "output",
-                        "<< {}".format(transcribed)
+                        "<< {}".format(transcription)
                     )
-                    self._log_audio(f, transcribed, "active")
+                    self._log_audio(f, transcription, "active")
                 else:
                     visualizations.run_visualization("output", "<< <noise>")
-                    self._log_audio(f, transcribed, "noise")
-        return transcribed, audio
+                    self._log_audio(f, transcription, "noise")
+        return mic.Utterance(transcription=transcription, audio=audio)
 
     def listen(self):
         """
@@ -95,7 +95,9 @@ class MicSynchronous(mic.Mic):
                             )
                             self._log_audio(f, transcription, "noise")
                     else:
-                        transcription, audio = self.active_listen()
+                        utterance = self.active_listen()
+                        transcription = utterance.transcription
+                        audio = utterance.audio
                 else:
                     visualizations.run_visualization(
                         "output",
@@ -107,7 +109,7 @@ class MicSynchronous(mic.Mic):
                     "output",
                     "<  <noise>"
                 )
-        return transcription, audio
+        return mic.Utterance(transcription=transcription, audio=audio)
 
 
 if __name__ == "__main__":
@@ -115,6 +117,6 @@ if __name__ == "__main__":
     logging.getLogger("stt").setLevel(logging.WARNING)
     audio = MicSynchronous.get_instance()
     while True:
-        text = audio.listen()[0]
+        text = audio.listen()
         if text:
             audio.say(text)

@@ -180,13 +180,16 @@ class MPDControlPlugin(plugin.SpeechHandlerPlugin):
         return True
 
     def stop(self, intent, mic):
-        _ = self.gettext  # Alias for better readability
-        playback_state = self._music.get_playback_state()
-        # stop playback even if playback appears to already be stopped
-        self._music.stop()
-        # if music is playing or paused, tell the user that playback is stopped
-        if playback_state != mpdclient.PLAYBACK_STATE_STOPPED:
-            self.say(mic, _('Music stopped.'))
+        try:
+            _ = self.gettext  # Alias for better readability
+            playback_state = self._music.get_playback_state()
+            # stop playback even if playback appears to already be stopped
+            self._music.stop()
+            # if music is playing or paused, tell the user that playback is stopped
+            if playback_state != mpdclient.PLAYBACK_STATE_STOPPED:
+                self.say(mic, _('Music stopped.'))
+        except (ConnectionRefusedError, RuntimeError) as e:
+            self._logger.warn(e)
 
     def load_playlist(self, playlist):
         playlists = self._music.get_playlists()

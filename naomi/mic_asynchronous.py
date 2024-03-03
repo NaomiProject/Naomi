@@ -51,19 +51,26 @@ class MicAsynchronous(mic.Mic):
                                 if len(active_transcription) > 0:
                                     if self.check_for_keyword(active_transcription):
                                         transcription = active_transcription
+                                        if len(transcription) > 0:
+                                            visualizations.run_visualization(
+                                                "output",
+                                                f"<< {transcription}"
+                                            )
                                 else:
                                     visualizations.run_visualization(
                                         "output",
                                         "<< <noise>"
                                     )
                         else:
+                            # New transcription
                             transcription = []
                             # Clear the queue and event
                             self.recordings_queue.clear()
                             recordings_available_event.clear()
                             while not transcription:
-                                transcription, audio = self.active_listen()
-                            print(f"listen: {transcription}")
+                                utterance = self.active_listen()
+                                transcription = utterance.transcription
+                                audio = utterance.audio
                     else:
                         visualizations.run_visualization(
                             "output",
@@ -71,14 +78,9 @@ class MicAsynchronous(mic.Mic):
                         )
         except IndexError:
             recordings_available_event.clear()
-        if len(transcription) > 0:
-            visualizations.run_visualization(
-                "output",
-                f"<< {transcription}"
-            )
-        return transcription, audio
+        return mic.Utterance(transcription=transcription, audio=audio)
 
-    def active_listen(self, play_prompts=False):
+    def active_listen(self, play_prompts=True):
         """
         Active listen does not check for a wakeword.
     `   It should only be used in cases where Naomi has just asked a question.
@@ -90,9 +92,7 @@ class MicAsynchronous(mic.Mic):
             else:
                 self._logger.debug("No text to respond with using beep")
                 visualizations.run_visualization("output", ">> <beep>")
-                self.actions_queue.appendleft(
-                    lambda: self.play_file(paths.data('audio', 'beep_hi.wav'))
-                )
+                self.play_file(paths.data('audio', 'beep_hi.wav'))
 
         transcription = ""
         audio = b''
@@ -124,10 +124,8 @@ class MicAsynchronous(mic.Mic):
             else:
                 self._logger.debug("No text to respond with using beep")
                 visualizations.run_visualization("output", ">> <boop>")
-                self.actions_queue.appendleft(
-                    lambda: self.play_file(paths.data('audio', 'beep_lo.wav'))
-                )
-        return transcription, audio
+                self.play_file(paths.data('audio', 'beep_lo.wav'))
+        return mic.Utterance(transcription=transcription, audio=audio)
 
     def handle_vad_output(self):
         """
@@ -137,9 +135,9 @@ class MicAsynchronous(mic.Mic):
         """
         while self.Continue:
             try:
-                transcription, audio = self.listen()
-                if len(transcription):
-                    self.handleRequest(transcription, audio)
+                utterance = self.listen()
+                if len(utterance.transcription):
+                    self.handleRequest(utterance)
             except IndexError:
                 break
 
@@ -156,6 +154,27 @@ class MicAsynchronous(mic.Mic):
             )
             self.actions_thread.start()
 
+    def play_file(self, filename):
+        self.actions_queue.appendleft(lambda: self._play_file(filename))
+        if not (
+            self.actions_thread
+            and hasattr(self.actions_thread, "is_alive")
+            and self.actions_thread.is_alive()
+        ):
+            # start the thread
+            self.actions_thread = threading.Thread(
+                target=self.process_actions
+            )
+            self.actions_thread.start()
+
+    def _play_file(self, filename):
+        """
+        Internal version of play_file used above
+        """
+        with open(filename, 'rb') as f:
+            self._output_device.play_fp(f)
+            time.sleep(.5)
+
     def process_actions(self):
         while self.Continue:
             try:
@@ -166,8 +185,7 @@ class MicAsynchronous(mic.Mic):
 
     def tts(self, phrase):
         altered_phrase = alteration.clean(phrase)
-        if profile.get_arg('print_transcript'):
-            visualizations.run_visualization("output", f">> {phrase}")
+        visualizations.run_visualization("output", f">> {phrase}")
         with tempfile.SpooledTemporaryFile() as f:
             f.write(self.tts_engine.say(altered_phrase))
             f.seek(0)
@@ -237,32 +255,28 @@ class MicAsynchronous(mic.Mic):
         self.say(prompt)
         # Now wait for any sounds in the queue to be processed
         while not profile.get_arg('resetmic'):
-            transcribed, audio = self.listen()
+            utterance = self.listen()
             handled = False
-            if isinstance(transcribed, bool):
-                handled = True
-            else:
-                while (transcribed and not handled):
-                    transcribed, handled = self.handleRequest(
-                        transcribed,
-                        audio
-                    )
+            while (utterance.transcription and not handled):
+                utterance, handled = self.handleRequest(
+                    utterance
+                )
         # Now that we are past the mic reset
         profile.set_arg('resetmic', False)
         # Now start listening for a response
         with self.special_mode(name, phrases):
             while True:
-                transcribed, audio = self.active_listen()
-                if len(' '.join(transcribed)):
+                utterance = self.active_listen()
+                if len(utterance.transcription):
                     # Now that we have a transcription, check if it matches
                     # one of the phrases
                     phrase, score = self.brain._intentparser.match_phrase(
-                        transcribed,
+                        utterance.transcription,
                         expected_phrases
                     )
                     # If it does, then return the phrase
                     self._logger.info(
-                        "Expecting: {expected_phrases} Got: {transcribed}"
+                        "Expecting: {expected_phrases} Got: {utterance.transcription}"
                     )
                     self._logger.info("Score: {}".format(score))
                     if (score > .1):
@@ -274,8 +288,8 @@ class MicAsynchronous(mic.Mic):
                         # If the user is not responding to the prompt, then
                         # assume that they are starting a new command. This
                         # should mean that the wake word would be included.
-                        if self.check_for_keyword(transcribed):
-                            raise mic.Unexpected(transcribed, audio)
+                        if self.check_for_keyword(utterance.transcription):
+                            raise mic.Unexpected(utterance)
                         else:
                             # The user just said something unexpected.
                             # Remind them of their choices

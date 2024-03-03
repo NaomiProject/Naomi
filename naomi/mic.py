@@ -23,11 +23,30 @@ class Unexpected(Exception):
     """
     def __init__(
         self,
-        utterance,
-        audio
+        utterance
     ):
         self.utterance = utterance
-        self.audio = audio
+
+
+class Utterance:
+    def __init__(self, **kwargs):
+        if ('transcription' in kwargs):
+            if isinstance(kwargs['transcription'], list):
+                self.transcription = " ".join(kwargs['transcription'])
+            else:
+                self.transcription = kwargs['transcription']
+        else:
+            self.transcription = ""
+        if ('audio' in kwargs):
+            self.audio = kwargs['audio']
+        else:
+            self.audio = b''
+
+    def __repr__(self):
+        if isinstance(self.transcription, list):
+            return " ".join(self.transcription)
+        else:
+            return self.transcription
 
 
 class Mic(i18n.GettextMixin):
@@ -83,8 +102,6 @@ class Mic(i18n.GettextMixin):
         """
         # Any empty transcriptions are noise regardless of how they are being
         # collected
-        if isinstance(transcription, list):
-            transcription = " ".join(transcription)
         if transcription == "":
             sample_type = 'noise'
         if (
@@ -266,23 +283,26 @@ class Mic(i18n.GettextMixin):
             self.active_stt_plugin = original_stt_plugin
 
     def check_for_keyword(self, phrase, keywords=None):
+        if isinstance(phrase, list):
+            phrase = " ".join(phrase)
         if not keywords:
             keywords = self.keywords
         # This allows multi-word keywords like 'Hey Naomi' or 'You there'
         wakewords = []
         for word in keywords:
-            for w in phrase:
-                if word.upper() in w.upper():
-                    wakewords.append(word.upper())
+            if word.upper() in phrase.upper():
+                wakewords.append(word.upper())
         return wakewords
 
-    def handleRequest(self, utterance, audio):
+    def handleRequest(self, utterance):
         """
         Respond to an utterance
         """
         handled = False
-        if utterance:
-            intent = self.brain.query(utterance)
+        if utterance.transcription:
+            # brain.query is expecting an array of transcriptions, so
+            # convert here.
+            intent = self.brain.query([utterance.transcription])
             if intent:
                 try:
                     self._logger.info(intent)
@@ -291,7 +311,7 @@ class Mic(i18n.GettextMixin):
                 except Unexpected as e:
                     # The user responded to a prompt within the intent with a new
                     # request.
-                    audio = e.audio
+                    audio = e.utterance.audio
                     # If passive_listen is true, then use the same audio
                     # for the utterance
                     if (self.passive_listen):
@@ -300,11 +320,15 @@ class Mic(i18n.GettextMixin):
                         # certain phrases, go back and run the same audio
                         # through the standard listener
                         with self._write_frames_to_file(audio) as f:
-                            utterance = self.active_stt_plugin.transcribe(f)
+                            transcription = self.active_stt_plugin.transcribe(f)
+                            utterance = Utterance(
+                                transcription=transcription,
+                                audio=audio
+                            )
                     else:
                         # The user responded by saying the assistant's name
-                        utterance, audio = self.active_listen()
-                    return self.handleRequest(utterance, audio)
+                        utterance = self.active_listen()
+                    return self.handleRequest(utterance)
                 except Exception as e:
                     self._logger.error(
                         'Failed to service intent {}: {}'.format(intent, str(e)),
@@ -321,7 +345,7 @@ class Mic(i18n.GettextMixin):
                             "Handling of phrase '{}'",
                             "by plugin '{}' completed"
                         ]).format(
-                            utterance,
+                            utterance.transcription,
                             intent
                         )
                     )
@@ -378,23 +402,32 @@ class Mic(i18n.GettextMixin):
         # Now start listening for a response
         with self.special_mode(name, phrases):
             while True:
-                transcribed, audio = self.active_listen()
-                if (len(' '.join(transcribed))):
-                    # Now that we have a transcription, check if it matches one of the phrases
-                    phrase, score = self.brain._intentparser.match_phrase(transcribed, expected_phrases)
+                utterance = self.active_listen()
+                if len(utterance.transcription):
+                    # Now that we have a transcription, check if it matches
+                    # one of the phrases
+                    phrase, score = self.brain._intentparser.match_phrase(
+                        utterance.transcription,
+                        expected_phrases
+                    )
                     # If it does, then return the phrase
-                    self._logger.info("Expecting: {} Got: {}".format(expected_phrases, transcribed))
+                    self._logger.info(
+                        "Expecting: {} Got: {}".format(
+                            expected_phrases,
+                            utterance.transcription
+                        )
+                    )
                     self._logger.info("Score: {}".format(score))
                     if (score > .1):
                         return phrase
-                    # Otherwise, raise an exception with the active transcription.
+                    # Otherwise, raise an Unexpected exception
                     # This will break us back into the main conversation loop
                     else:
-                        # If the user is not responding to the prompt, then assume that
-                        # they are starting a new command. This should mean that the wake
-                        # word would be included.
-                        if (self.check_for_keyword(transcribed)):
-                            raise Unexpected(transcribed, audio)
+                        # If the user is not responding to the prompt, then
+                        # assume that they are starting a new request. This
+                        # should mean that the wake word would be included.
+                        if (self.check_for_keyword(utterance.transcription)):
+                            raise Unexpected(utterance)
                         else:
                             # The user just said something unexpected. Remind them of their choices
                             if instructions is None:
@@ -455,6 +488,7 @@ class Mic(i18n.GettextMixin):
     def play_file(self, filename):
         with open(filename, 'rb') as f:
             self._output_device.play_fp(f)
+            time.sleep(.5)
 
     def say(self, phrase):
         visualizations.run_visualization("output", ">> {}".format(phrase))
@@ -469,8 +503,8 @@ class Mic(i18n.GettextMixin):
         try:
             while self.Continue:
                 # put the audio in a queue and call the stt engine
-                transcription, audio = self.listen()
-                self.handleRequest(transcription, audio)
+                utterance = self.listen()
+                self.handleRequest(utterance)
         except KeyboardInterrupt:
             self.Continue = False
         visualizations.run_visualization(
