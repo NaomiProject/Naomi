@@ -3,9 +3,7 @@ import abc
 import collections
 import logging
 import mad
-import os
 import re
-import sys
 import tempfile
 import wave
 from . import audioengine
@@ -13,14 +11,9 @@ from . import commandline
 from . import i18n
 from . import paths
 from . import profile
+from . import visualizations
 from . import vocabcompiler
 from jiwer import wer
-
-
-def fake_gettext(string, name, path):
-    logger = logging.getLogger(__name__)
-    logger.warn(f"{name} module has no {path} locale folder, but is trying to use gettext()")
-    return string
 
 
 class GenericPlugin(object):
@@ -30,15 +23,9 @@ class GenericPlugin(object):
             self._logger = logging.getLogger(__name__)
         interface = commandline.commandline()
         interface.get_language(once=True)
-        module = sys.modules[self.__module__]
-        module_name = module.__name__
-        locale_path = os.path.join(os.path.dirname(module.__file__), 'locale')
-        if(os.path.isdir(locale_path)):
-            translations = i18n.parse_translations(locale_path)
-            translator = i18n.GettextMixin(translations)
-            self.gettext = translator.gettext
-        else:
-            self.gettext = lambda string: fake_gettext(string, module_name, locale_path)
+        translations = i18n.parse_translations(paths.data('locale'))
+        translator = i18n.GettextMixin(translations)
+        self.gettext = translator.gettext
         # Skip asking for missing settings if we are using a test profile
         if hasattr(self, 'settings') and not profile._test_profile:
             # set a variable here to tell us if all settings are
@@ -52,7 +39,7 @@ class GenericPlugin(object):
             for setting in settings:
                 if profile.get_arg("repopulate") or not profile.check_profile_var_exists(setting):
                     # Check if this setting has already been addressed
-                    if(setting not in profile._settings):
+                    if (setting not in profile._settings):
                         # Go ahead and pull the setting
                         self._logger.info(
                             "{} setting does not exist".format(setting)
@@ -60,12 +47,11 @@ class GenericPlugin(object):
                         settings_complete = False
                 # Add the setting to the settings_cache
                 profile._settings[setting] = settings[setting]
-            if(not settings_complete):
-                print(interface.status_text(self.gettext(
-                    "Configuring {}"
-                ).format(
-                    self._plugin_info.name
-                )))
+            if not settings_complete:
+                visualizations.run_visualization(
+                    "output",
+                    self.gettext("Configuring {}").format(self._plugin_info.name)
+                )
                 for setting in settings:
                     interface.get_setting(
                         setting, settings[setting]
@@ -194,25 +180,20 @@ class VADPlugin(GenericPlugin):
     def _voice_detected(self, *args, **kwargs):
         pass
 
-    def get_audio(self):
+    def get_audio(self, *args, **kwargs):
         frames = collections.deque([], 30)
         last_voice_frame = 0
         recording = False
         recording_frames = []
         self._logger.info("Waiting for voice data")
-        for frame in self._input_device.record(
-            self._input_device._input_chunksize,
-            self._input_device._input_bits,
-            self._input_device._input_channels,
-            self._input_device._input_rate
-        ):
+        for frame in self._input_device.record(*args, **kwargs):
             frames.append(frame)
-            if(profile.get_arg('resetmic', False)):
+            if profile.get_arg('resetmic', False):
                 return recording_frames
             else:
                 voice_detected = self._voice_detected(frame, recording=recording)
                 if not recording:
-                    if(voice_detected):
+                    if voice_detected:
                         # Voice activity detected, start recording and use
                         # the last 10 frames to start
                         self._logger.debug(
@@ -227,13 +208,13 @@ class VADPlugin(GenericPlugin):
                 else:
                     # We're recording
                     recording_frames.append(frame)
-                    if(voice_detected):
+                    if voice_detected:
                         last_voice_frame = len(recording_frames)
-                    if(last_voice_frame < len(recording_frames) - self._timeout):
+                    if (last_voice_frame < len(recording_frames) - self._timeout):
                         # We have waited past the timeout number of frames
                         # so we believe the speaker has finished speaking.
                         recording = False
-                        if(len(recording_frames) < self._minimum_capture):
+                        if (len(recording_frames) < self._minimum_capture):
                             self._logger.debug(
                                 " ".join([
                                     "Recorded {:d} frames, less than threshold",
@@ -251,6 +232,7 @@ class VADPlugin(GenericPlugin):
                                 )
                             )
                             return recording_frames
+        return None
 
 
 class STTTrainerPlugin(GenericPlugin):
@@ -289,7 +271,7 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def is_keyword(word):
         word = word.strip()
         response = False
-        if("{}{}".format(word[:1], word[-1:]) == "{}"):
+        if ("{}{}".format(word[:1], word[-1:]) == "{}"):
             response = True
         return response
 
@@ -300,7 +282,7 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
         try:
             # print("Searching for: '{}' in '{}'".format(search_for, string))
             # pprint([m.start() for m in re.finditer(search_for, string)])
-            if(self.is_keyword(search_for)):
+            if self.is_keyword(search_for):
                 where = [m.start() for m in re.finditer(r"{}".format(search_for), string)][n - 1]
             else:
                 where = [m.start() for m in re.finditer(r"\b{}\b".format(search_for), string)][n - 1]
@@ -332,6 +314,8 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def cleantext(self, text):
         language = profile.get(["language"], "en-US")[:2]
         if language == "en":
+            if isinstance(text, list):
+                text = " ".join(text)
             words = text.split(" ")
             # Adapted from a list at
             # https://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
@@ -475,7 +459,7 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
     def match_phrase(self, phrase, choices):
         # If phrase is a list, convert to a string
         # (otherwise the "split" below throws an error)
-        if(isinstance(phrase, list)):
+        if isinstance(phrase, list):
             phrase = " ".join(phrase)
         if phrase == "":
             return ("", 0.0)
@@ -488,12 +472,12 @@ class TTIPlugin(GenericPlugin, metaclass=abc.ABCMeta):
             for template in choices:
                 phrase_len = len(phrase.split())
                 template_len = len(template.split())
-                if(phrase_len > template_len):
+                if (phrase_len > template_len):
                     templates[template] = 1 - wer(phrase, template)
                 else:
                     templates[template] = 1 - wer(template, phrase)
             besttemplate = max(templates, key=lambda key: templates[key])
-            return(besttemplate, templates[besttemplate])
+            return (besttemplate, templates[besttemplate])
 
 
 class VisualizationsPlugin(GenericPlugin):

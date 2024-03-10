@@ -54,5 +54,5 @@ class ShutdownPlugin(plugin.SpeechHandlerPlugin):
         message = random.choice(messages)
 
         mic.say(message)
-
+        mic.Continue = False
         quit()

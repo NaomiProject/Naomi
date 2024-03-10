@@ -1,26 +1,26 @@
-# -*- coding: utf-8 -*-
-from datetime import datetime
-from naomi import alteration
-from naomi import paths
-from naomi import profile
-from naomi import visualizations
+import abc
 import audioop
 import contextlib
 import logging
 import os
+import random
 import sqlite3
-import sys
 import tempfile
-import threading
 import time
 import wave
-
-
-# global action queue
-queue = []
+from datetime import datetime
+from naomi import i18n
+from naomi import paths
+from naomi import profile
+from naomi import visualizations
 
 
 class Unexpected(Exception):
+    """
+    The "Unexpected" class is an exception that is fired if the expect method
+    recieves unexpected input. This allows the function to return control to
+    the
+    """
     def __init__(
         self,
         utterance
@@ -28,85 +28,83 @@ class Unexpected(Exception):
         self.utterance = utterance
 
 
-class Mic(object):
-    """
-    The Mic class handles all interactions with the microphone and speaker.
-    """
-    current_thread = None
-
-    def __init__(
-        self,
-        input_device,
-        output_device,
-        active_stt_reply,
-        active_stt_response,
-        passive_stt_engine,
-        active_stt_engine,
-        special_stt_slug,
-        plugins,
-        tts_engine,
-        vad_plugin,
-        keyword=['NAOMI'],
-        print_transcript=False,
-        passive_listen=False,
-        save_audio=False,
-        save_passive_audio=False,
-        save_active_audio=False,
-        save_noise=False
-    ):
-        self._logger = logging.getLogger(__name__)
-        self._keyword = keyword
-        self.tts_engine = tts_engine
-        self.passive_stt_engine = passive_stt_engine
-        self.active_stt_engine = active_stt_engine
-        self.special_stt_slug = special_stt_slug
-        self.plugins = plugins
-        self._input_device = input_device
-        self._output_device = output_device
-        self._vad_plugin = vad_plugin
-        self._active_stt_reply = active_stt_reply
-        self._active_stt_response = active_stt_response
-        self.passive_listen = passive_listen
-        # transcript for monitoring
-        self._print_transcript = print_transcript
-        # audiolog for training
-        if(save_audio):
-            self._save_passive_audio = True
-            self._save_active_audio = True
-            self._save_noise = True
+class Utterance:
+    def __init__(self, **kwargs):
+        if ('transcription' in kwargs):
+            if isinstance(kwargs['transcription'], list):
+                self.transcription = " ".join(kwargs['transcription'])
+            else:
+                self.transcription = kwargs['transcription']
         else:
-            self._save_passive_audio = save_passive_audio
-            self._save_active_audio = save_active_audio
-            self._save_noise = save_noise
-        if(
-            (
-                self._save_active_audio
-            ) or (
-                self._save_passive_audio
-            ) or (
-                self._save_noise
-            )
-        ):
-            self._audiolog = paths.sub("audiolog")
-            self._logger.info(
-                "Checking audio log directory %s" % self._audiolog
-            )
-            if not os.path.exists(self._audiolog):
-                self._logger.info(
-                    "Creating audio log directory %s" % self._audiolog
-                )
-                os.makedirs(self._audiolog)
-            self._audiolog_db = os.path.join(self._audiolog, "audiolog.db")
-            self._conn = sqlite3.connect(self._audiolog_db)
+            self.transcription = ""
+        if ('audio' in kwargs):
+            self.audio = kwargs['audio']
+        else:
+            self.audio = b''
 
-    # Copies a file pointed to by a file pointer to a permanent
-    # file for training purposes
+    def __repr__(self):
+        if isinstance(self.transcription, list):
+            return " ".join(self.transcription)
+        else:
+            return self.transcription
+
+
+class Mic(i18n.GettextMixin):
+    """
+    Calling this class "Mic" seems like a misnomer since it handles both
+    input and output. "MicAndSpeaker" might be a better name, or it might
+    make sense to implement a separate "Speaker" class for things like
+    say.
+    """
+    actions_thread = None
+    Continue = True
+
+    def __init__(self, *args, **kwargs):
+        translations = i18n.parse_translations(paths.data('locale'))
+        i18n.GettextMixin.__init__(self, translations, profile)
+        self.keywords = kwargs['keywords']
+        self._input_device = kwargs['input_device']
+        self._output_device = kwargs['output_device']
+        self.passive_stt_plugin = kwargs['passive_stt_plugin']
+        self.active_stt_plugin = kwargs['active_stt_plugin']
+        self.special_stt_slug = kwargs['special_stt_slug']
+        self.vad_plugin = kwargs['vad_plugin']
+        self.tts_engine = kwargs['tts_engine']
+        self.brain = kwargs['brain']
+        self._logger = logging.getLogger(__name__)
+        self._save_passive_audio = profile.get_arg('save_passive_audio', False)
+        self._save_active_audio = profile.get_arg('save_active_audio', False)
+        self._save_noise = profile.get_arg('save_noise', False)
+        self.passive_listen = profile.get_profile_flag(["passive_listen"], False)
+        self.verify_wakeword = profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)
+        self._active_stt_reply = profile.get_arg("active_stt_reply")
+        self._active_stt_response = profile.get_arg("active_stt_response")
+
+    @abc.abstractmethod
+    def listen(self):
+        """
+        Fetch the next utterance and check for wake word
+        """
+        pass
+
+    @abc.abstractmethod
+    def active_listen(self, play_prompts=True):
+        """
+        Fetch the next utterance without checking for wake word
+        (to be used when Naomi asks a question)
+        """
+        pass
+
     def _log_audio(self, fp, transcription, sample_type="unknown"):
+        """
+        Copies a file pointed to by a file pointer to a permanent
+        file for training purposes
+        """
         # Any empty transcriptions are noise regardless of how they are being
         # collected
-        if(" ".join(transcription) == ""):
+        if transcription == "":
             sample_type = 'noise'
-        if(
+        if (
             (
                 sample_type.lower() == "noise" and self._save_noise
             ) or (
@@ -117,15 +115,15 @@ class Mic(object):
         ):
             fp.seek(0)
             # Get the slug from the engine
-            if(sample_type.lower() == "active"):
-                engine = type(self.active_stt_engine).__name__
-                if(self.active_stt_engine._vocabulary_name != "default"):
+            if sample_type.lower() == "active":
+                engine = type(self.active_stt_plugin).__name__
+                if self.active_stt_plugin._vocabulary_name != "default":
                     # we are in a special mode. We don't want to put words
                     # from this sample into the default standard_phrases
-                    sample_type = self.active_stt_engine._vocabulary_name
+                    sample_type = self.active_stt_plugin._vocabulary_name
             else:
                 # noise (empty transcript) response is only from passive engine
-                engine = type(self.passive_stt_engine).__name__
+                engine = type(self.passive_stt_plugin).__name__
             # Now, it is very possible that the file might already exist
             # since the same file could be used for both passive and active
             # parsing. Should we check to see if the file already exists
@@ -200,61 +198,16 @@ class Mic(object):
                     engine,
                     filename,
                     sample_type,
-                    " ".join(transcription)
+                    transcription
                 )
             )
             self._conn.commit()
 
     @contextlib.contextmanager
-    def special_mode(self, name, phrases):
-        plugin_info = self.plugins.get_plugin(
-            self.special_stt_slug,
-            category='stt'
-        )
-        plugin_config = profile.get_profile()
-
-        original_stt_engine = self.active_stt_engine
-
-        # If the special_mode engine is not specifically set,
-        # copy the settings from the active stt engine.
-        try:
-            mode_stt_engine = plugin_info.plugin_class(
-                name,
-                phrases,
-                plugin_info,
-                plugin_config
-            )
-            if(profile.check_profile_var_exists(['special_stt'])):
-                if(profile.check_profile_var_exists([
-                    'special_stt',
-                    'samplerate'
-                ])):
-                    mode_stt_engine._samplerate = int(
-                        profile.get_profile_var([
-                            'special_stt',
-                            'samplerate'
-                        ])
-                    )
-                if(profile.check_profile_var_exists([
-                    'special_stt',
-                    'volume_normalization'
-                ])):
-                    mode_stt_engine._volume_normalization = float(
-                        profile.get_profile_var([
-                            'special_stt',
-                            'volume_normalization'
-                        ])
-                    )
-            else:
-                mode_stt_engine._samplerate = original_stt_engine._samplerate
-                mode_stt_engine._volume_normalization = original_stt_engine._volume_normalization
-            self.active_stt_engine = mode_stt_engine
-            yield
-        finally:
-            self.active_stt_engine = original_stt_engine
-
-    @contextlib.contextmanager
-    def _write_frames_to_file(self, frames, framerate, volume):
+    def _write_frames_to_file(self, frames, volume=None):
+        """
+        This is used internally to create an audio file
+        """
         with tempfile.NamedTemporaryFile(
             mode='w+b',
             suffix=".wav",
@@ -263,18 +216,8 @@ class Mic(object):
             wav_fp = wave.open(f, 'wb')
             wav_fp.setnchannels(self._input_device._input_channels)
             wav_fp.setsampwidth(int(self._input_device._input_bits / 8))
-            wav_fp.setframerate(framerate)
-            if self._input_device._input_rate == framerate:
-                fragment = b''.join(frames)
-            else:
-                fragment = audioop.ratecv(
-                    ''.join(frames),
-                    int(self._input_device._input_bits / 8),
-                    self._input_device._input_channels,
-                    self._input_device._input_rate,
-                    framerate,
-                    None
-                )[0]
+            wav_fp.setframerate(self._input_device._input_rate)
+            fragment = b''.join(frames)
             if volume is not None:
                 maxvolume = audioop.minmax(
                     fragment,
@@ -291,228 +234,226 @@ class Mic(object):
             f.seek(0)
             yield f
 
-    def check_for_keyword(self, phrase, keyword=None):
-        if not keyword:
-            keyword = self._keyword
+    @contextlib.contextmanager
+    def special_mode(self, name, phrases):
+        plugin_info = profile.get_arg('plugins').get_plugin(
+            self.special_stt_slug,
+            category='stt'
+        )
+        plugin_config = profile.get_profile()
+
+        original_stt_plugin = self.active_stt_plugin
+
+        # If the special_mode engine is not specifically set,
+        # copy the settings from the active stt engine.
+        try:
+            mode_stt_plugin = plugin_info.plugin_class(
+                name,
+                phrases,
+                plugin_info,
+                plugin_config
+            )
+            if (profile.check_profile_var_exists(['special_stt'])):
+                if (profile.check_profile_var_exists([
+                    'special_stt',
+                    'samplerate'
+                ])):
+                    mode_stt_plugin._samplerate = int(
+                        profile.get_profile_var([
+                            'special_stt',
+                            'samplerate'
+                        ])
+                    )
+                if (profile.check_profile_var_exists([
+                    'special_stt',
+                    'volume_normalization'
+                ])):
+                    mode_stt_plugin._volume_normalization = float(
+                        profile.get_profile_var([
+                            'special_stt',
+                            'volume_normalization'
+                        ])
+                    )
+            else:
+                mode_stt_plugin._samplerate = original_stt_plugin._samplerate
+                mode_stt_plugin._volume_normalization = original_stt_plugin._volume_normalization
+            self.active_stt_plugin = mode_stt_plugin
+            yield
+        finally:
+            self.active_stt_plugin = original_stt_plugin
+
+    def check_for_keyword(self, phrase, keywords=None):
+        if isinstance(phrase, list):
+            phrase = " ".join(phrase)
+        if not keywords:
+            keywords = self.keywords
         # This allows multi-word keywords like 'Hey Naomi' or 'You there'
         wakewords = []
-        for word in keyword:
-            for w in phrase:
-                if word.upper() in w.upper():
-                    wakewords.append(word.upper())
-        if any(wakewords):
-            return True
-        return False
+        for word in keywords:
+            if word.upper() in phrase.upper():
+                wakewords.append(word.upper())
+        return wakewords
 
-    def wait_for_keyword(self, keyword=None):
-        if not keyword:
-            keyword = self._keyword
-        while not profile.get_arg("resetmic"):
-            transcribed = []
-            with self._write_frames_to_file(
-                self._vad_plugin.get_audio(),
-                self.passive_stt_engine._samplerate,
-                self.passive_stt_engine._volume_normalization
-            ) as f:
+    def handleRequest(self, utterance):
+        """
+        Respond to an utterance
+        """
+        handled = False
+        if utterance.transcription:
+            # brain.query is expecting an array of transcriptions, so
+            # convert here.
+            intent = self.brain.query([utterance.transcription])
+            if intent:
                 try:
-                    transcribed = [word.upper() for word in self.passive_stt_engine.transcribe(f)]
-                except Exception:
-                    transcribed = []
-                    dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
-                    self._logger.error(
-                        "Passive transcription failed!",
-                        exc_info=dbg
-                    )
-                else:
-                    if(len(transcribed)):
-                        if(self._print_transcript):
-                            visualizations.run_visualization(
-                                "output",
-                                f"<  {transcribed}"
+                    self._logger.info(intent)
+                    intent['action'](intent, self)
+                    handled = True
+                except Unexpected as e:
+                    # The user responded to a prompt within the intent with a new
+                    # request.
+                    audio = e.utterance.audio
+                    # If passive_listen is true, then use the same audio
+                    # for the utterance
+                    if (self.passive_listen):
+                        # Because the user would have been using a special
+                        # listener which may have only been trained to hear
+                        # certain phrases, go back and run the same audio
+                        # through the standard listener
+                        with self._write_frames_to_file(audio) as f:
+                            transcription = self.active_stt_plugin.transcribe(f)
+                            utterance = Utterance(
+                                transcription=transcription,
+                                audio=audio
                             )
-                        if self.check_for_keyword(transcribed, keyword):
-                            self._log_audio(f, transcribed, "passive")
-                            if(self.passive_listen):
-                                # Take the same block of audio and put it
-                                # through the active listener
-                                f.seek(0)
-                                try:
-                                    transcribed = [word.upper() for word in self.active_stt_engine.transcribe(f)]
-                                except Exception:
-                                    transcribed = []
-                                    dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
-                                    self._logger.error("Active transcription failed!", exc_info=dbg)
-                                else:
-                                    if(" ".join(transcribed).strip() == ""):
-                                        if(self._print_transcript):
-                                            visualizations.run_visualization("output", "<< <noise>")
-                                        self._log_audio(f, transcribed, "noise")
-                                    else:
-                                        if(self._print_transcript):
-                                            visualizations.run_visualization("output", "<< {}".format(transcribed))
-                                        self._log_audio(f, transcribed, "active")
-                                if(profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)):
-                                    # Check if any of the wakewords identified by
-                                    # the passive stt engine appear in the active
-                                    # transcript
-                                    if self.check_for_keyword(transcribed, keyword):
-                                        return transcribed
-                                    else:
-                                        self._logger.info('Wakeword not matched in active transcription')
-                                else:
-                                    return transcribed
-                            else:
-                                if(profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)):
-                                    transcribed = [word.upper() for word in self.active_stt_engine.transcribe(f)]
-                                    if self.check_for_keyword(transcribed, keyword):
-                                        return transcribed
-                                    else:
-                                        self._logger.info('Wakeword not matched in active transcription')
-                                else:
-                                    return transcribed
-                        else:
-                            self._log_audio(f, transcribed, "noise")
                     else:
-                        if(self._print_transcript):
-                            visualizations.run_visualization("output", "<  <noise>")
-                            self._log_audio(f, "", "noise")
-        return False
-
-    def active_listen(self, play_prompts=True):
-        transcribed = []
-        if(play_prompts):
-            # let the user know we are listening
-            if self._active_stt_reply:
-                self.say(self._active_stt_reply)
-            else:
-                self._logger.debug("No text to respond with using beep")
-                if(self._print_transcript):
-                    visualizations.run_visualization("output", ">> <beep>")
-                self.play_file(paths.data('audio', 'beep_hi.wav'))
-        with self._write_frames_to_file(
-            self._vad_plugin.get_audio(),
-            self.active_stt_engine._samplerate,
-            self.active_stt_engine._volume_normalization
-        ) as f:
-            if(play_prompts):
-                if self._active_stt_response:
-                    self.say(self._active_stt_response)
+                        # The user responded by saying the assistant's name
+                        utterance = self.active_listen()
+                    return self.handleRequest(utterance)
+                except Exception as e:
+                    self._logger.error(
+                        'Failed to service intent {}: {}'.format(intent, str(e)),
+                        exc_info=True
+                    )
+                    self.say(self.gettext("I'm sorry."))
+                    self.say(self.gettext("I had some trouble with that operation."))
+                    self.say(str(e))
+                    self.say(self.gettext("Please try again later."))
+                    handled = True
                 else:
-                    self._logger.debug("No text to respond with using beep")
-                    if(self._print_transcript):
-                        visualizations.run_visualization("output", ">> <boop>")
-                    self.play_file(paths.data('audio', 'beep_lo.wav'))
-            try:
-                transcribed = [word.upper() for word in self.active_stt_engine.transcribe(f)]
-            except Exception:
-                transcribed = []
-                dbg = (self._logger.getEffectiveLevel() == logging.DEBUG)
-                self._logger.error("Active transcription failed!", exc_info=dbg)
+                    self._logger.debug(
+                        " ".join([
+                            "Handling of phrase '{}'",
+                            "by plugin '{}' completed"
+                        ]).format(
+                            utterance.transcription,
+                            intent
+                        )
+                    )
             else:
-                if(" ".join(transcribed).strip() == ""):
-                    if(self._print_transcript):
-                        visualizations.run_visualization("output", "<< <noise>")
-                    self._log_audio(f, transcribed, "noise")
-                else:
-                    if(self._print_transcript):
-                        visualizations.run_visualization("output", "<< {}".format(transcribed))
-                    self._log_audio(f, transcribed, "active")
-        return transcribed
+                self.say_i_do_not_understand()
+                handled = True
+        return utterance, handled
 
-    def listen(self):
-        if(self.passive_listen):
-            return self.wait_for_keyword(self._keyword)
+    def say_i_do_not_understand(self):
+        """
+        Handles a response where Naomi does not understand the intention
+        """
+        self.say(
+            random.choice(
+                [  # nosec
+                    self.gettext("I'm sorry, could you repeat that?"),
+                    self.gettext("My apologies, could you try saying that again?"),
+                    self.gettext("Say that again?"),
+                    self.gettext("I beg your pardon?"),
+                    self.gettext("Pardon?")
+                ]
+            )
+        )
+
+    def list_choices(self, choices):
+        """
+        This method is used with the expect method and reminds the user of
+        the available choices if the user said something unexpected.
+        """
+        if len(choices) == 1:
+            self.say(self.gettext("Please say {}").format(choices[0]))
+        elif len(choices) == 2:
+            self.say(self.gettext("Please respond with {} or {}").format(choices[0], choices[1]))
         else:
-            kw = self.wait_for_keyword(self._keyword)
-            # wait_for_keyword normally returns either a list of key
-            if isinstance(kw, bool):
-                if(not kw):
-                    return []
-            # if not in passive_listen mode, then the user has tried to
-            # interrupt, go ahead and stop talking
-            self.stop(wait=True)
-            return self.active_listen()
+            self.say(
+                self.gettext("Please respond with one of the following: {}").format(choices)
+            )
 
-    # If we are using the asynchronous say, so we can hear the "stop"
-    # command, what we want to do is put the prompt on the queue, then
-    # yield control back to the main conversation loop. When the prompt
-    # is spoken in the thread, then we want to return to this point in
-    # the main thread and use the blocking listen to listen until we get
-    # an actual transcription. That should then be used to determine
-    # whether the user responded with one of the expected phrases or not.
     def expect(self, prompt, phrases, name='expect', instructions=None):
+        """
+        The expect method has different implementations depending on whether
+        it is synchronous or asynchronous. Most mics are synchronous, so I will
+        implement it that way here and override this method in the
+        MicAsynchronous class.
+        """
         expected_phrases = phrases.copy()
         phrases.extend(
-            profile.get_arg("application").brain.get_plugin_phrases(True)
+            self.brain.get_plugin_phrases(True)
         )
         # set up the special mode so it is pre-generated later
         with self.special_mode(name, phrases):
             pass
-        # If "listen_while_talking" is set to true, then we want to create the
-        # special mode after saying the prompt. If not, then we want to create
-        # the special mode first, so we are ready to listen. Also, there is no
-        # need to add anything to the queue if we are not listening while
-        # talking.
-        if(profile.get_arg('listen_while_talking', False)):
-            self.say(prompt)
-            self.add_queue(lambda: profile.set_arg('resetmic', True))
-            # Now wait for any sounds in the queue to be processed
-            while not profile.get_arg('resetmic'):
-                transcribed = self.listen()
-                handled = False
-                if isinstance(transcribed, bool):
-                    handled = True
-                else:
-                    while(" ".join(transcribed) != "" and not handled):
-                        transcribed, handled = profile.get_arg('application').conversation.handleRequest(transcribed)
-            # Now that we are past the mic reset
-            profile.set_arg('resetmic', False)
-        else:
-            self.say(prompt)
+        self.say(prompt)
         # Now start listening for a response
         with self.special_mode(name, phrases):
             while True:
-                transcribed = self.active_listen()
-                if(len(' '.join(transcribed))):
-                    # Now that we have a transcription, check if it matches one of the phrases
-                    phrase, score = profile.get_arg("application").brain._intentparser.match_phrase(transcribed, expected_phrases)
+                utterance = self.active_listen()
+                if len(utterance.transcription):
+                    # Now that we have a transcription, check if it matches
+                    # one of the phrases
+                    phrase, score = self.brain._intentparser.match_phrase(
+                        utterance.transcription,
+                        expected_phrases
+                    )
                     # If it does, then return the phrase
-                    self._logger.info("Expecting: {} Got: {}".format(expected_phrases, transcribed))
+                    self._logger.info(
+                        "Expecting: {} Got: {}".format(
+                            expected_phrases,
+                            utterance.transcription
+                        )
+                    )
                     self._logger.info("Score: {}".format(score))
-                    if(score > .1):
+                    if (score > .1):
                         return phrase
-                    # Otherwise, raise an exception with the active transcription.
+                    # Otherwise, raise an Unexpected exception
                     # This will break us back into the main conversation loop
                     else:
-                        # If the user is not responding to the prompt, then assume that
-                        # they are starting a new command. This should mean that the wake
-                        # word would be included.
-                        if(self.check_for_keyword(transcribed)):
-                            raise Unexpected(transcribed)
+                        # If the user is not responding to the prompt, then
+                        # assume that they are starting a new request. This
+                        # should mean that the wake word would be included.
+                        if (self.check_for_keyword(utterance.transcription)):
+                            raise Unexpected(utterance)
                         else:
                             # The user just said something unexpected. Remind them of their choices
                             if instructions is None:
-                                profile.get_arg("application").conversation.list_choices(expected_phrases)
+                                self.list_choices(expected_phrases)
                             else:
                                 self.say(instructions)
 
-    # confirm is a special case of expect which expects "yes" or "no"
     def confirm(self, prompt):
+        """
+        confirm is a special case of expect which expects "yes" or "no"
+        """
         # default to english
         language = profile.get(['language'], 'en-US')[:2]
         POSITIVE = ['YES', 'SURE', 'YES PLEASE']
         NEGATIVE = ['NO', 'NOPE', 'NO THANK YOU']
-        if(language == "fr"):
+        if (language == "fr"):
             POSITIVE = ['OUI']
             NEGATIVE = ['NON']
-        elif(language == "de"):
+        elif (language == "de"):
             POSITIVE = ['JA']
             NEGATIVE = ['NEIN']
         phrase = self.expect(
             prompt,
             POSITIVE + NEGATIVE,
             name='confirm',
-            instructions=profile.get_arg("application").conversation.gettext(
+            instructions=self.gettext(
                 "Please respond with Yes or No"
             )
         )
@@ -521,42 +462,21 @@ class Mic(object):
         else:
             return False
 
-    # Output methods
-    def play_file(self, filename):
-        if(profile.get_arg('listen_while_talking', False)):
-            self.play_file_async(filename)
-        else:
-            self.play_file_sync(filename)
-
-    def play_file_async(self, filename):
-        global queue
-        queue.append(lambda: self.play_file_sync(filename))
-        if(hasattr(self.current_thread, "is_alive")):
-            if self.current_thread.is_alive():
-                # if Naomi is currently talking, then we are done
-                return
-        # otherwise, start talking
-        self.current_thread = threading.Thread(
-            target=self.process_queue
-        )
-        self.current_thread.start()
-
-    def play_file_sync(self, filename):
-        with open(filename, 'rb') as f:
-            self._output_device.play_fp(f)
-
-    # Stop talking and delete the queue
     def stop(self, wait=False):
+        """
+        Stop talking, delete the queue, run "stop" on any plugins that have
+        a "stop" method
+        """
         global queue
         visualizations.run_visualization("output", "Stopping...")
-        if(hasattr(self, "current_thread")):
+        if (hasattr(self, "current_thread")):
             try:
                 queue = []
-                if(hasattr(self.current_thread, "is_alive")):
+                if (hasattr(self.current_thread, "is_alive")):
                     # Threads can't be terminated
                     # but we can set a "stop" attribute on self._output_device
                     self._output_device._stop = True
-                    if(wait):
+                    if (wait):
                         while not self._output_device._stop:
                             time.sleep(.1)
             except AttributeError:
@@ -564,61 +484,37 @@ class Mic(object):
                 self._logger.info("Can't terminate thread")
         self._logger.info("Stopped")
 
-    def process_queue(self, *args, **kwargs):
-        while(True):
-            try:
-                queue.pop(0)()
-            except IndexError:
-                sys.exit()
-
-    def add_queue(self, action):
-        global queue
-        queue.append(action)
-        if(hasattr(self.current_thread, "is_alive")):
-            if self.current_thread.is_alive():
-                # if Naomi is currently talking, then we are done
-                return
-        # otherwise, start talking
-        self.current_thread = threading.Thread(
-            target=self.process_queue
-        )
-        self.current_thread.start()
+    # Output methods
+    def play_file(self, filename):
+        with open(filename, 'rb') as f:
+            self._output_device.play_fp(f)
+            time.sleep(.5)
 
     def say(self, phrase):
-        altered_phrase = alteration.clean(phrase)
-        if(profile.get_arg('listen_while_talking', False)):
-            self.say_async(altered_phrase)
-        else:
-            self.say_sync(altered_phrase)
-
-    def say_async(self, phrase):
-        self.add_queue(lambda: self.say_sync(phrase))
-        if(hasattr(self.current_thread, "is_alive")):
-            if self.current_thread.is_alive():
-                # if Naomi is currently talking, then we are done
-                return
-        # otherwise, start talking
-        self.current_thread = threading.Thread(
-            target=self.process_queue
-        )
-        self.current_thread.daemon = True
-        self.current_thread.start()
-
-    def say_sync(self, phrase):
-        if(profile.get_arg('print_transcript')):
-            visualizations.run_visualization("output", ">> {}\n".format(phrase))
+        visualizations.run_visualization("output", ">> {}".format(phrase))
         with tempfile.SpooledTemporaryFile() as f:
             f.write(self.tts_engine.say(phrase))
             f.seek(0)
             self._output_device.play_fp(f)
-            time.sleep(.2)
+            time.sleep(.5)
 
+    def main_loop(self):
+        """This is a synchronous main loop"""
+        try:
+            while self.Continue:
+                # put the audio in a queue and call the stt engine
+                utterance = self.listen()
+                self.handleRequest(utterance)
+        except KeyboardInterrupt:
+            self.Continue = False
+        visualizations.run_visualization(
+            "output",
+            "Exiting..."
+        )
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger("stt").setLevel(logging.WARNING)
-    audio = Mic.get_instance()
-    while True:
-        text = audio.listen()[0]
-        if text:
-            audio.say(text)
+    # The following are no longer necessary and are just wrappers now.
+    def say_sync(self, phrase):
+        self.say(phrase)
+
+    def say_async(self, phrase):
+        self.say(phrase)
