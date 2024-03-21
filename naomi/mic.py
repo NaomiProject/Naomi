@@ -76,7 +76,7 @@ class Mic(i18n.GettextMixin):
         self._save_active_audio = profile.get_arg('save_active_audio', False)
         self._save_noise = profile.get_arg('save_noise', False)
         self.passive_listen = profile.get_profile_flag(["passive_listen"], False)
-        self.verify_wakeword = profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)
+        self.verify_keyword = profile.get_arg('verify_keyword', False)
         self._active_stt_reply = profile.get_arg("active_stt_reply")
         self._active_stt_response = profile.get_arg("active_stt_response")
 
