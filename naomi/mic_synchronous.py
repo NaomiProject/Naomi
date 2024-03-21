@@ -76,7 +76,7 @@ class MicSynchronous(mic.Mic):
                     if self.passive_listen:
                         # If passive listen, then just use the same audio with the active stt engine
                         active_transcription = self.active_stt_plugin.transcribe(f)
-                        if self.verify_wakeword:
+                        if self.verify_keyword:
                             # Check if any of the same wakewords are heard by the active stt engine
                             if self.check_for_keyword(active_transcription, keywords_detected):
                                 transcription = active_transcription

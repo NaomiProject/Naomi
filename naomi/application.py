@@ -82,9 +82,14 @@ class Naomi(object):
                     settings_complete = False
         if (profile.get_arg("repopulate") or profile.get_arg("profile_missing") or not settings_complete):
             populate.run()
-            keyword = profile.get_profile_var(['keyword'], ['Naomi'])
-            if (isinstance(keyword, list)):
-                keyword = keyword[0]
+            # keywords will always be a list
+            # keyword is the first item from the keywords list
+            keywords = profile.get_profile_var(['keyword'], ['Naomi'])
+            keyword = keywords
+            if (isinstance(keywords, list)):
+                keyword = keywords[0]
+            else:
+                keywords = [keyword]
             visualizations.run_visualization(
                 "output",
                 self._interface.status_text(_(
@@ -191,12 +196,16 @@ class Naomi(object):
             )
         self._logger.info("Using TTS engine '{}'".format(tts_slug))
 
-        keyword = profile.get_profile_var(['keyword'], ['NAOMI'])
-        if isinstance(keyword, str):
-            keyword = [keyword]
-            profile.set_profile_var(['keyword'], keyword)
+        keywords = profile.get_profile_var(['keyword'], ['NAOMI'])
+        keyword = keywords
+        if isinstance(keywords, list):
+            keyword = keywords[0]
+        else:
+            keywords = [keyword]
+            profile.set_profile_var(['keyword'], keywords)
             profile.save_profile()
-        self._logger.info("Using keywords '{}'".format(', '.join(keyword)))
+        self._logger.info("Using keywords '{}'".format(', '.join(keywords)))
+        profile.set_arg('keywords', keywords)
 
         if (not print_transcript):
             print_transcript = profile.get_profile_flag(
@@ -210,7 +219,8 @@ class Naomi(object):
             passive_listen = profile.get_profile_flag(["passive_listen"])
 
         # Verify wakeword
-        verify_wakeword = profile.get_profile_flag(['passive_stt', 'verify_wakeword'], False)
+        verify_keyword = profile.get_profile_flag(['passive_stt', 'verify_keyword'], False)
+        profile.set_arg('verify_keyword', verify_keyword)
 
         # Audiolog settings
         if (use_mic == USE_STANDARD_MIC):
@@ -418,7 +428,7 @@ class Naomi(object):
             active_stt_slug,
             category='stt'
         )
-        active_phrases = self.brain.get_plugin_phrases(passive_listen or verify_wakeword)
+        active_phrases = self.brain.get_plugin_phrases(passive_listen or verify_keyword)
         active_stt_plugin = active_stt_plugin_info.plugin_class(
             'default',
             active_phrases,
@@ -528,7 +538,7 @@ class Naomi(object):
         else:
             if profile.get_arg('listen_while_talking', False):
                 self.mic = mic_asynchronous.MicAsynchronous(
-                    keywords=keyword,
+                    keywords=keywords,
                     input_device=input_device,
                     output_device=output_device,
                     passive_stt_plugin=passive_stt_plugin,
@@ -540,7 +550,7 @@ class Naomi(object):
                 )
             else:
                 self.mic = mic_synchronous.MicSynchronous(
-                    keywords=keyword,
+                    keywords=keywords,
                     input_device=input_device,
                     output_device=output_device,
                     passive_stt_plugin=passive_stt_plugin,
@@ -671,10 +681,10 @@ class Naomi(object):
                     }
                 ),
                 (
-                    ("passive_stt", "verify_wakeword"), {
+                    ("passive_stt", "verify_keyword"), {
                         "type": "boolean",
-                        "title": _("Should I use the active stt engine to verify when I think I hear my wakeword?"),
-                        "description": _("Using two different stt engines to verify when I hear my wake word will greatly reduce the number of false positives I react to. However, it will also sometimes cause me to miss my wake word and will slow down my response time if you are not using passive listening mode. This setting should be turned on in noisy environments."),
+                        "title": _("Should I use the active stt engine to verify when I think I hear my keyword?"),
+                        "description": _("Using two different stt engines to verify when I hear my keyword will greatly reduce the number of false positives I react to. However, it will also sometimes cause me to miss my keyword and will slow down my response time if you are not using passive listening mode. This setting should be turned on in noisy environments."),
                         "default": False
                     }
                 ),

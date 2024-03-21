@@ -49,12 +49,36 @@ class MicAsynchronous(mic.Mic):
                             if self.check_for_keyword(passive_transcription):
                                 active_transcription = [" ".join(self.active_stt_plugin.transcribe(f))]
                                 if len(active_transcription) > 0:
-                                    if self.check_for_keyword(active_transcription):
+                                    if self.verify_keyword:
+                                        if self.check_for_keyword(active_transcription):
+                                            transcription = active_transcription
+                                            if len(transcription) > 0:
+                                                visualizations.run_visualization(
+                                                    "output",
+                                                    f"<< {transcription}"
+                                                )
+                                            else:
+                                                visualizations.run_visualization(
+                                                    "output",
+                                                    "<< <noise>"
+                                                )
+                                        else:
+                                            visualizations.run_visualization(
+                                                "output",
+                                                "<< <noise>"
+                                            )
+                                    else:
+                                        # Don't verify keyword
                                         transcription = active_transcription
                                         if len(transcription) > 0:
                                             visualizations.run_visualization(
                                                 "output",
                                                 f"<< {transcription}"
+                                            )
+                                        else:
+                                            visualizations.run_visualization(
+                                                "output",
+                                                "<< <noise>"
                                             )
                                 else:
                                     visualizations.run_visualization(

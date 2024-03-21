@@ -147,22 +147,22 @@ class VocabularyCompiler(object):
             self._logger.info('Starting compilation...')
             try:
                 compilation_func(self.path, phrases)
-            except Exception as e:
+            except Exception as e1:
                 msg = "Fatal compilation error occured"
-                if hasattr(e, 'message') and len(e.message) > 0:
-                    msg += ": %s" % e.message
+                if hasattr(e1, 'message') and len(e1.message) > 0:
+                    msg += ": %s" % e1.message
                 self._logger.error(msg, exc_info=debug)
                 try:
                     os.remove(self.revision_file)
                     shutil.rmtree(self.path)
-                except EnvironmentError as e:
+                except EnvironmentError as e2:
                     msg = 'Another error occured while cleaning up'
-                    if e.strerror and e.errno:
-                        msg = '%s: %s (Errno: %d)' % (msg, e.strerror, e.errno)
+                    if e2.strerror and e2.errno:
+                        msg = '%s: %s (Errno: %d)' % (msg, e2.strerror, e2.errno)
                     else:
-                        msg = '%s: %r' % (msg, e.args)
+                        msg = '%s: %r' % (msg, e2.args)
                     self._logger.error(msg, exc_info=debug)
-                raise e
+                raise e1
             else:
                 self._logger.info('Compilation done.')
         return revision
