@@ -20,6 +20,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from naomi.run_command import run_command
 from naomi import paths
 
+
 _profile = {}
 _settings = {}
 _profile_read = False
@@ -152,13 +153,13 @@ def get_profile(command=""):
         # Read config
         # set a loop so we can keep looping back until the config file exists
         config_read = False
-        while(not config_read):
+        while not config_read:
             try:
                 with open(new_configfile, "r") as f:
                     _profile = yaml.safe_load(f)
                     _profile_read = True
                     config_read = True
-            except(IOError, FileNotFoundError):
+            except (IOError, FileNotFoundError):
                 _logger.info(
                     "{} is missing".format(new_configfile)
                 )
@@ -168,7 +169,7 @@ def get_profile(command=""):
                 _profile = {'language': 'en-US'}
                 _profile_read = True
                 config_read = True  # Break the loop
-            except(yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
+            except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
                 _logger.error(
                     "Unable to parse config file: {} {}".format(
                         e.problem.strip(),
@@ -225,8 +226,8 @@ def get_profile_password(path, default=None):
     allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'commandline.py'))
     allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'application.py'))
     filename = inspect.getframeinfo(sys._getframe(1))[0]
-    if(filename in allowed):
-        if (isinstance(path, str)):
+    if filename in allowed:
+        if isinstance(path, str):
             path = [path]
         first_id = hashlib.sha256(
             run_command(
@@ -290,10 +291,10 @@ def get_profile_flag(path, default=None):
         path = [path]
     # Get the variable value
     temp = _walk_profile(path, True)
-    if(temp is None):
+    if temp is None:
         # the variable is not defined
         temp = default
-    if(temp is None):
+    if temp is None:
         response = None
     else:
         response = False
@@ -431,7 +432,7 @@ def set_profile_password(path, value):
 # any value chosen has to be a member of the options.key() list.
 def validate(definition, response):
     valid = False
-    if(isinstance(response, str) and len(response.strip()) == 0):
+    if isinstance(response, str) and len(response.strip()) == 0:
         # Always accept an empty response as valid
         valid = True
     else:
@@ -440,7 +441,7 @@ def validate(definition, response):
             valid = validfunction(response)
         except KeyError:
             try:
-                if(definition["type"] in ["listbox"]):
+                if definition["type"] in ["listbox"]:
                     # Use the default validation, which is to make sure whatever
                     # is selected is a member of options
                     try:

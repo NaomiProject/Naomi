@@ -46,12 +46,13 @@ class MicSynchronous(mic.Mic):
                 self._logger.error("Active transcription failed!", exc_info=dbg)
             else:
                 if transcription:
+                    self._log_audio(f, transcription, "active")
                     visualizations.run_visualization(
                         "output",
                         "<< {}".format(transcription)
                     )
-                    self._log_audio(f, transcription, "active")
                 else:
+                    self._log_audio(f, transcription, "noise")
                     visualizations.run_visualization("output", "<< <noise>")
                     self._log_audio(f, transcription, "noise")
         return mic.Utterance(transcription=transcription, audio=audio)
@@ -67,6 +68,7 @@ class MicSynchronous(mic.Mic):
         ) as f:
             passive_transcription = [word.upper() for word in self.passive_stt_plugin.transcribe(f)]
             if len(passive_transcription):
+                self._log_audio(f, passive_transcription, "passive")
                 visualizations.run_visualization(
                     "output",
                     f"<  {passive_transcription}"
@@ -83,28 +85,29 @@ class MicSynchronous(mic.Mic):
                         else:
                             transcription = active_transcription
                         if transcription:
+                            self._log_audio(f, transcription, "active")
                             visualizations.run_visualization(
                                 "output",
                                 f"<< {transcription}"
                             )
-                            self._log_audio(f, transcription, "active")
                         else:
+                            self._log_audio(f, transcription, "noise")
                             visualizations.run_visualization(
                                 "output",
                                 "<< <noise>"
                             )
-                            self._log_audio(f, transcription, "noise")
                     else:
                         utterance = self.active_listen()
                         transcription = utterance.transcription
                         audio = utterance.audio
                 else:
+                    self._log_audio(f, transcription, "noise")
                     visualizations.run_visualization(
                         "output",
                         "<< <noise>"
                     )
-                    self._log_audio(f, transcription, "noise")
             else:
+                self._log_audio(f, transcription, "noise")
                 visualizations.run_visualization(
                     "output",
                     "<  <noise>"

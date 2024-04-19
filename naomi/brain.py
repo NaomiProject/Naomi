@@ -21,7 +21,7 @@ class Brain(object):
     def add_plugin(self, plugin):
         self._plugins.append(plugin)
         # print("Checking {} for intents".format(plugin._plugin_info.name))
-        if(hasattr(plugin, "intents")):
+        if hasattr(plugin, "intents"):
             self._intentparser.add_intents(plugin.intents())
 
     def train(self):
@@ -61,13 +61,13 @@ class Brain(object):
             "standard_phrases",
             "{}.txt".format(language)
         ))
-        if(os.path.isfile(custom_standard_phrases_file)):
+        if os.path.isfile(custom_standard_phrases_file):
             with open(custom_standard_phrases_file, mode='r') as f:
                 for line in f:
                     phrase = line.strip()
                     if phrase:
                         phrases.append(phrase)
-        if(len(phrases) < 10):
+        if len(phrases) < 10:
             # Get the contents of the naomi/data/standard_phrases/{language}.txt
             # file. This file is built from words you actually say to Naomi
             # that are not the wakeword or in the plugin phrases.
@@ -127,41 +127,44 @@ class Brain(object):
                 # Add the intent to the response so the handler method
                 # can find out which intent activated it
                 intents[intent]['intent'] = intent
-                if(profile.get_arg("print_transcript")):
+                if profile.get_arg("print_transcript"):
                     print("{} {}".format(intent, intents[intent]['score']))
-                if(profile.get_arg('save_active_audio')):
+                if profile.get_arg('save_active_audio'):
                     # Write the intent information to audiolog
                     # We don't actually know what record we are on, so
                     # just add the information to the most recent active
                     # record.
                     audiolog = paths.sub("audiolog")
                     audiolog_db = os.path.join(audiolog, "audiolog.db")
-                    conn = sqlite3.connect(audiolog_db)
-                    c = conn.cursor()
-                    c.execute(
-                        " ".join([
-                            "update audiolog set",
-                            "   intent = ?,",
-                            "   score = ?,",
-                            "   tti_engine = ?",
-                            "where filename =(",
-                            "   select filename",
-                            "   from audiolog",
-                            "   where datetime=(",
-                            "       select max(datetime) from audiolog",
-                            "   )",
-                            ")"
-                        ]),
-                        (
-                            intent,
-                            intents[intent]['score'],
-                            str(self._intentparser.__class__)
+                    if os.path.isfile(audiolog_db):
+                        conn = sqlite3.connect(audiolog_db)
+                        c = conn.cursor()
+                        c.execute(
+                            " ".join([
+                                "update audiolog set",
+                                "   intent = ?,",
+                                "   score = ?,",
+                                "   tti_engine = ?",
+                                "where filename =(",
+                                "   select filename",
+                                "   from audiolog",
+                                "   where datetime=(",
+                                "       select max(datetime) from audiolog",
+                                "   )",
+                                ")"
+                            ]),
+                            (
+                                intent,
+                                intents[intent]['score'],
+                                str(self._intentparser.__class__)
+                            )
                         )
-                    )
-                    conn.commit()
+                        conn.commit()
+                    else:
+                        self._logger.warning(f"Audiolog file {audiolog_db} not found")
 
                 if intents[intent]['score'] > 0.05:
-                    return(intents[intent])
+                    return intents[intent]
             self._logger.debug(
                 "No module was able to handle any of these phrases: {}".format(
                     str(texts)
