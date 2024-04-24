@@ -79,6 +79,25 @@ class Mic(i18n.GettextMixin):
         self.verify_keyword = profile.get_arg('verify_keyword', False)
         self._active_stt_reply = profile.get_arg("active_stt_reply")
         self._active_stt_response = profile.get_arg("active_stt_response")
+        if (
+            (
+                self._save_active_audio
+            ) or (
+                self._save_passive_audio
+            ) or (
+                self._save_noise
+            )
+        ):
+            self._audiolog = paths.sub("audiolog")
+            self._logger.info(
+                "Checking audio log directory %s" % self._audiolog
+            )
+            if not os.path.exists(self._audiolog):
+                self._logger.info(
+                    "Creating audio log directory %s" % self._audiolog
+                )
+                os.makedirs(self._audiolog)
+            self._audiolog_db = os.path.join(self._audiolog, "audiolog.db")
 
     @abc.abstractmethod
     def listen(self):
@@ -102,6 +121,8 @@ class Mic(i18n.GettextMixin):
         """
         # Any empty transcriptions are noise regardless of how they are being
         # collected
+        if isinstance(transcription, list):
+            transcription = " ".join(transcription)
         if transcription == "":
             sample_type = 'noise'
         if (
@@ -135,40 +156,45 @@ class Mic(i18n.GettextMixin):
             with open(os.path.join(self._audiolog, filename), "wb") as f:
                 f.write(fp.read())
             # Also add a line to the sqlite database
-            c = self._conn.cursor()
+            conn = sqlite3.connect(self._audiolog_db)
+            c = conn.cursor()
             c.execute(" ".join([
                 "create table if not exists audiolog(",
                 "   datetime,",
                 "   engine,",
                 "   filename,",
                 "   type,",
+                "   tti_engine,",
                 "   transcription,",
                 "   verified_transcription,",
                 "   speaker,",
                 "   reviewed,",
+                "   intent,",
+                "   verified_intent,",
+                "   score,",
                 "   wer",
                 ")"
             ]))
-            self._conn.commit()
+            conn.commit()
             # Additional columns added
             try:
                 c.execute("alter table audiolog add column intent")
-                self._conn.commit()
+                conn.commit()
             except sqlite3.OperationalError:
                 self._logger.info("intent column exists")
             try:
                 c.execute("alter table audiolog add column score")
-                self._conn.commit()
+                conn.commit()
             except sqlite3.OperationalError:
                 self._logger.info("score column exists")
             try:
                 c.execute("alter table audiolog add column verified_intent")
-                self._conn.commit()
+                conn.commit()
             except sqlite3.OperationalError:
                 self._logger.info("verified_intent column exists")
             try:
                 c.execute("alter table audiolog add column tti_engine")
-                self._conn.commit()
+                conn.commit()
             except sqlite3.OperationalError:
                 self._logger.info("tti_engine column exists")
             c.execute(" ".join([
@@ -178,7 +204,7 @@ class Mic(i18n.GettextMixin):
                 "   description",
                 ")"
             ]))
-            self._conn.commit()
+            conn.commit()
             c.execute(
                 " ".join([
                     "insert into audiolog(",
@@ -201,7 +227,7 @@ class Mic(i18n.GettextMixin):
                     transcription
                 )
             )
-            self._conn.commit()
+            conn.commit()
 
     @contextlib.contextmanager
     def _write_frames_to_file(self, frames, volume=None):

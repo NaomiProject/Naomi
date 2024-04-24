@@ -345,14 +345,15 @@ def application(environ, start_response):
         # Handle the request
         # serve a .wav file
         ErrorMessage = None
-        if wavfile.startswith(audiolog_dir):
-            if (len(wavfile) and os.path.isfile(wavfile)):
-                start_response('200 OK', [('content-type', 'audio/wav')])
-                with open(wavfile, "rb") as w:
-                    ret = [w.read()]
-                return ret
-        else:
-            raise Exception("Bad filepath")
+        if wavfile:
+            if wavfile.startswith(audiolog_dir):
+                if (len(wavfile) and os.path.isfile(wavfile)):
+                    start_response('200 OK', [('content-type', 'audio/wav')])
+                    with open(wavfile, "rb") as w:
+                        ret = [w.read()]
+                    return ret
+            else:
+                raise Exception("Bad filepath")
 
         # open a connection to the database
         try:

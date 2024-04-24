@@ -39,8 +39,8 @@ class MicAsynchronous(mic.Mic):
             if len(audio) > 0:
                 with self._write_frames_to_file(audio) as f:
                     passive_transcription = self.passive_stt_plugin.transcribe(f)
-
                     if len(passive_transcription) > 0:
+                        self._log_audio(f, passive_transcription, "passive")
                         visualizations.run_visualization(
                             "output",
                             f"<  {passive_transcription}"
@@ -53,16 +53,19 @@ class MicAsynchronous(mic.Mic):
                                         if self.check_for_keyword(active_transcription):
                                             transcription = active_transcription
                                             if len(transcription) > 0:
+                                                self._log_audio(f, transcription, "active")
                                                 visualizations.run_visualization(
                                                     "output",
                                                     f"<< {transcription}"
                                                 )
                                             else:
+                                                self._log_audio(f, transcription, "noise")
                                                 visualizations.run_visualization(
                                                     "output",
                                                     "<< <noise>"
                                                 )
                                         else:
+                                            self._log_audio(f, active_transcription, "noise")
                                             visualizations.run_visualization(
                                                 "output",
                                                 "<< <noise>"
@@ -71,16 +74,19 @@ class MicAsynchronous(mic.Mic):
                                         # Don't verify keyword
                                         transcription = active_transcription
                                         if len(transcription) > 0:
+                                            self._log_audio(f, transcription, "active")
                                             visualizations.run_visualization(
                                                 "output",
                                                 f"<< {transcription}"
                                             )
                                         else:
+                                            self._log_audio(f, transcription, "noise")
                                             visualizations.run_visualization(
                                                 "output",
                                                 "<< <noise>"
                                             )
                                 else:
+                                    self._log_audio(f, active_transcription, "noise")
                                     visualizations.run_visualization(
                                         "output",
                                         "<< <noise>"
@@ -96,12 +102,15 @@ class MicAsynchronous(mic.Mic):
                                 transcription = utterance.transcription
                                 audio = utterance.audio
                     else:
+                        self._log_audio(f, passive_transcription, "noise")
                         visualizations.run_visualization(
                             "output",
                             "<  <noise>"
                         )
         except IndexError:
             recordings_available_event.clear()
+        except Exception:
+            raise
         return mic.Utterance(transcription=transcription, audio=audio)
 
     def active_listen(self, play_prompts=True):
