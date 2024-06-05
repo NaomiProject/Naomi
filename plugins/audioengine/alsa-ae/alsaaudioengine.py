@@ -134,7 +134,7 @@ class AlsaAudioDevice(plugin.audioengine.AudioDevice):
                                "output" if output else "input", self.slug)
 
     def record(self, *args, **kwargs):
-        # AJC 2018-08-02 Add a second while loop so if the pyaudio stream
+        # AJC 2018-08-02 Add a second while loop so if the stream
         # gets closed, we immediately reopen it rather than continue
         # to try to read from a closed stream
         stream = None
@@ -145,22 +145,7 @@ class AlsaAudioDevice(plugin.audioengine.AudioDevice):
                 try:
                     frame = stream.read()
                 except IOError as e:
-                    if type(e.errno) is not int:
-                        # Simple hack to work around the fact that the
-                        # errno/strerror arguments were swapped in older
-                        # PyAudio versions. This was fixed in upstream
-                        # commit 1783aaf9bcc6f8bffc478cb5120ccb6f5091b3fb.
-                        strerror, errno = e.errno, e.strerror
-                    else:
-                        strerror, errno = e.strerror, e.errno
-                    self._logger.warning(
-                        "IO error while reading from device" +
-                        " '%s': '%s' (Errno: %d)" % (
-                            self.slug,
-                            strerror,
-                            errno
-                        )
-                    )
+                    self._logger.warning(e)
                     break
                 else:
                     yield frame[1]
@@ -176,22 +161,7 @@ class AlsaAudioDevice(plugin.audioengine.AudioDevice):
                         try:
                             frame = stream.read()
                         except IOError as e:
-                            if type(e.errno) is not int:
-                                # Simple hack to work around the fact that the
-                                # errno/strerror arguments were swapped in older
-                                # PyAudio versions. This was fixed in upstream
-                                # commit 1783aaf9bcc6f8bffc478cb5120ccb6f5091b3fb.
-                                strerror, errno = e.errno, e.strerror
-                            else:
-                                strerror, errno = e.strerror, e.errno
-                            self._logger.warning(
-                                "IO error while reading from device" +
-                                " '%s': '%s' (Errno: %d)" % (
-                                    self.slug,
-                                    strerror,
-                                    errno
-                                )
-                            )
+                            self._logger.warning(e)
                             break
                         else:
                             yield frame[1]
