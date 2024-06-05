@@ -62,15 +62,33 @@ class Mic(i18n.GettextMixin):
     def __init__(self, *args, **kwargs):
         translations = i18n.parse_translations(paths.data('locale'))
         i18n.GettextMixin.__init__(self, translations, profile)
-        self.keywords = kwargs['keywords']
-        self._input_device = kwargs['input_device']
-        self._output_device = kwargs['output_device']
-        self.passive_stt_plugin = kwargs['passive_stt_plugin']
-        self.active_stt_plugin = kwargs['active_stt_plugin']
-        self.special_stt_slug = kwargs['special_stt_slug']
-        self.vad_plugin = kwargs['vad_plugin']
-        self.tts_engine = kwargs['tts_engine']
-        self.brain = kwargs['brain']
+        self.keywords = 'Naomi'
+        if 'keywords' in kwargs:
+            self.keywords = kwargs['keywords']
+        self._input_device = None
+        if 'input_device' in kwargs:
+            self._input_device = kwargs['input_device']
+        self._output_device = None
+        if 'output_device' in kwargs:
+            self._output_device = kwargs['output_device']
+        self.passive_stt_plugin = None
+        if 'passive_stt_plugin' in kwargs:
+            self.passive_stt_plugin = kwargs['passive_stt_plugin']
+        self.active_stt_plugin = None
+        if 'active_stt_plugin' in kwargs:
+            self.active_stt_plugin = kwargs['active_stt_plugin']
+        self.special_stt_slug = None
+        if 'special_stt_slug' in kwargs:
+            self.special_stt_slug = kwargs['special_stt_slug']
+        self.vad_plugin = None
+        if 'vad_plugin' in kwargs:
+            self.vad_plugin = kwargs['vad_plugin']
+        self.tts_engine = None
+        if 'tts_engine' in kwargs:
+            self.tts_engine = kwargs['tts_engine']
+        self.brain = None
+        if 'brain' in kwargs:
+            self.brain = kwargs['brain']
         self._logger = logging.getLogger(__name__)
         self._save_passive_audio = profile.get_arg('save_passive_audio', False)
         self._save_active_audio = profile.get_arg('save_active_audio', False)
