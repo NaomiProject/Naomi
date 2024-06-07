@@ -50,7 +50,7 @@ class AudioDevice(object):
         self._slug = slugify.slugify(name)
         self._input_rate = int(
             profile.get_profile_var(
-                ['audio', 'input_samplerate'],
+                ['audio', 'input_rate'],
                 16000
             )
         )
@@ -134,11 +134,11 @@ class AudioDevice(object):
 
     def play_fp(self, fp, *args, **kwargs):
         self._stop = False
-        if('chunksize' in kwargs):
+        if ('chunksize' in kwargs):
             chunksize = kwargs['chunksize']
         else:
             chunksize = int(profile.get(['audio', 'output_chunksize'], 1024))
-        if('add_padding' in kwargs):
+        if ('add_padding' in kwargs):
             add_padding = kwargs['add_padding']
         else:
             add_padding = profile.get(['audio', 'output_padding'], False)
@@ -149,14 +149,14 @@ class AudioDevice(object):
             bits = w.getsampwidth() * 8
             rate = w.getframerate()
             with self.open_stream(
-                bits,
-                channels,
-                rate,
+                bits=bits,
+                channels=channels,
+                rate=rate,
                 chunksize=chunksize
             ) as stream:
                 data = w.readframes(chunksize)
                 datalen = len(data)
-                if(
+                if (
                     (add_padding)
                     and (datalen > 0)
                     and (datalen < (chunksize * samplewidth))
@@ -165,13 +165,13 @@ class AudioDevice(object):
                     datalen = len(data)
                 while data:
                     # Check to see if we need to stop
-                    if(self._stop):
+                    if (self._stop):
                         self._stop = False
                         break
                     stream.write(data)
                     data = w.readframes(chunksize)
                     datalen = len(data)
-                    if(
+                    if (
                         (add_padding)
                         and (datalen > 0)
                         and (datalen < (chunksize * samplewidth))
@@ -179,7 +179,7 @@ class AudioDevice(object):
                         data += b'\00' * (chunksize * samplewidth - datalen)
                         datalen = len(data)
                 # pause before closing the stream (reduce clipping)
-                if(pause > 0):
+                if (pause > 0):
                     time.sleep(pause)
             self._stop = False
 

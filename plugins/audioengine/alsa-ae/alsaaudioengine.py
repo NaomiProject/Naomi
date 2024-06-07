@@ -84,7 +84,23 @@ class AlsaAudioDevice(plugin.audioengine.AudioDevice):
         return True
 
     @contextlib.contextmanager
-    def open_stream(self, bits, channels, rate, chunksize=1024, output=True):
+    def open_stream(self, *args, **kwargs):
+        bits = self._input_bits
+        if 'bits' in kwargs:
+            bits = kwargs['bits']
+        channels = self._input_channels
+        if 'channels' in kwargs:
+            channels = kwargs['channels']
+        rate = self._input_rate
+        if 'rate' in kwargs:
+            rate = kwargs['rate']
+        output = True
+        if 'output' in kwargs:
+            output = kwargs['output']
+        chunksize = self._input_chunksize
+        if 'chunksize' in kwargs:
+            chunksize = kwargs['chunksize']
+
         # Check if format is supported
         is_supported_fmt = self.supports_format(bits, channels, rate,
                                                 output=output)
@@ -117,8 +133,35 @@ class AlsaAudioDevice(plugin.audioengine.AudioDevice):
             self._logger.debug("%s stream closed on device '%s'",
                                "output" if output else "input", self.slug)
 
-    def record(self, chunksize, *args):
-        with self.open_stream(*args, chunksize=chunksize,
-                              output=False) as stream:
-            while True:
-                yield stream.read()[1]
+    def record(self, *args, **kwargs):
+        # AJC 2018-08-02 Add a second while loop so if the stream
+        # gets closed, we immediately reopen it rather than continue
+        # to try to read from a closed stream
+        stream = None
+        if 'stream' in kwargs:
+            stream = kwargs['stream']
+        while True:
+            if stream:
+                try:
+                    frame = stream.read()
+                except IOError as e:
+                    self._logger.warning(e)
+                    break
+                else:
+                    yield frame[1]
+            else:
+                with self.open_stream(
+                    bits=self._input_bits,
+                    channels=self._input_channels,
+                    rate=self._input_rate,
+                    chunksize=self._input_chunksize,
+                    output=False
+                ) as stream:
+                    while True:
+                        try:
+                            frame = stream.read()
+                        except IOError as e:
+                            self._logger.warning(e)
+                            break
+                        else:
+                            yield frame[1]
