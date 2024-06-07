@@ -953,7 +953,6 @@ class Naomi(object):
         ]))
         while test:
             test = False
-
             input_device = audio_engine.get_device_by_slug(
                 profile.get_profile_var(['audio', 'input_device'])
             )
@@ -980,19 +979,11 @@ class Naomi(object):
                     filename
                 )
             visualizations.load_visualizations(self)
-            testMic = local_mic.Mic(
-                input_device,
-                output_device,
-                profile.get(['active_stt', 'reply']),
-                profile.get(['active_stt', 'response']),
-                None,
-                None,
-                None,
-                None,
-                None,
-                vad_plugin
+            testMic = mic_synchronous.MicSynchronous(
+                input_device=input_device,
+                output_device=output_device,
+                vad_plugin=vad_plugin
             )
-
             visualizations.run_visualization(
                 "output",
                 self._interface.instruction_text(
@@ -1002,15 +993,13 @@ class Naomi(object):
             )
             # Go ahead and use mic to record
             with testMic._write_frames_to_file(
-                testMic._vad_plugin.get_audio(),
-                input_device._input_rate,
-                None
+                testMic.vad_plugin.get_audio()
             ) as f:
                 if testMic._active_stt_response:
                     testMic.say(self._active_stt_response)
                 else:
                     # Have to use play_file_sync here to prevent playback of the sampled audio from interrupting chime playback.
-                    testMic.play_file_sync(paths.data('audio', 'beep_lo.wav'))
+                    testMic.play_file(paths.data('audio', 'beep_lo.wav'))
                 f.seek(0)
                 response = False
                 replay = True
