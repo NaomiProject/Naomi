@@ -18,7 +18,13 @@ except ModuleNotFoundError:
         'pip', 'install', 'phonetisaurus'
     ]
     completedprocess = run_command(cmd)
-    if completedprocess.returncode != 0:
+    if completedprocess.returncode == 0:
+        if importlib.util.find_spec("phonetisaurus"):
+            from . import sphinxvocab
+            from .g2p import PhonetisaurusG2P
+        else:
+            raise Exception("Phonetisaurus install failed")
+    else:
         # check what architecture we are on
         architecture = platform.machine()
         phonetisaurus_url = ""
@@ -189,7 +195,7 @@ class PocketsphinxSTTPlugin(plugin.STTPlugin):
         if (not hmm_dir):
             # Make a list of possible paths to check
             hmm_dir_paths = [
-                paths.sub("pocketsphinx", "standard")
+                paths.sub("pocketsphinx", "standard", language)
             ]
             # see if any of these paths exist
             for path in hmm_dir_paths:
