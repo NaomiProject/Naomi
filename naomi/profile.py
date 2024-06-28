@@ -157,6 +157,11 @@ def get_profile(command=""):
             try:
                 with open(new_configfile, "r") as f:
                     _profile = yaml.safe_load(f)
+                    # If the profile.yml file is empty, the _profile will be
+                    # None rather than an empty dictionary. This will cause
+                    # issues later.
+                    if _profile is None:
+                        _profile = {}
                     _profile_read = True
                     config_read = True
             except (IOError, FileNotFoundError):
