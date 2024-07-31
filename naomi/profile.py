@@ -336,10 +336,13 @@ def _walk_profile(path, returnValue):
             # This happens if a value that was a string
             # is converted to a list. So overwrite the
             # string value with an array.
-            if (not isinstance(profile, dict)):
+            if isinstance(profile, list) and isinstance(branch, int):
+                profile = profile[branch]
+            elif isinstance(profile, dict) and isinstance(branch, str):
+                profile = profile[branch]
+            else:
                 profile = {}
-            profile = profile[branch]
-        except KeyError:
+        except (KeyError, IndexError):
             found = False
             profile = None
             break
@@ -359,11 +362,21 @@ def set_profile_var(path, value):
         last = path[0]
         if len(path) > 1:
             for branch in path[1:]:
-                try:
-                    if not isinstance(temp[last], dict):
+                if isinstance(branch, str):
+                    try:
+                        if not isinstance(temp[last], dict):
+                            temp[last] = {}
+                    except KeyError:
                         temp[last] = {}
-                except KeyError:
-                    temp[last] = {}
+                    except IndexError:
+                        temp.append({})
+                elif isinstance(branch, int):
+                    # we are in an array
+                    try:
+                        if not isinstance(temp[last], list):
+                            temp[last] = []
+                    except (KeyError, IndexError):
+                        temp[last] = []
                 temp = temp[last]
                 last = branch
         temp[last] = value
@@ -372,6 +385,9 @@ def set_profile_var(path, value):
 
 
 def remove_profile_var(path):
+    """
+    Remove a value from the profile
+    """
     global _profile
     if (isinstance(path, str)):
         path = [path]
@@ -381,7 +397,7 @@ def remove_profile_var(path):
         if len(path) > 1:
             for branch in path[1:]:
                 try:
-                    if not isinstance(temp[last], dict):
+                    if not (isinstance(temp[last], dict) or isinstance(temp[last], list)):
                         return
                 except KeyError:
                     return

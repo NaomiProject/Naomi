@@ -356,6 +356,8 @@ class commandline(object):
 
     # This is a higher level control that takes a "setting" as input
     def get_setting(self, setting, definition):
+        # "setting" - path to setting
+        # "definition" - information about the setting
         # set a default default value
         default = ""
         # if default is defined, then use that value as default
@@ -390,7 +392,36 @@ class commandline(object):
                     return_list = definition["return_list"]()
                 except TypeError:
                     return_list = definition["return_list"]
-            if (controltype == "listbox"):
+            if controltype == 'array':
+                # an array here is a group of related settings repeated an
+                # arbitrary number of times
+                currentvalue = 0
+                for subvalue in value:
+                    for subsetting in definition['each']:
+                        newsetting = [part for part in setting]
+                        newsetting.extend([currentvalue, subsetting[0]])
+                        self.get_setting(tuple(newsetting), definition['each'][subsetting])
+                    currentvalue += 1
+                cont = True
+                while cont:
+                    first = True
+                    newarray = [part for part in setting]
+                    newarray.extend([currentvalue])
+                    for subsetting in definition['each']:
+                        newsetting = newarray.copy()
+                        newsetting.extend([subsetting[0]])
+                        self.get_setting(tuple(newsetting), definition['each'][subsetting])
+                        if first:
+                            first = False
+                            if not profile.get(newsetting):
+                                cont = False
+                                # At this point, a new dictionary has been
+                                # created with an empty entry. We need to
+                                # remove that.
+                                profile.remove_profile_var(newarray)
+                                break
+                    currentvalue += 1
+            elif (controltype == "listbox"):
                 # Listbox is used to present a list of options from which
                 # the user has to select. If the user enters something not
                 # on the list, it will be rejected and the listbox will

@@ -68,7 +68,7 @@ class MicAsynchronous(mic.Mic):
                                             self._log_audio(f, active_transcription, "noise")
                                             visualizations.run_visualization(
                                                 "output",
-                                                "<< <noise>"
+                                                f"<< {transcription} <noise>"
                                             )
                                     else:
                                         # Don't verify keyword
