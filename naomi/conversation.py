@@ -17,7 +17,7 @@ class Conversation(i18n.GettextMixin):
         self.translations = {}
 
     # Add way for the system to ask for name if is not found in the config
-    def askName(self):
+    def sayName(self):
         keywords = profile.get(['keyword'], ['NAOMI'])
         if isinstance(keywords, str):
             keywords = [keywords]
@@ -32,7 +32,7 @@ class Conversation(i18n.GettextMixin):
             salutation = self.gettext(
                 "My name is {}"
             ).format(keywords[0])
-        self.mic.say(salutation)
+        self.mic.say_sync(salutation)
 
     def greet(self):
         if profile.get(['first_name']):
@@ -41,7 +41,7 @@ class Conversation(i18n.GettextMixin):
             )
         else:
             salutation = self.gettext("How can I be of service?")
-        self.mic.say(salutation)
+        self.mic.say_sync(salutation)
 
     def handleForever(self):
         """

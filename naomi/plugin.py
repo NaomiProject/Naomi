@@ -50,7 +50,8 @@ class GenericPlugin(object):
             if not settings_complete:
                 visualizations.run_visualization(
                     "output",
-                    self.gettext("Configuring {}").format(self._plugin_info.name)
+                    interface.status_text(self.gettext("Configuring {}").format(self._plugin_info.name)),
+                    timestamp=False
                 )
                 for setting in settings:
                     interface.get_setting(

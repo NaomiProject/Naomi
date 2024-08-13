@@ -558,7 +558,12 @@ class Mic(i18n.GettextMixin):
 
     # The following are no longer necessary and are just wrappers now.
     def say_sync(self, phrase):
-        self.say(phrase)
+        visualizations.run_visualization("output", ">> {}".format(phrase))
+        with tempfile.SpooledTemporaryFile() as f:
+            f.write(self.tts_engine.say(phrase))
+            f.seek(0)
+            self._output_device.play_fp(f)
+            time.sleep(.5)
 
     def say_async(self, phrase):
         self.say(phrase)

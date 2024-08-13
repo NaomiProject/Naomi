@@ -437,11 +437,15 @@ class commandline(object):
                         definition["title"]
                     )
                 )
-                # Make sure the default value is actually available in the list of options
-                if (value in options):
-                    response = value
+                # If there is only one option available, select it by default
+                if len(options) == 1:
+                    response = [option for option in options][0]
                 else:
-                    response = ""
+                    # Make sure the default value is actually available in the list of options
+                    if value in options:
+                        response = value
+                    else:
+                        response = ""
                 once = False
                 while not ((once) and (profile.validate(definition, response))):
                     once = True

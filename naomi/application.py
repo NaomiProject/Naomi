@@ -1073,6 +1073,6 @@ class Naomi(object):
                 verbose=(self._logger.getEffectiveLevel() == logging.DEBUG))
 
     def run(self):
-        self.conversation.askName()
+        self.conversation.sayName()
         self.conversation.greet()
         self.conversation.handleForever()
