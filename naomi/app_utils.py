@@ -1,18 +1,23 @@
 # -*- coding: utf-8 -*-
 import email
+import functools
 import imaplib
 import logging
+import os
+import pathlib
 import re
 import requests
+import shutil
 import smtplib
 from dateutil import parser
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from naomi import i18n
+from naomi import paths
+from naomi import profile
 from pytz import timezone
+from tqdm.auto import tqdm
 from urllib import request as urllib_request
-from . import i18n
-from . import paths
-from . import profile
 
 
 _ = i18n.GettextMixin(i18n.parse_translations(paths.data('locale'))).gettext
@@ -272,6 +277,7 @@ def get_sender_email(msg):
 
 
 def get_message_text(msg):
+    body = ""
     if(msg.is_multipart()):
         for part in msg.walk():
             ctype = part.get_content_type()
@@ -383,10 +389,55 @@ def is_positive(phrase):
 def download_file(url, local_filename=None):
     if(local_filename is None):
         local_filename = url.split('/')[-1]
+    path = pathlib.Path(local_filename).expanduser().resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
     # NOTE the stream=True parameter below
-    with requests.get(url, stream=True) as r:
-        r.raise_for_status()
-        with open(local_filename, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
-    return local_filename
+    r = requests.get(url, stream=True, allow_redirects=True)
+    remote_file_size = int(r.headers.get('Content-Length', 0))
+    r.close()
+    desc = "(Unknown total file size)" if remote_file_size == 0 else ""
+    print(f"Downloading from {url}")
+    if os.path.isfile(local_filename):
+        # check if the size is correct
+        local_file_size = os.path.getsize(local_filename)
+        if local_file_size < remote_file_size:
+            # try to resume download
+            resume_header = {'Range': f'bytes={local_file_size}-{remote_file_size}'}
+            r = requests.get(
+                url,
+                headers=resume_header,
+                stream=True,
+                allow_redirects=True
+            )
+            if r.status_code != 206:  # Partial Content
+                r.raise_for_status()
+                raise RuntimeError(f"Request to {url} returned status code {r.status_code}")
+            r.raw.read = functools.partial(r.raw.read, decode_content=True)
+            with tqdm.wrapattr(
+                r.raw,
+                "read",
+                total=remote_file_size,
+                initial=local_file_size,
+                desc=desc
+            ) as r_raw:
+                with path.open("ab") as f:
+                    shutil.copyfileobj(r_raw, f)
+    else:
+        r = requests.get(
+            url,
+            stream=True,
+            allow_redirects=True
+        )
+        if r.status_code != 200:  # Okay
+            r.raise_for_status()
+            raise RuntimeError(f"Request to {url} returned status code {r.status_code}")
+        r.raw.read = functools.partial(r.raw.read, decode_content=True)
+        with tqdm.wrapattr(
+            r.raw,
+            "read",
+            total=remote_file_size,
+            desc=desc
+        ) as r_raw:
+            with path.open("wb") as f:
+                shutil.copyfileobj(r_raw, f)
