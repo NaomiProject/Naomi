@@ -1,6 +1,6 @@
 
 
-```markdown
+
 # Padatious TTI Plugin for Naomi
 
 ## Overview
