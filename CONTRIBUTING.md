@@ -42,12 +42,12 @@ However, if a maintainer asks you to "rebase" your pull request, they're saying 
    * Be sure you have followed the style of code throughout the project. Make it clean and readable!
    * Test the code on a RaspberryPi
    * Send a pull request and fillout the template. (All issues and PR have to follow the template or they will not be accepted)
-   * Once the PR has been submitted a bot will ask you to sign a Contribution License Agreement, CLA. (All contributers to the PR has to accept the CLA in order for the PR to be accepted)
+   * Once the PR has been submitted a bot will ask you to sign a Contribution License Agreement, CLA. (All contributors to the PR has to accept the CLA in order for the PR to be accepted)
    * The maintainer will review your submission and either ask for clarifications or changes, or approve the PR and it will be merged.
 
 # Labeling conventions for issues & pull requests
 
-Our issues and pull request follow a [labeling convention](https://github.com/NaomiProject/Naomi/issues/126) to aid with flow & organization. Please review them so you know what each label means and how they are used.
+Our issues and pull request follow a [labelling convention](https://github.com/NaomiProject/Naomi/issues/126) to aid with flow & organization. Please review them so you know what each label means and how they are used.
 
 # How to report a bug
 
@@ -61,7 +61,7 @@ In order to determine whether you are dealing with a security issue, ask yoursel
  * Can I access something that's not mine, or something I shouldn't have access to?
  * Can I disable something for other people?
 
-If the answer to either of those two questions are "yes", then you're probably dealing with a security issue. Note that even if you answer "no" to both questions, you may still be dealing with a security issue, so if you're unsure, just email us at security@projectnaomi.com and the lead maintainers will address the issue immediately.
+If the answer to either of those two questions is "yes", then you're probably dealing with a security issue. Note that even if you answer "no" to both questions, you may still be dealing with a security issue, so if you're unsure, just email us at security@projectnaomi.com and the lead maintainers will address the issue immediately.
 
 ## Bug reports
 
@@ -70,7 +70,7 @@ If you have found a bug, please create an issue using the bug report template an
 
 ## How to suggest a feature or enhancement
 
-If you have an idea that you think will improve upon Naomi, create an issue using the proper template and fill it out to the best of your ability. Once submitted the community will discuss with you about the idea to help flesh it out and give it a base to be built upon. This will allow us to determine whether or not the idea should be implemented, put on hold due to other issues or pull requests that are currently open at that time, or abandoned if it does not fit into the scope of Naomi. Once approved, the idea can either be worked on by either the submittor if they so choose or made available for other developers and maintainers to turn the idea into reality.
+If you have an idea that you think will improve upon Naomi, create an issue using the proper template and fill it out to the best of your ability. Once submitted the community will discuss with you about the idea to help flesh it out and give it a base to be built upon. This will allow us to determine whether or not the idea should be implemented, put on hold due to other issues or pull requests that are currently open at that time, or abandoned if it does not fit into the scope of Naomi. Once approved, the idea can either be worked on by either the submitter if they so choose or made available for other developers and maintainers to turn the idea into reality.
 
 If you find yourself wishing for a feature that doesn't exist in Naomi, you are probably not alone. There are bound to be others out there with similar needs. Many of the features that Naomi has today have been added because users saw the need. Open an issue on our issues list on GitHub which describes the feature you would like to see, why you need it, and how it should work.
 
@@ -83,11 +83,11 @@ Do note: After feedback has been given and required a response from the submitte
 If everything up to this point has been done correctly but your PR has not been approved or merged, here are some things to look out for.
 
 * Double check that everything was done correctly.
-* Refernce the status label for the PR, this can give you information that might tell you whats wrong.
+* Reference the status label for the PR, this can give you information that might tell you what's wrong.
 * Make sure you have signed the CLA and your code has been reviewed by at least one maintainer.
 
 By all means if none of this applies and everything is in order, please reach out to one of the core team and we will be happy to look into what the issue is.
 
 # Community
 
- Naomi is always looking to grow its community whether you are a developer or someone whom has interest in the project. You can join our [forum](https://community.projectnaomi.com) to talk with others as well as spread the work about Naomi. Every small step leads Naomi in the right direction.
+ Naomi is always looking to grow its community whether you are a developer or someone who has interest in the project. You can join our [forum](https://community.projectnaomi.com) to talk with others as well as spread the work about Naomi. Every small step leads Naomi in the right direction.
