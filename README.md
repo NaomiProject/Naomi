@@ -70,7 +70,7 @@ You can [download](https://projectnaomi.com/download) the latest version of Naom
 
 Please make sure to read the [Contributing Guide](https://github.com/NaomiProject/Naomi/blob/naomi-dev/CONTRIBUTING.md) before making a pull request.
 
-Thank you to all the people who already contributed to Naomi!
+Thank you to all the people who have already contributed to Naomi!
 
 <a href="https://github.com/naomiproject/naomi/graphs/contributors"><img src="https://opencollective.com/projectnaomi/contributors.svg?width=890" /></a>
 
