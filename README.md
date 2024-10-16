@@ -52,11 +52,11 @@
 * Always Listening
   * Naomi is always on, always listening for commands, and you can speak from feet away.
 * 100% Open Source
-  * Build it yourself with off-the-shelf hardware, and use our documentation to write your own modules.
+  * Build it yourself with off-the-shelf hardware and use our documentation to write your own modules.
 * Cross Platform Coming Soon
   * Raspberry Pi and Linux currently.
 * Thorough Documentation
-  * Documentation is kept up to date.
+  * Documentation is kept up-to-date.
 
 ## Documentation
 
@@ -95,7 +95,7 @@ Naomi is an MIT-licensed open source project with its ongoing development made p
 
 ## Credits
 
-This software uses code from the initial Jasper Project & the Jasper2fork.
+This software uses code from the initial Jasper Project & the Jasper2Fork.
 
 * [JasperProject](http://jasperproject.github.io/)
 * [Jasper2Fork](https://github.com/andweber/j2f)

@@ -14,7 +14,7 @@ Naomi has the ability to print a transcript of what it says and hears (useful fo
 
 #### VAD Plugin
 
-Created a new plugin type: VADPlugin which is used to detect voice activity specifically to allow Naomi to use webrtc_vad. Re-wrote the current Sound Noise Ratio method as a pure python plugin that can be used as a default (snr_vad).
+Created a new plugin type: VADPlugin, which is used to detect voice activity specifically to allow Naomi to use webrtc_vad. Re-wrote the current Sound Noise Ratio method as a pure Python plugin that can be used as a default (snr_vad).
 
 #### Profile API
 
@@ -27,7 +27,7 @@ except NameException:
     input_channels=1
 ```
 
-you can now just use
+You can now just use
 
 ```py
 from naomi import profile
@@ -58,11 +58,11 @@ This also means that it is no longer necessary to pass a variable containing a c
 
 #### Naomi user directory moved
 
-Naomi's user configuration files have moved from ~/.naomi to ~/.config/naomi to better follow current Linux protocol. Naomi's profile.yml file has moved from ~/.naomi/profile.yml to ~/.config/naomi/configs/profile.yml
+Naomi's user configuration files have moved from ~/.naomi to ~/.config/naomi to better follow the current Linux protocol. Naomi's profile.yml file has moved from ~/.naomi/profile.yml to ~/.config/naomi/configs/profile.yml
 
 #### Plugin settings
 
-The populate.py script has been replaced with settings that exist within the individual plugins. This way in a plugin author needs information from the user to get the plugin working, this information can be encoded within the plugin and not have to be added to a file in the Naomi core.
+The populate.py script has been replaced with settings that exist within the individual plugins. This way, a plugin author needs information from the user to get the plugin working, this information can be encoded within the plugin and not have to be added to a file in the Naomi core.
 Settings have the following structure:
 
 ```py
@@ -84,15 +84,15 @@ Plugins are listed within profile.yml and can be enabled or disabled by setting 
 
 #### Passive Listen
 
-Naomi can be set to collect audio then if audio contains the wakeword, use the active listener to scan the captured audio, allowing a more natural conversation style. Requires setting the "passive_listen: true" value in profile.yml or running Naomi with the --passive-listen flag.
+Naomi can be set to collect audio, and if audio contains the wakeword, use the active listener to scan the captured audio, allowing a more natural conversation style. Requires setting the "passive_listen: true" value in profile.yml or running Naomi with the --passive-listen flag.
 
 #### Asynchronous Say
 
-Talking can happen in a separate thread so Naomi can listen while talking, allowing the user to stop Naomi in the middle of a response by saying "Naomi Stop". Unfortunately, with most audio setups this causes Naomi to react to its own voice, so this is disabled by default while working out how to filter out the sound of Naomi speaking. Currently best used with either headphones or a USB conference phone with hardware level feedback filtering. Activated by either passing the "--listen-while-talking" flag or setting "listen_while_talking: true" in profile.yml.
+Talking can happen in a separate thread so Naomi can listen while talking, allowing the user to stop Naomi in the middle of a response by saying "Naomi Stop". Unfortunately, with most audio setups, this causes Naomi to react to its own voice, so this is disabled by default while working out how to filter out the sound of Naomi speaking. Currently best used with either headphones or a USB conference phone with hardware level feedback filtering. Activated by either passing the "--listen-while-talking" flag or setting "listen_while_talking: true" in profile.yml.
 
 #### Syncronous Mic
 
-In the original jasper-dev project, the wake word scanner was using three asynchronous listeners all constantly checking the audio stream for the wake word. After detecting the wake word, the audio stream would start recording. Changing this This freed up a lot of resources used in wake word scanning, allows the wake word to appear anywhere in a command, and made it easier to save audio for training VAD noise detection and passive listeners.
+In the original jasper-dev project, the wake word scanner was using three asynchronous listeners, all constantly checking the audio stream for the wake word. After detecting the wake word, the audio stream would start recording. Changing this This freed up a lot of resources used in wake word scanning, allowed the wake word to appear anywhere in a command, and made it easier to save audio for training VAD noise detection and passive listeners.
 
 #### audiolog
 
@@ -121,7 +121,7 @@ Current command line flags include
 
 #### Naomi Plugin Exchange - Web Based
 
-Developed a web based [NPE](https://projectnaomi.com/plugins/) for exploring plugins written by or endorsed by the Naomi Project. Plugins are labeled as "included" if they come pre-installed with Naomi or instructions on how to install will be shown if its an endorsed plugin.
+Developed a web based [NPE](https://projectnaomi.com/plugins/) for exploring plugins written by or endorsed by the Naomi Project. Plugins are labeled as "included" if they come pre-installed with Naomi, or instructions on how to install will be shown if it's an endorsed plugin.
 
 #### Naomi Plugin Exchange Editor (NPEeditor) - Web Based
 
@@ -129,7 +129,7 @@ Developed a web based [plugin editor](https://npeeditor.projectnaomi.com/) to gi
 
 #### Visualizations Plugin
 
-This is a way of designing plugins to provide feedback for Naomi core processes. It requires creating a run_visualization call which references one or more visualization plugins that may or may not be loaded.
+This is a way of designing plugins to provide feedback for Naomi core processes. It requires creating a run_visualization call that references one or more visualization plugins that may or may not be loaded.
 
 #### TTI Plugin
 
@@ -141,11 +141,11 @@ Naomi now supports multiple wake words. Naomi accepts the first wake word as the
 
 #### naomi-setup.sh script
 
-This script went through a lot of permutations this year. Right now it will create a working naomi setup on any Debian derivative.
+This script went through a lot of permutations this year. Right now it will create a working Naomi setup on any Debian derivative.
 
 #### Oneline Installer
 
-Along with the new setup script there is now a one line command you can execute in any linux based terminal that will setup and install Naomi based on OS & version.
+Along with the new setup script, there is now a one line command you can execute in any Linux based terminal that will setup and install Naomi based on OS & version.
 
 #### Email access routines moved to app_utils
 
@@ -166,19 +166,19 @@ There should no longer be any reason for plugin developers to need direct access
 
 #### Updated to MPD2
 
-Fixed a few issues with the MPDClient plugin including updating to the mpd2 module, getting playlists to start playing when they are loaded, getting Naomi to pause music before speaking when in music mode.
+Fixed a few issues with the MPDClient plugin, including updating to the mpd2 module, getting playlists to start playing when they are loaded, and getting Naomi to pause music before speaking when in music mode.
 
-#### Fixed Google cloud STT and TTS
+#### Fixed Google Cloud STT and TTS
 
 Thanks to Ole who got these working
 
 #### Replacement weather plugin
 
-Replaced the default Yahoo weather plugin with wwis weather.
+Replaced the default Yahoo weather plugin with WWIS weather.
 
 #### Pocketsphinx self setup
 
-Pocketsphinx will now automatically download the standard language model for English, French or German from the [CMUSphinx standard language models](https://github.com/NaomiProject/CMUSphinx_standard_language_models.git) repository when first loaded.
+Pocketsphinx will now automatically download the standard language model for English, French, or German from the [CMUSphinx standard language models](https://github.com/NaomiProject/CMUSphinx_standard_language_models.git) repository when first loaded.
 
 #### v2.2 (31/12/2018)
 
