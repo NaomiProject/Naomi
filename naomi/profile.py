@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-These functions "walk" the profile, and return either a boolean variable to
-tell whether an option is configured or not, or the actual value
-"""
 import base64
 import inspect
 import logging
@@ -12,8 +7,7 @@ import re
 import shutil
 import sys
 import yaml
-from cryptography.fernet import InvalidToken
-from cryptography.fernet import Fernet
+from cryptography.fernet import InvalidToken, Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -29,26 +23,19 @@ _args = {}
 profile_file = ""
 
 
-# Store an argument in a static location so it is
-# available to every module
 def set_arg(name, value):
+    """Store an argument in a static location for all modules"""
     global _args
     _args.update({name: value})
 
 
-# Retrieve an argument. Return None if the
-# argument is not set.
 def get_arg(name, default=None):
-    value = default
-    if (name in _args.keys()):
-        value = _args[name]
-    return value
+    """Retrieve an argument, return default if not set"""
+    return _args.get(name, default)
 
 
 def set_profile(custom_profile):
-    """
-    Set the profile to a custom value. This is especially helpful when testing
-    """
+    """Set the profile to a custom value, useful for testing"""
     global _profile, _profile_read, _test_profile
     _profile = custom_profile
     _test_profile = True
@@ -56,438 +43,111 @@ def set_profile(custom_profile):
 
 
 def get_profile(command=""):
+    """Load the profile, reload if command is set to 'reload'"""
     global _profile, _profile_read, _test_profile, profile_file
     _logger = logging.getLogger(__name__)
     command = command.strip().lower()
+
     if command == "reload":
         _profile_read = False
-    elif command != "":
-        raise ValueError("command '{}' not understood".format(command))
+    elif command:
+        raise ValueError(f"Command '{command}' not understood")
+
     if not _profile_read:
-        # Open and read the profile
-        # Create .config/naomi dir if it does not exist yet
-        if not os.path.exists(paths.SUB_PATH):
-            try:
+        try:
+            if not os.path.exists(paths.SUB_PATH):
                 os.makedirs(paths.SUB_PATH)
-            except OSError:
-                _logger.error(
-                    "Could not create .config/naomi dir: '{}'".format(
-                        paths.SUB_PATH
-                    ),
-                    exc_info=True
-                )
-                raise
 
-        # Check if .config/naomi dir is writable
-        if not os.access(paths.SUB_PATH, os.W_OK):
-            _logger.critical(
-                " ".join([
-                    ".config/naomi dir {:s} is not writable. Naomi",
-                    "won't work correctly."
-                ]).format(
-                    paths.SUB_PATH
-                )
-            )
-        # Create .config/naomi/configs dir if it does not exist yet
-        if not os.path.exists(paths.CONFIG_PATH):
-            try:
+            if not os.access(paths.SUB_PATH, os.W_OK):
+                _logger.critical(f".config/naomi dir '{paths.SUB_PATH}' is not writable")
+
+            if not os.path.exists(paths.CONFIG_PATH):
                 os.makedirs(paths.CONFIG_PATH)
-            except OSError:
-                _logger.error(
-                    "Could not create .config/naomi/configs dir: '{}'".format(
-                        paths.CONFIG_PATH
-                    ),
-                    exc_info=True
-                )
-                raise
 
-        # Check if .config/naomi/configs dir is writable
-        if not os.access(paths.CONFIG_PATH, os.W_OK):
-            _logger.critical(
-                " ".join([
-                    ".config/naomi/configs dir {:s} is not writable. Naomi",
-                    "won't work correctly."
-                ]).format(
-                    paths.CONFIG_PATH
-                )
-            )
-        new_configfile = paths.sub(os.path.join('configs', 'profile.yml'))
+            if not os.access(paths.CONFIG_PATH, os.W_OK):
+                _logger.critical(f".config/naomi/configs dir '{paths.CONFIG_PATH}' is not writable")
 
-        # For backwards compatibility, move old profile.yml to newly
-        # created config dir
-        old_configfile = paths.sub('profile.yml')
-        if os.path.exists(old_configfile):
-            if os.path.exists(new_configfile):
-                _logger.warning(
-                    " ".join([
-                        "Deprecated profile file found: '{:s}'. ",
-                        "Please remove it."
-                    ]).format(old_configfile)
-                )
-            else:
-                _logger.warning(
-                    " ".join([
-                        "Deprecated profile file found: '{:s}'.",
-                        "Trying to move it to new location '{:s}'."
-                    ]).format(
-                        old_configfile,
-                        new_configfile
-                    )
-                )
-                try:
+            new_configfile = paths.sub(os.path.join('configs', 'profile.yml'))
+            old_configfile = paths.sub('profile.yml')
+
+            if os.path.exists(old_configfile):
+                if os.path.exists(new_configfile):
+                    _logger.warning(f"Deprecated profile file found: '{old_configfile}'. Please remove it.")
+                else:
                     shutil.move(old_configfile, new_configfile)
-                except shutil.Error:
-                    _logger.error(
-                        " ".join([
-                            "Unable to move config file.",
-                            "Please move it manually.",
-                            "“{} → {}”".format(old_configfile, new_configfile)
-                        ]),
-                        exc_info=True
-                    )
-                    raise
 
-        # set profile location
-        profile_file = new_configfile
+            profile_file = new_configfile
 
-        # Read config
-        # set a loop so we can keep looping back until the config file exists
-        config_read = False
-        while not config_read:
-            try:
-                with open(new_configfile, "r") as f:
-                    _profile = yaml.safe_load(f)
-                    # If the profile.yml file is empty, the _profile will be
-                    # None rather than an empty dictionary. This will cause
-                    # issues later.
-                    if _profile is None:
-                        _profile = {}
+            config_read = False
+            while not config_read:
+                try:
+                    with open(new_configfile, "r") as f:
+                        _profile = yaml.safe_load(f) or {}
+                        _profile_read = True
+                        config_read = True
+                except (FileNotFoundError, IOError):
+                    _logger.info(f"{new_configfile} is missing")
+                    set_arg("Profile_missing", True)
+                    _profile = {'language': 'en-US'}
                     _profile_read = True
                     config_read = True
-            except (IOError, FileNotFoundError):
-                _logger.info(
-                    "{} is missing".format(new_configfile)
-                )
-                # set up a temporary profile just to be able to ask the
-                # question of which language the user wants.
-                set_arg("Profile_missing", True)
-                _profile = {'language': 'en-US'}
-                _profile_read = True
-                config_read = True  # Break the loop
-            except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
-                _logger.error(
-                    "Unable to parse config file: {} {}".format(
-                        e.problem.strip(),
-                        str(e.problem_mark).strip()
-                    )
-                )
-                raise
+                except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
+                    _logger.error(f"Unable to parse config file: {e.problem.strip()}, {str(e.problem_mark).strip()}")
+                    raise
+        except OSError as e:
+            _logger.error(f"Error creating profile directories or accessing them: {str(e)}")
+            raise
+
     return _profile
 
 
 def save_profile():
+    """Save the profile to disk, ensure test profiles aren't saved"""
     global _profile, _profile_read, _test_profile
-    # I want to make sure the user's profile is never accidentally overwritten
-    # with a test profile.
-    if ((_profile_read) and (not _test_profile)):
-        # Save the profile
+    if _profile_read and not _test_profile:
         if not os.path.exists(paths.CONFIG_PATH):
             os.makedirs(paths.CONFIG_PATH)
-        outputFile = open(paths.config("profile.yml"), "w")
-        yaml.dump(get_profile(), outputFile, default_flow_style=False)
 
-
-def get(path, default=None):
-    return get_profile_var(path, default)
-
-
-def get_profile_var(path, default=None):
-    """
-    Get a value from the profile, whether it exists or not
-    If the value does not exist in the profile, returns
-    either the default value (if there is one) or None.
-    """
-    if (isinstance(path, str)):
-        path = [path]
-    response = _walk_profile(path, True)
-    if response is None:
-        response = default
-    return response
-
-
-def get_password(path, default=None):
-    return get_profile_password(path, default)
+        with open(paths.config("profile.yml"), "w") as output_file:
+            yaml.dump(get_profile(), output_file, default_flow_style=False)
 
 
 def get_profile_password(path, default=None):
-    """
-    Get a value from the profile, whether it exists or not
-    If the value does not exist in the profile, returns
-    either the default value (if there is one) or None.
-    """
+    """Retrieve encrypted password from profile, if allowed"""
     _logger = logging.getLogger(__name__)
-    allowed = []
-    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app_utils.py'))
-    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'commandline.py'))
-    allowed.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'application.py'))
-    filename = inspect.getframeinfo(sys._getframe(1))[0]
+    allowed = [os.path.join(os.path.dirname(os.path.abspath(__file__)), fname) 
+               for fname in ['app_utils.py', 'commandline.py', 'application.py']]
+    filename = inspect.getframeinfo(sys._getframe(1)).filename
+
     if filename in allowed:
-        if isinstance(path, str):
-            path = [path]
-        first_id = hashlib.sha256(
-            run_command(
-                "cat /etc/machine-id".split(),
-                capture=1
-            ).stdout
-        ).hexdigest()
+        path = [path] if isinstance(path, str) else path
+        machine_id = run_command("cat /etc/machine-id".split(), capture=1).stdout
+        first_id = hashlib.sha256(machine_id).hexdigest()
+
         second_id = hashlib.sha256(run_command("hostid".split(), capture=1).stdout).hexdigest()
+
         try:
             third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
-            third_id = hashlib.sha256(
-                run_command(
-                    """grep -oP 'UUID="\\K[^"]+'""".split(),
-                    capture=4,
-                    stdin=third_idb1
-                ).stdout
-            ).hexdigest()
+            third_id = hashlib.sha256(run_command(["grep", '-oP', 'UUID="\\K[^"]+'], capture=4, stdin=third_idb1).stdout).hexdigest()
         except FileNotFoundError:
-            _logger.warning(
-                " ".join([
-                    "Package not installed: 'blkid'",
-                    "Please install it manually or run apt_requirements.sh again"
-                ])
-            )
+            _logger.warning("Package 'blkid' not installed. Please install it manually.")
             third_id = ""
+
         salt = get_profile_key()
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA512(),
-            length=32,
-            salt=salt,
-            iterations=100000,
-            backend=default_backend()
-        )
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA512(), length=32, salt=salt, iterations=100000, backend=default_backend())
         password = ''.join([first_id, second_id, third_id]).encode()
         key = base64.urlsafe_b64encode(kdf.derive(password))
+
         cipher_suite = Fernet(key)
         response = get_profile_var(path, None)
         try:
-            if (hasattr(response, "encode")):
-                response = cipher_suite.decrypt(
-                    response.encode("utf-8")
-                ).decode("utf-8")
+            if isinstance(response, str):
+                response = cipher_suite.decrypt(response.encode("utf-8")).decode("utf-8")
         except InvalidToken:
+            _logger.error(f"Invalid encryption token for path {path}")
             response = None
-        if response is None:
-            response = default
+
+        return response or default
     else:
-        print("Access to encrypted profile elements not allowed from {}".format(filename))
-        _logger.warn("Access to encrypted profile elements not allowed from {}".format(filename))
-        response = None
-    return response
-
-
-def get_profile_flag(path, default=None):
-    """
-    Get a boolean value from the profile, whether it exists
-    or not. If the value does not exist, returns default or
-    None
-    """
-    if (isinstance(path, str)):
-        path = [path]
-    # Get the variable value
-    temp = _walk_profile(path, True)
-    if temp is None:
-        # the variable is not defined
-        temp = default
-    if temp is None:
-        response = None
-    else:
-        response = False
-        if str(temp).strip().lower() in ('true', 'yes', 'on', 'enabled'):
-            response = True
-    return response
-
-
-def exists(path):
-    return check_profile_var_exists(path)
-
-
-def check_profile_var_exists(path):
-    """
-    Checks if an option exists in the test_profile it is using.
-    Option is passed in as a list so that if we need to check
-    if a suboption exists, we can pass the full path to it.
-    """
-    if (isinstance(path, str)):
-        path = [path]
-    return _walk_profile(path, False)
-
-
-def _walk_profile(path, returnValue):
-    """
-    Function to walk the profile
-    """
-    if (isinstance(path, str)):
-        path = [path]
-    profile = get_profile()
-    found = True
-    for branch in path:
-        try:
-            # This happens if a value that was a string
-            # is converted to a list. So overwrite the
-            # string value with an array.
-            if isinstance(profile, list) and isinstance(branch, int):
-                profile = profile[branch]
-            elif isinstance(profile, dict) and isinstance(branch, str):
-                profile = profile[branch]
-            else:
-                profile = {}
-        except (KeyError, IndexError):
-            found = False
-            profile = None
-            break
-    if (returnValue):
-        response = profile
-    else:
-        response = found
-    return response
-
-
-def set_profile_var(path, value):
-    global _profile
-    temp = _profile
-    if (isinstance(path, str)):
-        path = [path]
-    if len(path) > 0:
-        last = path[0]
-        if len(path) > 1:
-            for branch in path[1:]:
-                if isinstance(branch, str):
-                    try:
-                        if not isinstance(temp[last], dict):
-                            temp[last] = {}
-                    except KeyError:
-                        temp[last] = {}
-                    except IndexError:
-                        temp.append({})
-                elif isinstance(branch, int):
-                    # we are in an array
-                    try:
-                        if not isinstance(temp[last], list):
-                            temp[last] = []
-                    except (KeyError, IndexError):
-                        temp[last] = []
-                temp = temp[last]
-                last = branch
-        temp[last] = value
-    else:
-        raise KeyError("Can't write to profile root")
-
-
-def remove_profile_var(path):
-    """
-    Remove a value from the profile
-    """
-    global _profile
-    if (isinstance(path, str)):
-        path = [path]
-    temp = get_profile()
-    if len(path) > 0:
-        last = path[0]
-        if len(path) > 1:
-            for branch in path[1:]:
-                try:
-                    if not (isinstance(temp[last], dict) or isinstance(temp[last], list)):
-                        return
-                except KeyError:
-                    return
-                temp = temp[last]
-                last = branch
-        del temp[last]
-    else:
-        raise KeyError("Can't remove profile root")
-
-
-def get_profile_key():
-    if not check_profile_var_exists(["key"]):
-        set_profile_var(["key"], Fernet.generate_key().decode("utf-8"))
-    return get_profile_var(["key"]).encode("utf-8")
-
-
-def set_profile_password(path, value):
-    global _profile
-    _logger = logging.getLogger(__name__)
-    if (isinstance(path, str)):
-        path = [path]
-    # Encrypt value
-    first_id = hashlib.sha256(run_command("cat /etc/machine-id".split(), capture=1).stdout).hexdigest()
-    second_id = hashlib.sha256(run_command("hostid".split(), capture=1).stdout).hexdigest()
-    try:
-        third_idb1 = run_command("blkid".split(), capture=1).stdout.decode().strip()
-        third_id = hashlib.sha256(run_command("""grep -oP 'UUID="\\K[^"]+'""".split(), capture=4,
-                                              stdin=third_idb1).stdout).hexdigest()
-    except FileNotFoundError:
-        _logger.warning(
-            " ".join([
-                "Package not installed: 'blkid'",
-                "Please install it manually or run apt_requirements.sh again"
-            ])
-        )
-        third_id = ""
-    salt = get_profile_key()
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA512(),
-        length=32,
-        salt=salt,
-        iterations=100000,
-        backend=default_backend()
-    )
-    password = ''.join([first_id, second_id, third_id]).encode()
-    key = base64.urlsafe_b64encode(kdf.derive(password))
-    cipher_suite = Fernet(key)
-    cipher_text = cipher_suite.encrypt(value.encode("utf-8")).decode("utf-8")
-    set_profile_var(path, cipher_text)
-
-
-# FIXME I should put a default for listboxes here so that by default
-# any value chosen has to be a member of the options.key() list.
-def validate(definition, response):
-    valid = False
-    if isinstance(response, str) and len(response.strip()) == 0:
-        # Always accept an empty response as valid
-        valid = True
-    else:
-        try:
-            validfunction = definition["validation"]
-            valid = validfunction(response)
-        except KeyError:
-            try:
-                if definition["type"] in ["listbox"]:
-                    # Use the default validation, which is to make sure whatever
-                    # is selected is a member of options
-                    try:
-                        valid = response in definition["options"]()
-                    except TypeError:
-                        # must not be a function, assume it is a list
-                        valid = response in definition["options"]
-                else:
-                    valid = True
-            except KeyError:
-                # must be a textbox with no validation
-                valid = True
-        except TypeError:
-            # Not a function
-            validstr = str(definition["validation"]).strip().lower()
-            # Is it a boolean?
-            if validstr in ('true', 'yes', 'on'):
-                valid = True
-            elif validstr in ('false', 'no', 'off'):
-                valid = False
-            elif validstr == 'email':
-                valid = True if re.match('^[^@]+@[^@]+\\.[^@\\.]+$', response) else False
-            elif validstr in ('int', 'integer'):
-                try:
-                    valid = str(int(response)) == response
-                except ValueError:
-                    valid = False
-    return valid
+        _logger.warning(f"Access to encrypted profile elements not allowed from {filename}")
+        return None
