@@ -1,28 +1,28 @@
 # Introduction
 
-Want to contribute to Naomi ? Great ! 🎉 We're always happy to have more contributors. Before you start developing, though, we ask that you read through this document in-full. It's full of tips and guidelines--if you skip it, you'll likely miss something important (and your pull request will probably be rejected as a result).
+Want to contribute to Naomi? Great! 🎉 We're always happy to have more contributors. Before you start developing, though, we ask that you read through this document in full. It's full of tips and guidelines--if you skip it, you'll likely miss something important (and your pull request will probably be rejected as a result).
 
 Throughout the process of contributing, there's one thing we'd like you to remember: Naomi is developed (and is maintained) by what might be described as "volunteers". They earn no money for their work here and give their time solely for the advancement of the software and the enjoyment of its users. While they will do their best to get back to you regarding issues and pull requests, your patience is appreciated.
 
-Following these guidelines helps to communicate that you respect the time of the developers managing and developing this open source project. In return, they should reciprocate that respect in addressing your issue, assessing changes, and helping you finalize your pull requests.
+Following these guidelines helps to communicate that you respect the time of the developers managing and developing this open-source project. In return, they should reciprocate that respect in addressing your issue, assessing changes, and helping you finalize your pull requests.
 
 ## What kinds of contributions are we looking for
 
-From Improving documentation, bug triaging, writing tutorials to developing along side the maintainers by submitting bug reports, feature requests, writing code which can be incorporated into Naomi all to help further Naomi.
+From Improving documentation, bug triaging, and writing tutorials to developing along side the maintainers by submitting bug reports, and feature requests, and writing code that can be incorporated into Naomi all to help further Naomi.
 
 ## Contributions we are NOT looking for
 
-As of time of writing, we are open to any ideas or contributions anyone may have. Once the idea or contribution is fleshed out, has no standing issues or pull requests that conflict, and add to the scope of Naomi, it will most likely be approved and we look forward to your contribution.
+As of time of writing, we are open to any ideas or contributions anyone may have. Once the idea or contribution is fleshed out, has no standing issues or pull requests that conflict, and adds to the scope of Naomi, it will most likely be approved and we look forward to your contribution.
 
 ## Responsibilities
 
-* Ensure code compatibility for every change. We do not want to break everything just for one feature. If in testing your contribution causes issues but in its self works as intended, try to fix the issues that have arised. At the end of the day, we are all working towards a better Naomi.
-* Ensure that code that goes into Naomi meets all requirements.
+* Ensure code compatibility for every change. We do not want to break everything just for one feature. If in testing your contribution causes issues but in itself works as intended, try to fix the issues that have arisen. At the end of the day, we are all working towards a better Naomi.
+* Ensure that the code that goes into Naomi meets all requirements.
 * Create issues for any changes and enhancements that you wish to make. Discuss things transparently and get community feedback.
 
 # Your First Contribution
 
-Due to the nature of the project and at the time of writing, you can look through [issues](https://www.github.com/naomiproject/naomi/issues) and if there is something that you can aid in, jump right it. Some things might be simple bug fixes that may take only a few lines of code while others may take editing multiple documents and structure already assembled. Those required someone that understands Naomi front to back and has worked on the project for some time. In other words, do not bite off more than you can chew, every little step helps.
+Due to the nature of the project and at the time of writing, you can look through [issues](https://www.github.com/naomiproject/naomi/issues) and if there is something that you can aid in, jump right it. Some things might be simple bug fixes that may take only a few lines of code while others may take editing multiple documents and structures already assembled. Those required someone that understands Naomi front to back and has worked on the project for some time. In other words, do not bite off more than you can chew, every little step helps.
 
 ## Resource for people who have never contributed to open source before.
 
@@ -30,24 +30,24 @@ Working on your first Pull Request? You can learn how from this *free* series, [
 
 At this point, you're ready to make your changes! Feel free to ask for help; everyone is a beginner at first :smile_cat:
 
-However, if a maintainer asks you to "rebase" your pull request, they're saying that a lot of code has changed since you started working, and that you need to update your branch so it's easier to merge.
+However, if a maintainer asks you to "rebase" your pull request, they're saying that a lot of code has changed since you started working and that you need to update your branch so it's easier to merge.
 
 # Getting started
 
-1. Check open issues that are labeled as available to work on. If it is an idea that has no current issue or pull request related to it, create an issue so that the idea can be fleshed out and approved before starting. Do not want you to reinvent the wheel.
+1. Check open issues that are labelled as available to work on. If it is an idea that has no current issue or pull request related to it, create an issue so that the idea can be fleshed out and approved before starting. Do not want you to reinvent the wheel.
 2. Create your own fork of the code
 3. Do the changes in your fork
 4. If you like the change and think the project could use it:
 
    * Be sure you have followed the style of code throughout the project. Make it clean and readable!
    * Test the code on a RaspberryPi
-   * Send a pull request and fillout the template. (All issues and PR have to follow the template or they will not be accepted)
+   * Send a pull request and fill out the template. (All issues and PR have to follow the template or they will not be accepted)
    * Once the PR has been submitted a bot will ask you to sign a Contribution License Agreement, CLA. (All contributors to the PR has to accept the CLA in order for the PR to be accepted)
    * The maintainer will review your submission and either ask for clarifications or changes, or approve the PR and it will be merged.
 
 # Labeling conventions for issues & pull requests
 
-Our issues and pull request follow a [labelling convention](https://github.com/NaomiProject/Naomi/issues/126) to aid with flow & organization. Please review them so you know what each label means and how they are used.
+Our issues and pull requests follow a [labelling convention](https://github.com/NaomiProject/Naomi/issues/126) to aid with flow & organization. Please review them so you know what each label means and how they are used.
 
 # How to report a bug
 
@@ -78,16 +78,16 @@ If you find yourself wishing for a feature that doesn't exist in Naomi, you are 
 
 Someone on the core team is active at most times, expect some sort of response within 24 hours, but please be patient. If a maintainer does not have the knowledge needed for said issue or pull request they will direct attention to another that does. This shows the submitter that the issue or PR is being looked at.
 
-Do note: After feedback has been given and required a response from the submitter, we expect responses within two weeks. After two weeks we may close the pull request if it isn't showing any activity.
+Do note: After feedback has been given and requires a response from the submitter, we expect responses within two weeks. After two weeks we may close the pull request if it isn't showing any activity.
 
 If everything up to this point has been done correctly but your PR has not been approved or merged, here are some things to look out for.
 
-* Double check that everything was done correctly.
+* Double-check that everything was done correctly.
 * Reference the status label for the PR, this can give you information that might tell you what's wrong.
 * Make sure you have signed the CLA and your code has been reviewed by at least one maintainer.
 
-By all means if none of this applies and everything is in order, please reach out to one of the core team and we will be happy to look into what the issue is.
+By all means, if none of this applies and everything is in order, please reach out to one of the core team and we will be happy to look into what the issue is.
 
 # Community
 
- Naomi is always looking to grow its community whether you are a developer or someone who has interest in the project. You can join our [forum](https://community.projectnaomi.com) to talk with others as well as spread the work about Naomi. Every small step leads Naomi in the right direction.
+ Naomi is always looking to grow its community whether you are a developer or someone who has an interest in the project. You can join our [forum](https://community.projectnaomi.com) to talk with others as well as spread the word about Naomi. Every small step leads Naomi in the right direction.
