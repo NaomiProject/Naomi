@@ -10,11 +10,8 @@
 </h4>
 
 <p align="center">
-	<a href="">
+    <a href="">
     	<img src="https://img.shields.io/badge/python-v3.5-blue.svg">
-    </a>
-    <a href="https://lgtm.com/projects/g/NaomiProject/Naomi/context:python">
-      <img alt="Language grade: Python" src="https://img.shields.io/lgtm/grade/python/g/NaomiProject/Naomi.svg?logo=lgtm&logoWidth=18"/>
     </a>
     <a href="https://requires.io/github/NaomiProject/Naomi/requirements/?branch=naomi-dev">
     	<img src="https://requires.io/github/NaomiProject/Naomi/requirements.svg?branch=naomi-dev">
