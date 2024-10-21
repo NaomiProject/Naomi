@@ -62,7 +62,7 @@ Naomi's user configuration files have moved from ~/.naomi to ~/.config/naomi to 
 
 #### Plugin settings
 
-The populate.py script has been replaced with settings that exist within the individual plugins. This way, a plugin author needs information from the user to get the plugin working, this information can be encoded within the plugin and not have to be added to a file in the Naomi core.
+The populate.py script has been replaced with settings that exist within the individual plugins. This way if a plugin author needs information from the user to get the plugin working, this information can be encoded within the plugin and not have to be added to a file in the Naomi core.
 Settings have the following structure:
 
 ```py
@@ -84,11 +84,11 @@ Plugins are listed within profile.yml and can be enabled or disabled by setting 
 
 #### Passive Listen
 
-Naomi can be set to collect audio, and if audio contains the wakeword, use the active listener to scan the captured audio, allowing a more natural conversation style. Requires setting the "passive_listen: true" value in profile.yml or running Naomi with the --passive-listen flag.
+Naomi can be set to collect audio and then if audio contains the wakeword, use the active listener to scan the captured audio, allowing a more natural conversation style. Requires setting the "passive_listen: true" value in profile.yml or running Naomi with the --passive-listen flag.
 
 #### Asynchronous Say
 
-Talking can happen in a separate thread so Naomi can listen while talking, allowing the user to stop Naomi in the middle of a response by saying "Naomi Stop". Unfortunately, with most audio setups, this causes Naomi to react to its own voice, so this is disabled by default while working out how to filter out the sound of Naomi speaking. Currently best used with either headphones or a USB conference phone with hardware level feedback filtering. Activated by either passing the "--listen-while-talking" flag or setting "listen_while_talking: true" in profile.yml.
+Talking can happen in a separate thread so Naomi can listen while talking, allowing the user to stop Naomi in the middle of a response by saying "Naomi Stop". Unfortunately, with most audio setups this causes Naomi to react to its own voice, so this is disabled by default while working out how to filter out the sound of Naomi speaking. Currently best used with either headphones or a USB conference phone with hardware level feedback filtering. Activated by either passing the "--listen-while-talking" flag or setting "listen_while_talking: true" in profile.yml.
 
 #### Syncronous Mic
 

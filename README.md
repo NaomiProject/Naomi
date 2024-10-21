@@ -95,7 +95,7 @@ Naomi is an MIT-licensed open source project with its ongoing development made p
 
 ## Credits
 
-This software uses code from the initial Jasper Project & the Jasper2Fork.
+This software uses code from the initial Jasper Project & the Jasper2fork.
 
 * [JasperProject](http://jasperproject.github.io/)
 * [Jasper2Fork](https://github.com/andweber/j2f)
