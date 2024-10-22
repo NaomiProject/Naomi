@@ -5,7 +5,7 @@
 on:
     push:
         branches:
-            - main
+            - naomi-dev
 
 jobs:
     contrib-readme-job:
