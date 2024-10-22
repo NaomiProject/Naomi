@@ -108,3 +108,8 @@ MIT
 
 > [projectnaomi.com](https://projectnaomi.com) &nbsp;&middot;&nbsp;
 > GitHub [@naomiproject](https://github.com/naomiproject)
+
+## 💖 Contributors
+<!-- Do not manually edit this section! It should get updated using the Github action -->
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->
