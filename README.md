@@ -100,6 +100,11 @@ This software uses code from the initial Jasper Project & the Jasper2fork.
 * [JasperProject](http://jasperproject.github.io/)
 * [Jasper2Fork](https://github.com/andweber/j2f)
 
+## 💖 Contributors
+<!-- Do not manually edit this section! It should get updated using the Github action -->
+<!-- readme: contributors -start -->
+<!-- readme: contributors -end -->
+
 ## License
 
 MIT
@@ -109,7 +114,3 @@ MIT
 > [projectnaomi.com](https://projectnaomi.com) &nbsp;&middot;&nbsp;
 > GitHub [@naomiproject](https://github.com/naomiproject)
 
-## 💖 Contributors
-<!-- Do not manually edit this section! It should get updated using the Github action -->
-<!-- readme: contributors -start -->
-<!-- readme: contributors -end -->
