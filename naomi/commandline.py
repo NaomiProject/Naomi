@@ -407,10 +407,17 @@ class commandline(object):
                     first = True
                     newarray = [part for part in setting]
                     newarray.extend([currentvalue])
-                    for subsetting in definition['each']:
+                    for settingindex in range(len(definition['each'])):
+                        subsetting = definition['each'][settingindex]
                         newsetting = newarray.copy()
-                        newsetting.extend([subsetting[0]])
-                        self.get_setting(tuple(newsetting), definition['each'][subsetting])
+                        # Subsetting looks something like:
+                        # (('id',), {'title': 'ID of your light', 'description': 'The ID of your light as reported by HomeAssistant'})
+                        # subsetting[0] could be a path with multiple nodes
+                        # subsetting[1] is the definition of this setting
+                        # Add the path nodes to newsetting
+                        for subnode in subsetting[0]:
+                            newsetting.append(subnode)
+                        self.get_setting(tuple(newsetting), subsetting[1])
                         if first:
                             first = False
                             if not profile.get(newsetting):
