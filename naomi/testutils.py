@@ -55,6 +55,7 @@ class TestMic(object):
         self.inputs = inputs
         self.idx = 0
         self.outputs = []
+        self.use_llm = False
 
     @classmethod
     def wait_for_keyword(self, keyword="NAOMI"):
