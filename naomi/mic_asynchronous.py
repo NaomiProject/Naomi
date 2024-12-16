@@ -68,7 +68,7 @@ class MicAsynchronous(mic.Mic):
                                             self._log_audio(f, active_transcription, "noise")
                                             visualizations.run_visualization(
                                                 "output",
-                                                f"<< {transcription} <noise>"
+                                                f"<< {active_transcription} <noise>"
                                             )
                                     else:
                                         # Don't verify keyword
@@ -175,17 +175,20 @@ class MicAsynchronous(mic.Mic):
                 break
 
     def say(self, phrase):
-        self.actions_queue.appendleft(lambda: self.tts(phrase))
-        if not (
-            self.actions_thread
-            and hasattr(self.actions_thread, "is_alive")
-            and self.actions_thread.is_alive()
-        ):
-            # start the thread
-            self.actions_thread = threading.Thread(
-                target=self.process_actions
-            )
-            self.actions_thread.start()
+        if self.buffer_output:
+            self.output_buffer.append(phrase)
+        else:
+            self.actions_queue.appendleft(lambda: self.tts(phrase))
+            if not (
+                self.actions_thread
+                and hasattr(self.actions_thread, "is_alive")
+                and self.actions_thread.is_alive()
+            ):
+                # start the thread
+                self.actions_thread = threading.Thread(
+                    target=self.process_actions
+                )
+                self.actions_thread.start()
 
     def play_file(self, filename):
         self.actions_queue.appendleft(lambda: self._play_file(filename))

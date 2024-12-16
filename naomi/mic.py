@@ -10,6 +10,7 @@ import time
 import wave
 from datetime import datetime
 from naomi import i18n
+from naomi.llama_client import llama_client
 from naomi import paths
 from naomi import profile
 from naomi import visualizations
@@ -97,6 +98,13 @@ class Mic(i18n.GettextMixin):
         self.verify_keyword = profile.get_arg('verify_keyword', False)
         self._active_stt_reply = profile.get_arg("active_stt_reply")
         self._active_stt_response = profile.get_arg("active_stt_response")
+        self.buffer_output = False
+        self.use_llm = profile.get(['LLM', 'enabled'], False)
+        self.llama_client = llama_client(
+            self,
+            profile.get(['LLM', 'completion_url']),
+            template=profile.get(['LLM', "template"])
+        )
         if (
             (
                 self._save_active_audio
@@ -350,7 +358,22 @@ class Mic(i18n.GettextMixin):
             if intent:
                 try:
                     self._logger.info(intent)
-                    intent['action'](intent, self)
+                    # If we are using an LLM, what we want to do is catch
+                    # everything being fed to mic.say() into a buffer, then
+                    # feed that buffer as the system prompt to the LLM.
+                    if self.use_llm and intent['allow_llm']:
+                        self.buffer_output = True
+                        self.output_buffer = []
+                        intent['action'](intent, self)
+                        self.buffer_output = False
+                        context = self.output_buffer
+                        visualizations.run_visualization(
+                            "output",
+                            f"[{context}]"
+                        )
+                        self.llama_client.process_query(utterance.transcription, " ".join(self.output_buffer))
+                    else:
+                        intent['action'](intent, self)
                     handled = True
                 except Unexpected as e:
                     # The user responded to a prompt within the intent with a new
@@ -396,6 +419,8 @@ class Mic(i18n.GettextMixin):
             else:
                 self.say_i_do_not_understand()
                 handled = True
+        if not self.Continue:
+            quit()
         return utterance, handled
 
     def say_i_do_not_understand(self):

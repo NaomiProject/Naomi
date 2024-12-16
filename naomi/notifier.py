@@ -30,10 +30,14 @@ class Notifier(object):
         self.sched = BackgroundScheduler(timezone="UTC", daemon=True)
         self.sched.start()
         # FIXME add an interval setting to profile so this can be overridden
-        self.sched.add_job(self.gather, 'interval', seconds=30)
+        try:
+            self.sched.add_job(self.gather, 'interval', seconds=30)
+        except Exception as e:
+            print(e)
 
     def gather(self):
-        [client.run() for client in self.notifiers]
         if self.mic.Continue is False:
             print("Notifier shutting down")
             self.sched.shutdown(wait=False)
+        else:
+            [client.run() for client in self.notifiers]
