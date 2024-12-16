@@ -36,7 +36,7 @@ DEFAULT_PERSONALITY_PREPROMPT = [
 ]
 
 
-class llama_client:
+class llama_client(object):
     @property
     def messages(self) -> Sequence[dict[str, str]]:
         return self._messages
