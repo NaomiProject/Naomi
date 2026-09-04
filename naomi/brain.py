@@ -22,7 +22,14 @@ class Brain(object):
         self._plugins.append(plugin)
         # print("Checking {} for intents".format(plugin._plugin_info.name))
         if hasattr(plugin, "intents"):
-            self._intentparser.add_intents(plugin.intents())
+            # pdb.set_trace()
+            # Make sure every intent has an "allow_llm" property.
+            # If not, then initialize it to True
+            intents = plugin.intents()
+            for intent in intents:
+                if 'allow_llm' not in intents[intent]:
+                    intents[intent]['allow_llm'] = True
+            self._intentparser.add_intents(intents)
 
     def train(self):
         self._intentparser.train()

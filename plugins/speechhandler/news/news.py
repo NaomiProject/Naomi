@@ -91,7 +91,8 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
                         ]
                     }
                 },
-                'action': self.handle
+                'action': self.handle,
+                'allow_llm': True
             }
         }
 
@@ -128,27 +129,27 @@ class NewsPlugin(plugin.SpeechHandlerPlugin):
         email = profile.get(['email', 'address'])
         if not email:
             return
+        if not mic.use_llm:
+            if profile.get_profile_flag(['allows_email'], False):
 
-        if profile.get_profile_flag(['allows_email'], False):
-
-            if(mic.confirm(_('Would you like me to send you these articles?'))):
-                mic.say(self.gettext("Sure, just give me a moment."))
-                SUBJECT = self.gettext("Your Top Headlines")
-                email_text = self.make_email_text(articles)
-                email_sent = app_utils.email_user(
-                    SUBJECT=SUBJECT,
-                    BODY=email_text
-                )
-                if email_sent:
-                    mic.say(
-                        _("Okay, I've sent you an email.")
+                if mic.confirm(_('Would you like me to send you these articles?')):
+                    mic.say(self.gettext("Sure, just give me a moment."))
+                    SUBJECT = self.gettext("Your Top Headlines")
+                    email_text = self.make_email_text(articles)
+                    email_sent = app_utils.email_user(
+                        SUBJECT=SUBJECT,
+                        BODY=email_text
                     )
+                    if email_sent:
+                        mic.say(
+                            _("Okay, I've sent you an email.")
+                        )
+                    else:
+                        mic.say(
+                            _("Sorry, I'm having trouble sending you these articles.")
+                        )
                 else:
-                    mic.say(
-                        _("Sorry, I'm having trouble sending you these articles.")
-                    )
-            else:
-                mic.say(self.gettext("Okay, I will not send any articles."))
+                    mic.say(self.gettext("Okay, I will not send any articles."))
 
     def make_email_text(self, articles):
         text = self.gettext('These are the articles you requested:')

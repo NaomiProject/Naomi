@@ -47,6 +47,15 @@ class MicAsynchronous(mic.Mic):
                         )
                         if self.passive_listen:
                             if self.check_for_keyword(passive_transcription):
+                                self.say(
+                                    random.choice(
+                                        [
+                                            "Hmmm, um, hmmm...,",
+                                            "Ummm....,",
+                                            "Um. Just a sec."
+                                        ]
+                                    )
+                                )
                                 active_transcription = [" ".join(self.active_stt_plugin.transcribe(f))]
                                 if len(active_transcription) > 0:
                                     if self.verify_keyword:
@@ -62,13 +71,14 @@ class MicAsynchronous(mic.Mic):
                                                 self._log_audio(f, transcription, "noise")
                                                 visualizations.run_visualization(
                                                     "output",
-                                                    "<< <noise>"
+                                                    f"<< <noise> {len(audio)}"
                                                 )
                                         else:
+                                            self.say("Hum...")
                                             self._log_audio(f, active_transcription, "noise")
                                             visualizations.run_visualization(
                                                 "output",
-                                                f"<< {transcription} <noise>"
+                                                f"<< {active_transcription} <noise>"
                                             )
                                     else:
                                         # Don't verify keyword
@@ -89,7 +99,7 @@ class MicAsynchronous(mic.Mic):
                                     self._log_audio(f, active_transcription, "noise")
                                     visualizations.run_visualization(
                                         "output",
-                                        "<< <noise>"
+                                        f"<< <noise> {len(audio)}"
                                     )
                         else:
                             # New transcription
@@ -130,27 +140,28 @@ class MicAsynchronous(mic.Mic):
         transcription = ""
         audio = b''
         recordings_available_event.wait()
-        try:
-            audio = self.recordings_queue.pop()
-            if len(audio) > 0:
-                with self._write_frames_to_file(audio, None) as f:
-                    transcription = [
-                        " ".join(
-                            self.active_stt_plugin.transcribe(f)
-                        )
-                    ]
-        except IndexError:
-            recordings_available_event.clear()
-        if len(transcription) > 0:
-            visualizations.run_visualization(
-                "output",
-                f"<< {transcription}"
-            )
-        else:
-            visualizations.run_visualization(
-                "output",
-                "<< <noise>"
-            )
+        while len(transcription) == 0:
+            try:
+                audio = self.recordings_queue.pop()
+                if len(audio) > 0:
+                    with self._write_frames_to_file(audio, None) as f:
+                        transcription = [
+                            " ".join(
+                                self.active_stt_plugin.transcribe(f)
+                            )
+                        ]
+            except IndexError:
+                recordings_available_event.clear()
+            if len(transcription) > 0:
+                visualizations.run_visualization(
+                    "output",
+                    f"<< {transcription}"
+                )
+            else:
+                visualizations.run_visualization(
+                    "output",
+                    "<< <noise>"
+                )
         if play_prompts:
             if self._active_stt_response:
                 self.say(self._active_stt_response)
@@ -175,17 +186,23 @@ class MicAsynchronous(mic.Mic):
                 break
 
     def say(self, phrase):
-        self.actions_queue.appendleft(lambda: self.tts(phrase))
-        if not (
-            self.actions_thread
-            and hasattr(self.actions_thread, "is_alive")
-            and self.actions_thread.is_alive()
-        ):
-            # start the thread
-            self.actions_thread = threading.Thread(
-                target=self.process_actions
-            )
-            self.actions_thread.start()
+        if len(phrase.strip()) > 0:
+            if self.buffer_output:
+                self.output_buffer.append(phrase)
+            else:
+                self.actions_queue.appendleft(lambda: self.tts(phrase))
+                if "[shutdown]" in phrase.lower() or "[shut down]" in phrase.lower():
+                    self.actions_queue.appendleft(lambda: self.shutdown())
+                if not (
+                    self.actions_thread
+                    and hasattr(self.actions_thread, "is_alive")
+                    and self.actions_thread.is_alive()
+                ):
+                    # start the thread
+                    self.actions_thread = threading.Thread(
+                        target=self.process_actions
+                    )
+                    self.actions_thread.start()
 
     def play_file(self, filename):
         self.actions_queue.appendleft(lambda: self._play_file(filename))
@@ -256,18 +273,8 @@ class MicAsynchronous(mic.Mic):
             "Exiting..."
         )
 
-    def say_i_do_not_understand(self):
-        self.say(
-            random.choice(
-                [  # nosec
-                    self.gettext("I'm sorry, could you repeat that?"),
-                    self.gettext("My apologies, could you try saying that again?"),
-                    self.gettext("Say that again?"),
-                    self.gettext("I beg your pardon?"),
-                    self.gettext("Pardon?")
-                ]
-            )
-        )
+    def shutdown(self):
+        self.Continue = False
 
     # If we are using the asynchronous say, so we can hear the "stop"
     # command, what we want to do is put the prompt on the queue, then

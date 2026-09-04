@@ -81,6 +81,10 @@ class SpeechHandlerPlugin(
             self.info.translations
         )
 
+    @property
+    def allow_llm(self):
+        return False
+
     @abc.abstractmethod
     def intents(self):
         pass

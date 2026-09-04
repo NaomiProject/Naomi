@@ -697,6 +697,32 @@ class Naomi(object):
                     }
                 ),
                 (
+                    ("LLM", "enabled"), {
+                        "type": "boolean",
+                        "title": _("Should I use a large language model?"),
+                        "description": _("With this option enabled, I will attempt to run my output through a large language model before speaking. This can make me much more conversational, but can interfere with my functioning and make me take longer to respond."),
+                        "default": False
+                    }
+                ),
+                (
+                    ("LLM", "completion_url"), {
+                        "title": _("LLM endpoint URL"),
+                        "description": _("The url used for requesting text completion from your LLM"),
+                        "default": "http://localhost:8080/v1/completions",
+                        "active": lambda: profile.get(['LLM', 'enabled'], False)
+                    }
+                ),
+                (
+                    ("LLM", "template"), {
+                        "title": _("LLM Template type"),
+                        "type": "listbox",
+                        "description": _("The jinja2 template to use for formatting prompts for your LLM model."),
+                        "options": ['LLAMA3', 'LLAMA2', 'CHATML'],
+                        "default": "LLAMA3",
+                        "active": lambda: profile.get(['LLM', 'enabled'], False)
+                    }
+                ),
+                (
                     ("email", "address"), {
                         "type": "encrypted",
                         "title": _("Please enter your email address"),

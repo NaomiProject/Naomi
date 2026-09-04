@@ -36,7 +36,8 @@ class CheckEmailPlugin(plugin.SpeechHandlerPlugin):
                         ]
                     }
                 },
-                'action': self.handle
+                'action': self.handle,
+                'allow_llm': True
             }
         }
 

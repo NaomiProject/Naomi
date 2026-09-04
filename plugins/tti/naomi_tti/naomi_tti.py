@@ -26,17 +26,17 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             while intent in self.intent_map['intents']:
                 intent_inc += 1
                 intent = "{}{}".format(intent_base, intent_inc)
-            if('locale' in intents[intent_base]):
+            if 'locale' in intents[intent_base]:
                 # If the selected locale is not available, try matching just
                 # the language ("en-US" -> "en")
-                if(locale not in intents[intent_base]['locale']):
+                if locale not in intents[intent_base]['locale']:
                     for language in intents[intent_base]['locale']:
-                        if(language[:2] == locale[:2]):
+                        if language[:2] == locale[:2]:
                             locale = language
                             break
-            if(locale not in intents[intent_base]['locale']):
+            if locale not in intents[intent_base]['locale']:
                 raise KeyError("Language not supported")
-            if('keywords' in intents[intent_base]['locale'][locale]):
+            if 'keywords' in intents[intent_base]['locale'][locale]:
                 if intent not in self.keywords:
                     self.keywords[intent] = {}
                 for keyword in intents[intent_base]['locale'][locale]['keywords']:
@@ -47,7 +47,8 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 'action': intents[intent_base]['action'],
                 'name': intent_base,
                 'templates': [],
-                'words': {}
+                'words': {},
+                'allow_llm': intents[intent_base]['allow_llm'] if 'allow_llm' in intents[intent_base] else False
             }
             for phrase in intents[intent_base]['locale'][locale]['templates']:
                 # Save the phrase so we can search for undefined keywords
@@ -61,11 +62,9 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                     # This should get better over time, but at the moment
                     # since we have so few intents, these common words are
                     # having a way oversized impact.
-                    if(
-                        word not in profile.get(
-                            ['naomi_tti', 'words_to_ignore'],
-                            ['ANY', 'ARE', 'DO', 'IN', 'IS', 'THE', 'TO', 'WHAT']
-                        )
+                    if word not in profile.get(
+                        ['naomi_tti', 'words_to_ignore'],
+                        ['ANY', 'ARE', 'DO', 'IN', 'IS', 'THE', 'TO', 'WHAT']
                     ):
                         try:
                             self.intent_map['intents'][intent]['words'][word] += 1
@@ -128,7 +127,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             "standard_phrases",
             "{}.txt".format(profile.get(['language'], 'en-US'))
         )
-        if(os.path.isfile(custom_standard_phrases_file)):
+        if os.path.isfile(custom_standard_phrases_file):
             with open(custom_standard_phrases_file, mode='r') as f:
                 for line in f:
                     phrase = line.strip()
@@ -136,21 +135,21 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         phrases.append(phrase.upper())
 
         for intent in self.intent_map['intents']:
-            if('templates' in self.intent_map['intents'][intent]):
+            if 'templates' in self.intent_map['intents'][intent]:
                 templates = self.intent_map['intents'][intent]['templates']
-                if(intent in self.keywords):
+                if intent in self.keywords:
                     keywords = self.keywords[intent]
                     for keyword in keywords:
                         # This will not replace keywords that do not have a list associated with them, like regex and open keywords
                         # print("Replacing {} with words from {} in templates".format(keyword,keywords[keyword]))
                         for template in templates:
-                            if(to_keyword(keyword) in template):
+                            if to_keyword(keyword) in template:
                                 templates.extend([template.replace(to_keyword(keyword), word.upper()) for word in keywords[keyword]])
                             # Now that we have expanded every instance of keyword in templates, delete any template that still contains keyword
                             templates = [template for template in templates if not to_keyword(keyword) in template]
                 for template in templates:
                     # include the keyword, otherwise
-                    if(passive_listen):
+                    if passive_listen:
                         keywords = profile.get(["keyword"])
                         if not (isinstance(keywords, list)):
                             keywords = [keywords]
@@ -251,7 +250,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
             bestintent = max(intentscores, key=lambda key: intentscores[key])
             # Change the intent scores into probabilities
             totalscore = sum(intentscores.values())
-            if(totalscore > 0):
+            if totalscore > 0:
                 bestscore = intentscores[bestintent] / totalscore
             else:
                 bestscore = 0
@@ -260,7 +259,8 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 'input': phrase,
                 'score': bestscore,
                 'matches': allvariants[variant],
-                'action': self.intent_map['intents'][bestintent]['action']
+                'action': self.intent_map['intents'][bestintent]['action'],
+                'allow_llm': self.intent_map['intents'][bestintent]['allow_llm']
             }
         bestvariant = max(variantscores, key=lambda key: variantscores[key]['score'])
         # print("BEST: {}".format(bestvariant))
@@ -319,7 +319,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 # print("Matchlist: {} Word: {} Subs: {}".format(matchlist, word, possiblesubstitutions))
                 # We don't actually know if there are actually any
                 # substitutions in the template
-                if(possiblesubstitutions > 0):
+                if possiblesubstitutions > 0:
                     for i in range(possiblesubstitutions):
                         # print("replacenth('{}','{}','{}',{})".format(
                         #     '{}{}{}'.format('{', matchlist, '}'),
@@ -350,7 +350,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
         # identified yet.
         substitutions = re.findall(r'{(.*?)}', currenttemplate)
         # print("Substitutions: {}".format(substitutions))
-        if(substitutions):
+        if substitutions:
             for substitution in substitutions:
                 subvar = "{}{}{}".format('{', substitution, '}')
                 # print("Searching for {}".format(subvar))
@@ -383,7 +383,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 for i in range(1, n):
                     for j in range(1, m):
                         # print("{},{} V: {} T: {}".format(i,j,variant[i-1],template[j-1]))
-                        if(variant[i - 1] == template[j - 1]):
+                        if variant[i - 1] == template[j - 1]:
                             c = 0
                         else:
                             c = 1
@@ -394,7 +394,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 matched = ""
                 for i in range(1, n - 1):
                     # print("i: {} s: {}".format(i,s))
-                    if(a[i - 1][s - 1] == 0):
+                    if a[i - 1][s - 1] == 0:
                         # the previous item was a match
                         # so start here and work to the right until there is another match
                         k = i
@@ -404,7 +404,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         compare.extend([1] * (m))
                         # print(variant[k])
                         # print("Comparing {} to {}".format(a[k],compare))
-                        while((a[k] == compare) and (k < (n))):
+                        while ((a[k] == compare) and (k < (n))):
                             # print("k = {}".format(k))
                             match.append(variant[k - 1])
                             # print(match)
@@ -422,7 +422,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         substitutedvariant.extend(variant[end:])
                         # print("SubstitutedVariant: {}".format(substitutedvariant))
                         break
-                    elif(a[i + 1][s + 1] == 0):
+                    elif a[i + 1][s + 1] == 0:
                         # the next item is a match, so start working backward
                         k = i
                         end = k
@@ -430,7 +430,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         compare = [k]
                         compare.extend([1] * (m))
                         # print("Comparing {} to {}".format(a[k],compare))
-                        while(a[k] == compare):
+                        while a[k] == compare:
                             match.append(variant[k - 1])
                             # print(match)
                             k -= 1
@@ -447,7 +447,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                         substitutedvariant.extend(variant[end:])
                         # print("SubstitutedVariant: {}".format(substitutedvariant))
                         break
-                if(len(matched)):
+                if len(matched):
                     # print("Match: '{}' to '{}'".format(substitution, matched))
                     try:
                         variantscores[bestvariant]['matches'][substitution].append(matched)
@@ -459,6 +459,7 @@ class NaomiTTIPlugin(plugin.TTIPlugin):
                 'action': variantscores[bestvariant]['action'],
                 'input': phrase,
                 'matches': variantscores[bestvariant]['matches'],
-                'score': variantscores[bestvariant]['score']
+                'score': variantscores[bestvariant]['score'],
+                'allow_llm': variantscores[bestvariant]['allow_llm']
             }
         }

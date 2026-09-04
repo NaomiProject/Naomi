@@ -63,7 +63,8 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
                         ]
                     },
                 },
-                'action': self.handle
+                'action': self.handle,
+                'allow_llm': True
             }
         }
 
@@ -107,25 +108,25 @@ class HackerNewsPlugin(plugin.SpeechHandlerPlugin):
             f'{i}) {a.title}' for i, a in enumerate(articles, start=1)
         )
         mic.say(text)
-
-        if profile.get_profile_flag(['allows_email']):
-            if(mic.confirm(_('Would you like me to send you these articles?'))):
-                mic.say(_("Sure, just give me a moment."))
-                email_text = self.make_email_text(articles)
-                email_sent = app_utils.email_user(
-                    SUBJECT=_("Top Stories from Hacker News"),
-                    BODY=email_text
-                )
-                if email_sent:
-                    mic.say(
-                        _("Okay, I've sent you an email.")
+        if not mic.use_llm:
+            if profile.get_profile_flag(['allows_email']):
+                if mic.confirm(_('Would you like me to send you these articles?')):
+                    mic.say(_("Sure, just give me a moment."))
+                    email_text = self.make_email_text(articles)
+                    email_sent = app_utils.email_user(
+                        SUBJECT=_("Top Stories from Hacker News"),
+                        BODY=email_text
                     )
+                    if email_sent:
+                        mic.say(
+                            _("Okay, I've sent you an email.")
+                        )
+                    else:
+                        mic.say(
+                            _("Sorry, I'm having trouble sending you these articles.")
+                        )
                 else:
-                    mic.say(
-                        _("Sorry, I'm having trouble sending you these articles.")
-                    )
-            else:
-                mic.say(_("Okay, I will not send any articles."))
+                    mic.say(_("Okay, I will not send any articles."))
 
     def make_email_text(self, articles):
         _ = self.gettext
