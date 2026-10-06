@@ -1,6 +1,6 @@
 import collections
-import pipes
 import re
+import shlex
 import unittest
 from naomi import diagnose
 from naomi import plugin
@@ -101,7 +101,7 @@ class EspeakTTSPlugin(plugin.TTSPlugin):
         cmd = [str(x) for x in cmd]
         self._logger.debug(
             'Executing %s', ' '.join(
-                [pipes.quote(arg) for arg in cmd]
+                [shlex.quote(arg) for arg in cmd]
             )
         )
         data = run_command(cmd, 1).stdout

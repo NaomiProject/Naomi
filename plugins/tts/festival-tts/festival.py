@@ -1,4 +1,4 @@
-import pipes
+import shlex
 import subprocess
 import tempfile
 import unittest
@@ -74,7 +74,7 @@ class FestivalTTSPlugin(plugin.TTSPlugin):
                 in_f.seek(0)
                 with tempfile.SpooledTemporaryFile() as err_f:
                     self._logger.debug(
-                        'Executing %s', ' '.join([pipes.quote(arg)
+                        'Executing %s', ' '.join([shlex.quote(arg)
                                                   for arg in cmd]))
                     subprocess.call(cmd, stdin=in_f, stdout=out_f,
                                     stderr=err_f)
