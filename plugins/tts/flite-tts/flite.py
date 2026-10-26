@@ -1,6 +1,6 @@
 import logging
 import os
-import pipes
+import shlex
 import subprocess
 import tempfile
 import unittest
@@ -73,7 +73,7 @@ class FliteTTSPlugin(plugin.TTSPlugin):
         cmd.append(fname)
         with tempfile.SpooledTemporaryFile() as out_f:
             self._logger.debug('Executing %s',
-                               ' '.join([pipes.quote(arg)
+                               ' '.join([shlex.quote(arg)
                                          for arg in cmd]))
             subprocess.call(cmd, stdout=out_f, stderr=out_f)
             out_f.seek(0)

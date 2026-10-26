@@ -1,7 +1,7 @@
 import logging
 import os
-import pipes
 import platform
+import shlex
 import subprocess
 import tempfile
 import unittest
@@ -33,7 +33,7 @@ class MacOSXTTSPlugin(plugin.TTSPlugin):
         cmd = [EXECUTABLE, '-o', fname,
                            '--file-format=WAVE',
                            str(phrase)]
-        self._logger.debug('Executing %s', ' '.join([pipes.quote(arg)
+        self._logger.debug('Executing %s', ' '.join([shlex.quote(arg)
                                                      for arg in cmd]))
         with tempfile.SpooledTemporaryFile() as f:
             subprocess.call(cmd, stdout=f, stderr=f)

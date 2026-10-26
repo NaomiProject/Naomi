@@ -1,7 +1,7 @@
 import logging
 import os
-import pipes
 import re
+import shlex
 import subprocess
 import tempfile
 import unittest
@@ -57,7 +57,7 @@ class PicoTTSPlugin(plugin.TTSPlugin):
         cmd = [EXECUTABLE, '-w', fname,
                            '-l', self._language,
                            phrase]
-        logger.debug('Executing %s', ' '.join([pipes.quote(arg)
+        logger.debug('Executing %s', ' '.join([shlex.quote(arg)
                                                for arg in cmd]))
         with tempfile.TemporaryFile() as f:
             subprocess.call(cmd, stdout=f, stderr=f)
